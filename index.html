@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <title>Putulka.com - Resmi Oyun Klone</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0c0d14; color: #fff; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+        /* Yuxarı Naviqasiya Paneli */
+        .top-navbar { height: 60px; background: #151622; border-bottom: 2px solid #222436; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+        .logo-area { font-size: 24px; font-weight: bold; color: #ff2e63; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+        .user-stats { display: flex; align-items: center; gap: 20px; font-size: 14px; }
+        .coin-box { background: #1f2133; padding: 6px 14px; border-radius: 20px; color: #ffbc00; font-weight: bold; border: 1px solid #333652; }
+        .profile-badge { background: #ff2e63; padding: 6px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+
+        /* Qeydiyyat Modalı */
+        #auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        .auth-box { background: #171824; padding: 40px; border-radius: 16px; width: 380px; text-align: center; border: 2px solid #ff2e63; box-shadow: 0 0 30px rgba(255, 46, 99, 0.3); }
+        .auth-box h2 { color: #ff2e63; margin-bottom: 25px; font-size: 26px; }
+        .auth-input { width: 100%; padding: 14px; margin-bottom: 20px; background: #0c0d14; border: 1px solid #333; border-radius: 10px; color: #fff; outline: none; font-size: 16px; text-align: center; }
+        .auth-input:focus { border-color: #ff2e63; }
+        .auth-btn { width: 100%; padding: 14px; background: #ff2e63; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        .auth-btn:hover { background: #e02453; }
+
+        /* Əsas Oyun Ekranı */
+        .main-layout { display: none; flex: 1; grid-template-columns: 260px 1fr 320px; height: calc(100vh - 60px); }
+
+        /* Sol Menyu */
+        .left-sidebar { background: #12131d; border-right: 1px solid #222436; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .menu-item { background: #191b28; color: #aaa; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-weight: 500; transition: 0.2s; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; }
+        .menu-item:hover, .menu-item.active { background: #ff2e63; color: #fff; border-color: #ff2e63; }
+
+        /* Mərkəzi Stol Bölməsi */
+        .center-table-area { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; background: radial-gradient(circle, #1a1c2e 0%, #0c0d14 85%); }
+        
+        .table-circle { width: 480px; height: 480px; border-radius: 50%; background: #13141f; border: 12px solid #202233; position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 50px rgba(0,0,0,0.9); }
+        
+        /* Şüşə Dizaynı */
+        .bottle { width: 36px; height: 140px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); border-radius: 18px 18px 6px 6px; position: absolute; transition: transform 4s cubic-bezier(0.15, 0.85, 0.25, 1); cursor: pointer; box-shadow: 0 0 20px rgba(0,242,254,0.6); }
+        .bottle::after { content: ''; position: absolute; top: 12px; left: 6px; width: 6px; height: 35px; background: rgba(255,255,255,0.4); border-radius: 3px; }
+
+        /* Masa Ətrafındakı Oyunçu Yerləri */
+        .player-seat { width: 75px; height: 75px; border-radius: 50%; background: #1f2133; border: 3px solid #ff2e63; position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.6); text-align: center; overflow: hidden; }
+        
+        .seat-1 { top: -35px; }
+        .seat-2 { top: 65px; right: -35px; }
+        .seat-3 { bottom: 65px; right: -35px; }
+        .seat-4 { bottom: -35px; }
+        .seat-5 { bottom: 65px; left: -35px; }
+        .seat-6 { top: 65px; left: -35px; }
+
+        /* Fırlat Düyməsi */
+        .controls-bar { margin-top: 30px; display: flex; gap: 15px; }
+        .btn-action { padding: 14px 35px; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 16px; box-shadow: 0 4px 20px rgba(255,46,99,0.4); }
+        .spin-btn { background: #ff2e63; color: #fff; }
+        .spin-btn:hover { background: #e02453; }
+
+        /* Sağ Çat Paneli */
+        .right-chat-panel { background: #12131d; border-left: 1px solid #222436; display: flex; flex-direction: column; }
+        .chat-header { background: #191b28; padding: 15px; text-align: center; font-weight: bold; border-bottom: 1px solid #222436; color: #ff2e63; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; font-size: 13px; display: flex; flex-direction: column; gap: 10px; }
+        .msg-bubble { background: #191b28; padding: 10px 14px; border-radius: 8px; line-height: 1.4; }
+        .msg-bubble span { color: #ff2e63; font-weight: bold; }
+        .chat-input-box { padding: 15px; background: #191b28; display: flex; gap: 10px; border-top: 1px solid #222436; }
+        .chat-input-box input { flex: 1; background: #0c0d14; border: 1px solid #333; padding: 10px; border-radius: 8px; color: #fff; outline: none; }
+        .chat-input-box button { background: #ff2e63; border: none; color: #fff; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- Qeydiyyat Pəncərəsi -->
+    <div id="auth-modal">
+        <div class="auth-box">
+            <h2>PUTULKA.COM</h2>
+            <input type="text" id="username-input" class="auth-input" placeholder="Ləqəbinizi daxil edin..." autocomplete="off">
+            <button class="auth-btn" onclick="enterGame()">Oyuna Giriş Et</button>
+        </div>
+    </div>
+
+    <!-- Yuxarı Navbar -->
+    <div class="top-navbar" id="topNavbar" style="display:none;">
+        <div class="logo-area">🍾 PUTULKA</div>
+        <div class="user-stats">
+            <div class="coin-box">🪙 1,500 Xal</div>
+            <div class="profile-badge" id="topUsername">Profil</div>
+        </div>
+    </div>
+
+    <!-- Əsas Oyun Layoutu -->
+    <div class="main-layout" id="mainLayout">
+        <!-- Sol Menyu -->
+        <div class="left-sidebar">
+            <div class="menu-item active">🏠 Ümumi Otaq #1</div>
+            <div class="menu-item">🔥 Gənclər Otağı #2</div>
+            <div class="menu-item">👑 Reytinq Liderləri</div>
+            <div class="menu-item">🎁 Hədiyyələr Mağazası</div>
+            <div class="menu-item">⚙️ Ayarlar</div>
+        </div>
+
+        <!-- Mərkəzi Stol və Şüşə -->
+        <div class="center-table-area">
+            <div class="table-circle">
+                <!-- Oyunçular -->
+                <div class="player-seat seat-1"><span id="seat1-name" style="font-size:10px;">Boş</span></div>
+                <div class="player-seat seat-2">Leyla</div>
+                <div class="player-seat seat-3">Murad</div>
+                <div class="player-seat seat-4">Aysel</div>
+                <div class="player-seat seat-5">Rauf</div>
+                <div class="player-seat seat-6">Nigar</div>
+
+                <!-- Şüşə -->
+                <div class="bottle" id="bottle"></div>
+            </div>
+
+            <div class="controls-bar">
+                <button class="btn-action spin-btn" onclick="spinBottle()">Şüşəni Fırlat 🍾</button>
+            </div>
+        </div>
+
+        <!-- Sağ Çat Paneli -->
+        <div class="right-chat-panel">
+            <div class="chat-header">Canlı Söhbət Otağı</div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="msg-bubble"><span>Sistem:</span> Oyuna xoş gəldiniz! Şüşəni fırladaraq oyunçuları seçin.</div>
+                <div class="msg-bubble"><span>Leyla:</span> Salam hamıya, necesiz? :)</div>
+            </div>
+            <div class="chat-input-box">
+                <input type="text" id="msgInput" placeholder="Mesaj yaz..." onkeypress="checkEnter(event)">
+                <button onclick="sendMessage()">Göndər</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRotation = 0;
+
+        function enterGame() {
+            const nick = document.getElementById('username-input').value.trim();
+            if(!nick) {
+                alert("Zəhmət olmasa ləqəbinizi yazın!");
+                return;
+            }
+
+            document.getElementById('auth-modal').style.display = 'none';
+            document.getElementById('topNavbar').style.display = 'flex';
+            document.getElementById('mainLayout').style.display = 'grid';
+            
+            document.getElementById('topUsername').innerText = nick;
+            document.getElementById('seat1-name').innerText = nick;
+        }
+
+        function spinBottle() {
+            const bottle = document.getElementById('bottle');
+            const randomAdd = Math.floor(Math.random() * 360) + 2160; 
+            currentRotation += randomAdd;
+            
+            bottle.style.transform = `rotate(${currentRotation}deg)`;
+
+            setTimeout(() => {
+                const players = ['Leyla', 'Murad', 'Aysel', 'Rauf', 'Nigar', document.getElementById('topUsername').innerText];
+                const selected = players[Math.floor(Math.random() * players.length)];
+                
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML += `<div class="msg-bubble" style="border-left: 3px solid #00f2fe;"><span>Şüşə Nəticəsi:</span> ${selected} seçildi! Öp və ya hədiyyə göndər! 💋</div>`;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 4000);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            const nick = document.getElementById('topUsername').innerText;
+
+            if(text) {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML += `<div class="msg-bubble"><span>${nick}:</span> ${text}</div>`;
+                input.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        function checkEnter(e) {
+            if(e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>
