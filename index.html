@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Putulka.com - Orijinal Dizayn Klone</title>
+    <title>Putulka.com - Orijinal Görünüş</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #0c0d16; color: #fff; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
@@ -11,94 +11,86 @@
         /* QEYDİYYAT MODALI */
         #auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: center; align-items: center; z-index: 5000; }
         .auth-box { background: #151624; padding: 40px; border-radius: 20px; width: 380px; text-align: center; border: 2px solid #ff2e63; box-shadow: 0 0 50px rgba(255, 46, 99, 0.3); }
-        .auth-box h2 { color: #ff2e63; margin-bottom: 10px; font-size: 28px; letter-spacing: 1px; }
+        .auth-box h2 { color: #ff2e63; margin-bottom: 10px; font-size: 28px; }
         .auth-box p { color: #8a8d9f; font-size: 13px; margin-bottom: 25px; }
         .auth-input { width: 100%; padding: 14px; margin-bottom: 20px; background: #0a0b10; border: 1px solid #2a2c3d; border-radius: 12px; color: #fff; outline: none; font-size: 16px; text-align: center; }
-        .auth-input:focus { border-color: #ff2e63; }
-        .auth-btn { width: 100%; padding: 14px; background: #ff2e63; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.2s; box-shadow: 0 4px 15px rgba(255,46,99,0.4); }
-        .auth-btn:hover { background: #e02453; }
+        .auth-btn { width: 100%; padding: 14px; background: #ff2e63; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 16px; box-shadow: 0 4px 15px rgba(255,46,99,0.4); }
 
-        /* YUXARI NAVBAR (ORİJİNAL ÜSLUB) */
+        /* YUXARI NAVBAR */
         .top-navbar { height: 65px; background: #131420; border-bottom: 1px solid #222436; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100; }
         .top-left-stats { display: flex; align-items: center; gap: 12px; }
         .heart-badge { background: #1b1d2e; border: 1px solid #2c2f46; padding: 6px 14px; border-radius: 20px; color: #ff2e63; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 6px; }
-        .crystal-badge { background: #1b1d2e; border: 1px solid #2c2f46; padding: 6px 14px; border-radius: 20px; color: #00f2fe; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        .crystal-badge { background: #1b1d2e; border: 1px solid #2c2f46; padding: 6px 14px; border-radius: 20px; color: #00f2fe; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 6px; }
         
-        /* ADMİN BONUS DÜYMƏSİ */
         #admin-panel-btn { display: none; background: linear-gradient(135deg, #ff2e63, #ff9f43); padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 0 15px rgba(255,46,99,0.5); }
-
         .top-right-profile { display: flex; align-items: center; gap: 15px; }
-        .profile-circle-mini { width: 40px; height: 40px; border-radius: 50%; background: #ff2e63; border: 2px solid #ff2e63; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; }
+        .profile-circle-mini { width: 40px; height: 40px; border-radius: 50%; background: #ff2e63; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
-        /* ADMİN BONUS MODALI */
+        /* ADMİN MODALI */
         #admin-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 4000; justify-content: center; align-items: center; }
         .admin-box { background: #161724; padding: 30px; border-radius: 16px; width: 360px; border: 2px solid #ff9f43; text-align: center; }
         .admin-box h3 { color: #ff9f43; margin-bottom: 15px; }
         .admin-box select, .admin-box input { width: 100%; padding: 12px; margin-bottom: 15px; background: #0a0b10; color: #fff; border: 1px solid #333; border-radius: 8px; }
         .admin-send-btn { background: #ff9f43; color: #000; font-weight: bold; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; }
 
-        /* ƏSAS OYUN LAYOUTU (TAXTA STOL FONU) */
-        .main-layout { display: none; flex: 1; grid-template-columns: 1fr 340px; height: calc(100vh - 65px); position: relative; }
+        /* ƏSAS OYUN EKRANI (TAM GENİŞLİK - MƏRKƏZDƏ TAXTA STOL) */
+        .main-layout { display: none; flex: 1; grid-template-columns: 1fr 340px; height: calc(100vh - 65px); width: 100vw; }
 
-        /* MƏRKƏZİ TAXTA STOL SAHƏSİ */
-        .center-table-area { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; background: radial-gradient(circle, #5c3822 0%, #2b180d 90%); border-right: 2px solid #1a0f07; }
+        .center-table-area { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; background: radial-gradient(circle, #5c3822 0%, #2b180d 90%); border-right: 2px solid #1a0f07; flex: 1; }
         
-        .table-circle { width: 520px; height: 520px; border-radius: 50%; background: #3d2212; border: 16px solid #221209; position: relative; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 40px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.8); }
+        .table-circle { width: 440px; height: 440px; border-radius: 50%; background: #3d2212; border: 14px solid #221209; position: relative; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 40px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.8); }
         
-        /* ŞÜŞƏ DİZAYNI */
-        .bottle { width: 40px; height: 160px; background: linear-gradient(135deg, #d4af37 0%, #aa771c 100%); border-radius: 20px 20px 6px 6px; position: absolute; transition: transform 4s cubic-bezier(0.15, 0.85, 0.25, 1); cursor: pointer; box-shadow: 0 0 25px rgba(212,175,55,0.6); z-index: 10; border: 1px solid #ffe87c; }
-        .bottle::after { content: ''; position: absolute; top: 15px; left: 8px; width: 6px; height: 40px; background: rgba(255,255,255,0.4); border-radius: 3px; }
+        /* ŞÜŞƏ */
+        .bottle { width: 36px; height: 140px; background: linear-gradient(135deg, #d4af37 0%, #aa771c 100%); border-radius: 18px 18px 6px 6px; position: absolute; transition: transform 4s cubic-bezier(0.15, 0.85, 0.25, 1); cursor: pointer; box-shadow: 0 0 25px rgba(212,175,55,0.6); z-index: 10; border: 1px solid #ffe87c; }
+        .bottle::after { content: ''; position: absolute; top: 12px; left: 7px; width: 6px; height: 35px; background: rgba(255,255,255,0.4); border-radius: 3px; }
 
-        /* 12 NƏFƏRLİK OYUNÇU YERLƏRİ (ORİJİNAL DƏQİQ MÖVQELƏR) */
-        .player-seat { width: 68px; height: 68px; border-radius: 50%; background: #1c1d2e; border: 3px solid #ff2e63; position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.7); text-align: center; overflow: hidden; cursor: pointer; background-size: cover; background-position: center; }
-        .player-seat span { background: rgba(0,0,0,0.7); width: 100%; position: absolute; bottom: 0; font-size: 9px; padding: 2px 0; color: #fff; }
+        /* 12 OYUNÇU YERİ (DAİRƏVİ) */
+        .player-seat { width: 58px; height: 58px; border-radius: 50%; background: #1c1d2e; border: 3px solid #ff2e63; position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.7); text-align: center; overflow: hidden; background-size: cover; background-position: center; }
+        .player-seat span { background: rgba(0,0,0,0.75); width: 100%; position: absolute; bottom: 0; font-size: 8px; padding: 2px 0; color: #fff; }
 
-        .seat-0  { top: -28px; left: 222px; }
-        .seat-1  { top: 14px; left: 350px; }
-        .seat-2  { top: 112px; left: 438px; }
-        .seat-3  { top: 222px; left: 470px; }
-        .seat-4  { top: 335px; left: 438px; }
-        .seat-5  { top: 432px; left: 350px; }
-        .seat-6  { top: 470px; left: 222px; }
-        .seat-7  { top: 432px; left: 94px; }
-        .seat-8  { top: 335px; left: 6px; }
-        .seat-9  { top: 222px; left: -28px; }
-        .seat-10 { top: 112px; left: 6px; }
-        .seat-11 { top: 14px; left: 94px; }
+        .seat-0  { top: -22px; left: 191px; }
+        .seat-1  { top: 12px; left: 300px; }
+        .seat-2  { top: 96px; left: 375px; }
+        .seat-3  { top: 191px; left: 404px; }
+        .seat-4  { top: 288px; left: 375px; }
+        .seat-5  { top: 370px; left: 300px; }
+        .seat-6  { top: 404px; left: 191px; }
+        .seat-7  { top: 370px; left: 82px; }
+        .seat-8  { top: 288px; left: 6px; }
+        .seat-9  { top: 191px; left: -22px; }
+        .seat-10 { top: 96px; left: 6px; }
+        .seat-11 { top: 12px; left: 82px; }
 
-        /* FIRLAT DÜYMƏSİ */
-        .controls-bar { margin-top: 25px; display: flex; gap: 15px; z-index: 20; }
-        .spin-btn { padding: 15px 45px; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 17px; background: linear-gradient(135deg, #ff2e63, #ff5e88); color: #fff; box-shadow: 0 5px 20px rgba(255,46,99,0.5); transition: 0.2s; }
-        .spin-btn:hover { transform: scale(1.05); }
+        .controls-bar { margin-top: 20px; z-index: 20; }
+        .spin-btn { padding: 14px 40px; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 16px; background: linear-gradient(135deg, #ff2e63, #ff5e88); color: #fff; box-shadow: 0 5px 20px rgba(255,46,99,0.5); }
 
-        /* SAĞ ÇAT VƏ HƏDİYYƏ PANELİ */
-        .right-chat-panel { background: #131420; display: flex; flex-direction: column; }
-        .chat-header { background: #191a2b; padding: 15px; text-align: center; font-weight: bold; border-bottom: 1px solid #222436; color: #ff2e63; font-size: 14px; }
+        /* SAĞ ÇAT PANELİ */
+        .right-chat-panel { background: #131420; display: flex; flex-direction: column; width: 340px; border-left: 1px solid #222436; }
+        .chat-header { background: #191a2b; padding: 15px; text-align: center; font-weight: bold; border-bottom: 1px solid #222436; color: #ff2e63; font-size: 13px; }
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; font-size: 13px; display: flex; flex-direction: column; gap: 10px; }
         .msg-bubble { background: #1b1d2e; padding: 10px 14px; border-radius: 10px; line-height: 1.4; border: 1px solid #282b42; }
         .msg-bubble span { color: #ff2e63; font-weight: bold; }
         .chat-input-box { padding: 15px; background: #191a2b; display: flex; gap: 10px; border-top: 1px solid #222436; }
         .chat-input-box input { flex: 1; background: #0c0d16; border: 1px solid #2d304a; padding: 10px; border-radius: 8px; color: #fff; outline: none; }
-        .chat-input-box button { background: #ff2e63; border: none; color: #fff; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .chat-input-box button { background: #ff2e63; border: none; color: #fff; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <!-- QEYDİYYAT MODALI -->
+    <!-- QEYDİYYAT -->
     <div id="auth-modal">
         <div class="auth-box">
             <h2>PUTULKA.COM</h2>
-            <p>Orijinal Stil 12 Nəfərlik Şüşə Oyunu</p>
+            <p>Orijinal Taxta Stol Masası</p>
             <input type="text" id="username-input" class="auth-input" placeholder="Ləqəbinizi daxil edin..." autocomplete="off">
             <button class="auth-btn" onclick="enterGame()">Oyuna Giriş Et 🍾</button>
         </div>
     </div>
 
-    <!-- ADMİN BONUS MODALI -->
+    <!-- ADMİN MODALI -->
     <div id="admin-modal">
         <div class="admin-box">
             <h3>⚡ Admin Bonus Paneli</h3>
-            <p style="font-size: 11px; color: #aaa; margin-bottom: 12px;">Masadakı istənilən oyunçuya pulsuz kristal göndər:</p>
             <select id="adminTargetSelect"></select>
             <input type="number" id="adminBonusAmount" value="5000" placeholder="Kristal miqdarı">
             <button class="admin-send-btn" onclick="sendAdminBonus()">Bonusu Göndər 🎁</button>
@@ -107,24 +99,22 @@
         </div>
     </div>
 
-    <!-- YUXARI NAVBAR (ORİJİNAL) -->
+    <!-- NAVBAR -->
     <div class="top-navbar" id="topNavbar" style="display:none;">
         <div class="top-left-stats">
             <div class="heart-badge">❤️ <span id="heartCount">6,738</span></div>
-            <div class="crystal-badge" onclick="alert('Kristal mağazası açıldı!')">💎 <span id="crystalCount">1,500</span></div>
+            <div class="crystal-badge">💎 <span id="crystalCount">1,500</span></div>
             <div id="admin-panel-btn" onclick="toggleAdminModal(true)">⚡ Admin Bonus</div>
         </div>
         <div class="top-right-profile">
-            <div class="profile-circle-mini" id="topMiniAvatar"> Ə </div>
+            <div class="profile-circle-mini" id="topMiniAvatar">Ə</div>
         </div>
     </div>
 
-    <!-- ƏSAS OYUN LAYOUTU -->
+    <!-- OYUN LAYOUTU -->
     <div class="main-layout" id="mainLayout">
-        <!-- MƏRKƏZİ TAXTA STOL -->
         <div class="center-table-area">
             <div class="table-circle">
-                <!-- 12 OYUNÇU YERİ -->
                 <div class="player-seat seat-0" id="seat-0"><span>Boş</span></div>
                 <div class="player-seat seat-1" style="background-image: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100');"><span>Naстя</span></div>
                 <div class="player-seat seat-2" style="background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100');"><span>Marina</span></div>
@@ -138,7 +128,6 @@
                 <div class="player-seat seat-10" style="background-image: url('https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100');"><span>Sevil</span></div>
                 <div class="player-seat seat-11" style="background-image: url('https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100');"><span>Kənan</span></div>
 
-                <!-- ŞÜŞƏ -->
                 <div class="bottle" id="bottle"></div>
             </div>
 
@@ -147,15 +136,14 @@
             </div>
         </div>
 
-        <!-- SAĞ ÇAT PANELİ -->
         <div class="right-chat-panel">
-            <div class="chat-header">Canlı Söhbət və Hədiyyələr</div>
+            <div class="chat-header">Masadakı Canlı Söhbət</div>
             <div class="chat-messages" id="chatMessages">
-                <div class="msg-bubble"><span>Admin:</span> 📢 Dostunu dəvət et! O, reytinq və 5000 bonus, sən isə 2000 bonus qazan! 🎁</div>
-                <div class="msg-bubble"><span>Naстя:</span> Salam hamıya, necesiz? :)</div>
+                <div class="msg-bubble"><span>Admin:</span> 📢 Dostunu dəvət et, 5000 bonus qazan! 🎁</div>
+                <div class="msg-bubble"><span>Naстя:</span> Salam hamıya! :)</div>
             </div>
             <div class="chat-input-box">
-                <input type="text" id="msgInput" placeholder="Mesajı bura yaz..." onkeypress="checkEnter(event)">
+                <input type="text" id="msgInput" placeholder="Mesaj yaz..." onkeypress="checkEnter(event)">
                 <button onclick="sendMessage()">Göndər</button>
             </div>
         </div>
@@ -171,16 +159,12 @@
 
         function enterGame() {
             const nick = document.getElementById('username-input').value.trim();
-            if(!nick) {
-                alert("Zəhmət olmasa ləqəbinizi yazın!");
-                return;
-            }
+            if(!nick) { alert("Ləqəbinizi daxil edin!"); return; }
 
             players[0] = nick;
             document.getElementById('seat-0').innerHTML = `<span>${nick}</span>`;
             document.getElementById('topMiniAvatar').innerText = nick.charAt(0).toUpperCase();
 
-            // Əgər admin və ya Əlidirsə
             if(nick.toLowerCase() === 'admin' || nick.toLowerCase() === 'əli') {
                 isAdmin = true;
                 myCrystals = 999999;
@@ -207,36 +191,47 @@
         function updateAdminTargetList() {
             const select = document.getElementById('adminTargetSelect');
             select.innerHTML = '';
-            players.forEach(p => {
-                select.innerHTML += `<option value="${p}">${p}</option>`;
-            });
+            players.forEach(p => { select.innerHTML += `<option value="${p}">${p}</option>`; });
         }
 
         function sendAdminBonus() {
             const target = document.getElementById('adminTargetSelect').value;
             const amount = parseInt(document.getElementById('adminBonusAmount').value);
-
-            if(target === players[0]) {
-                myCrystals += amount;
-                updateStats();
-            }
-
+            if(target === players[0]) { myCrystals += amount; updateStats(); }
+            
             const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML += `<div class="msg-bubble" style="border-left: 3px solid #ff9f43; background: #241a12;"><span>⚡ Admin Bonusu:</span> ${target} oyunçusuna ${amount.toLocaleString()} kristal hədiyyə edildi! 🎁</div>`;
+            chatMessages.innerHTML += `<div class="msg-bubble" style="border-left: 3px solid #ff9f43;"><span>⚡ Admin Bonusu:</span> ${target} oyunçusuna ${amount.toLocaleString()} kristal göndərildi! 🎁</div>`;
             chatMessages.scrollTop = chatMessages.scrollHeight;
-
             toggleAdminModal(false);
         }
 
         function spinBottle() {
             const bottle = document.getElementById('bottle');
-            const randomAdd = Math.floor(Math.random() * 360) + 2160; 
-            currentRotation += randomAdd;
-            
+            currentRotation += Math.floor(Math.random() * 360) + 2160;
             bottle.style.transform = `rotate(${currentRotation}deg)`;
 
             setTimeout(() => {
                 const selected = players[Math.floor(Math.random() * players.length)];
                 const chatMessages = document.getElementById('chatMessages');
-                chatMessages.innerHTML += `<div class="msg-bubble" style="border-left: 3px solid #ff2e63;"><span>Şüşə Nəticəsi:</span> ${selected} seçildi! Öpüş və ya hədiyyə göndər! 💋</div>`;
-                chatMessages
+                chatMessages.innerHTML += `<div class="msg-bubble" style="border-left: 3px solid #ff2e63;"><span>Şüşə Nəticəsi:</span> ${selected} seçildi! 💋</div>`;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                myHearts += 10;
+                updateStats();
+            }, 4000);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            if(text) {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML += `<div class="msg-bubble"><span>${players[0]}:</span> ${text}</div>`;
+                input.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        function checkEnter(e) { if(e.key === 'Enter') sendMessage(); }
+    </script>
+</body>
+</html>
