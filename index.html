@@ -189,7 +189,7 @@
                     </div>
                     <div class="stat-box">
                         <div class="stat-icon" style="color:#eab308;"><i class="fa-solid fa-coins"></i></div>
-                        <div class="stat-val" id="user-coins">1.1k</div>
+                        <div class="stat-val" id="user-coins">5100</div>
                         <div class="stat-lbl">Jeton</div>
                     </div>
                     <div class="stat-box">
@@ -205,7 +205,7 @@
                 </div>
             </div>
 
-            <!-- Admin Action Button (Visible only to Admin) -->
+            <!-- Admin Action Button -->
             <button id="admin-panel-btn" onclick="openModal('modal-admin')" class="submit-btn hidden" style="background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); margin-bottom: 20px;">
                 <i class="fa-solid fa-user-shield"></i> Admin İdarəetmə Paneli
             </button>
@@ -213,10 +213,10 @@
             <!-- Game Tables Section -->
             <div class="section-title">
                 <span>Masalar indi</span>
-                <span style="font-size: 13px; color: #ec4899; cursor: pointer;">Yenilə</span>
+                <button onclick="openModal('modal-create-table')" class="join-btn" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); font-size: 13px; padding: 6px 12px;">+ Masa yarat</button>
             </div>
 
-            <div class="tables-list">
+            <div class="tables-list" id="tables-container">
                 <div class="table-card">
                     <div class="table-info">
                         <h4>Masa 1</h4>
@@ -249,6 +249,55 @@
 
     <!-- MODALS SECTION -->
 
+    <!-- VIP Modal -->
+    <div id="modal-vip" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>VIP Üzvlük</h3>
+                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-vip')"></i>
+            </div>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <i class="fa-solid fa-crown" style="font-size: 40px; color: #eab308; margin-bottom: 10px;"></i>
+                <h3>Hamıdan seçil</h3>
+                <p style="color:#94a3b8; font-size:13px;">Hərəkətli ad çərçivəsi və oyunda xüsusi rəng</p>
+            </div>
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                <div class="shop-item" style="flex:1;" onclick="buyVip(500, 'Həftəlik VIP')">
+                    <p style="color:#94a3b8;">7 gün</p>
+                    <h3 style="color:#eab308;">500 🪙</h3>
+                </div>
+                <div class="shop-item" style="flex:1; border-color:#eab308;" onclick="buyVip(1200, 'Aylıq VIP')">
+                    <p style="color:#eab308;">30 gün (Sərfəli)</p>
+                    <h3 style="color:#eab308;">1.2k 🪙</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Table Modal -->
+    <div id="modal-create-table" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Masa yarat</h3>
+                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-create-table')"></i>
+            </div>
+            <p style="color:#94a3b8; font-size: 13px; margin-bottom: 15px;">5000 🪙 • 30 gün sənin olur. Balansın: <span id="create-modal-balance">5100</span> 🪙</p>
+            <div class="form-group">
+                <label class="form-label">Masa nömrəsi</label>
+                <input type="number" id="new-table-num" class="input-field" placeholder="1-9999 (boş qoysan avtomatik)">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Masanın adı (istəyə bağlı)</label>
+                <input type="text" id="new-table-name" class="input-field" placeholder="Məs. Dostlar">
+            </div>
+            <div class="form-group">
+                <label class="form-label"><input type="checkbox" id="table-has-pass" onchange="toggleTablePassInput()"> Kilid qoy (parol)</label>
+                <input type="password" id="new-table-pass" class="input-field hidden" placeholder="Masa parolu" style="margin-top:8px;">
+            </div>
+            <button class="submit-btn" onclick="createTable()">Al - 5000 🪙</button>
+        </div>
+    </div>
+
     <!-- Shop Modal -->
     <div id="modal-shop" class="modal hidden">
         <div class="modal-content">
@@ -257,22 +306,10 @@
                 <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-shop')"></i>
             </div>
             <div class="shop-grid">
-                <div class="shop-item" onclick="buyCoins('1k Jeton', '5.00 AZN')">
-                    <h3 style="color:#eab308;">1k 🪙</h3>
-                    <p>5.00 AZN</p>
-                </div>
-                <div class="shop-item" onclick="buyCoins('3k Jeton', '10.00 AZN')">
-                    <h3 style="color:#eab308;">3k 🪙</h3>
-                    <p>10.00 AZN</p>
-                </div>
-                <div class="shop-item" onclick="buyCoins('5k Jeton', '15.00 AZN')">
-                    <h3 style="color:#eab308;">5k 🪙</h3>
-                    <p>15.00 AZN</p>
-                </div>
-                <div class="shop-item" onclick="buyCoins('11k Jeton', '25.00 AZN')">
-                    <h3 style="color:#eab308;">11k 🪙</h3>
-                    <p>25.00 AZN</p>
-                </div>
+                <div class="shop-item" onclick="buyCoins('1k Jeton', '5.00 AZN')"><h3 style="color:#eab308;">1k 🪙</h3><p>5.00 AZN</p></div>
+                <div class="shop-item" onclick="buyCoins('3k Jeton', '10.00 AZN')"><h3 style="color:#eab308;">3k 🪙</h3><p>10.00 AZN</p></div>
+                <div class="shop-item" onclick="buyCoins('5k Jeton', '15.00 AZN')"><h3 style="color:#eab308;">5k 🪙</h3><p>15.00 AZN</p></div>
+                <div class="shop-item" onclick="buyCoins('11k Jeton', '25.00 AZN')"><h3 style="color:#eab308;">11k 🪙</h3><p>25.00 AZN</p></div>
             </div>
         </div>
     </div>
@@ -284,8 +321,7 @@
                 <h3>İstifadəçi Axtarışı</h3>
                 <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-search')"></i>
             </div>
-            <input type="text" class="input-field" placeholder="İstifadəçi adı və ya ID yazın..." onkeyup="searchUsers(this.value)">
-            <div id="search-results" style="margin-top: 15px;"></div>
+            <input type="text" class="input-field" placeholder="İstifadəçi adı və ya ID yazın...">
         </div>
     </div>
 
@@ -297,7 +333,7 @@
                 <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-support')"></i>
             </div>
             <p style="text-align: center; font-size: 18px; margin: 20px 0;">Baş Admin: <strong>Alik</strong></p>
-            <button class="submit-btn" onclick="alert('Admin Alik ilə mesajlaşma başladıldı!')">Mesaj Göndər</button>
+            <button class="submit-btn" onclick="alert('Admin Alik ilə əlaqə açıldı!')">Mesaj Göndər</button>
         </div>
     </div>
 
@@ -308,13 +344,9 @@
                 <h3>Bildirişlər</h3>
                 <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-notifs')"></i>
             </div>
-            <div id="notifs-list">
-                <div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" style="width:40px; height:40px; border-radius:50%;">
-                    <div>
-                        <strong>Leyla</strong> sizə dostluq göndərdi.
-                    </div>
-                </div>
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 0;">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" style="width:40px; height:40px; border-radius:50%;">
+                <div><strong>Leyla</strong> sizə dostluq göndərdi.</div>
             </div>
         </div>
     </div>
@@ -327,41 +359,11 @@
                 <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-settings')"></i>
             </div>
             <div class="form-group">
-                <label class="form-label">Profil Şəkli URL</label>
-                <input type="text" id="edit-avatar" class="input-field" placeholder="Şəkil linki yapışdırın">
-            </div>
-            <div class="form-group">
                 <label class="form-label">Status</label>
                 <input type="text" id="edit-status" class="input-field" value="Şirin Dil 😔">
             </div>
-            <div class="form-group">
-                <label class="form-label">Ölkə</label>
-                <select id="edit-country" class="input-field">
-                    <option value="">— seçilməyib —</option>
-                    <option value="Azərbaycan">Azərbaycan</option>
-                    <option value="Türkiyə">Türkiyə</option>
-                    <option value="Rusiya">Rusiya</option>
-                    <option value="Gürcüstan">Gürcüstan</option>
-                    <option value="Amerika">Amerika</option>
-                    <option value="Qazaxıstan">Qazaxıstan</option>
-                    <option value="Türkmənistan">Türkmənistan</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Şəhər / Rayon</label>
-                <input type="text" id="edit-city" class="input-field" placeholder="Məsələn: Bakı">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Yaş (maks 99)</label>
-                <input type="number" id="edit-age" class="input-field" max="99">
-            </div>
             <button class="submit-btn" onclick="saveSettings()">Yadda saxla</button>
-
-            <hr style="margin: 20px 0; border-color: rgba(255,255,255,0.1);">
-            <h4 style="margin-bottom: 12px;">Şifrəni Dəyiş</h4>
-            <input type="password" class="input-field" placeholder="Hazırkı şifrə" style="margin-bottom: 8px;">
-            <input type="password" class="input-field" placeholder="Yeni şifrə" style="margin-bottom: 8px;">
-            <button class="submit-btn" style="background: rgba(255,255,255,0.1);" onclick="alert('Şifrə yeniləndi!')">Şifrəni yenilə</button>
+            <button class="submit-btn" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; margin-top: 15px;" onclick="handleLogout()">Çıxış et</button>
         </div>
     </div>
 
@@ -381,9 +383,10 @@
                 <input type="number" id="admin-grant-coins" class="input-field" placeholder="1000">
             </div>
             <button class="submit-btn" style="background:#eab308; color:#000;" onclick="adminGrantCoins()">Jeton Göndər</button>
-            <div id="admin-notifications-log" style="margin-top:20px; font-size:13px; color:#94a3b8;">
+            
+            <div style="margin-top:20px;">
                 <h4>Gələn Alış-Veriş İstəkləri:</h4>
-                <div id="requests-list">Hələlik yeni istək yoxdur.</div>
+                <div id="admin-requests-list" style="font-size:13px; color:#94a3b8; margin-top:8px;">Hələlik yeni istək yoxdur.</div>
             </div>
         </div>
     </div>
@@ -396,9 +399,7 @@
             const saved = localStorage.getItem('putulka_logged_user');
             if(saved) {
                 currentUser = JSON.parse(saved);
-                if(!currentUser.id) currentUser.id = Math.floor(1000 + Math.random() * 9000);
-                if(!currentUser.coins) currentUser.coins = 1100;
-                if(!currentUser.hearts) currentUser.hearts = 185;
+                if(!currentUser.coins) currentUser.coins = 5100;
                 loadDashboard();
             }
         };
@@ -420,8 +421,7 @@
             e.preventDefault();
             const u = document.getElementById('reg-user').value.trim();
             const p = document.getElementById('reg-pass').value;
-            const uid = Math.floor(1000 + Math.random() * 9000);
-            currentUser = { username: u, pass: p, gender: selectedGender, id: uid, coins: 1100, hearts: 185, status: "Şirin Dil 😔" };
+            currentUser = { username: u, pass: p, gender: selectedGender, id: Math.floor(1000 + Math.random() * 9000), coins: 5100, hearts: 185, status: "Şirin Dil 😔" };
             localStorage.setItem('user_' + u, JSON.stringify(currentUser));
             localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
             loadDashboard();
@@ -446,12 +446,12 @@
             document.getElementById('profile-name').innerText = currentUser.username;
             document.getElementById('user-id-display').innerText = "ID " + currentUser.id;
             document.getElementById('user-coins').innerText = currentUser.coins;
-            document.getElementById('user-hearts').innerText = currentUser.hearts;
+            document.getElementById('create-modal-balance').innerText = currentUser.coins;
             document.getElementById('profile-status').innerText = currentUser.status || "Şirin Dil 😔";
 
-            // Show Admin button if username is Alik
             if(currentUser.username.toLowerCase() === 'alik') {
                 document.getElementById('admin-panel-btn').classList.remove('hidden');
+                loadAdminRequests();
             }
         }
 
@@ -459,11 +459,93 @@
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         function goHome() { document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); }
 
+        function buyVip(cost, title) {
+            if(currentUser.coins < cost) {
+                alert('Balansınızda kifayət qədər jeton yoxdur!');
+                return;
+            }
+            currentUser.coins -= cost;
+            localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
+            localStorage.setItem('user_' + currentUser.username, JSON.stringify(currentUser));
+            document.getElementById('user-coins').innerText = currentUser.coins;
+            alert(`Təbriklər! Siz uğurla ${title} əldə etdiniz.`);
+            closeModal('modal-vip');
+        }
+
+        function toggleTablePassInput() {
+            const hasPass = document.getElementById('table-has-pass').checked;
+            document.getElementById('new-table-pass').classList.toggle('hidden', !hasPass);
+        }
+
+        function createTable() {
+            const cost = 5000;
+            if(currentUser.coins < cost) {
+                alert('Masa yaratmaq üçün 5000 jeton lazımdır! Balansınız kifayət etmir.');
+                return;
+            }
+            currentUser.coins -= cost;
+            localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
+            localStorage.setItem('user_' + currentUser.username, JSON.stringify(currentUser));
+            document.getElementById('user-coins').innerText = currentUser.coins;
+
+            const tNum = document.getElementById('new-table-num').value || Math.floor(10 + Math.random() * 90);
+            const tName = document.getElementById('new-table-name').value || ("Masa " + tNum);
+            
+            const container = document.getElementById('tables-container');
+            container.innerHTML += `
+                <div class="table-card" style="border-color: #eab308;">
+                    <div class="table-info">
+                        <h4 style="color: #eab308;">👑 ${tName} (#${tNum})</h4>
+                        <p>Sahibi: ${currentUser.username} • 0/12</p>
+                    </div>
+                    <button class="join-btn">Qoşul →</button>
+                </div>
+            `;
+            alert('Masa uğurla yaradıldı və 30 günlüyə sizə verildi!');
+            closeModal('modal-create-table');
+        }
+
         function buyCoins(pkg, price) {
             alert(`Sifariş göndərildi! Admin bildiriş aldı: ID ${currentUser.id} - ${pkg} (${price})`);
             closeModal('modal-shop');
-            const reqList = document.getElementById('requests-list');
-            reqList.innerHTML = `<p style="color:#eab308;">⚠️ ID ${currentUser.id} (${currentUser.username}) ${pkg} almaq istəyir!</p>` + reqList.innerHTML;
+            
+            let reqs = JSON.parse(localStorage.getItem('admin_requests') || '[]');
+            reqs.push({ id: currentUser.id, name: currentUser.username, pkg: pkg, price: price });
+            localStorage.setItem('admin_requests', JSON.stringify(reqs));
+        }
+
+        function loadAdminRequests() {
+            let reqs = JSON.parse(localStorage.getItem('admin_requests') || '[]');
+            const list = document.getElementById('admin-requests-list');
+            if(reqs.length === 0) {
+                list.innerHTML = "Hələlik yeni istək yoxdur.";
+                return;
+            }
+            list.innerHTML = reqs.map((r, i) => `
+                <div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; margin-bottom:6px;">
+                    ID: ${r.id} (${r.name}) - ${r.pkg} (${r.price})
+                    <button onclick="approveRequest(${i}, ${r.id})" style="background:#22c55e; color:#fff; border:none; padding:4px 8px; border-radius:4px; margin-left:6px; cursor:pointer;">Təsdiqlə</button>
+                </div>
+            `).join('');
+        }
+
+        function approveRequest(index, targetId) {
+            let reqs = JSON.parse(localStorage.getItem('admin_requests') || '[]');
+            reqs.splice(index, 1);
+            localStorage.setItem('admin_requests', JSON.stringify(reqs));
+            alert('Ödəniş təsdiqləndi! İstifadəçiyə jeton göndərildi.');
+            loadAdminRequests();
+        }
+
+        function adminGrantCoins() {
+            const amount = parseInt(document.getElementById('admin-grant-coins').value);
+            if(amount) {
+                currentUser.coins += amount;
+                document.getElementById('user-coins').innerText = currentUser.coins;
+                localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
+                alert(`${amount} Jeton hesaba əlavə olundu!`);
+                closeModal('modal-admin');
+            }
         }
 
         function saveSettings() {
@@ -473,18 +555,14 @@
                 document.getElementById('profile-status').innerText = newSt;
             }
             localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
+            localStorage.setItem('user_' + currentUser.username, JSON.stringify(currentUser));
             alert('Məlumatlar yadda saxlanıldı!');
             closeModal('modal-settings');
         }
 
-        function adminGrantCoins() {
-            const amount = parseInt(document.getElementById('admin-grant-coins').value);
-            if(amount) {
-                currentUser.coins += amount;
-                document.getElementById('user-coins').innerText = currentUser.coins;
-                alert(`${amount} Jeton hesaba əlavə olundu!`);
-                closeModal('modal-admin');
-            }
+        function handleLogout() {
+            localStorage.removeItem('putulka_logged_user');
+            location.reload();
         }
     </script>
 </body>
