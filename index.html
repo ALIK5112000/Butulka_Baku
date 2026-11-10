@@ -463,9 +463,26 @@
         }
 
         window.onload = function() {
+            // Əgər "Alik" admin profili bazada ümumiyyətcə yoxdursa, avtomatik yaradırıq ki, heç vaxt silinməsin
+            if(!localStorage.getItem('user_Alik')) {
+                const defaultAdmin = {
+                    username: "Alik", pass: "123456", gender: 'male', 
+                    id: 1836, coins: 5100, hearts: 185, status: "Baş Admin 👑",
+                    role: 'admin', muteUntil: 0, banUntil: 0, notification: null,
+                    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+                };
+                localStorage.setItem('user_Alik', JSON.stringify(defaultAdmin));
+            }
+
             const saved = localStorage.getItem('putulka_logged_user');
             if(saved) {
                 currentUser = JSON.parse(saved);
+                // Bazadan ən son məlumatı yeniləyirik
+                const freshData = localStorage.getItem('user_' + currentUser.username);
+                if(freshData) {
+                    currentUser = JSON.parse(freshData);
+                    localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
+                }
                 checkPunishments();
                 checkNotifications();
                 loadDashboard();
@@ -507,6 +524,12 @@
             e.preventDefault();
             const u = document.getElementById('reg-user').value.trim();
             const p = document.getElementById('reg-pass').value;
+
+            if(localStorage.getItem('user_' + u)) {
+                alert('Bu istifadəçi adı artıq mövcuddur!');
+                return;
+            }
+
             currentUser = { 
                 username: u, pass: p, gender: selectedGender, 
                 id: Math.floor(1000 + Math.random() * 9000), 
@@ -520,12 +543,28 @@
 
         function handleLogin(e) {
             e.preventDefault();
-            const u = document.getElementById('login-user').value.trim();
+            const inputVal = document.getElementById('login-user').value.trim();
             const p = document.getElementById('login-pass').value;
-            const saved = localStorage.getItem('user_' + u);
-            if(!saved) { alert('İstifadəçi tapılmadı!'); return; }
-            const parsed = JSON.parse(saved);
+
+            let foundUserKey = null;
+            let parsed = null;
+
+            // Həm niki, həm də ID-ni yoxlayırıq ki, hansı ilə daxil olubsa tapsın
+            for(let i=0; i<localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('user_')) {
+                    const uData = JSON.parse(localStorage.getItem(key));
+                    if(uData.username.toLowerCase() === inputVal.toLowerCase() || uData.id.toString() === inputVal) {
+                        foundUserKey = key;
+                        parsed = uData;
+                        break;
+                    }
+                }
+            }
+
+            if(!parsed) { alert('İstifadəçi tapılmadı!'); return; }
             if(parsed.pass !== p) { alert('Şifrə yanlışdır!'); return; }
+
             currentUser = parsed;
             localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
             checkPunishments();
@@ -667,6 +706,7 @@
             closeModal('modal-admin');
             closeModal('modal-adminka');
             closeModal('modal-mod');
+            filterAdminUsers();
         }
 
         function sendChatMessage() {
@@ -756,7 +796,10 @@
             closeModal('modal-settings');
         }
 
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function openModal(id) { 
+            document.getElementById(id).classList.remove('hidden'); 
+            if(id === 'modal-admin') filterAdminUsers();
+        }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         function goHome() { 
             document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); 
