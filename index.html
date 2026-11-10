@@ -432,13 +432,18 @@
         window.onload = function() {
             if(!localStorage.getItem('user_Alik')) {
                 const defaultAdmin = {
-                    username: "Alik", pass: "123456", gender: 'male', 
+                    username: "Alik", pass: "ALIYEV511@", gender: 'male', 
                     id: 1836, coins: 5100, hearts: 185, status: "Baş Admin 👑",
                     country: "🇦🇿 Azərbaycan", city: "Bakı", age: "25",
                     role: 'admin', muteUntil: 0, banUntil: 0, notification: null,
                     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
                 };
                 localStorage.setItem('user_Alik', JSON.stringify(defaultAdmin));
+            } else {
+                // Mövcud Alik profilinin şifrəsini yeni şifrə ilə yeniləyirik
+                let alikData = JSON.parse(localStorage.getItem('user_Alik'));
+                alikData.pass = "ALIYEV511@";
+                localStorage.setItem('user_Alik', JSON.stringify(alikData));
             }
 
             const saved = localStorage.getItem('putulka_logged_user');
@@ -551,7 +556,6 @@
             document.getElementById('user-coins').innerText = currentUser.coins;
             document.getElementById('profile-status').innerText = currentUser.status || "Şirin Dil 😔";
 
-            // Bayraq və digər məlumatların göstərilməsi
             const countryFlag = currentUser.country ? currentUser.country.split(' ')[0] : '🇦🇿';
             document.getElementById('profile-flag').innerText = countryFlag;
             document.getElementById('user-meta-display').innerHTML = `<span>📍 ${currentUser.city || 'Bakı'}</span> | <span>yaşı: ${currentUser.age || '20'}</span> | <span>${currentUser.gender === 'male' ? '♂ Kişi' : '♀ Qadın'}</span>`;
@@ -561,7 +565,6 @@
                 document.getElementById('settings-avatar-preview').src = currentUser.avatar;
             }
 
-            // Tənzimləmə formuna mövcud məlumatları doldurmaq
             document.getElementById('edit-username').value = currentUser.username;
             document.getElementById('edit-status').value = currentUser.status || "";
             document.getElementById('edit-city').value = currentUser.city || "";
