@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Butulka Baku</title>
+    <title>Butulka Baku - Onlayn Oyun</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -48,7 +48,6 @@
 
         /* Profile Card */
         .profile-card { background: #16182e; border-radius: 28px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
         .name-banner { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(96, 165, 250, 0.3); border-radius: 16px; padding: 10px 15px; text-align: center; font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 2px; }
 
         .avatar-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
@@ -60,15 +59,34 @@
         .id-badge { background: #eab308; color: #000; font-weight: 800; padding: 4px 10px; border-radius: 12px; font-size: 12px; display: inline-block; }
 
         .user-nik-title { font-size: 15px; font-weight: 600; color: #94a3b8; margin-bottom: 15px; }
-
         .status-box { background: rgba(10, 11, 23, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 16px; margin-bottom: 20px; color: #94a3b8; font-size: 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; min-height: 54px; }
 
-        /* Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .stat-box { background: rgba(10, 11, 23, 0.7); padding: 16px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.04); cursor: pointer; }
         .stat-icon { font-size: 20px; margin-bottom: 8px; color: #3b82f6; }
         .stat-val { font-weight: 700; font-size: 18px; margin-bottom: 2px; }
         .stat-lbl { font-size: 12px; color: #64748b; }
+
+        /* Game Lobby / Tables Section (Şəkildəki Dizayn) */
+        .game-banner-card { background: linear-gradient(135deg, #1e1b4b 0%, #31103f 100%); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 24px; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(236, 72, 153, 0.2); }
+        .tables-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .table-card { background: #16182e; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 15px; margin-bottom: 12px; }
+        .table-spots { display: flex; gap: 4px; margin: 10px 0; overflow-x: auto; padding-bottom: 5px; }
+        .spot { width: 14px; height: 24px; background: rgba(255,255,255,0.15); border-radius: 4px; flex-shrink: 0; }
+        .spot.filled-m { background: #3b82f6; }
+        .spot.filled-f { background: #ec4899; }
+
+        /* Game Room Table UI */
+        #game-room { background: #b45309; min-height: 100vh; padding: 10px; display: flex; flex-direction: column; }
+        .room-header { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 10px 15px; border-radius: 16px; margin-bottom: 10px; }
+        .wooden-table-container { flex: 1; background: radial-gradient(circle, #d97706 0%, #b45309 100%); border-radius: 24px; position: relative; min-height: 350px; display: flex; align-items: center; justify-content: center; border: 4px solid #78350f; box-shadow: inset 0 0 30px rgba(0,0,0,0.5); margin-bottom: 10px; }
+        .bottle-center { width: 70px; height: 140px; background: #064e3b; border-radius: 35px 35px 10px 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.5); cursor: pointer; border: 2px solid #047857; }
+        
+        /* Chat Box */
+        .chat-box { background: rgba(16, 14, 27, 0.95); border-radius: 20px; padding: 12px; border: 1px solid rgba(255,255,255,0.08); height: 160px; display: flex; flex-direction: column; }
+        .chat-messages { flex: 1; overflow-y: auto; font-size: 13px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
+        .chat-input-row { display: flex; gap: 8px; }
+        .chat-input { flex: 1; background: rgba(255,255,255,0.08); border: none; border-radius: 12px; padding: 10px; color: white; font-size: 13px; outline: none; }
 
         /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: rgba(12, 13, 27, 0.98); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 200; }
@@ -81,10 +99,6 @@
         .modal-content { background: #16182e; width: 100%; max-height: 85vh; border-radius: 28px 28px 0 0; padding: 25px; overflow-y: auto; border-top: 1px solid rgba(255,255,255,0.1); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .close-btn { font-size: 20px; color: #64748b; cursor: pointer; }
-        
-        .visitor-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .visitor-info { display: flex; align-items: center; gap: 12px; }
-        .visitor-img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid #3b82f6; }
     </style>
 </head>
 <body>
@@ -157,14 +171,13 @@
         </div>
     </div>
 
-    <!-- PROFILE DASHBOARD -->
+    <!-- PROFILE & LOBBY DASHBOARD -->
     <div id="game-dashboard" class="hidden">
         <header class="app-header">
             <div class="header-tools">
                 <div class="tool-btn vip-btn" onclick="openModal('modal-vip')"><i class="fa-solid fa-crown"></i> VIP</div>
                 <div class="tool-btn" onclick="openModal('modal-shop')"><i class="fa-solid fa-cart-shopping"></i></div>
                 <div class="tool-btn" onclick="openModal('modal-search')"><i class="fa-solid fa-magnifying-glass"></i></div>
-                <!-- Admin Panel Button (Yalnız Alik üçün görünür) -->
                 <div class="tool-btn" id="admin-menu-btn" onclick="openModal('modal-admin')" style="color: #eab308; display:none;" title="Admin Panel"><i class="fa-solid fa-user-shield"></i></div>
                 <div class="tool-btn" onclick="openModal('modal-notifs')"><i class="fa-solid fa-bell"></i></div>
                 <div class="tool-btn" onclick="openModal('modal-settings')"><i class="fa-solid fa-sliders"></i></div>
@@ -172,6 +185,7 @@
         </header>
 
         <main class="main-content">
+            <!-- Profil Kartı -->
             <div class="profile-card">
                 <div class="name-banner">
                     <i class="fa-solid fa-crown" style="color: #eab308; font-size: 16px;"></i>
@@ -220,41 +234,118 @@
                     </div>
                 </div>
             </div>
-        </main>
 
-        <nav class="bottom-nav">
-            <div class="nav-item active">
-                <i class="fa-solid fa-house"></i>
-                <span>Ana səhifə</span>
+            <!-- Şəkildəki Oyun Banneri (Basanda təsadüfi masaya girir) -->
+            <div class="game-banner-card" onclick="joinRandomTable()">
+                <div style="font-size: 20px; font-weight: 700; font-style: italic; color: #f472b6; margin-bottom: 6px;">Şüşəni fırlat</div>
+                <div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">258 nəfər masalarda oynayır</div>
+                <div style="display:inline-block; padding: 10px 25px; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); border-radius: 20px; font-weight: 700; font-size: 14px;">Oyna →</div>
             </div>
-            <div class="nav-item">
-                <i class="fa-solid fa-gamepad"></i>
-                <span>Oyunlar</span>
+
+            <!-- Masalar Siyahısı (Şəkildəki stildə) -->
+            <div class="tables-header">
+                <h3 style="font-size: 18px;">Masalar indi</h3>
+                <div style="display:flex; gap:12px; font-size: 13px; color:#f472b6; cursor:pointer;" onclick="alert('Masalar yeniləndi!')">
+                    <span><i class="fa-solid fa-crown"></i> Masa yarat</span>
+                    <span>Yenilə</span>
+                </div>
             </div>
-            <div class="nav-item" style="background: #3b82f6; width: 45px; height: 45px; border-radius: 50%; color: white; justify-content: center;">
-                <i class="fa-solid fa-plus" style="font-size: 22px;"></i>
+
+            <div class="table-card">
+                <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 14px;">
+                    <span>Masa 3</span>
+                    <span style="color: #94a3b8;">10/12</span>
+                </div>
+                <div class="table-spots">
+                    <div class="spot filled-m"></div><div class="spot filled-m"></div><div class="spot filled-f"></div><div class="spot filled-m"></div>
+                    <div class="spot filled-f"></div><div class="spot filled-m"></div><div class="spot filled-f"></div><div class="spot filled-m"></div>
+                    <div class="spot filled-f"></div><div class="spot filled-f"></div><div class="spot"></div><div class="spot"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                    <span style="font-size: 12px; color: #94a3b8;"><i class="fa-solid fa-mars" style="color:#3b82f6;"></i> 6 • <i class="fa-solid fa-venus" style="color:#ec4899;"></i> 4</span>
+                    <button onclick="joinSpecificTable('Masa 3')" style="background: rgba(236,72,153,0.2); border: 1px solid #ec4899; color: #f472b6; padding: 4px 12px; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 600;">Qoşul →</button>
+                </div>
             </div>
-            <div class="nav-item">
-                <i class="fa-solid fa-comment-dots"></i>
-                <span>Mesajlar</span>
+
+            <div class="table-card">
+                <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 14px;">
+                    <span>Masa 4</span>
+                    <span style="color: #94a3b8;">9/12</span>
+                </div>
+                <div class="table-spots">
+                    <div class="spot filled-m"></div><div class="spot filled-f"></div><div class="spot filled-m"></div><div class="spot filled-m"></div>
+                    <div class="spot filled-f"></div><div class="spot filled-f"></div><div class="spot filled-m"></div><div class="spot filled-f"></div>
+                    <div class="spot filled-f"></div><div class="spot"></div><div class="spot"></div><div class="spot"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                    <span style="font-size: 12px; color: #94a3b8;"><i class="fa-solid fa-mars" style="color:#3b82f6;"></i> 4 • <i class="fa-solid fa-venus" style="color:#ec4899;"></i> 5</span>
+                    <button onclick="joinSpecificTable('Masa 4')" style="background: rgba(236,72,153,0.2); border: 1px solid #ec4899; color: #f472b6; padding: 4px 12px; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 600;">Qoşul →</button>
+                </div>
             </div>
-            <div class="nav-item">
-                <i class="fa-solid fa-circle-play"></i>
-                <span>Videolar</span>
-            </div>
-        </nav>
+        </main>
     </div>
+
+    <!-- OYUN MASASI VƏ CHAT EKRANI (Şəkildəki Oyun Otağı) -->
+    <div id="game-room" class="hidden">
+        <div class="room-header">
+            <button onclick="leaveTable()" style="background:none; border:none; color:white; font-size: 16px; cursor:pointer;"><i class="fa-solid fa-arrow-left"></i> Çıx</button>
+            <span id="room-title" style="font-weight: 700; font-size: 16px;">Masa 3</span>
+            <span id="room-online-count" class="id-badge">12 nəfər</span>
+        </div>
+
+        <!-- Taxta Masa və Şüşə -->
+        <div class="wooden-table-container">
+            <div class="bottle-center" onclick="spinBottle()">
+                <i class="fa-solid fa-wine-bottle" style="font-size: 45px; color: #10b981;"></i>
+            </div>
+        </div>
+
+        <!-- Online Chat Paneli (Şəkildəki dizaynda) -->
+        <div class="chat-box">
+            <div class="chat-messages" id="chat-messages-box">
+                <div style="color: #fbbf24;"><strong>Admin:</strong> 📢 Bütün oyunçulardan xahiş edirik, qaydalara riayət edin! ❤️</div>
+                <div><strong>Aysel_22:</strong> Hər kəsə salam! ❤️</div>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" id="chat-input-field" class="chat-input" placeholder="Mesajı bura yaz...">
+                <button onclick="sendChatMessage()" style="background:#3b82f6; border:none; width: 40px; border-radius: 12px; color:white; cursor:pointer;"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <div class="nav-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>Ana səhifə</span>
+        </div>
+        <div class="nav-item" onclick="joinRandomTable()">
+            <i class="fa-solid fa-gamepad"></i>
+            <span>Oyunlar</span>
+        </div>
+        <div class="nav-item" style="background: #3b82f6; width: 45px; height: 45px; border-radius: 50%; color: white; justify-content: center;" onclick="joinRandomTable()">
+            <i class="fa-solid fa-plus" style="font-size: 22px;"></i>
+        </div>
+        <div class="nav-item" onclick="openModal('modal-notifs')">
+            <i class="fa-solid fa-comment-dots"></i>
+            <span>Mesajlar</span>
+        </div>
+        <div class="nav-item" onclick="openModal('modal-vip')">
+            <i class="fa-solid fa-circle-play"></i>
+            <span>VIP</span>
+        </div>
+    </nav>
 
     <!-- MODALS -->
     <div id="modal-visitors" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header"><h3>Profilinizə baxanlar</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-visitors')"></i></div>
-            <div class="visitor-item">
-                <div class="visitor-info">
-                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" class="visitor-img">
-                    <div><div style="font-weight: 600;">Aysel_22</div><div style="font-size: 11px; color: #64748b;">5 dəqiqə əvvəl baxdı</div></div>
+            <div class="visitor-item" style="display:flex; justify-content:space-between; align-items:center; padding:10px 0;">
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                    <div><div style="font-weight:600;">Aysel_22</div><div style="font-size:11px; color:#64748b;">5 dəqiqə əvvəl baxdı</div></div>
                 </div>
-                <button class="id-badge" style="background: rgba(255,255,255,0.1); color:white; border:none; cursor:pointer;">Bax</button>
+                <span class="id-badge">Bax</span>
             </div>
         </div>
     </div>
@@ -287,30 +378,14 @@
         </div>
     </div>
 
-    <div id="modal-vip" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>VIP Üzvlük</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-vip')"></i></div></div></div>
-    <div id="modal-shop" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Mağaza</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-shop')"></i></div></div></div>
+    <div id="modal-vip" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>VIP Üzvlük</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-vip')"></i></div><p style="color:#94a3b8;">VIP statusu ilə masalarda xüsusi imtiyazlar qazanın.</p></div></div>
+    <div id="modal-shop" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Mağaza</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-shop')"></i></div><p style="color:#94a3b8;">Jeton paketi və qanad satışı.</p></div></div>
     <div id="modal-search" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Axtarış</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-search')"></i></div></div></div>
     <div id="modal-notifs" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Bildirişlər</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-notifs')"></i></div></div></div>
 
     <script>
         let currentUser = null;
         let selectedGender = 'male';
-
-        const dict = {
-            az: { tSub: "Hesabına daxil ol və oyuna davam et", tLogin: "Giriş", tReg: "Qeydiyyat", tUserLabel: "İstifadəçi adı və ya ID", tPassLabel: "Şifrə", tLoginBtn: "Daxil ol", tRegBtn: "Hesab yarat", tNotice: "⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar.", tGenderLabel: "Cinsiyyət", tMale: "Kişi", tFemale: "Qadın" },
-            tr: { tSub: "Hesabınıza giriş yapın", tLogin: "Giriş", tReg: "Kayıt Ol", tUserLabel: "Kullanıcı adı veya ID", tPassLabel: "Şifre", tLoginBtn: "Giriş Yap", tRegBtn: "Hesap Oluştur", tNotice: "⚠️ <strong>Dikkat!</strong> 1 cihazdan en fazla 2 nick açılabilir.", tGenderLabel: "Cinsiyet", tMale: "Erkek", tFemale: "Kadın" },
-            en: { tSub: "Log in to your account", tLogin: "Login", tReg: "Register", tUserLabel: "Username or ID", tPassLabel: "Password", tLoginBtn: "Log In", tRegBtn: "Create Account", tNotice: "⚠️ <strong>Attention!</strong> Max 2 nicknames per device.", tGenderLabel: "Gender", tMale: "Male", tFemale: "Female" }
-        };
-
-        function changeLang(lang) {
-            document.querySelectorAll('.lang-bar .lang-btn').forEach(b => b.classList.remove('active'));
-            if(event && event.target) event.target.classList.add('active');
-
-            document.querySelectorAll('[data-t]').forEach(el => {
-                const k = el.getAttribute('data-t');
-                if(dict[lang][k]) el.innerHTML = dict[lang][k];
-            });
-        }
 
         function generateUniqueId() {
             let existingIds = [];
@@ -399,6 +474,7 @@
 
         function loadDashboard() {
             document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('game-room').classList.add('hidden');
             document.getElementById('game-dashboard').classList.remove('hidden');
             
             document.getElementById('profile-banner-name').innerText = currentUser.username.toUpperCase();
@@ -418,6 +494,38 @@
                 adminBtn.style.display = isAdmin ? 'flex' : 'none';
             }
             if(isAdmin) loadAdminUserList();
+        }
+
+        /* Oyun Masasına Keçid Funksiyaları */
+        function joinRandomTable() {
+            const randomTableNum = Math.floor(Math.random() * 5) + 1;
+            joinSpecificTable("Masa " + randomTableNum);
+        }
+
+        function joinSpecificTable(tableName) {
+            document.getElementById('game-dashboard').classList.add('hidden');
+            document.getElementById('game-room').classList.remove('hidden');
+            document.getElementById('room-title').innerText = tableName;
+        }
+
+        function leaveTable() {
+            document.getElementById('game-room').classList.add('hidden');
+            document.getElementById('game-dashboard').classList.remove('hidden');
+        }
+
+        function spinBottle() {
+            alert('🍾 Şüşə fırlandı! Növbəti oyunçu seçilir...');
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input-field');
+            const txt = input.value.trim();
+            if(!txt) return;
+
+            const box = document.getElementById('chat-messages-box');
+            box.innerHTML += `<div><strong>${currentUser.username}:</strong> ${txt}</div>`;
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
         }
 
         function saveUserData() {
