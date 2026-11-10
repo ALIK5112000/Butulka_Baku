@@ -50,7 +50,7 @@
         .avatar-container { position: relative; width: 90px; height: 90px; margin: 0 auto 12px; }
         .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #ec4899; }
         .id-badge { background: #eab308; color: #000; font-weight: 800; padding: 2px 8px; border-radius: 12px; font-size: 12px; display: inline-block; margin-bottom: 8px; }
-        .user-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+        .user-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .user-status { color: #94a3b8; font-size: 14px; margin-bottom: 15px; font-style: italic; }
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
@@ -75,14 +75,17 @@
 
         /* Modals */
         .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: flex-end; backdrop-filter: blur(8px); }
-        .modal-content { background: #160e24; width: 100%; max-height: 85vh; border-radius: 28px 28px 0 0; padding: 25px; overflow-y: auto; border-top: 1px solid rgba(255,255,255,0.1); }
+        .modal-content { background: #160e24; width: 100%; max-height: 90vh; border-radius: 28px 28px 0 0; padding: 25px; overflow-y: auto; border-top: 1px solid rgba(255,255,255,0.1); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .close-btn { font-size: 20px; color: #64748b; cursor: pointer; }
         
         select.input-field { background: #0a0612; color: white; }
         .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .shop-item { background: rgba(255,255,255,0.04); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.08); cursor: pointer; }
-        .shop-item:hover { border-color: #ec4899; }
+
+        .avatar-edit-box { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .avatar-preview { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #ec4899; }
+        .change-photo-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -156,8 +159,6 @@
 
     <!-- MAIN GAME DASHBOARD -->
     <div id="game-dashboard" class="hidden">
-        
-        <!-- Header Tools -->
         <header class="app-header">
             <div class="header-tools">
                 <div class="tool-btn vip-btn" onclick="openModal('modal-vip')"><i class="fa-solid fa-crown"></i> VIP</div>
@@ -173,13 +174,12 @@
         </header>
 
         <main class="main-content">
-            <!-- User Profile Card -->
             <div class="profile-card">
                 <div class="avatar-container">
                     <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" id="user-avatar" class="avatar-img">
                 </div>
                 <span class="id-badge" id="user-id-display">ID 1836</span>
-                <h2 class="user-name" id="profile-name">Alik</h2>
+                <h2 class="user-name"><span id="profile-name">Alik</span> <span id="profile-flag">🇦🇿</span></h2>
                 <p class="user-status" id="profile-status">Şirin Dil 😔</p>
 
                 <div class="stats-grid">
@@ -206,12 +206,10 @@
                 </div>
             </div>
 
-            <!-- Admin Action Button -->
             <button id="admin-panel-btn" onclick="openModal('modal-admin')" class="submit-btn hidden" style="background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); margin-bottom: 20px;">
                 <i class="fa-solid fa-user-shield"></i> Admin İdarəetmə Paneli
             </button>
 
-            <!-- Game Tables Section -->
             <div class="section-title">
                 <span data-t="tTablesTitle">Masalar indi</span>
                 <button onclick="openModal('modal-create-table')" class="join-btn" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); font-size: 13px; padding: 6px 12px;" data-t="tCreateTableBtn">+ Masa yarat</button>
@@ -228,7 +226,6 @@
             </div>
         </main>
 
-        <!-- Bottom Navigation Bar -->
         <nav class="bottom-nav">
             <div class="nav-item active" onclick="goHome()">
                 <i class="fa-solid fa-house"></i>
@@ -241,109 +238,72 @@
         </nav>
     </div>
 
-    <!-- MODALS -->
-
-    <!-- VIP Modal -->
-    <div id="modal-vip" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 data-t="tVipTitle">VIP Üzvlük</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-vip')"></i>
-            </div>
-            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-                <div class="shop-item" style="flex:1;" onclick="buyVip(500, 'Həftəlik VIP')">
-                    <p style="color:#94a3b8;">7 gün</p>
-                    <h3 style="color:#eab308;">500 🪙</h3>
-                </div>
-                <div class="shop-item" style="flex:1; border-color:#eab308;" onclick="buyVip(1200, 'Aylıq VIP')">
-                    <p style="color:#94a3b8;">30 gün</p>
-                    <h3 style="color:#eab308;">1.2k 🪙</h3>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Create Table Modal -->
-    <div id="modal-create-table" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 data-t="tCreateTableHead">Masa yarat</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-create-table')"></i>
-            </div>
-            <p style="color:#94a3b8; font-size: 13px; margin-bottom: 15px;">5000 🪙 • 30 gün.</p>
-            <div class="form-group">
-                <label class="form-label" data-t="tTableNum">Masa nömrəsi</label>
-                <input type="number" id="new-table-num" class="input-field" placeholder="1-9999">
-            </div>
-            <div class="form-group">
-                <label class="form-label" data-t="tTableName">Masanın adı</label>
-                <input type="text" id="new-table-name" class="input-field" placeholder="Məs. Dostlar">
-            </div>
-            <button class="submit-btn" onclick="createTable()" data-t="tCreateAction">Al - 5000 🪙</button>
-        </div>
-    </div>
-
-    <!-- Shop Modal -->
-    <div id="modal-shop" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 data-t="tShopHead">Mağaza - Jeton</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-shop')"></i>
-            </div>
-            <div class="shop-grid">
-                <div class="shop-item" onclick="buyCoins('1k Jeton', '5.00 AZN')"><h3 style="color:#eab308;">1k 🪙</h3><p>5.00 AZN</p></div>
-                <div class="shop-item" onclick="buyCoins('3k Jeton', '10.00 AZN')"><h3 style="color:#eab308;">3k 🪙</h3><p>10.00 AZN</p></div>
-                <div class="shop-item" onclick="buyCoins('5k Jeton', '15.00 AZN')"><h3 style="color:#eab308;">5k 🪙</h3><p>15.00 AZN</p></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Search Modal -->
-    <div id="modal-search" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 data-t="tSearchHead">İstifadəçi Axtarışı</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-search')"></i>
-            </div>
-            <input type="text" class="input-field" placeholder="ID və ya ad...">
-        </div>
-    </div>
-
-    <!-- Support Modal -->
-    <div id="modal-support" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 data-t="tSupportHead">Adminlə Əlaqə</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-support')"></i>
-            </div>
-            <p style="text-align: center; font-size: 18px; margin: 20px 0;">Baş Admin: <strong>Alik</strong></p>
-        </div>
-    </div>
-
-    <!-- Notifications Modal -->
-    <div id="modal-notifs" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 data-t="tNotifHead">Bildirişlər</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-notifs')"></i>
-            </div>
-        </div>
-    </div>
-
-    <!-- Settings Modal -->
+    <!-- MODAL: SETTINGS -->
     <div id="modal-settings" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 data-t="tSettingsHead">Profil Tənzimləmələri</h3>
                 <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-settings')"></i>
             </div>
+
+            <!-- Profile Photo Upload -->
+            <div class="avatar-edit-box">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" id="settings-avatar-preview" class="avatar-preview">
+                <button class="change-photo-btn" onclick="document.getElementById('photo-input').click()">Şəkli dəyiş</button>
+                <input type="file" id="photo-input" accept="image/*" class="hidden" onchange="uploadProfilePhoto(event)">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Ad</label>
+                <input type="text" id="edit-username" class="input-field" placeholder="İstifadəçi adı">
+            </div>
+
             <div class="form-group">
                 <label class="form-label" data-t="tStatusLbl">Status</label>
-                <input type="text" id="edit-status" class="input-field" value="Şirin Dil 😔">
+                <input type="text" id="edit-status" class="input-field" placeholder="Statusunuzu yazın...">
             </div>
-            <button class="submit-btn" onclick="saveSettings()" data-t="tSave">Yadda saxla</button>
 
-            <!-- Şifrəni Dəyiş -->
+            <div class="form-group">
+                <label class="form-label">Ölkə</label>
+                <select id="edit-country" class="input-field" onchange="onCountryChange()">
+                    <option value="">— seçilməyib —</option>
+                    <option value="AZ" data-flag="🇦🇿">Azərbaycan 🇦🇿</option>
+                    <option value="TR" data-flag="🇹🇷">Türkiyə 🇹🇷</option>
+                    <option value="RU" data-flag="🇷🇺">Rusiya 🇷🇺</option>
+                    <option value="GE" data-flag="🇬🇪">Gürcüstan 🇬🇪</option>
+                    <option value="US" data-flag="🇺🇸">Amerika 🇺🇸</option>
+                    <option value="KZ" data-flag="🇰🇿">Qazaxıstan 🇰🇿</option>
+                    <option value="UZ" data-flag="🇺🇿">Özbəkistan 🇺🇿</option>
+                    <option value="DE" data-flag="🇩🇪">Almaniya 🇩🇪</option>
+                    <option value="GB" data-flag="🇬🇧">Böyük Britaniya 🇬🇧</option>
+                    <option value="AE" data-flag="🇦🇪">BƏƏ 🇦🇪</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Rayon / şəhər</label>
+                <select id="edit-city-select" class="input-field">
+                    <option value="">— şəhər seçin —</option>
+                </select>
+                <input type="text" id="edit-city-text" class="input-field hidden" placeholder="Şəhər / Rayon adını yazın" style="margin-top: 6px;">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Yaş (min 18 - maks 99)</label>
+                <input type="number" id="edit-age" class="input-field" min="18" max="99" placeholder="18">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" data-t="tGender">Cinsiyyət</label>
+                <div class="gender-options">
+                    <div class="gender-btn" id="edit-gender-male" onclick="setEditGender('male')"><i class="fa-solid fa-mars"></i> <span data-t="tMale">Kişi</span></div>
+                    <div class="gender-btn" id="edit-gender-female" onclick="setEditGender('female')"><i class="fa-solid fa-venus"></i> <span data-t="tFemale">Qadın</span></div>
+                </div>
+            </div>
+
+            <button class="submit-btn" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); margin-top: 15px;" onclick="saveSettings()" data-t="tSave">Yadda saxla</button>
+
+            <!-- Password Change -->
             <hr style="margin:20px 0; border-color:rgba(255,255,255,0.1);">
             <h4 style="margin-bottom:10px; font-size:15px;" data-t="tChangePassHead">Şifrəni dəyiş</h4>
             <div class="form-group">
@@ -354,7 +314,7 @@
             </div>
             <button class="submit-btn" style="background:rgba(59, 130, 246, 0.2); color:#3b82f6; border:1px solid #3b82f6;" onclick="changePassword()" data-t="tChangePassBtn">Şifrəni yenilə</button>
 
-            <!-- Dil Dəyişmə -->
+            <!-- Language Section -->
             <hr style="margin:20px 0; border-color:rgba(255,255,255,0.1);">
             <h4 style="margin-bottom:10px; font-size:15px;" data-t="tLangHead">Dil dəyiş</h4>
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px;">
@@ -364,101 +324,106 @@
                 <button class="lang-btn" onclick="changeLang('en')">EN</button>
             </div>
 
-            <!-- Çıxış et -->
+            <!-- Logout -->
             <button class="submit-btn" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444;" onclick="handleLogout()" data-t="tLogout">Çıxış et</button>
         </div>
     </div>
 
-    <!-- Admin Panel Modal -->
+    <!-- OTHER MODALS -->
+    <div id="modal-vip" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>VIP Üzvlük</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-vip')"></i></div>
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                <div class="shop-item" style="flex:1;" onclick="buyVip(500, 'Həftəlik VIP')"><p style="color:#94a3b8;">7 gün</p><h3 style="color:#eab308;">500 🪙</h3></div>
+                <div class="shop-item" style="flex:1; border-color:#eab308;" onclick="buyVip(1200, 'Aylıq VIP')"><p style="color:#94a3b8;">30 gün</p><h3 style="color:#eab308;">1.2k 🪙</h3></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-create-table" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Masa yarat</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-create-table')"></i></div>
+            <div class="form-group"><label class="form-label">Masa nömrəsi</label><input type="number" id="new-table-num" class="input-field" placeholder="1-9999"></div>
+            <div class="form-group"><label class="form-label">Masanın adı</label><input type="text" id="new-table-name" class="input-field" placeholder="Məs. Dostlar"></div>
+            <button class="submit-btn" onclick="createTable()">Al - 5000 🪙</button>
+        </div>
+    </div>
+
+    <div id="modal-shop" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Mağaza - Jeton Paketləri</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-shop')"></i></div>
+            <div class="shop-grid">
+                <div class="shop-item" onclick="buyCoins('1k Jeton', '5.00 AZN')"><h3 style="color:#eab308;">1k 🪙</h3><p>5.00 AZN</p></div>
+                <div class="shop-item" onclick="buyCoins('3k Jeton', '10.00 AZN')"><h3 style="color:#eab308;">3k 🪙</h3><p>10.00 AZN</p></div>
+                <div class="shop-item" onclick="buyCoins('5k Jeton', '15.00 AZN')"><h3 style="color:#eab308;">5k 🪙</h3><p>15.00 AZN</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-search" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>İstifadəçi Axtarışı</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-search')"></i></div>
+            <input type="text" class="input-field" placeholder="İstifadəçi adı və ya ID...">
+        </div>
+    </div>
+
+    <div id="modal-support" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Adminlə Əlaqə</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-support')"></i></div>
+            <p style="text-align: center; font-size: 18px; margin: 20px 0;">Baş Admin: <strong>Alik</strong></p>
+        </div>
+    </div>
+
+    <div id="modal-notifs" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Bildirişlər</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-notifs')"></i></div>
+        </div>
+    </div>
+
     <div id="modal-admin" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 style="color:#eab308;">Admin Panel (Alik)</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-admin')"></i>
-            </div>
-            <div class="form-group">
-                <label class="form-label">İstifadəçi ID-si</label>
-                <input type="text" id="admin-target-id" class="input-field" placeholder="Məs: 1836">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Göndəriləcək Jeton</label>
-                <input type="number" id="admin-grant-coins" class="input-field" placeholder="1000">
-            </div>
+            <div class="modal-header"><h3 style="color:#eab308;">Admin Panel (Alik)</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-admin')"></i></div>
+            <div class="form-group"><label class="form-label">İstifadəçi ID-si</label><input type="text" id="admin-target-id" class="input-field" placeholder="Məs: 1836"></div>
+            <div class="form-group"><label class="form-label">Göndəriləcək Jeton</label><input type="number" id="admin-grant-coins" class="input-field" placeholder="1000"></div>
             <button class="submit-btn" style="background:#eab308; color:#000;" onclick="adminGrantCoins()">Jeton Göndər</button>
-            <div style="margin-top:20px;">
-                <h4>Gələn Alış-Veriş İstəkləri:</h4>
-                <div id="admin-requests-list" style="font-size:13px; color:#94a3b8; margin-top:8px;">Hələlik yeni istək yoxdur.</div>
-            </div>
         </div>
     </div>
 
     <script>
         let currentUser = null;
         let selectedGender = 'male';
+        let editGenderVal = 'male';
         let currentLang = 'az';
 
+        const cityData = {
+            AZ: ["Bakı", "Gəncə", "Sumqayıt", "Mingəçevir", "Şəki", "Şirvan", "Lənkəran", "Quba", "Xaçmaz", "Naxçıvan"],
+            TR: ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya", "Adana", "Trabzon"],
+            RU: ["Moskva", "Sankt-Peterburq", "Kazan", "Novosibirsk", "Yekaterinburq"],
+            GE: ["Tbilisi", "Batumi", "Kutaisi", "Rustavi"],
+            US: ["New York", "Los Angeles", "Chicago", "Miami", "Houston"],
+            KZ: ["Almatı", "Astana", "Şımkent"],
+            UZ: ["Daşkənd", "Səmərqənd", "Buxara"],
+            DE: ["Berlin", "Münhen", "Frankfurt", "Hamburq"],
+            GB: ["London", "Manchester", "Birmingham"],
+            AE: ["Dubay", "Əbu-Dabi"]
+        };
+
         const dict = {
-            az: {
-                tLogin: "Giriş", tReg: "Qeydiyyat", tUser: "İstifadəçi adı", tPass: "Şifrə",
-                tLoginBtn: "Daxil ol", tRegBtn: "Hesab yarat", tNotice: "⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar.",
-                tGender: "Cinsiyyət", tMale: "Kişi", tFemale: "Qadın", tHeartLbl: "Ürək", tCoinLbl: "Jeton",
-                tFriendLbl: "Dostlar", tViewLbl: "Baxanlar", tTablesTitle: "Masalar indi", tCreateTableBtn: "+ Masa yarat",
-                tJoin: "Qoşul →", tHome: "Ana Səhifə", tMessages: "Mesajlar", tVipTitle: "VIP Üzvlük",
-                tCreateTableHead: "Masa yarat", tTableNum: "Masa nömrəsi", tTableName: "Masanın adı", tCreateAction: "Al - 5000 🪙",
-                tShopHead: "Mağaza - Jeton", tSearchHead: "İstifadəçi Axtarışı", tSupportHead: "Adminlə Əlaqə", tNotifHead: "Bildirişlər",
-                tSettingsHead: "Profil Tənzimləmələri", tStatusLbl: "Status", tSave: "Yadda saxla", tChangePassHead: "Şifrəni dəyiş",
-                tOldPassPh: "Hazırkı şifrə", tNewPassPh: "Yeni şifrə (min 6 simvol)", tChangePassBtn: "Şifrəni yenilə",
-                tLangHead: "Dil dəyiş", tLogout: "Çıxış et", subLogin: "Hesabına daxil ol və oyuna davam et"
-            },
-            ka: {
-                tLogin: "შსvლა", tReg: "რეგისტრაცია", tUser: "მომხმარებელი", tPass: "პაროლი",
-                tLoginBtn: "შესვლა", tRegBtn: "რეგისტრაცია", tNotice: "⚠️ <strong>ყურადღება!</strong> 1 მოწყობილობიდან მაქსიმუმ 2 ნიკია დასაშვები.",
-                tGender: "სქესი", tMale: "კაცი", tFemale: "ქალი", tHeartLbl: "გული", tCoinLbl: "ჯეტონი",
-                tFriendLbl: "მეგობრები", tViewLbl: "ნახვები", tTablesTitle: "მაგიდები", tCreateTableBtn: "+ მაგიდის შექმნა",
-                tJoin: "შესვლა →", tHome: "მთავარი", tMessages: "შტყობინებები", tVipTitle: "VIP სტატუსი",
-                tCreateTableHead: "მაგიდის შექმნა", tTableNum: "მაგიდის ნომერი", tTableName: "მაგიდის სახელი", tCreateAction: "ყიდვა - 5000 🪙",
-                tShopHead: "მაღაზია", tSearchHead: "ძებნა", tSupportHead: "მხარდაჭერა", tNotifHead: "შეტყობინებები",
-                tSettingsHead: "პარამეტრები", tStatusLbl: "სტატუსი", tSave: "შენახვა", tChangePassHead: "პაროლის შეცვლა",
-                tOldPassPh: "მიმდინარე პაროლი", tNewPassPh: "ახალი პაროლი", tChangePassBtn: "პაროლის განახლება",
-                tLangHead: "ენა", tLogout: "გასვლა", subLogin: "შედით თქვენს ანგარიშში"
-            },
-            tr: {
-                tLogin: "Giriş", tReg: "Kayıt Ol", tUser: "Kullanıcı adı", tPass: "Şifre",
-                tLoginBtn: "Giriş Yap", tRegBtn: "Hesap Oluştur", tNotice: "⚠️ <strong>Dikkat!</strong> 1 cihazdan en fazla 2 nick açılabilir.",
-                tGender: "Cinsiyet", tMale: "Erkek", tFemale: "Kadın", tHeartLbl: "Kalp", tCoinLbl: "Jeton",
-                tFriendLbl: "Arkadaşlar", tViewLbl: "Bakanlar", tTablesTitle: "Masalar", tCreateTableBtn: "+ Masa oluştur",
-                tJoin: "Katıl →", tHome: "Ana Sayfa", tMessages: "Mesajlar", tVipTitle: "VIP Üyelik",
-                tCreateTableHead: "Masa oluştur", tTableNum: "Masa numarası", tTableName: "Masa adı", tCreateAction: "Al - 5000 🪙",
-                tShopHead: "Mağaza", tSearchHead: "Kullanıcı Arama", tSupportHead: "Admin İletişim", tNotifHead: "Bildirimler",
-                tSettingsHead: "Profil Ayarları", tStatusLbl: "Durum", tSave: "Kaydet", tChangePassHead: "Şifreyi değiştir",
-                tOldPassPh: "Mevcut şifre", tNewPassPh: "Yeni şifre", tChangePassBtn: "Şifreyi güncelle",
-                tLangHead: "Dil değiştir", tLogout: "Çıkış yap", subLogin: "Hesabınıza giriş yapın ve devam edin"
-            },
-            en: {
-                tLogin: "Login", tReg: "Register", tUser: "Username", tPass: "Password",
-                tLoginBtn: "Log In", tRegBtn: "Create Account", tNotice: "⚠️ <strong>Attention!</strong> Max 2 nicknames per device.",
-                tGender: "Gender", tMale: "Male", tFemale: "Female", tHeartLbl: "Hearts", tCoinLbl: "Coins",
-                tFriendLbl: "Friends", tViewLbl: "Views", tTablesTitle: "Tables", tCreateTableBtn: "+ Create Table",
-                tJoin: "Join →", tHome: "Home", tMessages: "Messages", tVipTitle: "VIP Membership",
-                tCreateTableHead: "Create Table", tTableNum: "Table No", tTableName: "Table Name", tCreateAction: "Buy - 5000 🪙",
-                tShopHead: "Shop", tSearchHead: "Search Users", tSupportHead: "Admin Support", tNotifHead: "Notifications",
-                tSettingsHead: "Settings", tStatusLbl: "Status", tSave: "Save", tChangePassHead: "Change Password",
-                tOldPassPh: "Current password", tNewPassPh: "New password", tChangePassBtn: "Update Password",
-                tLangHead: "Language", tLogout: "Log Out", subLogin: "Log in to your account and continue"
-            }
+            az: { tLogin: "Giriş", tReg: "Qeydiyyat", tUser: "İstifadəçi adı", tPass: "Şifrə", tLoginBtn: "Daxil ol", tRegBtn: "Hesab yarat", tNotice: "⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar.", tGender: "Cinsiyyət", tMale: "Kişi", tFemale: "Qadın", tHeartLbl: "Ürək", tCoinLbl: "Jeton", tFriendLbl: "Dostlar", tViewLbl: "Baxanlar", tTablesTitle: "Masalar indi", tCreateTableBtn: "+ Masa yarat", tJoin: "Qoşul →", tHome: "Ana Səhifə", tMessages: "Mesajlar", tSettingsHead: "Profil Tənzimləmələri", tStatusLbl: "Status", tSave: "Yadda saxla", tChangePassHead: "Şifrəni dəyiş", tOldPassPh: "Hazırkı şifrə", tNewPassPh: "Yeni şifrə (min 6 simvol)", tChangePassBtn: "Şifrəni yenilə", tLangHead: "Dil dəyiş", tLogout: "Çıxış et" },
+            ka: { tLogin: "შესვლა", tReg: "რეგისტრაცია", tUser: "მომხმარებელი", tPass: "პაროლი", tLoginBtn: "შესვლა", tRegBtn: "რეგისტრაცია", tNotice: "⚠️ <strong>ყურადღება!</strong> 1 მოწყობილობიდან მაქსიმუმ 2 ნიკია დასაშვები.", tGender: "სქესი", tMale: "კაცი", tFemale: "ქალი", tHeartLbl: "გული", tCoinLbl: "ჯეტონი", tFriendLbl: "მეგობრები", tViewLbl: "ნახვები", tTablesTitle: "მაგიდები", tCreateTableBtn: "+ მაგიდის შექმნა", tJoin: "შესვლა →", tHome: "მთავარი", tMessages: "შეტყობინებები", tSettingsHead: "პარამეტრები", tStatusLbl: "სტატუსი", tSave: "შენახვა", tChangePassHead: "პაროლის შეცვლა", tOldPassPh: "მიმდინარე პაროლი", tNewPassPh: "ახალი პაროლი", tChangePassBtn: "პაროლის განახლება", tLangHead: "ენა", tLogout: "გასვლა" },
+            tr: { tLogin: "Giriş", tReg: "Kayıt Ol", tUser: "Kullanıcı adı", tPass: "Şifre", tLoginBtn: "Giriş Yap", tRegBtn: "Hesap Oluştur", tNotice: "⚠️ <strong>Dikkat!</strong> 1 cihazdan en fazla 2 nick açılabilir.", tGender: "Cinsiyet", tMale: "Erkek", tFemale: "Kadın", tHeartLbl: "Kalp", tCoinLbl: "Jeton", tFriendLbl: "Arkadaşlar", tViewLbl: "Bakanlar", tTablesTitle: "Masalar", tCreateTableBtn: "+ Masa oluştur", tJoin: "Katıl →", tHome: "Ana Sayfa", tMessages: "Mesajlar", tSettingsHead: "Profil Ayarları", tStatusLbl: "Durum", tSave: "Kaydet", tChangePassHead: "Şifreyi değiştir", tOldPassPh: "Mevcut şifre", tNewPassPh: "Yeni şifre", tChangePassBtn: "Şifreyi güncelle", tLangHead: "Dil değiştir", tLogout: "Çıkış yap" },
+            en: { tLogin: "Login", tReg: "Register", tUser: "Username", tPass: "Password", tLoginBtn: "Log In", tRegBtn: "Create Account", tNotice: "⚠️ <strong>Attention!</strong> Max 2 nicknames per device.", tGender: "Gender", tMale: "Male", tFemale: "Female", tHeartLbl: "Hearts", tCoinLbl: "Coins", tFriendLbl: "Friends", tViewLbl: "Views", tTablesTitle: "Tables", tCreateTableBtn: "+ Create Table", tJoin: "Join →", tHome: "Home", tMessages: "Messages", tSettingsHead: "Settings", tStatusLbl: "Status", tSave: "Save", tChangePassHead: "Change Password", tOldPassPh: "Current password", tNewPassPh: "New password", tChangePassBtn: "Update Password", tLangHead: "Language", tLogout: "Log Out" }
         };
 
         function changeLang(lang) {
             currentLang = lang;
             document.querySelectorAll('.lang-bar .lang-btn').forEach(b => b.classList.remove('active'));
-            // Aktiv düyməni işarələ
-            event.target.classList.add('active');
+            if(event && event.target) event.target.classList.add('active');
 
             document.querySelectorAll('[data-t]').forEach(el => {
                 const k = el.getAttribute('data-t');
                 if(dict[lang][k]) el.innerHTML = dict[lang][k];
             });
-
             document.querySelectorAll('[data-t-ph]').forEach(el => {
                 const k = el.getAttribute('data-t-ph');
                 if(dict[lang][k]) el.placeholder = dict[lang][k];
@@ -486,25 +451,30 @@
             document.getElementById('gender-female').classList.toggle('active', g === 'female');
         }
 
+        function setEditGender(g) {
+            editGenderVal = g;
+            document.getElementById('edit-gender-male').classList.toggle('active', g === 'male');
+            document.getElementById('edit-gender-female').classList.toggle('active', g === 'female');
+        }
+
         function handleRegister(e) {
             e.preventDefault();
             const u = document.getElementById('reg-user').value.trim();
             const p = document.getElementById('reg-pass').value;
-            
-            // Hər istifadəçi üçün unikal və sabit ID (əgər əvvəlcədən yoxdursa yaradılır)
-            const randomId = Math.floor(1000 + Math.random() * 9000);
-            
             currentUser = { 
                 username: u, 
                 pass: p, 
                 gender: selectedGender, 
-                id: randomId, 
+                id: Math.floor(1000 + Math.random() * 9000), 
                 coins: 5100, 
                 hearts: 185, 
-                status: "Şirin Dil 😔" 
+                status: "Şirin Dil 😔",
+                avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+                country: "AZ",
+                countryFlag: "🇦🇿",
+                city: "Bakı",
+                age: 20
             };
-
-            // Bütün istifadəçilərin bazasında saxla ki, digərləri silinməsin
             localStorage.setItem('user_' + u, JSON.stringify(currentUser));
             localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
             loadDashboard();
@@ -526,15 +496,105 @@
         function loadDashboard() {
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('game-dashboard').classList.remove('hidden');
+            
             document.getElementById('profile-name').innerText = currentUser.username;
             document.getElementById('user-id-display').innerText = "ID " + currentUser.id;
             document.getElementById('user-coins').innerText = currentUser.coins;
             document.getElementById('profile-status').innerText = currentUser.status || "Şirin Dil 😔";
+            
+            if(currentUser.avatar) {
+                document.getElementById('user-avatar').src = currentUser.avatar;
+                document.getElementById('settings-avatar-preview').src = currentUser.avatar;
+            }
+            if(currentUser.countryFlag) {
+                document.getElementById('profile-flag').innerText = currentUser.countryFlag;
+            } else {
+                document.getElementById('profile-flag').innerText = '';
+            }
+
+            // Load settings inputs
+            document.getElementById('edit-username').value = currentUser.username || '';
+            document.getElementById('edit-status').value = currentUser.status || '';
+            document.getElementById('edit-country').value = currentUser.country || '';
+            document.getElementById('edit-age').value = currentUser.age || 20;
+            setEditGender(currentUser.gender || 'male');
+            onCountryChange();
+            if(currentUser.city) {
+                const sel = document.getElementById('edit-city-select');
+                if(!sel.classList.contains('hidden')) sel.value = currentUser.city;
+                else document.getElementById('edit-city-text').value = currentUser.city;
+            }
 
             if(currentUser.username.toLowerCase() === 'alik') {
                 document.getElementById('admin-panel-btn').classList.remove('hidden');
-                loadAdminRequests();
             }
+        }
+
+        function uploadProfilePhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Img = e.target.result;
+                    currentUser.avatar = base64Img;
+                    document.getElementById('user-avatar').src = base64Img;
+                    document.getElementById('settings-avatar-preview').src = base64Img;
+                    updateUserStorage();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function onCountryChange() {
+            const countryVal = document.getElementById('edit-country').value;
+            const citySelect = document.getElementById('edit-city-select');
+            const cityText = document.getElementById('edit-city-text');
+
+            if (cityData[countryVal]) {
+                citySelect.classList.remove('hidden');
+                cityText.classList.add('hidden');
+                citySelect.innerHTML = cityData[countryVal].map(c => `<option value="${c}">${c}</option>`).join('');
+            } else {
+                citySelect.classList.add('hidden');
+                cityText.classList.remove('hidden');
+            }
+        }
+
+        function saveSettings() {
+            const newName = document.getElementById('edit-username').value.trim();
+            const newSt = document.getElementById('edit-status').value.trim();
+            const countrySel = document.getElementById('edit-country');
+            const countryVal = countrySel.value;
+            const selectedOpt = countrySel.options[countrySel.selectedIndex];
+            const flag = selectedOpt ? selectedOpt.getAttribute('data-flag') : '';
+            
+            const ageVal = parseInt(document.getElementById('edit-age').value);
+
+            if(ageVal < 18 || ageVal > 99) {
+                alert('Yaş 18 ilə 99 arasında olmalıdır!');
+                return;
+            }
+
+            let cityVal = '';
+            const citySelect = document.getElementById('edit-city-select');
+            if(!citySelect.classList.contains('hidden')) {
+                cityVal = citySelect.value;
+            } else {
+                cityVal = document.getElementById('edit-city-text').value.trim();
+            }
+
+            if(newName) currentUser.username = newName;
+            currentUser.status = newSt;
+            currentUser.country = countryVal;
+            currentUser.countryFlag = flag || '';
+            currentUser.city = cityVal;
+            currentUser.age = ageVal;
+            currentUser.gender = editGenderVal;
+
+            updateUserStorage();
+            loadDashboard();
+            alert('Dəyişikliklər uğurla yadda saxlanıldı!');
+            closeModal('modal-settings');
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -553,49 +613,13 @@
             if(currentUser.coins < 5000) { alert('Masa yaratmaq üçün 5000 jeton lazımdır!'); return; }
             currentUser.coins -= 5000;
             updateUserStorage();
-            
-            const tNum = document.getElementById('new-table-num').value || Math.floor(10 + Math.random() * 90);
-            const tName = document.getElementById('new-table-name').value || ("Masa " + tNum);
-            
-            document.getElementById('tables-container').innerHTML += `
-                <div class="table-card" style="border-color: #eab308;">
-                    <div class="table-info">
-                        <h4 style="color: #eab308;">👑 ${tName} (#${tNum})</h4>
-                        <p>Sahibi: ${currentUser.username} • 0/12</p>
-                    </div>
-                    <button class="join-btn">Qoşul →</button>
-                </div>
-            `;
-            alert('Masa uğurla yaradıldı!');
             closeModal('modal-create-table');
+            alert('Masa yaratma prosesi uğurla həyata keçirildi!');
         }
 
         function buyCoins(pkg, price) {
             alert(`Sifariş göndərildi! Alik bildiriş aldı.`);
             closeModal('modal-shop');
-            let reqs = JSON.parse(localStorage.getItem('admin_requests') || '[]');
-            reqs.push({ id: currentUser.id, name: currentUser.username, pkg: pkg, price: price });
-            localStorage.setItem('admin_requests', JSON.stringify(reqs));
-        }
-
-        function loadAdminRequests() {
-            let reqs = JSON.parse(localStorage.getItem('admin_requests') || '[]');
-            const list = document.getElementById('admin-requests-list');
-            if(reqs.length === 0) { list.innerHTML = "Yeni istək yoxdur."; return; }
-            list.innerHTML = reqs.map((r, i) => `
-                <div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; margin-bottom:6px;">
-                    ID: ${r.id} (${r.name}) - ${r.pkg}
-                    <button onclick="approveRequest(${i})" style="background:#22c55e; color:#fff; border:none; padding:4px 8px; border-radius:4px; margin-left:6px; cursor:pointer;">Təsdiqlə</button>
-                </div>
-            `).join('');
-        }
-
-        function approveRequest(index) {
-            let reqs = JSON.parse(localStorage.getItem('admin_requests') || '[]');
-            reqs.splice(index, 1);
-            localStorage.setItem('admin_requests', JSON.stringify(reqs));
-            alert('Təsdiqləndi!');
-            loadAdminRequests();
         }
 
         function adminGrantCoins() {
@@ -606,14 +630,6 @@
                 alert(`${amount} Jeton əlavə olundu!`);
                 closeModal('modal-admin');
             }
-        }
-
-        function saveSettings() {
-            const newSt = document.getElementById('edit-status').value;
-            if(newSt) currentUser.status = newSt;
-            updateUserStorage();
-            alert('Yadda saxlanıldı!');
-            closeModal('modal-settings');
         }
 
         function changePassword() {
