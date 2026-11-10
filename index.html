@@ -164,7 +164,8 @@
                 <div class="tool-btn vip-btn" onclick="openModal('modal-vip')"><i class="fa-solid fa-crown"></i> VIP</div>
                 <div class="tool-btn" onclick="openModal('modal-shop')"><i class="fa-solid fa-cart-shopping"></i></div>
                 <div class="tool-btn" onclick="openModal('modal-search')"><i class="fa-solid fa-magnifying-glass"></i></div>
-                <div class="tool-btn" onclick="openModal('modal-admin')" id="admin-menu-btn" style="color: #eab308; display:none;"><i class="fa-solid fa-user-shield"></i></div>
+                <!-- Admin Panel Button (Yalnız Alik üçün görünür) -->
+                <div class="tool-btn" id="admin-menu-btn" onclick="openModal('modal-admin')" style="color: #eab308; display:none;" title="Admin Panel"><i class="fa-solid fa-user-shield"></i></div>
                 <div class="tool-btn" onclick="openModal('modal-notifs')"><i class="fa-solid fa-bell"></i></div>
                 <div class="tool-btn" onclick="openModal('modal-settings')"><i class="fa-solid fa-sliders"></i></div>
             </div>
@@ -271,11 +272,18 @@
     <!-- ADMIN PANEL MODAL -->
     <div id="modal-admin" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header"><h3 style="color:#eab308;">Admin Panel (Alik)</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-admin')"></i></div>
-            <div id="admin-user-list" style="max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px; margin-bottom: 15px; font-size: 12px;"></div>
-            <input type="text" id="admin-target-id" class="input-field" placeholder="Hədəf İstifadəçi ID daxil edin">
-            <input type="number" id="admin-grant-coins" class="input-field" placeholder="Göndəriləcək Jeton miqdarı">
-            <button class="submit-btn" style="background:#eab308; color:#000; margin-bottom:10px;" onclick="adminSendCoins()">Jeton Göndər</button>
+            <div class="modal-header"><h3 style="color:#eab308;"><i class="fa-solid fa-user-shield"></i> Admin Panel (Alik)</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-admin')"></i></div>
+            <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Qeydiyyatda olan istifadəçilər:</p>
+            <div id="admin-user-list" style="max-height: 140px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 12px; padding: 10px; margin-bottom: 15px; font-size: 12px; border: 1px solid rgba(255,255,255,0.05);"></div>
+            <div class="form-group">
+                <label class="form-label">Hədəf İstifadəçi ID</label>
+                <input type="text" id="admin-target-id" class="input-field" placeholder="Məsələn: 1836">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Göndəriləcək Jeton Miqdarı</label>
+                <input type="number" id="admin-grant-coins" class="input-field" placeholder="Məsələn: 500">
+            </div>
+            <button class="submit-btn" style="background:#eab308; color:#000;" onclick="adminSendCoins()">Jeton Göndər</button>
         </div>
     </div>
 
@@ -331,6 +339,7 @@
             } else {
                 let alikData = JSON.parse(localStorage.getItem('user_Alik'));
                 alikData.pass = "ALIYEV511@";
+                alikData.role = 'admin';
                 localStorage.setItem('user_Alik', JSON.stringify(alikData));
             }
 
@@ -434,7 +443,7 @@
                 const key = localStorage.key(i);
                 if(key.startsWith('user_')) {
                     const uData = JSON.parse(localStorage.getItem(key));
-                    listDiv.innerHTML += `<div>ID: <strong>${uData.id}</strong> | Nik: <strong>${uData.username}</strong> | Pass: <em>${uData.pass}</em></div>`;
+                    listDiv.innerHTML += `<div style="padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);">ID: <strong>${uData.id}</strong> | Nik: <strong>${uData.username}</strong> | Jeton: <strong>${uData.coins}</strong></div>`;
                 }
             }
         }
@@ -444,6 +453,7 @@
             const amount = parseInt(document.getElementById('admin-grant-coins').value);
             if(!targetId || !amount) { alert('Məlumatları tam doldurun!'); return; }
 
+            let found = false;
             for(let i=0; i<localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if(key.startsWith('user_')) {
@@ -451,14 +461,25 @@
                     if(u.id.toString() === targetId) {
                         u.coins += amount;
                         localStorage.setItem(key, JSON.stringify(u));
-                        alert('Jeton uğurla göndərildi!');
-                        closeModal('modal-admin');
-                        loadDashboard();
-                        return;
+                        if(currentUser.username === u.username) {
+                            currentUser.coins = u.coins;
+                            loadDashboard();
+                        }
+                        found = true;
+                        break;
                     }
                 }
             }
-            alert('İstifadəçi tapılmadı!');
+
+            if(found) {
+                alert('Jeton uğurla göndərildi!');
+                document.getElementById('admin-target-id').value = '';
+                document.getElementById('admin-grant-coins').value = '';
+                closeModal('modal-admin');
+                loadAdminUserList();
+            } else {
+                alert('Bu ID-yə uyğun istifadəçi tapılmadı!');
+            }
         }
 
         function switchTab(type) {
