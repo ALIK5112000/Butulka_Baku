@@ -1,769 +1,779 @@
-```html
 <!DOCTYPE html>
 <html lang="az">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spin the Bottle - Online Butulka Oyunu</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- Canvas Confetti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
+    <title>Butulka Baku - Onlayn Oyun</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0b0713; color: #ffffff; min-height: 100vh; padding-bottom: 70px; }
+
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .center { align-items: center; justify-content: center; }
+
+        /* Auth Screen */
+        .auth-container { display: flex; flex-direction: column; align-items: center; padding: 20px 15px; }
+        .lang-bar { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.05); padding: 6px 10px; border-radius: 20px; margin-bottom: 25px; border: 1px solid rgba(255, 255, 255, 0.1); flex-wrap: wrap; justify-content: center; }
+        .lang-btn { padding: 5px 10px; border-radius: 15px; font-size: 12px; cursor: pointer; color: #b3b3b3; }
+        .lang-btn.active { background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color: white; }
+        .logo-box { text-align: center; margin-bottom: 20px; }
+        .logo-icon { width: 70px; height: 70px; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); border-radius: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 32px; color: white; box-shadow: 0 0 25px rgba(236, 72, 153, 0.5); }
+        .brand-title { font-size: 32px; font-weight: 700; font-style: italic; color: #f472b6; }
+        .auth-card { background: rgba(23, 15, 38, 0.9); border-radius: 28px; padding: 25px; width: 100%; max-width: 400px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .tab-switcher { display: flex; background: rgba(10, 6, 18, 0.6); border-radius: 16px; padding: 4px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; text-align: center; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; color: #94a3b8; }
+        .tab-btn.active { background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%); color: white; }
+        .notice-box { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 12px 15px; margin-bottom: 20px; font-size: 13px; color: #fbbf24; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 8px; }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-icon { position: absolute; left: 16px; color: #64748b; }
+        .input-field { width: 100%; background: rgba(10, 6, 18, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 14px 16px 14px 45px; color: white; font-size: 14px; outline: none; }
+        select.input-field { padding-left: 16px; background: rgba(10, 6, 18, 0.9); color: white; }
+        .gender-options { display: flex; gap: 12px; }
+        .gender-btn { flex: 1; padding: 15px; background: rgba(10, 6, 18, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; color: #64748b; }
+        .gender-btn.active { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .submit-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #ff4b8b 0%, #ff2a70 100%); border: none; border-radius: 16px; color: white; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+
+        /* Main Game Layout */
+        .app-header { display: flex; align-items: center; justify-content: space-between; padding: 15px; background: rgba(18, 11, 31, 0.95); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .header-tools { display: flex; gap: 8px; align-items: center; }
+        .tool-btn { width: 42px; height: 42px; background: rgba(255, 255, 255, 0.08); border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; color: #cbd5e1; font-size: 16px; }
+        .tool-btn.vip-btn { width: auto; padding: 0 16px; background: linear-gradient(135deg, #fce7f3 0%, #f472b6 100%); color: #831843; font-weight: 700; gap: 6px; }
+        .badge { position: absolute; top: -4px; right: -4px; background: #3b82f6; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #0b0713; }
+
+        .main-content { padding: 15px; max-width: 500px; margin: 0 auto; }
+
+        /* Profile Box */
+        .profile-card { background: rgba(23, 15, 38, 0.8); border-radius: 24px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 20px; text-align: center; }
+        .avatar-container { position: relative; width: 90px; height: 90px; margin: 0 auto 12px; }
+        .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #ec4899; }
+        .id-badge { background: #eab308; color: #000; font-weight: 800; padding: 2px 8px; border-radius: 12px; font-size: 12px; display: inline-block; margin-bottom: 8px; }
+        .user-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .user-status { color: #94a3b8; font-size: 14px; margin-bottom: 10px; font-style: italic; }
+        .user-meta-info { font-size: 13px; color: #cbd5e1; margin-bottom: 15px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 12px; display: flex; justify-content: space-around; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .stat-box { background: rgba(10, 6, 18, 0.6); padding: 12px 8px; border-radius: 16px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .stat-icon { font-size: 18px; margin-bottom: 4px; color: #ec4899; }
+        .stat-val { font-weight: 700; font-size: 15px; }
+        .stat-lbl { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+        .dashboard-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .game-launch-card { background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 20px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; min-height: 140px; }
+        .game-launch-card h3 { font-size: 18px; margin-bottom: 4px; color: #f472b6; }
+        .game-launch-card p { font-size: 12px; color: #94a3b8; }
+        .bottle-preview-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.08); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ec4899; margin-top: 10px; }
+        .store-card-mini { background: rgba(23, 15, 38, 0.8); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
+
+        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .tables-list { display: flex; flex-direction: column; gap: 12px; }
+        .table-card { background: rgba(23, 15, 38, 0.8); border-radius: 18px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.08); }
+        .table-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .gender-dots { display: flex; gap: 4px; align-items: center; margin-bottom: 8px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot.male { background: #3b82f6; }
+        .dot.female { background: #ec4899; }
+        .dot.empty { background: rgba(255,255,255,0.1); }
+        .table-info-flex { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #94a3b8; }
+        .join-btn { background: #3b82f6; color: white; padding: 6px 14px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; font-size: 13px; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: rgba(18, 11, 31, 0.98); border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-around; align-items: center; z-index: 200; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #64748b; cursor: pointer; font-size: 11px; text-decoration: none; }
+        .nav-item i { font-size: 20px; }
+        .nav-item.active { color: #ec4899; }
+
+        .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: flex-end; backdrop-filter: blur(8px); }
+        .modal-content { background: #160e24; width: 100%; max-height: 90vh; border-radius: 28px 28px 0 0; padding: 25px; overflow-y: auto; border-top: 1px solid rgba(255,255,255,0.1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-btn { font-size: 20px; color: #64748b; cursor: pointer; }
+        
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .shop-item { background: rgba(255,255,255,0.04); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.08); cursor: pointer; }
+        
+        .avatar-edit-box { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .avatar-preview { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #ec4899; }
+        .change-photo-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+
+        #game-room-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #07030d; z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .bottle-container { width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, #240b36 0%, #0c0514 100%); border: 3px solid rgba(236,72,153,0.4); display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 30px; box-shadow: 0 0 40px rgba(236,72,153,0.3); }
+        .spinning-bottle { font-size: 70px; color: #10b981; transition: transform 3s cubic-bezier(0.15, 0.85, 0.35, 1); filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.6)); }
+    </style>
+</head>
+<body>
+
+    <!-- AUTHENTICATION SCREEN -->
+    <div id="auth-screen" class="auth-container">
+        <div class="lang-bar">
+            <div class="lang-btn active" onclick="changeLang('az')">🇦🇿 Azərbaycanca</div>
+            <div class="lang-btn" onclick="changeLang('ka')">🇬🇪 ქართული</div>
+            <div class="lang-btn" onclick="changeLang('tr')">🇹🇷 Türkçe</div>
+            <div class="lang-btn" onclick="changeLang('en')">🇬🇧 English</div>
+        </div>
+
+        <div class="logo-box">
+            <div class="logo-icon"><i class="fa-solid fa-heart"></i></div>
+            <h1 class="brand-title">Butulka Baku</h1>
+            <p style="color:#94a3b8; font-size: 14px;">Hesabına daxil ol və oyuna davam et</p>
+        </div>
+
+        <div class="auth-card">
+            <div class="tab-switcher">
+                <div class="tab-btn active" id="tab-login" onclick="switchTab('login')">Giriş</div>
+                <div class="tab-btn" id="tab-register" onclick="switchTab('register')">Qeydiyyat</div>
+            </div>
+
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">İstifadəçi adı</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-user input-icon"></i>
+                        <input type="text" id="login-user" class="input-field" placeholder="İstifadəçi adı və ya ID" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Şifrə</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="login-pass" class="input-field" placeholder="••••••••" required>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">Daxil ol</button>
+            </form>
+
+            <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
+                <div class="notice-box">⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar.</div>
+                <div class="form-group">
+                    <label class="form-label">İstifadəçi adı</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-user input-icon"></i>
+                        <input type="text" id="reg-user" class="input-field" placeholder="İstifadəçi adı seç" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Şifrə</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="reg-pass" class="input-field" placeholder="Ən azı 6 simvol" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cinsiyyət</label>
+                    <div class="gender-options">
+                        <div class="gender-btn active" id="gender-male" onclick="selectGender('male')"><i class="fa-solid fa-mars"></i> Kişi</div>
+                        <div class="gender-btn" id="gender-female" onclick="selectGender('female')"><i class="fa-solid fa-venus"></i> Qadın</div>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">Hesab yarat</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN GAME DASHBOARD -->
+    <div id="game-dashboard" class="hidden">
+        <header class="app-header">
+            <div class="header-tools">
+                <div class="tool-btn vip-btn" onclick="openModal('modal-vip')"><i class="fa-solid fa-crown"></i> VIP</div>
+                <div class="tool-btn" onclick="openModal('modal-shop')"><i class="fa-solid fa-cart-shopping"></i></div>
+                <div class="tool-btn" onclick="openModal('modal-search')"><i class="fa-solid fa-magnifying-glass"></i></div>
+                <div class="tool-btn" style="width: auto; padding: 0 12px; font-size: 13px; font-weight: 600; color: #f472b6;" onclick="alert('Admin Alik ilə əlaqə')"><i class="fa-solid fa-headset" style="margin-right: 5px;"></i> Admin Alik</div>
+                <div class="tool-btn" onclick="openModal('modal-notifs')">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge" id="notif-count">1</span>
+                </div>
+                <div class="tool-btn" onclick="openModal('modal-settings')"><i class="fa-solid fa-sliders"></i></div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="profile-card">
+                <div class="avatar-container">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" id="user-avatar" class="avatar-img">
+                </div>
+                <span class="id-badge" id="user-id-display">ID 1836</span>
+                <h2 class="user-name"><span id="profile-name">Alik</span> <span id="profile-flag">🇦🇿</span></h2>
+                <p class="user-status" id="profile-status">Şirin Dil 😔</p>
+                <div class="user-meta-info" id="user-meta-display">
+                    <span>📍 Bakı</span> | <span> yaşı: 25</span> | <span>♂ Kişi</span>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-icon"><i class="fa-solid fa-heart"></i></div>
+                        <div class="stat-val" id="user-hearts">185</div>
+                        <div class="stat-lbl">Ürək</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon" style="color:#eab308;"><i class="fa-solid fa-coins"></i></div>
+                        <div class="stat-val" id="user-coins">5100</div>
+                        <div class="stat-lbl">Jeton</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon" style="color:#3b82f6;"><i class="fa-solid fa-user-group"></i></div>
+                        <div class="stat-val" id="user-friends">1</div>
+                        <div class="stat-lbl">Dostlar</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon" style="color:#a855f7;"><i class="fa-solid fa-eye"></i></div>
+                        <div class="stat-val">29</div>
+                        <div class="stat-lbl">Baxanlar</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GAME LAUNCHER & STORE CARDS GRID -->
+            <div class="dashboard-grid">
+                <div class="game-launch-card" onclick="enterGameRoom()">
+                    <div>
+                        <h3>Şüşəni fırlat</h3>
+                        <p>258 nəfər oynayır</p>
+                    </div>
+                    <div class="bottle-preview-icon">
+                        <i class="fa-solid fa-wine-bottle"></i>
+                    </div>
+                </div>
+                <div class="store-card-mini" onclick="openModal('modal-shop')">
+                    <div>
+                        <h3 style="color:#eab308; font-size:16px;"><i class="fa-solid fa-store"></i> Mağaza</h3>
+                        <p style="font-size:11px; color:#94a3b8; margin-top:4px;">Qanad satışı • VIP • ramkalar</p>
+                    </div>
+                    <div style="font-size:12px; color:#f472b6; font-weight:600; margin-top:10px;">Bax →</div>
+                </div>
+            </div>
+
+            <!-- ADMIN PANEL BUTTON (ONLY FOR ADMIN) -->
+            <button id="admin-panel-btn" onclick="openModal('modal-admin')" class="submit-btn hidden" style="background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); margin-bottom: 20px;">
+                <i class="fa-solid fa-user-shield"></i> Admin Panel (Alik)
+            </button>
+
+            <!-- TABLES SECTION -->
+            <div class="section-title">
+                <span>Masalar indi</span>
+                <button onclick="openModal('modal-create-table')" class="join-btn" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);">+ Masa yarat</button>
+            </div>
+
+            <div class="tables-list" id="tables-container">
+                <div class="table-card">
+                    <div class="table-card-top">
+                        <div><h4 style="font-size:16px;">Masa 3</h4></div>
+                        <span style="font-size:13px; color:#94a3b8; font-weight:600;">10/12</span>
+                    </div>
+                    <div class="gender-dots">
+                        <div class="dot male"></div><div class="dot male"></div><div class="dot male"></div><div class="dot male"></div><div class="dot male"></div><div class="dot male"></div>
+                        <div class="dot female"></div><div class="dot female"></div><div class="dot female"></div><div class="dot female"></div>
+                        <div class="dot empty"></div><div class="dot empty"></div>
+                    </div>
+                    <div class="table-info-flex">
+                        <span>♂ 6 • ♀ 4</span>
+                        <button class="join-btn" onclick="enterGameRoom()">Qoşul →</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="goHome()">
+                <i class="fa-solid fa-house"></i>
+                <span>Ana Səhifə</span>
+            </div>
+            <div class="nav-item" onclick="openModal('modal-messages')">
+                <i class="fa-solid fa-comment-dots"></i>
+                <span>Mesajlar</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- GAME ROOM -->
+    <div id="game-room-screen" class="hidden">
+        <div style="position: absolute; top: 20px; left: 20px;">
+            <button onclick="leaveGameRoom()" class="join-btn" style="background: rgba(255,255,255,0.1);"><i class="fa-solid fa-arrow-left"></i> Çıxış</button>
+        </div>
+        <h2 style="margin-bottom: 20px; color: #f472b6; font-style: italic;">Butulka Baku - Oyun Masası</h2>
+        
+        <div class="bottle-container">
+            <i class="fa-solid fa-wine-bottle spinning-bottle" id="rotating-bottle"></i>
+        </div>
+
+        <button class="submit-btn" style="max-width: 220px; margin-bottom: 20px;" onclick="spinTheBottle()">Şüşəni Fırlat 🍾</button>
+
+        <div style="width: 100%; max-width: 400px; background: rgba(23,15,38,0.9); border-radius: 16px; padding: 15px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 13px; color:#94a3b8; margin-bottom: 8px;">Canlı Söhbət</div>
+            <div id="chat-messages" style="height: 100px; overflow-y: auto; font-size: 13px; margin-bottom: 10px; color:#cbd5e1;">
+                <p><strong>Sistem:</strong> Oyuna xoş gəldiniz!</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="chat-input" class="input-field" placeholder="Mesaj yazın..." style="padding: 10px;">
+                <button onclick="sendChatMessage()" class="join-btn" style="padding: 0 16px;">Göndər</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SETTINGS (Şəkildəki dizayna uyğunlaşdırılmış) -->
+    <div id="modal-settings" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Profil Tənzimləmələri</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-settings')"></i></div>
+            <div class="avatar-edit-box">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" id="settings-avatar-preview" class="avatar-preview">
+                <button class="change-photo-btn" onclick="document.getElementById('photo-input').click()">Şəkli dəyiş</button>
+                <input type="file" id="photo-input" accept="image/*" class="hidden" onchange="uploadProfilePhoto(event)">
+            </div>
+            <div class="form-group"><label class="form-label">Ad</label><input type="text" id="edit-username" class="input-field"></div>
+            <div class="form-group"><label class="form-label">Status</label><input type="text" id="edit-status" class="input-field"></div>
+            
+            <div class="form-group">
+                <label class="form-label">Ölkə</label>
+                <select id="edit-country" class="input-field">
+                    <option value="🇦🇿 Azərbaycan">🇦🇿 Azərbaycan</option>
+                    <option value="🇬🇪 Gürcüstan">🇬🇪 Gürcüstan</option>
+                    <option value="🇹🇷 Türkiyə">🇹🇷 Türkiyə</option>
+                    <option value="🇷🇺 Rusiya">🇷🇺 Rusiya</option>
+                </select>
+            </div>
+
+            <div class="form-group"><label class="form-label">Rayon / şəhər</label><input type="text" id="edit-city" class="input-field" placeholder="Məs. Bakı"></div>
+            <div class="form-group"><label class="form-label">Yaş</label><input type="number" id="edit-age" class="input-field" placeholder="25"></div>
+
+            <div class="form-group">
+                <label class="form-label">Cinsiyyət</label>
+                <div class="gender-options">
+                    <div class="gender-btn active" id="settings-gender-male" onclick="selectSettingsGender('male')"><i class="fa-solid fa-mars"></i> Kişi</div>
+                    <div class="gender-btn" id="settings-gender-female" onclick="selectSettingsGender('female')"><i class="fa-solid fa-venus"></i> Qadın</div>
+                </div>
+            </div>
+
+            <button class="submit-btn" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); margin-top: 15px;" onclick="saveSettings()">Yadda saxla</button>
+            <hr style="margin:20px 0; border-color:rgba(255,255,255,0.1);">
+            <button class="submit-btn" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444;" onclick="handleLogout()">Çıxış et</button>
+        </div>
+    </div>
+
+    <!-- VIP MODAL -->
+    <div id="modal-vip" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>VIP Üzvlük</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-vip')"></i></div>
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                <div class="shop-item" style="flex:1;" onclick="buyVip(500, 'Həftəlik VIP')"><p style="color:#94a3b8;">7 gün</p><h3 style="color:#eab308;">500 🪙</h3></div>
+                <div class="shop-item" style="flex:1; border-color:#eab308;" onclick="buyVip(1200, 'Aylıq VIP')"><p style="color:#94a3b8;">30 gün</p><h3 style="color:#eab308;">1.2k 🪙</h3></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHOP MODAL -->
+    <div id="modal-shop" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Mağaza - Jeton Paketləri</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-shop')"></i></div>
+            <div class="shop-grid">
+                <div class="shop-item" onclick="buyCoins('1k Jeton', '5.00 AZN')"><h3 style="color:#eab308;">1k 🪙</h3><p>5.00 AZN</p></div>
+                <div class="shop-item" onclick="buyCoins('3k Jeton', '10.00 AZN')"><h3 style="color:#eab308;">3k 🪙</h3><p>10.00 AZN</p></div>
+                <div class="shop-item" onclick="buyCoins('5k Jeton', '15.00 AZN')"><h3 style="color:#eab308;">5k 🪙</h3><p>15.00 AZN</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREATE TABLE MODAL -->
+    <div id="modal-create-table" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Masa yarat</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-create-table')"></i></div>
+            <div class="form-group"><label class="form-label">Masa nömrəsi</label><input type="number" id="new-table-num" class="input-field" placeholder="1-9999"></div>
+            <div class="form-group"><label class="form-label">Masanın adı</label><input type="text" id="new-table-name" class="input-field" placeholder="Məs. Dostlar"></div>
+            <button class="submit-btn" onclick="createTable()">Al - 5000 🪙</button>
+        </div>
+    </div>
+
+    <!-- OTHER MODALS -->
+    <div id="modal-search" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Axtarış</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-search')"></i></div></div></div>
+    <div id="modal-notifs" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Bildirişlər</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-notifs')"></i></div></div></div>
+
+    <!-- ADMIN PANEL MODAL (YALNIZ ADMIN ÜÇÜN - Jeton göndər, ban və mute) -->
+    <div id="modal-admin" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3 style="color:#eab308;">Admin Panel (Alik)</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-admin')"></i></div>
+            
+            <div class="form-group">
+                <label class="form-label">İstifadəçi Axtarışı (Nik, ID və Şifrələr)</label>
+                <input type="text" id="admin-search-input" class="input-field" placeholder="Axtar..." oninput="filterAdminUsers()">
+            </div>
+            <div id="admin-user-list" style="max-height: 130px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 8px; margin-bottom: 15px; font-size: 12px;">
+                <!-- İstifadəçi siyahısı və şifrələr -->
+            </div>
+
+            <div class="form-group"><label class="form-label">Hədəf İstifadəçi ID</label><input type="text" id="admin-target-id" class="input-field" placeholder="Məs: 1836"></div>
+            
+            <div class="form-group">
+                <label class="form-label">Jeton Göndər (Miqdar)</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="number" id="admin-grant-coins" class="input-field" placeholder="Məs: 1000">
+                    <button class="join-btn" style="background:#eab308; color:#000;" onclick="adminSendCoins()">Göndər</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Bloklama / Susdurma (Mute & Ban)</label>
+                <select id="admin-action-type" class="input-field">
+                    <option value="mute_1d">Chatda 1 günlük susdur</option>
+                    <option value="mute_30d">Chatda 30 günlük susdur</option>
+                    <option value="unmute">Susdurmadan çıxar</option>
+                    <option value="ban_1d">1 günlük blokla (Ban)</option>
+                    <option value="ban_30d">30 günlük blokla (Ban)</option>
+                    <option value="unban">Blokdan çıxar</option>
+                </select>
+            </div>
+            <button class="submit-btn" style="background:#eab308; color:#000;" onclick="executeAdminAction()">Əməliyyatı Tətbiq Et</button>
+        </div>
+    </div>
+
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            dark: '#0f0920',
-                            card: '#1a1435',
-                            accent: '#ff007a',
-                            gold: '#ffb703',
-                            purple: '#6c5ce7'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Poppins', 'sans-serif']
+        let currentUser = null;
+        let selectedGender = 'male';
+        let settingsGender = 'male';
+
+        window.onload = function() {
+            if(!localStorage.getItem('user_Alik')) {
+                const defaultAdmin = {
+                    username: "Alik", pass: "123456", gender: 'male', 
+                    id: 1836, coins: 5100, hearts: 185, status: "Baş Admin 👑",
+                    country: "🇦🇿 Azərbaycan", city: "Bakı", age: "25",
+                    role: 'admin', muteUntil: 0, banUntil: 0, notification: null,
+                    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+                };
+                localStorage.setItem('user_Alik', JSON.stringify(defaultAdmin));
+            }
+
+            const saved = localStorage.getItem('putulka_logged_user');
+            if(saved) {
+                currentUser = JSON.parse(saved);
+                const freshData = localStorage.getItem('user_' + currentUser.username);
+                if(freshData) {
+                    currentUser = JSON.parse(freshData);
+                    localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
+                }
+                checkPunishments();
+                checkNotifications();
+                loadDashboard();
+            }
+        };
+
+        function checkPunishments() {
+            const now = new Date().getTime();
+            if(currentUser.banUntil && now < currentUser.banUntil) {
+                const dateStr = new Date(currentUser.banUntil).toLocaleString();
+                alert(`Diqqət! ${dateStr} tarixinə qədər admin tərəfindən bloklanmışısınız.`);
+                handleLogout();
+                throw new Error("Banned");
+            }
+        }
+
+        function checkNotifications() {
+            if(currentUser.notification) {
+                alert(currentUser.notification);
+                currentUser.notification = null;
+                saveUserData();
+            }
+        }
+
+        function switchTab(type) {
+            document.getElementById('login-form').classList.toggle('hidden', type !== 'login');
+            document.getElementById('register-form').classList.toggle('hidden', type === 'login');
+            document.getElementById('tab-login').classList.toggle('active', type === 'login');
+            document.getElementById('tab-register').classList.toggle('active', type !== 'login');
+        }
+
+        function selectGender(g) {
+            selectedGender = g;
+            document.getElementById('gender-male').classList.toggle('active', g === 'male');
+            document.getElementById('gender-female').classList.toggle('active', g === 'female');
+        }
+
+        function selectSettingsGender(g) {
+            settingsGender = g;
+            document.getElementById('settings-gender-male').classList.toggle('active', g === 'male');
+            document.getElementById('settings-gender-female').classList.toggle('active', g === 'female');
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const u = document.getElementById('reg-user').value.trim();
+            const p = document.getElementById('reg-pass').value;
+
+            if(localStorage.getItem('user_' + u)) {
+                alert('Bu istifadəçi adı artıq mövcuddur!');
+                return;
+            }
+
+            currentUser = { 
+                username: u, pass: p, gender: selectedGender, 
+                id: Math.floor(1000 + Math.random() * 9000), 
+                coins: 5100, hearts: 185, status: "Şirin Dil 😔",
+                country: "🇦🇿 Azərbaycan", city: "Bakı", age: "20",
+                role: 'user', muteUntil: 0, banUntil: 0, notification: null,
+                avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+            };
+            saveUserData();
+            loadDashboard();
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const inputVal = document.getElementById('login-user').value.trim();
+            const p = document.getElementById('login-pass').value;
+
+            let parsed = null;
+            for(let i=0; i<localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('user_')) {
+                    const uData = JSON.parse(localStorage.getItem(key));
+                    if(uData.username.toLowerCase() === inputVal.toLowerCase() || uData.id.toString() === inputVal) {
+                        parsed = uData;
+                        break;
+                    }
+                }
+            }
+
+            if(!parsed) { alert('İstifadəçi tapılmadı!'); return; }
+            if(parsed.pass !== p) { alert('Şifrə yanlışdır!'); return; }
+
+            currentUser = parsed;
+            localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
+            checkPunishments();
+            checkNotifications();
+            loadDashboard();
+        }
+
+        function loadDashboard() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('game-dashboard').classList.remove('hidden');
+            document.getElementById('game-room-screen').classList.add('hidden');
+            
+            document.getElementById('profile-name').innerText = currentUser.username;
+            document.getElementById('user-id-display').innerText = "ID " + currentUser.id;
+            document.getElementById('user-coins').innerText = currentUser.coins;
+            document.getElementById('profile-status').innerText = currentUser.status || "Şirin Dil 😔";
+
+            // Bayraq və digər məlumatların göstərilməsi
+            const countryFlag = currentUser.country ? currentUser.country.split(' ')[0] : '🇦🇿';
+            document.getElementById('profile-flag').innerText = countryFlag;
+            document.getElementById('user-meta-display').innerHTML = `<span>📍 ${currentUser.city || 'Bakı'}</span> | <span>yaşı: ${currentUser.age || '20'}</span> | <span>${currentUser.gender === 'male' ? '♂ Kişi' : '♀ Qadın'}</span>`;
+
+            if(currentUser.avatar) {
+                document.getElementById('user-avatar').src = currentUser.avatar;
+                document.getElementById('settings-avatar-preview').src = currentUser.avatar;
+            }
+
+            // Tənzimləmə formuna mövcud məlumatları doldurmaq
+            document.getElementById('edit-username').value = currentUser.username;
+            document.getElementById('edit-status').value = currentUser.status || "";
+            document.getElementById('edit-city').value = currentUser.city || "";
+            document.getElementById('edit-age').value = currentUser.age || "";
+            if(currentUser.country) document.getElementById('edit-country').value = currentUser.country;
+            selectSettingsGender(currentUser.gender || 'male');
+
+            const isAdmin = currentUser.username.toLowerCase() === 'alik' || currentUser.role === 'admin';
+            document.getElementById('admin-panel-btn').classList.toggle('hidden', !isAdmin);
+            
+            filterAdminUsers();
+        }
+
+        function filterAdminUsers() {
+            const query = document.getElementById('admin-search-input').value.toLowerCase();
+            const listDiv = document.getElementById('admin-user-list');
+            listDiv.innerHTML = '';
+
+            for(let i=0; i<localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('user_')) {
+                    const uData = JSON.parse(localStorage.getItem(key));
+                    if(!query || uData.username.toLowerCase().includes(query) || uData.id.toString().includes(query)) {
+                        listDiv.innerHTML += `<div>ID: <strong>${uData.id}</strong> | Nik: <strong>${uData.username}</strong> | Pass: <em>${uData.pass}</em></div>`;
                     }
                 }
             }
         }
-    </script>
-    <style>
-        body {
-            background: radial-gradient(circle at center, #1e1548 0%, #0a0618 100%);
-            color: #fff;
-            user-select: none;
-            overflow-x: hidden;
-        }
 
-        /* Glassmorphism */
-        .glass-panel {
-            background: rgba(26, 20, 53, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Neon Glows */
-        .neon-border-pink {
-            box-shadow: 0 0 15px rgba(255, 0, 122, 0.5), inset 0 0 15px rgba(255, 0, 122, 0.3);
-        }
-        .neon-border-gold {
-            box-shadow: 0 0 15px rgba(255, 183, 3, 0.5);
-        }
-        .neon-btn {
-            background: linear-gradient(45deg, #ff007a, #7928ca);
-            box-shadow: 0 4px 20px rgba(255, 0, 122, 0.4);
-            transition: all 0.3s ease;
-        }
-        .neon-btn:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 6px 25px rgba(255, 0, 122, 0.7);
-        }
-        .neon-btn:active {
-            transform: translateY(1px);
-        }
-
-        /* Table Design */
-        .poker-table {
-            background: radial-gradient(circle at center, #1b4d3e 0%, #0d2b22 70%, #051410 100%);
-            border: 16px solid #2d1810;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(0, 0, 0, 0.8), 0 0 0 4px #e2b04c;
-        }
-
-        /* Heart animation */
-        @keyframes floatingHeart {
-            0% { transform: translateY(0) scale(0.8); opacity: 1; }
-            100% { transform: translateY(-100px) scale(1.4); opacity: 0; }
-        }
-        .floating-heart {
-            position: absolute;
-            animation: floatingHeart 2s ease-out forwards;
-            pointer-events: none;
-        }
-
-        /* Pulse glow for active user turn */
-        .active-turn {
-            animation: turnPulse 1.5s infinite alternate;
-        }
-        @keyframes turnPulse {
-            0% { box-shadow: 0 0 5px #ff007a, 0 0 10px #ff007a; }
-            100% { box-shadow: 0 0 20px #ff007a, 0 0 35px #ff007a; }
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 0, 122, 0.5);
-            border-radius: 3px;
-        }
-    </style>
-</head>
-<body class="h-screen w-screen flex flex-col justify-between overflow-hidden font-sans">
-
-    <!-- TOP NAVIGATION BAR -->
-    <header class="w-full glass-panel px-4 py-2 flex items-center justify-between z-30 border-b border-white/10">
-        <div class="flex items-center gap-3">
-            <div class="bg-gradient-to-r from-pink-500 to-purple-600 p-2 rounded-xl text-white shadow-lg">
-                <i class="fa-solid font-bold fa-wine-bottle text-2xl"></i>
-            </div>
-            <div>
-                <h1 class="font-extrabold text-lg tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-yellow-400">
-                    BUTULKA OK.RU
-                </h1>
-                <p class="text-xs text-gray-400 flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Otaq #4092 (Online)
-                </p>
-            </div>
-        </div>
-
-        <!-- User Stats Header -->
-        <div class="flex items-center gap-4">
-            <div class="hidden sm:flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full border border-yellow-500/30">
-                <i class="fa-solid fa-heart text-pink-500"></i>
-                <span id="user-kisses-count" class="font-bold text-yellow-400 text-sm">124</span>
-                <span class="text-xs text-gray-400">Öpüş</span>
-            </div>
-            <div class="hidden sm:flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full border border-yellow-500/30">
-                <i class="fa-solid fa-coins text-yellow-400"></i>
-                <span id="user-coins-count" class="font-bold text-yellow-400 text-sm">1,500</span>
-            </div>
-            <!-- Profile Modal Trigger -->
-            <button id="btn-edit-profile" class="flex items-center gap-2 bg-purple-900/40 hover:bg-purple-800/60 p-1.5 pr-3 rounded-full border border-purple-500/40 transition">
-                <img id="header-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces" class="w-8 h-8 rounded-full object-cover border border-pink-500">
-                <span id="header-username" class="text-xs font-semibold max-w-[80px] truncate">Sən</span>
-            </button>
-        </div>
-    </header>
-
-    <!-- MAIN GAME CONTAINER -->
-    <main class="relative flex-1 flex items-center justify-center p-2 sm:p-6 overflow-hidden">
-
-        <!-- LEFT SIDEBAR: LEADERBOARD & GIFTS -->
-        <aside class="hidden lg:flex flex-col gap-4 w-72 h-full z-20">
-            <!-- Leaderboard -->
-            <div class="glass-panel rounded-2xl p-4 flex-1 flex flex-col overflow-hidden">
-                <h3 class="text-sm font-bold text-yellow-400 mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-trophy"></i> Liderlər Cədvəli
-                </h3>
-                <div id="leaderboard-list" class="flex-1 overflow-y-auto space-y-2 pr-1">
-                    <!-- Dynamic leaderboard content -->
-                </div>
-            </div>
-
-            <!-- Virtual Gifts Panel -->
-            <div class="glass-panel rounded-2xl p-3 h-48 flex flex-col">
-                <h3 class="text-xs font-bold text-pink-400 mb-2 flex items-center justify-between">
-                    <span><i class="fa-solid fa-gift"></i> Hədiyyələr Göndər</span>
-                    <span class="text-[10px] text-gray-400">Klikləvə Göndər</span>
-                </h3>
-                <div class="grid grid-cols-4 gap-2 flex-1">
-                    <button onclick="sendGift('🌹', 'Qızılgül')" class="bg-black/30 hover:bg-pink-900/40 border border-white/10 rounded-xl flex flex-col items-center justify-center p-1 transition">
-                        <span class="text-2xl">🌹</span>
-                        <span class="text-[10px] text-yellow-400 font-bold">10 🪙</span>
-                    </button>
-                    <button onclick="sendGift('💖', 'Ürək')" class="bg-black/30 hover:bg-pink-900/40 border border-white/10 rounded-xl flex flex-col items-center justify-center p-1 transition">
-                        <span class="text-2xl">💖</span>
-                        <span class="text-[10px] text-yellow-400 font-bold">25 🪙</span>
-                    </button>
-                    <button onclick="sendGift('👑', 'Tac')" class="bg-black/30 hover:bg-pink-900/40 border border-white/10 rounded-xl flex flex-col items-center justify-center p-1 transition">
-                        <span class="text-2xl">👑</span>
-                        <span class="text-[10px] text-yellow-400 font-bold">100 🪙</span>
-                    </button>
-                    <button onclick="sendGift('🍸', 'Kokteyl')" class="bg-black/30 hover:bg-pink-900/40 border border-white/10 rounded-xl flex flex-col items-center justify-center p-1 transition">
-                        <span class="text-2xl">🍸</span>
-                        <span class="text-[10px] text-yellow-400 font-bold">50 🪙</span>
-                    </button>
-                </div>
-            </div>
-        </aside>
-
-        <!-- CENTER: SPINS TABLE -->
-        <div class="relative flex-1 max-w-4xl h-full flex items-center justify-center">
-
-            <!-- Circular Table Container -->
-            <div id="table-container" class="relative w-[340px] h-[340px] sm:w-[540px] sm:h-[540px] md:w-[620px] md:h-[620px] poker-table rounded-full flex items-center justify-center shadow-2xl transition-all duration-300">
-
-                <!-- Inner Wood/Felt Ring Pattern -->
-                <div class="absolute inset-4 sm:inset-8 rounded-full border border-emerald-500/20 pointer-events-none"></div>
-                <div class="absolute inset-16 sm:inset-28 rounded-full border border-dashed border-emerald-400/20 pointer-events-none"></div>
-
-                <!-- PLAYERS SEATS (Positioned via JS) -->
-                <div id="players-ring" class="absolute inset-0 w-full h-full pointer-events-none">
-                    <!-- Seats rendered dynamically -->
-                </div>
-
-                <!-- CENTER BOTTLE CANVAS & SPIN BUTTON -->
-                <div class="relative z-10 flex flex-col items-center justify-center">
-                    
-                    <!-- Bottle Canvas Component -->
-                    <div class="relative w-40 h-40 sm:w-56 sm:h-56 flex items-center justify-center cursor-pointer" id="bottle-wrapper">
-                        <canvas id="bottleCanvas" width="300" height="300" class="w-full h-full drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)] transition-transform"></canvas>
-                    </div>
-
-                    <!-- Spin Button Center Overlay -->
-                    <button id="spin-btn" onclick="triggerSpin()" class="neon-btn text-white font-black px-6 py-2.5 sm:px-8 sm:py-3 rounded-full text-sm sm:text-base tracking-wider uppercase flex items-center gap-2 border border-pink-300/40 shadow-2xl hover:scale-105 active:scale-95 transition-all">
-                        <i class="fa-solid fa-arrows-spin text-lg animate-spin" style="animation-duration: 4s;"></i> BUTULKANI FIRLAT
-                    </button>
-
-                    <!-- Status Display -->
-                    <div id="game-status-text" class="absolute -bottom-10 sm:-bottom-12 bg-black/70 backdrop-blur border border-yellow-500/40 px-4 py-1 rounded-full text-xs sm:text-sm text-yellow-300 font-semibold shadow-lg whitespace-nowrap">
-                        Növbə sizindir! Butulkanı fırladın.
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- RIGHT SIDEBAR: LIVE CHAT -->
-        <aside class="hidden md:flex flex-col w-80 h-full z-20 glass-panel rounded-2xl p-4 ml-4">
-            <div class="flex items-center justify-between pb-3 border-b border-white/10">
-                <h3 class="text-sm font-bold text-pink-400 flex items-center gap-2">
-                    <i class="fa-solid fa-comments"></i> Otaq Çatı
-                </h3>
-                <span class="text-[10px] bg-green-500/20 text-green-300 border border-green-500/30 px-2 py-0.5 rounded-full">
-                    8 Oyunçu
-                </span>
-            </div>
-
-            <!-- Messages Box -->
-            <div id="chat-messages" class="flex-1 overflow-y-auto py-3 space-y-3 pr-1 text-xs">
-                <!-- Dynamic Chat Content -->
-            </div>
-
-            <!-- Chat Input Form -->
-            <form id="chat-form" onsubmit="sendChatMessage(event)" class="mt-2 flex gap-2">
-                <input type="text" id="chat-input" placeholder="Mesaj yazın..." maxlength="80" autocomplete="off" class="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500 transition">
-                <button type="submit" class="bg-pink-600 hover:bg-pink-500 text-white px-3 py-2 rounded-xl transition">
-                    <i class="fa-solid fa-paper-plane text-xs"></i>
-                </button>
-            </form>
-        </aside>
-    </main>
-
-    <!-- MOBILE CHAT BOTTOM TOGGLE -->
-    <div class="md:hidden glass-panel border-t border-white/10 p-2 flex items-center gap-2 z-30">
-        <input type="text" id="mobile-chat-input" placeholder="Otağa yazın..." class="flex-1 bg-black/50 border border-white/20 rounded-lg px-3 py-1.5 text-xs text-white">
-        <button onclick="sendMobileChatMessage()" class="bg-pink-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold">
-            Göndər
-        </button>
-    </div>
-
-    <!-- ACTION MODAL: KISS OR REFUSE -->
-    <div id="kiss-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="glass-panel border border-pink-500/40 rounded-3xl p-6 max-w-sm w-full text-center relative shadow-[0_0_50px_rgba(255,0,122,0.4)] animate-bounce-in">
-            
-            <div class="text-yellow-400 font-extrabold text-lg uppercase tracking-wider mb-2">
-                💋 Öpüş Vaxtıdır!
-            </div>
-            
-            <p class="text-xs text-gray-300 mb-6">
-                Butulka bu iki oyunçuda dayandı:
-            </p>
-
-            <!-- Couples Profile Display -->
-            <div class="flex items-center justify-around mb-6 relative">
-                <!-- Player 1 -->
-                <div class="flex flex-col items-center">
-                    <img id="modal-p1-img" src="" class="w-16 h-16 rounded-full object-cover border-2 border-pink-500 shadow-lg">
-                    <span id="modal-p1-name" class="text-xs font-bold mt-2 text-white">---</span>
-                </div>
-
-                <!-- Heart Icon Middle -->
-                <div class="text-pink-500 text-3xl animate-pulse">
-                    <i class="fa-solid fa-heart"></i>
-                </div>
-
-                <!-- Player 2 -->
-                <div class="flex flex-col items-center">
-                    <img id="modal-p2-img" src="" class="w-16 h-16 rounded-full object-cover border-2 border-blue-500 shadow-lg">
-                    <span id="modal-p2-name" class="text-xs font-bold mt-2 text-white">---</span>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex gap-3 justify-center">
-                <button onclick="handleActionChoice('refuse')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2.5 rounded-xl text-xs font-bold transition border border-white/10">
-                    <i class="fa-solid fa-xmark"></i> İmtina Et
-                </button>
-                <button onclick="handleActionChoice('kiss')" class="flex-1 neon-btn text-white py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
-                    <i class="fa-solid fa-kiss-wink-heart"></i> Öpüş (+10 Xal)
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- PROFILE EDIT MODAL -->
-    <div id="profile-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="glass-panel border border-purple-500/40 rounded-3xl p-6 max-w-xs w-full text-center relative shadow-2xl">
-            <h3 class="text-lg font-bold text-yellow-400 mb-4">Profil Redaktəsi</h3>
-            
-            <div class="space-y-4 text-left">
-                <div>
-                    <label class="text-xs text-gray-400 block mb-1">Adınız:</label>
-                    <input type="text" id="input-username" class="w-full bg-black/50 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 block mb-1">Cinsiniz:</label>
-                    <select id="select-gender" class="w-full bg-black/50 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500">
-                        <option value="female">Qadın ♀</option>
-                        <option value="male">Kişi ♂</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mt-6 flex gap-2">
-                <button onclick="closeProfileModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-xl text-xs font-bold">Ləğv et</button>
-                <button onclick="saveProfile()" class="flex-1 neon-btn text-white py-2 rounded-xl text-xs font-bold">Yadda saxla</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        // --- GAME STATE & PLAYERS DATA ---
-        let currentUser = {
-            id: 0,
-            name: "Aysel",
-            gender: "female",
-            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=faces",
-            kisses: 124,
-            coins: 1500
-        };
-
-        const initialBotPlayers = [
-            { id: 1, name: "Elvin", gender: "male", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=faces", kisses: 98 },
-            { id: 2, name: "Leyla", gender: "female", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=faces", kisses: 210 },
-            { id: 3, name: "Murad", gender: "male", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=faces", kisses: 75 },
-            { id: 4, name: "Nərgiz", gender: "female", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=faces", kisses: 145 },
-            { id: 5, name: "Rauf", gender: "male", avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&h=150&fit=crop&crop=faces", kisses: 189 },
-            { id: 6, name: "Gunay", gender: "female", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&h=150&fit=crop&crop=faces", kisses: 88 },
-            { id: 7, name: "Tural", gender: "male", avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&h=150&fit=crop&crop=faces", kisses: 302 }
-        ];
-
-        let players = [];
-        let isSpinning = false;
-        let currentRotation = 0; // bottle angle in degrees
-        let bottleCanvas, ctx;
-
-        // --- INITIALIZATION ---
-        window.onload = function() {
-            // Merge current user with bots (Total 8 players)
-            players = [currentUser, ...initialBotPlayers];
-            
-            initCanvas();
-            renderSeats();
-            renderLeaderboard();
-            initChat();
-            updateUserUI();
-
-            // Setup Profile Edit listener
-            document.getElementById('btn-edit-profile').onclick = openProfileModal;
-
-            // Simulated bot chat periodic generator
-            setInterval(simulateBotChat, 12000);
-        };
-
-        // --- CANVAS BOTTLE DRAWING ---
-        function initCanvas() {
-            bottleCanvas = document.getElementById('bottleCanvas');
-            ctx = bottleCanvas.getContext('2d');
-            drawBottle(0);
-        }
-
-        function drawBottle(angleDegrees) {
-            ctx.clearRect(0, 0, bottleCanvas.width, bottleCanvas.height);
-            ctx.save();
-            
-            // Move origin to center
-            ctx.translate(150, 150);
-            ctx.rotate((angleDegrees * Math.PI) / 180);
-
-            // Draw Stylized Glass Bottle Body
-            // Shadow
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-            ctx.shadowBlur = 12;
-            ctx.shadowOffsetY = 8;
-
-            // Bottle base (Green gradient)
-            let grad = ctx.createLinearGradient(-25, -70, 25, 70);
-            grad.addColorStop(0, '#2ecc71');
-            grad.addColorStop(0.5, '#117a65');
-            grad.addColorStop(1, '#0b5345');
-
-            ctx.fillStyle = grad;
-            
-            // Bottle Shape Path (Pointing UPWARDS initially)
-            ctx.beginPath();
-            ctx.moveTo(-15, -70); // Top neck
-            ctx.lineTo(15, -70);
-            ctx.lineTo(12, -40);  // Neck base
-            ctx.lineTo(26, -10);  // Shoulder right
-            ctx.lineTo(26, 60);   // Body right
-            ctx.arcTo(26, 75, 0, 75, 10); // Bottom right curve
-            ctx.arcTo(-26, 75, -26, 60, 10); // Bottom left curve
-            ctx.lineTo(-26, -10); // Body left
-            ctx.lineTo(-12, -40); // Shoulder left
-            ctx.closePath();
-            ctx.fill();
-
-            // Glass Highlights / Reflection Lines
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
-            ctx.beginPath();
-            ctx.moveTo(-20, -10);
-            ctx.lineTo(-10, -35);
-            ctx.lineTo(-6, -35);
-            ctx.lineTo(-14, -10);
-            ctx.closePath();
-            ctx.fill();
-
-            // Bottle Cap / Cork (Golden)
-            ctx.fillStyle = '#f1c40f';
-            ctx.fillRect(-12, -78, 24, 9);
-
-            // Red Label around bottle
-            ctx.fillStyle = '#e74c3c';
-            ctx.fillRect(-26, 0, 52, 25);
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 9px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('OK.RU', 0, 16);
-
-            ctx.restore();
-        }
-
-        // --- RENDER PLAYERS AROUND CIRCULAR TABLE ---
-        function renderSeats() {
-            const ring = document.getElementById('players-ring');
-            ring.innerHTML = '';
-            const total = players.length;
-
-            players.forEach((player, index) => {
-                // Calculate angle for positioning around circle (0 at top, clockwise)
-                const angle = (index * (360 / total) - 90) * (Math.PI / 180);
-                // Radius ratio relative to table
-                const radius = 42; // Percentage offset from center
-                const left = 50 + radius * Math.cos(angle);
-                const top = 50 + radius * Math.sin(angle);
-
-                const isMe = player.id === currentUser.id;
-                const genderIcon = player.gender === 'female' ? '<span class="text-pink-400">♀</span>' : '<span class="text-blue-400">♂</span>';
-
-                const seatElem = document.createElement('div');
-                seatElem.className = 'absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-auto transition-transform hover:scale-110';
-                seatElem.style.left = `${left}%`;
-                seatElem.style.top = `${top}%`;
-
-                seatElem.innerHTML = `
-                    <div class="relative cursor-pointer group" onclick="showPlayerInfo(${player.id})">
-                        <img src="${player.avatar}" class="w-11 h-11 sm:w-16 sm:h-16 rounded-full object-cover border-2 ${isMe ? 'border-yellow-400 neon-border-gold' : 'border-white/40'} shadow-md">
-                        <div class="absolute -bottom-1 -right-1 bg-black/80 px-1.5 py-0.5 rounded-full text-[10px] font-bold border border-white/20">
-                            ${genderIcon}
-                        </div>
-                    </div>
-                    <div class="mt-1 bg-black/70 backdrop-blur px-2 py-0.5 rounded-full border border-white/10 text-center max-w-[70px] sm:max-w-[90px]">
-                        <p class="text-[10px] font-semibold truncate text-white">${player.name}</p>
-                        <p class="text-[9px] text-yellow-400 flex items-center justify-center gap-0.5">
-                            <i class="fa-solid fa-heart text-[8px] text-pink-500"></i> ${player.kisses}
-                        </p>
-                    </div>
-                `;
-
-                ring.appendChild(seatElem);
-            });
-        }
-
-        // --- SPIN LOGIC ---
-        function triggerSpin() {
-            if (isSpinning) return;
-            isSpinning = true;
-
-            const spinBtn = document.getElementById('spin-btn');
-            const statusText = document.getElementById('game-status-text');
-            spinBtn.disabled = true;
-            spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
-
-            statusText.innerText = "Butulka fırlanır...";
-
-            // Random spinner calculation
-            // Pick a random player target (excluding player 0 if we want random target)
-            const targetIndex = Math.floor(Math.random() * players.length);
-            const totalPlayers = players.length;
-
-            // Calculate angle for selected player
-            // Player 0 is at -90 deg (top). Angle per seat = 360 / 8 = 45 deg.
-            const targetAngleDegrees = targetIndex * (360 / totalPlayers);
-            
-            // Add 5-8 full spins (1800-2880 deg) + target angle
-            const extraRounds = (5 + Math.floor(Math.random() * 4)) * 360;
-            const finalAngle = currentRotation + extraRounds + targetAngleDegrees - (currentRotation % 360);
-
-            const duration = 4000; // 4 seconds spin
-            const startTime = performance.now();
-            const startAngle = currentRotation;
-
-            // Sound simulator (click tick)
-            let lastTickAngle = startAngle;
-
-            function animateSpin(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-
-                // Cubic Easing out for realistic slowdown
-                const easeOut = 1 - Math.pow(1 - progress, 3);
-                currentRotation = startAngle + (finalAngle - startAngle) * easeOut;
-
-                drawBottle(currentRotation);
-
-                // Trigger small tick sound simulation every 45deg
-                if (Math.abs(currentRotation - lastTickAngle) > 35) {
-                    playTickSound();
-                    lastTickAngle = currentRotation;
-                }
-
-                if (progress < 1) {
-                    requestAnimationFrame(animateSpin);
-                } else {
-                    // Spin Completed!
-                    isSpinning = false;
-                    spinBtn.disabled = false;
-                    spinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-
-                    onSpinFinished(targetIndex);
+        function adminSendCoins() {
+            const targetId = document.getElementById('admin-target-id').value.trim();
+            const amount = parseInt(document.getElementById('admin-grant-coins').value);
+            if(!targetId || !amount) { alert('ID və miqdarı daxil edin!'); return; }
+
+            let targetUser = null;
+            let targetKey = null;
+            for(let i=0; i<localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('user_')) {
+                    const u = JSON.parse(localStorage.getItem(key));
+                    if(u.id.toString() === targetId) {
+                        targetUser = u;
+                        targetKey = key;
+                        break;
+                    }
                 }
             }
 
-            requestAnimationFrame(animateSpin);
+            if(!targetUser) { alert('İstifadəçi tapılmadı!'); return; }
+            targetUser.coins += amount;
+            targetUser.notification = `Admin tərəfindən hesabınıza ${amount} jeton göndərildi!`;
+            localStorage.setItem(targetKey, JSON.stringify(targetUser));
+            alert('Jeton uğurla göndərildi!');
         }
 
-        // --- AFTER SPIN ACTIONS ---
-        function onSpinFinished(targetIndex) {
-            const targetPlayer = players[targetIndex];
-            const spinnerPlayer = players[0]; // Current user turned
+        function executeAdminAction() {
+            const targetId = document.getElementById('admin-target-id').value.trim();
+            const action = document.getElementById('admin-action-type').value;
 
-            document.getElementById('game-status-text').innerText = `Butulka ${targetPlayer.name} üzərində dayandı!`;
-
-            // Open Action Kiss Modal
-            showKissModal(spinnerPlayer, targetPlayer);
-        }
-
-        function showKissModal(p1, p2) {
-            document.getElementById('modal-p1-img').src = p1.avatar;
-            document.getElementById('modal-p1-name').innerText = p1.name;
-
-            document.getElementById('modal-p2-img').src = p2.avatar;
-            document.getElementById('modal-p2-name').innerText = p2.name;
-
-            document.getElementById('kiss-modal').classList.remove('hidden');
-        }
-
-        function handleActionChoice(choice) {
-            document.getElementById('kiss-modal').classList.add('hidden');
-
-            if (choice === 'kiss') {
-                // Award points
-                currentUser.kisses += 10;
-                currentUser.coins += 15;
-                updateUserUI();
-
-                // Confetti & Hearts effect
-                triggerHeartsAnimation();
-                confetti({
-                    particleCount: 50,
-                    spread: 60,
-                    origin: { y: 0.6 }
-                });
-
-                // Add to chat
-                addChatMessage("Sistem", `💋 ${currentUser.name} və ${players[1].name} öpüşdülər! (+10 Xal)`, true);
-            } else {
-                addChatMessage("Sistem", `❌ Öpüşdən imtina edildi.`, false);
+            let foundUserKey = null;
+            let targetUser = null;
+            for(let i=0; i<localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('user_')) {
+                    const uData = JSON.parse(localStorage.getItem(key));
+                    if(uData.id.toString() === targetId) {
+                        foundUserKey = key;
+                        targetUser = uData;
+                        break;
+                    }
+                }
             }
 
-            renderSeats();
-            renderLeaderboard();
+            if(!targetUser) { alert('Bu ID-yə uyğun istifadəçi tapılmadı!'); return; }
+
+            const now = new Date().getTime();
+            if(action === 'mute_1d') { targetUser.muteUntil = now + 24*60*60*1000; alert('İstifadəçi 1 gün susduruldu!'); }
+            else if(action === 'mute_30d') { targetUser.muteUntil = now + 30*24*60*60*1000; alert('İstifadəçi 30 gün susduruldu!'); }
+            else if(action === 'unmute') { targetUser.muteUntil = 0; alert('İstifadəçi susdurulmadan azad edildi!'); }
+            else if(action === 'ban_1d') { 
+                targetUser.banUntil = now + 24*60*60*1000; 
+                targetUser.notification = "Diqqət! 1 günlük admin tərəfindən bloklandınız.";
+                alert('İstifadəçi 1 günlük bloklandı!'); 
+            }
+            else if(action === 'ban_30d') { 
+                targetUser.banUntil = now + 30*24*60*60*1000; 
+                targetUser.notification = "Diqqət! 30 günlük admin tərəfindən bloklandınız.";
+                alert('İstifadəçi 30 günlük bloklandı!'); 
+            }
+            else if(action === 'unban') { targetUser.banUntil = 0; alert('İstifadəçi blokdan çıxarıldı!'); }
+
+            localStorage.setItem(foundUserKey, JSON.stringify(targetUser));
+            if(currentUser.id === targetUser.id) currentUser = targetUser;
+            closeModal('modal-admin');
+            filterAdminUsers();
         }
 
-        // --- LEADERBOARD & CHAT UI ---
-        function renderLeaderboard() {
-            const list = document.getElementById('leaderboard-list');
-            list.innerHTML = '';
+        function sendChatMessage() {
+            const now = new Date().getTime();
+            if(currentUser.muteUntil && now < currentUser.muteUntil) {
+                const dateStr = new Date(currentUser.muteUntil).toLocaleString();
+                alert(`Diqqət! ${dateStr} tarixinə kimi susdurulmusunuz.`);
+                return;
+            }
+            const input = document.getElementById('chat-input');
+            const txt = input.value.trim();
+            if(!txt) return;
 
-            // Sort players by kisses
-            const sorted = [...players].sort((a, b) => b.kisses - a.kisses);
-
-            sorted.forEach((p, idx) => {
-                const item = document.createElement('div');
-                item.className = 'flex items-center justify-between bg-black/40 p-2 rounded-xl border border-white/5';
-                
-                let rankBadge = `<span class="text-xs font-bold text-gray-400 w-5">#${idx + 1}</span>`;
-                if (idx === 0) rankBadge = `<span class="text-yellow-400 font-bold w-5"><i class="fa-solid fa-crown text-xs"></i></span>`;
-                if (idx === 1) rankBadge = `<span class="text-gray-300 font-bold w-5">#2</span>`;
-                if (idx === 2) rankBadge = `<span class="text-amber-600 font-bold w-5">#3</span>`;
-
-                item.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        ${rankBadge}
-                        <img src="${p.avatar}" class="w-7 h-7 rounded-full object-cover">
-                        <span class="text-xs font-medium text-white truncate max-w-[90px]">${p.name}</span>
-                    </div>
-                    <span class="text-xs font-bold text-pink-400 flex items-center gap-1">
-                        <i class="fa-solid fa-heart text-[10px]"></i> ${p.kisses}
-                    </span>
-                `;
-                list.appendChild(item);
-            });
-        }
-
-        function initChat() {
-            addChatMessage("Sistem", "Otağa xoş gəldiniz! Fırladın və həzz alın.", true);
-            addChatMessage("Elvin", "Hamıya salam! Kim fırladır?");
-            addChatMessage("Leyla", "Salammm 💖");
-        }
-
-        function addChatMessage(sender, text, isSystem = false) {
             const chatBox = document.getElementById('chat-messages');
-            const msg = document.createElement('div');
-            
-            if (isSystem) {
-                msg.className = "bg-pink-950/40 border border-pink-500/30 p-2 rounded-xl text-center text-pink-300 text-[11px] font-semibold";
-                msg.innerText = text;
-            } else {
-                msg.className = "bg-black/30 p-2 rounded-xl border border-white/5";
-                msg.innerHTML = `<span class="font-bold text-yellow-400">${sender}:</span> <span class="text-gray-200">${text}</span>`;
-            }
-
-            chatBox.appendChild(msg);
+            chatBox.innerHTML += `<p><strong>${currentUser.username}:</strong> ${txt}</p>`;
+            input.value = '';
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function sendChatMessage(e) {
-            e.preventDefault();
-            const input = document.getElementById('chat-input');
-            const val = input.value.trim();
-            if (val) {
-                addChatMessage(currentUser.name, val);
-                input.value = '';
+        function enterGameRoom() {
+            document.getElementById('game-dashboard').classList.add('hidden');
+            document.getElementById('game-room-screen').classList.remove('hidden');
+        }
+
+        function leaveGameRoom() {
+            document.getElementById('game-room-screen').classList.add('hidden');
+            document.getElementById('game-dashboard').classList.remove('hidden');
+        }
+
+        function spinTheBottle() {
+            const bottle = document.getElementById('rotating-bottle');
+            const randomDegree = Math.floor(1000 + Math.random() * 2000);
+            bottle.style.transform = `rotate(${randomDegree}deg)`;
+            setTimeout(() => { alert('Şüşə dayandı!'); }, 3000);
+        }
+
+        function buyVip(cost, title) {
+            if(currentUser.coins < cost) { alert('Jeton çatmır!'); return; }
+            currentUser.coins -= cost;
+            saveUserData();
+            alert(`Təbriklər! ${title} aktivləşdi.`);
+            closeModal('modal-vip');
+            loadDashboard();
+        }
+
+        function buyCoins(pkg, price) {
+            alert(`Sifariş göndərildi! Alik bildiriş aldı.`);
+            closeModal('modal-shop');
+        }
+
+        function createTable() {
+            if(currentUser.coins < 5000) { alert('Masa yaratmaq üçün 5000 jeton lazımdır!'); return; }
+            currentUser.coins -= 5000;
+            saveUserData();
+            closeModal('modal-create-table');
+            alert('Masa uğurla yaradıldı!');
+            loadDashboard();
+        }
+
+        function uploadProfilePhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentUser.avatar = e.target.result;
+                    document.getElementById('user-avatar').src = currentUser.avatar;
+                    document.getElementById('settings-avatar-preview').src = currentUser.avatar;
+                    saveUserData();
+                };
+                reader.readAsDataURL(file);
             }
         }
 
-        function sendMobileChatMessage() {
-            const input = document.getElementById('mobile-chat-input');
-            const val = input.value.trim();
-            if (val) {
-                addChatMessage(currentUser.name, val);
-                input.value = '';
-            }
+        function saveUserData() {
+            localStorage.setItem('user_' + currentUser.username, JSON.stringify(currentUser));
+            localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
         }
 
-        function simulateBotChat() {
-            const botNames = ["Elvin", "Leyla", "Murad", "Nərgiz", "Rauf"];
-            const botMessages = [
-                "Uşaqlar çox maraqlıdır oyundayıq!",
-                "Kimin növbəsidir indi?",
-                "Super oyundur ok.ru-dakı kimidir tam 🍾",
-                "Mənə bir gül göndərin də :)",
-                "Hər kəsə salamlar!"
-            ];
+        function saveSettings() {
+            const newName = document.getElementById('edit-username').value.trim();
+            const newSt = document.getElementById('edit-status').value.trim();
+            const newCity = document.getElementById('edit-city').value.trim();
+            const newAge = document.getElementById('edit-age').value.trim();
+            const newCountry = document.getElementById('edit-country').value;
 
-            const randomBot = botNames[Math.floor(Math.random() * botNames.length)];
-            const randomMsg = botMessages[Math.floor(Math.random() * botMessages.length)];
-            addChatMessage(randomBot, randomMsg);
+            if(newName) currentUser.username = newName;
+            currentUser.status = newSt;
+            currentUser.city = newCity;
+            currentUser.age = newAge;
+            currentUser.country = newCountry;
+            currentUser.gender = settingsGender;
+
+            saveUserData();
+            loadDashboard();
+            alert('Profil tənzimləmələri yadda saxlanıldı!');
+            closeModal('modal-settings');
         }
 
-        // --- GIFTS & EFFECTS ---
-        function sendGift(emoji, giftName) {
-            if (currentUser.coins < 10) {
-                alert("Kafi qədər sikkəniz yoxdur!");
-                return;
-            }
-            currentUser.coins -= 10;
-            updateUserUI();
-
-            addChatMessage(currentUser.name, `Otağa ${giftName} ${emoji} hədiyyə etdi!`);
-            triggerHeartsAnimation();
+        function openModal(id) { 
+            document.getElementById(id).classList.remove('hidden'); 
+            if(id === 'modal-admin') filterAdminUsers();
+        }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function goHome() { 
+            document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); 
+            document.getElementById('game-room-screen').classList.add('hidden');
+            document.getElementById('game-dashboard').classList.remove('hidden');
+        }
+        function handleLogout() {
+            localStorage.removeItem('putulka_logged_user');
+            location.reload();
         }
 
-        function triggerHeartsAnimation() {
-            const container = document.body;
-            for (let i = 0; i < 8; i++) {
-                const heart = document.createElement('div');
-                heart.className = 'floating-heart text-2xl text-pink-500 z-50';
-                heart.innerHTML = '💖';
-                heart.style.left = `${Math.random() * 80 + 10}%`;
-                heart.style.top = `${Math.random() * 40 + 40}%`;
-                container.appendChild(heart);
-                setTimeout(() => heart.remove(), 2000);
-            }
-        }
-
-        function playTickSound() {
-            // Web Audio API tick generator (No external audio needed)
-            try {
-                const ctxAudio = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctxAudio.createOscillator();
-                const gain = ctxAudio.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(120, ctxAudio.currentTime);
-                gain.gain.setValueAtTime(0.05, ctxAudio.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctxAudio.currentTime + 0.05);
-                osc.connect(gain);
-                gain.connect(ctxAudio.destination);
-                osc.start();
-                osc.stop(ctxAudio.currentTime + 0.05);
-            } catch (e) {}
-        }
-
-        // --- USER PROFILE MODAL & LOGIC ---
-        function updateUserUI() {
-            document.getElementById('user-kisses-count').innerText = currentUser.kisses;
-            document.getElementById('user-coins-count').innerText = currentUser.coins;
-            document.getElementById('header-username').innerText = currentUser.name;
-            document.getElementById('header-avatar').src = currentUser.avatar;
-        }
-
-        function openProfileModal() {
-            document.getElementById('input-username').value = currentUser.name;
-            document.getElementById('select-gender').value = currentUser.gender;
-            document.getElementById('profile-modal').classList.remove('hidden');
-        }
-
-        function closeProfileModal() {
-            document.getElementById('profile-modal').classList.add('hidden');
-        }
-
-        function saveProfile() {
-            const newName = document.getElementById('input-username').value.trim();
-            const newGender = document.getElementById('select-gender').value;
-
-            if (newName) currentUser.name = newName;
-            currentUser.gender = newGender;
-
-            updateUserUI();
-            renderSeats();
-            renderLeaderboard();
-            closeProfileModal();
-        }
-
-        function showPlayerInfo(id) {
-            const p = players.find(player => player.id === id);
-            if (p) {
-                addChatMessage("Sistem", `👤 ${p.name} - Öpüş xalları: ${p.kisses}`);
-            }
+        function changeLang(lang) {
+            document.querySelectorAll('.lang-bar .lang-btn').forEach(b => b.classList.remove('active'));
+            if(event && event.target) event.target.classList.add('active');
         }
     </script>
 </body>
 </html>
-```
