@@ -297,7 +297,6 @@
 
         <button class="submit-btn" style="max-width: 220px; margin-bottom: 20px;" onclick="spinTheBottle()">Şüşəni Fırlat 🍾</button>
 
-        <!-- Live Chat Box -->
         <div style="width: 100%; max-width: 400px; background: rgba(23,15,38,0.9); border-radius: 16px; padding: 15px; border: 1px solid rgba(255,255,255,0.1);">
             <div style="font-size: 13px; color:#94a3b8; margin-bottom: 8px;">Canlı Söhbət</div>
             <div id="chat-messages" style="height: 100px; overflow-y: auto; font-size: 13px; margin-bottom: 10px; color:#cbd5e1;">
@@ -327,16 +326,49 @@
         </div>
     </div>
 
+    <!-- VIP MODAL -->
+    <div id="modal-vip" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>VIP Üzvlük</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-vip')"></i></div>
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                <div class="shop-item" style="flex:1;" onclick="buyVip(500, 'Həftəlik VIP')"><p style="color:#94a3b8;">7 gün</p><h3 style="color:#eab308;">500 🪙</h3></div>
+                <div class="shop-item" style="flex:1; border-color:#eab308;" onclick="buyVip(1200, 'Aylıq VIP')"><p style="color:#94a3b8;">30 gün</p><h3 style="color:#eab308;">1.2k 🪙</h3></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHOP MODAL -->
+    <div id="modal-shop" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Mağaza - Jeton Paketləri</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-shop')"></i></div>
+            <div class="shop-grid">
+                <div class="shop-item" onclick="buyCoins('1k Jeton', '5.00 AZN')"><h3 style="color:#eab308;">1k 🪙</h3><p>5.00 AZN</p></div>
+                <div class="shop-item" onclick="buyCoins('3k Jeton', '10.00 AZN')"><h3 style="color:#eab308;">3k 🪙</h3><p>10.00 AZN</p></div>
+                <div class="shop-item" onclick="buyCoins('5k Jeton', '15.00 AZN')"><h3 style="color:#eab308;">5k 🪙</h3><p>15.00 AZN</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREATE TABLE MODAL -->
+    <div id="modal-create-table" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Masa yarat</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-create-table')"></i></div>
+            <div class="form-group"><label class="form-label">Masa nömrəsi</label><input type="number" id="new-table-num" class="input-field" placeholder="1-9999"></div>
+            <div class="form-group"><label class="form-label">Masanın adı</label><input type="text" id="new-table-name" class="input-field" placeholder="Məs. Dostlar"></div>
+            <button class="submit-btn" onclick="createTable()">Al - 5000 🪙</button>
+        </div>
+    </div>
+
+    <!-- OTHER MODALS -->
+    <div id="modal-search" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Axtarış</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-search')"></i></div></div></div>
+    <div id="modal-support" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Adminlə Əlaqə</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-support')"></i></div></div></div>
+    <div id="modal-notifs" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Bildirişlər</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-notifs')"></i></div></div></div>
+
     <!-- ADMIN PANEL MODAL -->
     <div id="modal-admin" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header"><h3 style="color:#eab308;">Admin Panel (Alik)</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-admin')"></i></div>
-            
-            <div class="form-group">
-                <label class="form-label">İstifadəçi ID-si</label>
-                <input type="text" id="admin-target-id" class="input-field" placeholder="Məs: 1836">
-            </div>
-            
+            <div class="form-group"><label class="form-label">İstifadəçi ID-si</label><input type="text" id="admin-target-id" class="input-field" placeholder="Məs: 1836"></div>
             <div class="form-group">
                 <label class="form-label">Səlahiyyət / Əməliyyat Seçimi</label>
                 <select id="admin-action-type" class="input-field">
@@ -350,7 +382,6 @@
                     <option value="unban">Blokdan çıxar</option>
                 </select>
             </div>
-
             <button class="submit-btn" style="background:#eab308; color:#000;" onclick="executeAdminAction()">Təsdiq et və Tətbiq et</button>
         </div>
     </div>
@@ -359,12 +390,7 @@
     <div id="modal-mod" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header"><h3 style="color:#3b82f6;">Moderator Paneli</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-mod')"></i></div>
-            
-            <div class="form-group">
-                <label class="form-label">İstifadəçi ID-si</label>
-                <input type="text" id="mod-target-id" class="input-field" placeholder="Məs: 1836">
-            </div>
-            
+            <div class="form-group"><label class="form-label">İstifadəçi ID-si</label><input type="text" id="mod-target-id" class="input-field" placeholder="Məs: 1836"></div>
             <div class="form-group">
                 <label class="form-label">Əməliyyat Seçimi</label>
                 <select id="mod-action-type" class="input-field">
@@ -373,18 +399,9 @@
                     <option value="unmute">Susdurmadan çıxar</option>
                 </select>
             </div>
-
             <button class="submit-btn" style="background:#3b82f6; color:#fff;" onclick="executeModAction()">Tətbiq et</button>
         </div>
     </div>
-
-    <!-- OTHER MODALS -->
-    <div id="modal-vip" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>VIP Üzvlük</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-vip')"></i></div></div></div>
-    <div id="modal-create-table" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Masa yarat</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-create-table')"></i></div></div></div>
-    <div id="modal-shop" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Mağaza</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-shop')"></i></div></div></div>
-    <div id="modal-search" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Axtarış</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-search')"></i></div></div></div>
-    <div id="modal-support" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Adminlə Əlaqə</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-support')"></i></div></div></div>
-    <div id="modal-notifs" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Bildirişlər</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-notifs')"></i></div></div></div>
 
     <script>
         let currentUser = null;
@@ -416,7 +433,8 @@
                 username: u, pass: p, gender: 'male', 
                 id: Math.floor(1000 + Math.random() * 9000), 
                 coins: 5100, hearts: 185, status: "Şirin Dil 😔",
-                role: 'user', muteUntil: 0, banUntil: 0
+                role: 'user', muteUntil: 0, banUntil: 0,
+                avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
             };
             saveUserData();
             loadDashboard();
@@ -446,7 +464,11 @@
             document.getElementById('user-coins').innerText = currentUser.coins;
             document.getElementById('profile-status').innerText = currentUser.status || "Şirin Dil 😔";
 
-            // Səlahiyyət Düymələrinin İdarə Olunması
+            if(currentUser.avatar) {
+                document.getElementById('user-avatar').src = currentUser.avatar;
+                document.getElementById('settings-avatar-preview').src = currentUser.avatar;
+            }
+
             const isAdmin = currentUser.username.toLowerCase() === 'alik' || currentUser.role === 'admin';
             const isMod = currentUser.role === 'moderator';
 
@@ -467,7 +489,6 @@
         }
 
         function applyActionToUser(idStr, action) {
-            // Bütün istifadəçiləri tapmaq üçün localStorage yoxlanılır
             let foundUserKey = null;
             let targetUser = null;
             for(let i=0; i<localStorage.length; i++) {
@@ -482,10 +503,7 @@
                 }
             }
 
-            if(!targetUser) {
-                alert('Bu ID-yə uyğun istifadəçi tapılmadı!');
-                return;
-            }
+            if(!targetUser) { alert('Bu ID-yə uyğun istifadəçi tapılmadı!'); return; }
 
             const now = new Date().getTime();
             if(action === 'adminka') { targetUser.role = 'admin'; alert('İstifadəçiyə Adminka səlahiyyəti verildi!'); }
@@ -535,6 +553,43 @@
             const randomDegree = Math.floor(1000 + Math.random() * 2000);
             bottle.style.transform = `rotate(${randomDegree}deg)`;
             setTimeout(() => { alert('Şüşə dayandı!'); }, 3000);
+        }
+
+        function buyVip(cost, title) {
+            if(currentUser.coins < cost) { alert('Jeton çatmır!'); return; }
+            currentUser.coins -= cost;
+            saveUserData();
+            alert(`Təbriklər! ${title} aktivləşdi.`);
+            closeModal('modal-vip');
+            loadDashboard();
+        }
+
+        function buyCoins(pkg, price) {
+            alert(`Sifariş göndərildi! Alik bildiriş aldı.`);
+            closeModal('modal-shop');
+        }
+
+        function createTable() {
+            if(currentUser.coins < 5000) { alert('Masa yaratmaq üçün 5000 jeton lazımdır!'); return; }
+            currentUser.coins -= 5000;
+            saveUserData();
+            closeModal('modal-create-table');
+            alert('Masa uğurla yaradıldı!');
+            loadDashboard();
+        }
+
+        function uploadProfilePhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentUser.avatar = e.target.result;
+                    document.getElementById('user-avatar').src = currentUser.avatar;
+                    document.getElementById('settings-avatar-preview').src = currentUser.avatar;
+                    saveUserData();
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
         function saveUserData() {
