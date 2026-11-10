@@ -31,7 +31,6 @@
         .input-wrapper { position: relative; display: flex; align-items: center; }
         .input-icon { position: absolute; left: 16px; color: #64748b; }
         .input-field { width: 100%; background: rgba(10, 6, 18, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 14px 16px 14px 45px; color: white; font-size: 14px; outline: none; }
-        select.input-field { padding-left: 16px; background: rgba(10, 6, 18, 0.9); color: white; }
         .gender-options { display: flex; gap: 12px; }
         .gender-btn { flex: 1; padding: 15px; background: rgba(10, 6, 18, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; color: #64748b; }
         .gender-btn.active { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
@@ -52,8 +51,7 @@
         .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #ec4899; }
         .id-badge { background: #eab308; color: #000; font-weight: 800; padding: 2px 8px; border-radius: 12px; font-size: 12px; display: inline-block; margin-bottom: 8px; }
         .user-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .user-status { color: #94a3b8; font-size: 14px; margin-bottom: 10px; font-style: italic; }
-        .user-meta-info { font-size: 13px; color: #cbd5e1; margin-bottom: 15px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 12px; display: flex; justify-content: space-around; }
+        .user-status { color: #94a3b8; font-size: 14px; margin-bottom: 15px; font-style: italic; }
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
         .stat-box { background: rgba(10, 6, 18, 0.6); padding: 12px 8px; border-radius: 16px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.05); }
@@ -61,45 +59,33 @@
         .stat-val { font-weight: 700; font-size: 15px; }
         .stat-lbl { font-size: 11px; color: #64748b; margin-top: 2px; }
 
-        .dashboard-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .game-launch-card { background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 20px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; min-height: 140px; }
-        .game-launch-card h3 { font-size: 18px; margin-bottom: 4px; color: #f472b6; }
-        .game-launch-card p { font-size: 12px; color: #94a3b8; }
-        .bottle-preview-icon { width: 50px; height: 50px; background: rgba(255,255,255,0.08); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ec4899; margin-top: 10px; }
-        .store-card-mini { background: rgba(23, 15, 38, 0.8); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
-
+        /* Tables Section */
         .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         .tables-list { display: flex; flex-direction: column; gap: 12px; }
-        .table-card { background: rgba(23, 15, 38, 0.8); border-radius: 18px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.08); }
-        .table-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .gender-dots { display: flex; gap: 4px; align-items: center; margin-bottom: 8px; }
-        .dot { width: 12px; height: 12px; border-radius: 50%; }
-        .dot.male { background: #3b82f6; }
-        .dot.female { background: #ec4899; }
-        .dot.empty { background: rgba(255,255,255,0.1); }
-        .table-info-flex { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #94a3b8; }
-        .join-btn { background: #3b82f6; color: white; padding: 6px 14px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; font-size: 13px; }
+        .table-card { background: rgba(23, 15, 38, 0.8); border-radius: 18px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; }
+        .table-info h4 { font-size: 16px; margin-bottom: 4px; }
+        .table-info p { font-size: 12px; color: #94a3b8; }
+        .join-btn { background: #3b82f6; color: white; padding: 8px 16px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; }
 
+        /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: rgba(18, 11, 31, 0.98); border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-around; align-items: center; z-index: 200; }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #64748b; cursor: pointer; font-size: 11px; text-decoration: none; }
         .nav-item i { font-size: 20px; }
         .nav-item.active { color: #ec4899; }
 
+        /* Modals */
         .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: flex-end; backdrop-filter: blur(8px); }
         .modal-content { background: #160e24; width: 100%; max-height: 90vh; border-radius: 28px 28px 0 0; padding: 25px; overflow-y: auto; border-top: 1px solid rgba(255,255,255,0.1); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .close-btn { font-size: 20px; color: #64748b; cursor: pointer; }
         
+        select.input-field { background: #0a0612; color: white; }
         .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .shop-item { background: rgba(255,255,255,0.04); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.08); cursor: pointer; }
-        
+
         .avatar-edit-box { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .avatar-preview { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #ec4899; }
         .change-photo-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; }
-
-        #game-room-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #07030d; z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .bottle-container { width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, #240b36 0%, #0c0514 100%); border: 3px solid rgba(236,72,153,0.4); display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 30px; box-shadow: 0 0 40px rgba(236,72,153,0.3); }
-        .spinning-bottle { font-size: 70px; color: #10b981; transition: transform 3s cubic-bezier(0.15, 0.85, 0.35, 1); filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.6)); }
     </style>
 </head>
 <body>
@@ -116,57 +102,57 @@
         <div class="logo-box">
             <div class="logo-icon"><i class="fa-solid fa-heart"></i></div>
             <h1 class="brand-title">Butulka Baku</h1>
-            <p style="color:#94a3b8; font-size: 14px;">Hesabına daxil ol və oyuna davam et</p>
+            <p style="color:#94a3b8; font-size: 14px;" id="l-sub">Hesabına daxil ol və oyuna davam et</p>
         </div>
 
         <div class="auth-card">
             <div class="tab-switcher">
-                <div class="tab-btn active" id="tab-login" onclick="switchTab('login')">Giriş</div>
-                <div class="tab-btn" id="tab-register" onclick="switchTab('register')">Qeydiyyat</div>
+                <div class="tab-btn active" id="tab-login" onclick="switchTab('login')" data-t="tLogin">Giriş</div>
+                <div class="tab-btn" id="tab-register" onclick="switchTab('register')" data-t="tReg">Qeydiyyat</div>
             </div>
 
             <form id="login-form" onsubmit="handleLogin(event)">
                 <div class="form-group">
-                    <label class="form-label">İstifadəçi adı</label>
+                    <label class="form-label" data-t="tUser">İstifadəçi adı</label>
                     <div class="input-wrapper">
                         <i class="fa-regular fa-user input-icon"></i>
                         <input type="text" id="login-user" class="input-field" placeholder="İstifadəçi adı və ya ID" required>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Şifrə</label>
+                    <label class="form-label" data-t="tPass">Şifrə</label>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-lock input-icon"></i>
                         <input type="password" id="login-pass" class="input-field" placeholder="••••••••" required>
                     </div>
                 </div>
-                <button type="submit" class="submit-btn">Daxil ol</button>
+                <button type="submit" class="submit-btn" data-t="tLoginBtn">Daxil ol</button>
             </form>
 
             <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
-                <div class="notice-box">⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar.</div>
+                <div class="notice-box" data-t="tNotice">⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar.</div>
                 <div class="form-group">
-                    <label class="form-label">İstifadəçi adı</label>
+                    <label class="form-label" data-t="tUser">İstifadəçi adı</label>
                     <div class="input-wrapper">
                         <i class="fa-regular fa-user input-icon"></i>
                         <input type="text" id="reg-user" class="input-field" placeholder="İstifadəçi adı seç" required>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Şifrə</label>
+                    <label class="form-label" data-t="tPass">Şifrə</label>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-lock input-icon"></i>
                         <input type="password" id="reg-pass" class="input-field" placeholder="Ən azı 6 simvol" required>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Cinsiyyət</label>
+                    <label class="form-label" data-t="tGender">Cinsiyyət</label>
                     <div class="gender-options">
-                        <div class="gender-btn active" id="gender-male" onclick="selectGender('male')"><i class="fa-solid fa-mars"></i> Kişi</div>
-                        <div class="gender-btn" id="gender-female" onclick="selectGender('female')"><i class="fa-solid fa-venus"></i> Qadın</div>
+                        <div class="gender-btn active" id="gender-male" onclick="selectGender('male')"><i class="fa-solid fa-mars"></i> <span data-t="tMale">Kişi</span></div>
+                        <div class="gender-btn" id="gender-female" onclick="selectGender('female')"><i class="fa-solid fa-venus"></i> <span data-t="tFemale">Qadın</span></div>
                     </div>
                 </div>
-                <button type="submit" class="submit-btn">Hesab yarat</button>
+                <button type="submit" class="submit-btn" data-t="tRegBtn">Hesab yarat</button>
             </form>
         </div>
     </div>
@@ -178,7 +164,7 @@
                 <div class="tool-btn vip-btn" onclick="openModal('modal-vip')"><i class="fa-solid fa-crown"></i> VIP</div>
                 <div class="tool-btn" onclick="openModal('modal-shop')"><i class="fa-solid fa-cart-shopping"></i></div>
                 <div class="tool-btn" onclick="openModal('modal-search')"><i class="fa-solid fa-magnifying-glass"></i></div>
-                <div class="tool-btn" style="width: auto; padding: 0 12px; font-size: 13px; font-weight: 600; color: #f472b6;" onclick="alert('Admin Alik ilə əlaqə')"><i class="fa-solid fa-headset" style="margin-right: 5px;"></i> Admin Alik</div>
+                <div class="tool-btn" onclick="openModal('modal-support')"><i class="fa-solid fa-headset"></i></div>
                 <div class="tool-btn" onclick="openModal('modal-notifs')">
                     <i class="fa-solid fa-bell"></i>
                     <span class="badge" id="notif-count">1</span>
@@ -195,80 +181,47 @@
                 <span class="id-badge" id="user-id-display">ID 1836</span>
                 <h2 class="user-name"><span id="profile-name">Alik</span> <span id="profile-flag">🇦🇿</span></h2>
                 <p class="user-status" id="profile-status">Şirin Dil 😔</p>
-                <div class="user-meta-info" id="user-meta-display">
-                    <span>📍 Bakı</span> | <span> yaşı: 25</span> | <span>♂ Kişi</span>
-                </div>
 
                 <div class="stats-grid">
                     <div class="stat-box">
                         <div class="stat-icon"><i class="fa-solid fa-heart"></i></div>
                         <div class="stat-val" id="user-hearts">185</div>
-                        <div class="stat-lbl">Ürək</div>
+                        <div class="stat-lbl" data-t="tHeartLbl">Ürək</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-icon" style="color:#eab308;"><i class="fa-solid fa-coins"></i></div>
                         <div class="stat-val" id="user-coins">5100</div>
-                        <div class="stat-lbl">Jeton</div>
+                        <div class="stat-lbl" data-t="tCoinLbl">Jeton</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-icon" style="color:#3b82f6;"><i class="fa-solid fa-user-group"></i></div>
                         <div class="stat-val" id="user-friends">1</div>
-                        <div class="stat-lbl">Dostlar</div>
+                        <div class="stat-lbl" data-t="tFriendLbl">Dostlar</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-icon" style="color:#a855f7;"><i class="fa-solid fa-eye"></i></div>
                         <div class="stat-val">29</div>
-                        <div class="stat-lbl">Baxanlar</div>
+                        <div class="stat-lbl" data-t="tViewLbl">Baxanlar</div>
                     </div>
                 </div>
             </div>
 
-            <!-- GAME LAUNCHER & STORE CARDS GRID -->
-            <div class="dashboard-grid">
-                <div class="game-launch-card" onclick="enterGameRoom()">
-                    <div>
-                        <h3>Şüşəni fırlat</h3>
-                        <p>258 nəfər oynayır</p>
-                    </div>
-                    <div class="bottle-preview-icon">
-                        <i class="fa-solid fa-wine-bottle"></i>
-                    </div>
-                </div>
-                <div class="store-card-mini" onclick="openModal('modal-shop')">
-                    <div>
-                        <h3 style="color:#eab308; font-size:16px;"><i class="fa-solid fa-store"></i> Mağaza</h3>
-                        <p style="font-size:11px; color:#94a3b8; margin-top:4px;">Qanad satışı • VIP • ramkalar</p>
-                    </div>
-                    <div style="font-size:12px; color:#f472b6; font-weight:600; margin-top:10px;">Bax →</div>
-                </div>
-            </div>
-
-            <!-- ADMIN PANEL BUTTON (ONLY FOR ADMIN) -->
             <button id="admin-panel-btn" onclick="openModal('modal-admin')" class="submit-btn hidden" style="background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); margin-bottom: 20px;">
-                <i class="fa-solid fa-user-shield"></i> Admin Panel (Alik)
+                <i class="fa-solid fa-user-shield"></i> Admin İdarəetmə Paneli
             </button>
 
-            <!-- TABLES SECTION -->
             <div class="section-title">
-                <span>Masalar indi</span>
-                <button onclick="openModal('modal-create-table')" class="join-btn" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);">+ Masa yarat</button>
+                <span data-t="tTablesTitle">Masalar indi</span>
+                <button onclick="openModal('modal-create-table')" class="join-btn" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); font-size: 13px; padding: 6px 12px;" data-t="tCreateTableBtn">+ Masa yarat</button>
             </div>
 
             <div class="tables-list" id="tables-container">
                 <div class="table-card">
-                    <div class="table-card-top">
-                        <div><h4 style="font-size:16px;">Masa 3</h4></div>
-                        <span style="font-size:13px; color:#94a3b8; font-weight:600;">10/12</span>
+                    <div class="table-info">
+                        <h4>Masa 1</h4>
+                        <p>11/12 Oyunçu • ♂ 4 • ♀ 7</p>
                     </div>
-                    <div class="gender-dots">
-                        <div class="dot male"></div><div class="dot male"></div><div class="dot male"></div><div class="dot male"></div><div class="dot male"></div><div class="dot male"></div>
-                        <div class="dot female"></div><div class="dot female"></div><div class="dot female"></div><div class="dot female"></div>
-                        <div class="dot empty"></div><div class="dot empty"></div>
-                    </div>
-                    <div class="table-info-flex">
-                        <span>♂ 6 • ♀ 4</span>
-                        <button class="join-btn" onclick="enterGameRoom()">Qoşul →</button>
-                    </div>
+                    <button class="join-btn" data-t="tJoin">Qoşul →</button>
                 </div>
             </div>
         </main>
@@ -276,80 +229,107 @@
         <nav class="bottom-nav">
             <div class="nav-item active" onclick="goHome()">
                 <i class="fa-solid fa-house"></i>
-                <span>Ana Səhifə</span>
+                <span data-t="tHome">Ana Səhifə</span>
             </div>
             <div class="nav-item" onclick="openModal('modal-messages')">
                 <i class="fa-solid fa-comment-dots"></i>
-                <span>Mesajlar</span>
+                <span data-t="tMessages">Mesajlar</span>
             </div>
         </nav>
     </div>
 
-    <!-- GAME ROOM -->
-    <div id="game-room-screen" class="hidden">
-        <div style="position: absolute; top: 20px; left: 20px;">
-            <button onclick="leaveGameRoom()" class="join-btn" style="background: rgba(255,255,255,0.1);"><i class="fa-solid fa-arrow-left"></i> Çıxış</button>
-        </div>
-        <h2 style="margin-bottom: 20px; color: #f472b6; font-style: italic;">Butulka Baku - Oyun Masası</h2>
-        
-        <div class="bottle-container">
-            <i class="fa-solid fa-wine-bottle spinning-bottle" id="rotating-bottle"></i>
-        </div>
-
-        <button class="submit-btn" style="max-width: 220px; margin-bottom: 20px;" onclick="spinTheBottle()">Şüşəni Fırlat 🍾</button>
-
-        <div style="width: 100%; max-width: 400px; background: rgba(23,15,38,0.9); border-radius: 16px; padding: 15px; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="font-size: 13px; color:#94a3b8; margin-bottom: 8px;">Canlı Söhbət</div>
-            <div id="chat-messages" style="height: 100px; overflow-y: auto; font-size: 13px; margin-bottom: 10px; color:#cbd5e1;">
-                <p><strong>Sistem:</strong> Oyuna xoş gəldiniz!</p>
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="chat-input" class="input-field" placeholder="Mesaj yazın..." style="padding: 10px;">
-                <button onclick="sendChatMessage()" class="join-btn" style="padding: 0 16px;">Göndər</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: SETTINGS (Şəkildəki dizayna uyğunlaşdırılmış) -->
+    <!-- MODAL: SETTINGS -->
     <div id="modal-settings" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header"><h3>Profil Tənzimləmələri</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-settings')"></i></div>
+            <div class="modal-header">
+                <h3 data-t="tSettingsHead">Profil Tənzimləmələri</h3>
+                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-settings')"></i>
+            </div>
+
+            <!-- Profile Photo Upload -->
             <div class="avatar-edit-box">
                 <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" id="settings-avatar-preview" class="avatar-preview">
                 <button class="change-photo-btn" onclick="document.getElementById('photo-input').click()">Şəkli dəyiş</button>
                 <input type="file" id="photo-input" accept="image/*" class="hidden" onchange="uploadProfilePhoto(event)">
             </div>
-            <div class="form-group"><label class="form-label">Ad</label><input type="text" id="edit-username" class="input-field"></div>
-            <div class="form-group"><label class="form-label">Status</label><input type="text" id="edit-status" class="input-field"></div>
-            
+
+            <div class="form-group">
+                <label class="form-label">Ad</label>
+                <input type="text" id="edit-username" class="input-field" placeholder="İstifadəçi adı">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" data-t="tStatusLbl">Status</label>
+                <input type="text" id="edit-status" class="input-field" placeholder="Statusunuzu yazın...">
+            </div>
+
             <div class="form-group">
                 <label class="form-label">Ölkə</label>
-                <select id="edit-country" class="input-field">
-                    <option value="🇦🇿 Azərbaycan">🇦🇿 Azərbaycan</option>
-                    <option value="🇬🇪 Gürcüstan">🇬🇪 Gürcüstan</option>
-                    <option value="🇹🇷 Türkiyə">🇹🇷 Türkiyə</option>
-                    <option value="🇷🇺 Rusiya">🇷🇺 Rusiya</option>
+                <select id="edit-country" class="input-field" onchange="onCountryChange()">
+                    <option value="">— seçilməyib —</option>
+                    <option value="AZ" data-flag="🇦🇿">Azərbaycan 🇦🇿</option>
+                    <option value="TR" data-flag="🇹🇷">Türkiyə 🇹🇷</option>
+                    <option value="RU" data-flag="🇷🇺">Rusiya 🇷🇺</option>
+                    <option value="GE" data-flag="🇬🇪">Gürcüstan 🇬🇪</option>
+                    <option value="US" data-flag="🇺🇸">Amerika 🇺🇸</option>
+                    <option value="KZ" data-flag="🇰🇿">Qazaxıstan 🇰🇿</option>
+                    <option value="UZ" data-flag="🇺🇿">Özbəkistan 🇺🇿</option>
+                    <option value="DE" data-flag="🇩🇪">Almaniya 🇩🇪</option>
+                    <option value="GB" data-flag="🇬🇧">Böyük Britaniya 🇬🇧</option>
+                    <option value="AE" data-flag="🇦🇪">BƏƏ 🇦🇪</option>
                 </select>
             </div>
 
-            <div class="form-group"><label class="form-label">Rayon / şəhər</label><input type="text" id="edit-city" class="input-field" placeholder="Məs. Bakı"></div>
-            <div class="form-group"><label class="form-label">Yaş</label><input type="number" id="edit-age" class="input-field" placeholder="25"></div>
+            <div class="form-group">
+                <label class="form-label">Rayon / şəhər</label>
+                <select id="edit-city-select" class="input-field">
+                    <option value="">— şəhər seçin —</option>
+                </select>
+                <input type="text" id="edit-city-text" class="input-field hidden" placeholder="Şəhər / Rayon adını yazın" style="margin-top: 6px;">
+            </div>
 
             <div class="form-group">
-                <label class="form-label">Cinsiyyət</label>
+                <label class="form-label">Yaş (min 18 - maks 99)</label>
+                <input type="number" id="edit-age" class="input-field" min="18" max="99" placeholder="18">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" data-t="tGender">Cinsiyyət</label>
                 <div class="gender-options">
-                    <div class="gender-btn active" id="settings-gender-male" onclick="selectSettingsGender('male')"><i class="fa-solid fa-mars"></i> Kişi</div>
-                    <div class="gender-btn" id="settings-gender-female" onclick="selectSettingsGender('female')"><i class="fa-solid fa-venus"></i> Qadın</div>
+                    <div class="gender-btn" id="edit-gender-male" onclick="setEditGender('male')"><i class="fa-solid fa-mars"></i> <span data-t="tMale">Kişi</span></div>
+                    <div class="gender-btn" id="edit-gender-female" onclick="setEditGender('female')"><i class="fa-solid fa-venus"></i> <span data-t="tFemale">Qadın</span></div>
                 </div>
             </div>
 
-            <button class="submit-btn" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); margin-top: 15px;" onclick="saveSettings()">Yadda saxla</button>
+            <button class="submit-btn" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); margin-top: 15px;" onclick="saveSettings()" data-t="tSave">Yadda saxla</button>
+
+            <!-- Password Change -->
             <hr style="margin:20px 0; border-color:rgba(255,255,255,0.1);">
-            <button class="submit-btn" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444;" onclick="handleLogout()">Çıxış et</button>
+            <h4 style="margin-bottom:10px; font-size:15px;" data-t="tChangePassHead">Şifrəni dəyiş</h4>
+            <div class="form-group">
+                <input type="password" id="old-pass" class="input-field" placeholder="Hazırkı şifrə" data-t-ph="tOldPassPh">
+            </div>
+            <div class="form-group">
+                <input type="password" id="new-pass" class="input-field" placeholder="Yeni şifrə (min 6 simvol)" data-t-ph="tNewPassPh">
+            </div>
+            <button class="submit-btn" style="background:rgba(59, 130, 246, 0.2); color:#3b82f6; border:1px solid #3b82f6;" onclick="changePassword()" data-t="tChangePassBtn">Şifrəni yenilə</button>
+
+            <!-- Language Section -->
+            <hr style="margin:20px 0; border-color:rgba(255,255,255,0.1);">
+            <h4 style="margin-bottom:10px; font-size:15px;" data-t="tLangHead">Dil dəyiş</h4>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px;">
+                <button class="lang-btn active" onclick="changeLang('az')">AZ</button>
+                <button class="lang-btn" onclick="changeLang('ka')">KA</button>
+                <button class="lang-btn" onclick="changeLang('tr')">TR</button>
+                <button class="lang-btn" onclick="changeLang('en')">EN</button>
+            </div>
+
+            <!-- Logout -->
+            <button class="submit-btn" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444;" onclick="handleLogout()" data-t="tLogout">Çıxış et</button>
         </div>
     </div>
 
-    <!-- VIP MODAL -->
+    <!-- OTHER MODALS -->
     <div id="modal-vip" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header"><h3>VIP Üzvlük</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-vip')"></i></div>
@@ -360,7 +340,15 @@
         </div>
     </div>
 
-    <!-- SHOP MODAL -->
+    <div id="modal-create-table" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Masa yarat</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-create-table')"></i></div>
+            <div class="form-group"><label class="form-label">Masa nömrəsi</label><input type="number" id="new-table-num" class="input-field" placeholder="1-9999"></div>
+            <div class="form-group"><label class="form-label">Masanın adı</label><input type="text" id="new-table-name" class="input-field" placeholder="Məs. Dostlar"></div>
+            <button class="submit-btn" onclick="createTable()">Al - 5000 🪙</button>
+        </div>
+    </div>
+
     <div id="modal-shop" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header"><h3>Mağaza - Jeton Paketləri</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-shop')"></i></div>
@@ -372,106 +360,83 @@
         </div>
     </div>
 
-    <!-- CREATE TABLE MODAL -->
-    <div id="modal-create-table" class="modal hidden">
+    <div id="modal-search" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header"><h3>Masa yarat</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-create-table')"></i></div>
-            <div class="form-group"><label class="form-label">Masa nömrəsi</label><input type="number" id="new-table-num" class="input-field" placeholder="1-9999"></div>
-            <div class="form-group"><label class="form-label">Masanın adı</label><input type="text" id="new-table-name" class="input-field" placeholder="Məs. Dostlar"></div>
-            <button class="submit-btn" onclick="createTable()">Al - 5000 🪙</button>
+            <div class="modal-header"><h3>İstifadəçi Axtarışı</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-search')"></i></div>
+            <input type="text" class="input-field" placeholder="İstifadəçi adı və ya ID...">
         </div>
     </div>
 
-    <!-- OTHER MODALS -->
-    <div id="modal-search" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Axtarış</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-search')"></i></div></div></div>
-    <div id="modal-notifs" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Bildirişlər</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-notifs')"></i></div></div></div>
+    <div id="modal-support" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Adminlə Əlaqə</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-support')"></i></div>
+            <p style="text-align: center; font-size: 18px; margin: 20px 0;">Baş Admin: <strong>Alik</strong></p>
+        </div>
+    </div>
 
-    <!-- ADMIN PANEL MODAL (YALNIZ ADMIN ÜÇÜN - Jeton göndər, ban və mute) -->
+    <div id="modal-notifs" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Bildirişlər</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-notifs')"></i></div>
+        </div>
+    </div>
+
     <div id="modal-admin" class="modal hidden">
         <div class="modal-content">
             <div class="modal-header"><h3 style="color:#eab308;">Admin Panel (Alik)</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-admin')"></i></div>
-            
-            <div class="form-group">
-                <label class="form-label">İstifadəçi Axtarışı (Nik, ID və Şifrələr)</label>
-                <input type="text" id="admin-search-input" class="input-field" placeholder="Axtar..." oninput="filterAdminUsers()">
-            </div>
-            <div id="admin-user-list" style="max-height: 130px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 8px; margin-bottom: 15px; font-size: 12px;">
-                <!-- İstifadəçi siyahısı və şifrələr -->
-            </div>
-
-            <div class="form-group"><label class="form-label">Hədəf İstifadəçi ID</label><input type="text" id="admin-target-id" class="input-field" placeholder="Məs: 1836"></div>
-            
-            <div class="form-group">
-                <label class="form-label">Jeton Göndər (Miqdar)</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="number" id="admin-grant-coins" class="input-field" placeholder="Məs: 1000">
-                    <button class="join-btn" style="background:#eab308; color:#000;" onclick="adminSendCoins()">Göndər</button>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Bloklama / Susdurma (Mute & Ban)</label>
-                <select id="admin-action-type" class="input-field">
-                    <option value="mute_1d">Chatda 1 günlük susdur</option>
-                    <option value="mute_30d">Chatda 30 günlük susdur</option>
-                    <option value="unmute">Susdurmadan çıxar</option>
-                    <option value="ban_1d">1 günlük blokla (Ban)</option>
-                    <option value="ban_30d">30 günlük blokla (Ban)</option>
-                    <option value="unban">Blokdan çıxar</option>
-                </select>
-            </div>
-            <button class="submit-btn" style="background:#eab308; color:#000;" onclick="executeAdminAction()">Əməliyyatı Tətbiq Et</button>
+            <div class="form-group"><label class="form-label">İstifadəçi ID-si</label><input type="text" id="admin-target-id" class="input-field" placeholder="Məs: 1836"></div>
+            <div class="form-group"><label class="form-label">Göndəriləcək Jeton</label><input type="number" id="admin-grant-coins" class="input-field" placeholder="1000"></div>
+            <button class="submit-btn" style="background:#eab308; color:#000;" onclick="adminGrantCoins()">Jeton Göndər</button>
         </div>
     </div>
 
     <script>
         let currentUser = null;
         let selectedGender = 'male';
-        let settingsGender = 'male';
+        let editGenderVal = 'male';
+        let currentLang = 'az';
+
+        const cityData = {
+            AZ: ["Bakı", "Gəncə", "Sumqayıt", "Mingəçevir", "Şəki", "Şirvan", "Lənkəran", "Quba", "Xaçmaz", "Naxçıvan"],
+            TR: ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya", "Adana", "Trabzon"],
+            RU: ["Moskva", "Sankt-Peterburq", "Kazan", "Novosibirsk", "Yekaterinburq"],
+            GE: ["Tbilisi", "Batumi", "Kutaisi", "Rustavi"],
+            US: ["New York", "Los Angeles", "Chicago", "Miami", "Houston"],
+            KZ: ["Almatı", "Astana", "Şımkent"],
+            UZ: ["Daşkənd", "Səmərqənd", "Buxara"],
+            DE: ["Berlin", "Münhen", "Frankfurt", "Hamburq"],
+            GB: ["London", "Manchester", "Birmingham"],
+            AE: ["Dubay", "Əbu-Dabi"]
+        };
+
+        const dict = {
+            az: { tLogin: "Giriş", tReg: "Qeydiyyat", tUser: "İstifadəçi adı", tPass: "Şifrə", tLoginBtn: "Daxil ol", tRegBtn: "Hesab yarat", tNotice: "⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar.", tGender: "Cinsiyyət", tMale: "Kişi", tFemale: "Qadın", tHeartLbl: "Ürək", tCoinLbl: "Jeton", tFriendLbl: "Dostlar", tViewLbl: "Baxanlar", tTablesTitle: "Masalar indi", tCreateTableBtn: "+ Masa yarat", tJoin: "Qoşul →", tHome: "Ana Səhifə", tMessages: "Mesajlar", tSettingsHead: "Profil Tənzimləmələri", tStatusLbl: "Status", tSave: "Yadda saxla", tChangePassHead: "Şifrəni dəyiş", tOldPassPh: "Hazırkı şifrə", tNewPassPh: "Yeni şifrə (min 6 simvol)", tChangePassBtn: "Şifrəni yenilə", tLangHead: "Dil dəyiş", tLogout: "Çıxış et" },
+            ka: { tLogin: "შესვლა", tReg: "რეგისტრაცია", tUser: "მომხმარებელი", tPass: "პაროლი", tLoginBtn: "შესვლა", tRegBtn: "რეგისტრაცია", tNotice: "⚠️ <strong>ყურადღება!</strong> 1 მოწყობილობიდან მაქსიმუმ 2 ნიკია დასაშვები.", tGender: "სქესი", tMale: "კაცი", tFemale: "ქალი", tHeartLbl: "გული", tCoinLbl: "ჯეტონი", tFriendLbl: "მეგობრები", tViewLbl: "ნახვები", tTablesTitle: "მაგიდები", tCreateTableBtn: "+ მაგიდის შექმნა", tJoin: "შესვლა →", tHome: "მთავარი", tMessages: "შეტყობინებები", tSettingsHead: "პარამეტრები", tStatusLbl: "სტატუსი", tSave: "შენახვა", tChangePassHead: "პაროლის შეცვლა", tOldPassPh: "მიმდინარე პაროლი", tNewPassPh: "ახალი პაროლი", tChangePassBtn: "პაროლის განახლება", tLangHead: "ენა", tLogout: "გასვლა" },
+            tr: { tLogin: "Giriş", tReg: "Kayıt Ol", tUser: "Kullanıcı adı", tPass: "Şifre", tLoginBtn: "Giriş Yap", tRegBtn: "Hesap Oluştur", tNotice: "⚠️ <strong>Dikkat!</strong> 1 cihazdan en fazla 2 nick açılabilir.", tGender: "Cinsiyet", tMale: "Erkek", tFemale: "Kadın", tHeartLbl: "Kalp", tCoinLbl: "Jeton", tFriendLbl: "Arkadaşlar", tViewLbl: "Bakanlar", tTablesTitle: "Masalar", tCreateTableBtn: "+ Masa oluştur", tJoin: "Katıl →", tHome: "Ana Sayfa", tMessages: "Mesajlar", tSettingsHead: "Profil Ayarları", tStatusLbl: "Durum", tSave: "Kaydet", tChangePassHead: "Şifreyi değiştir", tOldPassPh: "Mevcut şifre", tNewPassPh: "Yeni şifre", tChangePassBtn: "Şifreyi güncelle", tLangHead: "Dil değiştir", tLogout: "Çıkış yap" },
+            en: { tLogin: "Login", tReg: "Register", tUser: "Username", tPass: "Password", tLoginBtn: "Log In", tRegBtn: "Create Account", tNotice: "⚠️ <strong>Attention!</strong> Max 2 nicknames per device.", tGender: "Gender", tMale: "Male", tFemale: "Female", tHeartLbl: "Hearts", tCoinLbl: "Coins", tFriendLbl: "Friends", tViewLbl: "Views", tTablesTitle: "Tables", tCreateTableBtn: "+ Create Table", tJoin: "Join →", tHome: "Home", tMessages: "Messages", tSettingsHead: "Settings", tStatusLbl: "Status", tSave: "Save", tChangePassHead: "Change Password", tOldPassPh: "Current password", tNewPassPh: "New password", tChangePassBtn: "Update Password", tLangHead: "Language", tLogout: "Log Out" }
+        };
+
+        function changeLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-bar .lang-btn').forEach(b => b.classList.remove('active'));
+            if(event && event.target) event.target.classList.add('active');
+
+            document.querySelectorAll('[data-t]').forEach(el => {
+                const k = el.getAttribute('data-t');
+                if(dict[lang][k]) el.innerHTML = dict[lang][k];
+            });
+            document.querySelectorAll('[data-t-ph]').forEach(el => {
+                const k = el.getAttribute('data-t-ph');
+                if(dict[lang][k]) el.placeholder = dict[lang][k];
+            });
+        }
 
         window.onload = function() {
-            if(!localStorage.getItem('user_Alik')) {
-                const defaultAdmin = {
-                    username: "Alik", pass: "123456", gender: 'male', 
-                    id: 1836, coins: 5100, hearts: 185, status: "Baş Admin 👑",
-                    country: "🇦🇿 Azərbaycan", city: "Bakı", age: "25",
-                    role: 'admin', muteUntil: 0, banUntil: 0, notification: null,
-                    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
-                };
-                localStorage.setItem('user_Alik', JSON.stringify(defaultAdmin));
-            }
-
             const saved = localStorage.getItem('putulka_logged_user');
             if(saved) {
                 currentUser = JSON.parse(saved);
-                const freshData = localStorage.getItem('user_' + currentUser.username);
-                if(freshData) {
-                    currentUser = JSON.parse(freshData);
-                    localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
-                }
-                checkPunishments();
-                checkNotifications();
                 loadDashboard();
             }
         };
-
-        function checkPunishments() {
-            const now = new Date().getTime();
-            if(currentUser.banUntil && now < currentUser.banUntil) {
-                const dateStr = new Date(currentUser.banUntil).toLocaleString();
-                alert(`Diqqət! ${dateStr} tarixinə qədər admin tərəfindən bloklanmışısınız.`);
-                handleLogout();
-                throw new Error("Banned");
-            }
-        }
-
-        function checkNotifications() {
-            if(currentUser.notification) {
-                alert(currentUser.notification);
-                currentUser.notification = null;
-                saveUserData();
-            }
-        }
 
         function switchTab(type) {
             document.getElementById('login-form').classList.toggle('hidden', type !== 'login');
@@ -486,234 +451,83 @@
             document.getElementById('gender-female').classList.toggle('active', g === 'female');
         }
 
-        function selectSettingsGender(g) {
-            settingsGender = g;
-            document.getElementById('settings-gender-male').classList.toggle('active', g === 'male');
-            document.getElementById('settings-gender-female').classList.toggle('active', g === 'female');
+        function setEditGender(g) {
+            editGenderVal = g;
+            document.getElementById('edit-gender-male').classList.toggle('active', g === 'male');
+            document.getElementById('edit-gender-female').classList.toggle('active', g === 'female');
         }
 
         function handleRegister(e) {
             e.preventDefault();
             const u = document.getElementById('reg-user').value.trim();
             const p = document.getElementById('reg-pass').value;
-
-            if(localStorage.getItem('user_' + u)) {
-                alert('Bu istifadəçi adı artıq mövcuddur!');
-                return;
-            }
-
             currentUser = { 
-                username: u, pass: p, gender: selectedGender, 
+                username: u, 
+                pass: p, 
+                gender: selectedGender, 
                 id: Math.floor(1000 + Math.random() * 9000), 
-                coins: 5100, hearts: 185, status: "Şirin Dil 😔",
-                country: "🇦🇿 Azərbaycan", city: "Bakı", age: "20",
-                role: 'user', muteUntil: 0, banUntil: 0, notification: null,
-                avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+                coins: 5100, 
+                hearts: 185, 
+                status: "Şirin Dil 😔",
+                avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+                country: "AZ",
+                countryFlag: "🇦🇿",
+                city: "Bakı",
+                age: 20
             };
-            saveUserData();
+            localStorage.setItem('user_' + u, JSON.stringify(currentUser));
+            localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
             loadDashboard();
         }
 
         function handleLogin(e) {
             e.preventDefault();
-            const inputVal = document.getElementById('login-user').value.trim();
+            const u = document.getElementById('login-user').value.trim();
             const p = document.getElementById('login-pass').value;
-
-            let parsed = null;
-            for(let i=0; i<localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if(key.startsWith('user_')) {
-                    const uData = JSON.parse(localStorage.getItem(key));
-                    if(uData.username.toLowerCase() === inputVal.toLowerCase() || uData.id.toString() === inputVal) {
-                        parsed = uData;
-                        break;
-                    }
-                }
-            }
-
-            if(!parsed) { alert('İstifadəçi tapılmadı!'); return; }
+            const saved = localStorage.getItem('user_' + u);
+            if(!saved) { alert('İstifadəçi tapılmadı!'); return; }
+            const parsed = JSON.parse(saved);
             if(parsed.pass !== p) { alert('Şifrə yanlışdır!'); return; }
-
             currentUser = parsed;
             localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
-            checkPunishments();
-            checkNotifications();
             loadDashboard();
         }
 
         function loadDashboard() {
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('game-dashboard').classList.remove('hidden');
-            document.getElementById('game-room-screen').classList.add('hidden');
             
             document.getElementById('profile-name').innerText = currentUser.username;
             document.getElementById('user-id-display').innerText = "ID " + currentUser.id;
             document.getElementById('user-coins').innerText = currentUser.coins;
             document.getElementById('profile-status').innerText = currentUser.status || "Şirin Dil 😔";
-
-            // Bayraq və digər məlumatların göstərilməsi
-            const countryFlag = currentUser.country ? currentUser.country.split(' ')[0] : '🇦🇿';
-            document.getElementById('profile-flag').innerText = countryFlag;
-            document.getElementById('user-meta-display').innerHTML = `<span>📍 ${currentUser.city || 'Bakı'}</span> | <span>yaşı: ${currentUser.age || '20'}</span> | <span>${currentUser.gender === 'male' ? '♂ Kişi' : '♀ Qadın'}</span>`;
-
+            
             if(currentUser.avatar) {
                 document.getElementById('user-avatar').src = currentUser.avatar;
                 document.getElementById('settings-avatar-preview').src = currentUser.avatar;
             }
-
-            // Tənzimləmə formuna mövcud məlumatları doldurmaq
-            document.getElementById('edit-username').value = currentUser.username;
-            document.getElementById('edit-status').value = currentUser.status || "";
-            document.getElementById('edit-city').value = currentUser.city || "";
-            document.getElementById('edit-age').value = currentUser.age || "";
-            if(currentUser.country) document.getElementById('edit-country').value = currentUser.country;
-            selectSettingsGender(currentUser.gender || 'male');
-
-            const isAdmin = currentUser.username.toLowerCase() === 'alik' || currentUser.role === 'admin';
-            document.getElementById('admin-panel-btn').classList.toggle('hidden', !isAdmin);
-            
-            filterAdminUsers();
-        }
-
-        function filterAdminUsers() {
-            const query = document.getElementById('admin-search-input').value.toLowerCase();
-            const listDiv = document.getElementById('admin-user-list');
-            listDiv.innerHTML = '';
-
-            for(let i=0; i<localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if(key.startsWith('user_')) {
-                    const uData = JSON.parse(localStorage.getItem(key));
-                    if(!query || uData.username.toLowerCase().includes(query) || uData.id.toString().includes(query)) {
-                        listDiv.innerHTML += `<div>ID: <strong>${uData.id}</strong> | Nik: <strong>${uData.username}</strong> | Pass: <em>${uData.pass}</em></div>`;
-                    }
-                }
-            }
-        }
-
-        function adminSendCoins() {
-            const targetId = document.getElementById('admin-target-id').value.trim();
-            const amount = parseInt(document.getElementById('admin-grant-coins').value);
-            if(!targetId || !amount) { alert('ID və miqdarı daxil edin!'); return; }
-
-            let targetUser = null;
-            let targetKey = null;
-            for(let i=0; i<localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if(key.startsWith('user_')) {
-                    const u = JSON.parse(localStorage.getItem(key));
-                    if(u.id.toString() === targetId) {
-                        targetUser = u;
-                        targetKey = key;
-                        break;
-                    }
-                }
+            if(currentUser.countryFlag) {
+                document.getElementById('profile-flag').innerText = currentUser.countryFlag;
+            } else {
+                document.getElementById('profile-flag').innerText = '';
             }
 
-            if(!targetUser) { alert('İstifadəçi tapılmadı!'); return; }
-            targetUser.coins += amount;
-            targetUser.notification = `Admin tərəfindən hesabınıza ${amount} jeton göndərildi!`;
-            localStorage.setItem(targetKey, JSON.stringify(targetUser));
-            alert('Jeton uğurla göndərildi!');
-        }
-
-        function executeAdminAction() {
-            const targetId = document.getElementById('admin-target-id').value.trim();
-            const action = document.getElementById('admin-action-type').value;
-
-            let foundUserKey = null;
-            let targetUser = null;
-            for(let i=0; i<localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if(key.startsWith('user_')) {
-                    const uData = JSON.parse(localStorage.getItem(key));
-                    if(uData.id.toString() === targetId) {
-                        foundUserKey = key;
-                        targetUser = uData;
-                        break;
-                    }
-                }
+            // Load settings inputs
+            document.getElementById('edit-username').value = currentUser.username || '';
+            document.getElementById('edit-status').value = currentUser.status || '';
+            document.getElementById('edit-country').value = currentUser.country || '';
+            document.getElementById('edit-age').value = currentUser.age || 20;
+            setEditGender(currentUser.gender || 'male');
+            onCountryChange();
+            if(currentUser.city) {
+                const sel = document.getElementById('edit-city-select');
+                if(!sel.classList.contains('hidden')) sel.value = currentUser.city;
+                else document.getElementById('edit-city-text').value = currentUser.city;
             }
 
-            if(!targetUser) { alert('Bu ID-yə uyğun istifadəçi tapılmadı!'); return; }
-
-            const now = new Date().getTime();
-            if(action === 'mute_1d') { targetUser.muteUntil = now + 24*60*60*1000; alert('İstifadəçi 1 gün susduruldu!'); }
-            else if(action === 'mute_30d') { targetUser.muteUntil = now + 30*24*60*60*1000; alert('İstifadəçi 30 gün susduruldu!'); }
-            else if(action === 'unmute') { targetUser.muteUntil = 0; alert('İstifadəçi susdurulmadan azad edildi!'); }
-            else if(action === 'ban_1d') { 
-                targetUser.banUntil = now + 24*60*60*1000; 
-                targetUser.notification = "Diqqət! 1 günlük admin tərəfindən bloklandınız.";
-                alert('İstifadəçi 1 günlük bloklandı!'); 
+            if(currentUser.username.toLowerCase() === 'alik') {
+                document.getElementById('admin-panel-btn').classList.remove('hidden');
             }
-            else if(action === 'ban_30d') { 
-                targetUser.banUntil = now + 30*24*60*60*1000; 
-                targetUser.notification = "Diqqət! 30 günlük admin tərəfindən bloklandınız.";
-                alert('İstifadəçi 30 günlük bloklandı!'); 
-            }
-            else if(action === 'unban') { targetUser.banUntil = 0; alert('İstifadəçi blokdan çıxarıldı!'); }
-
-            localStorage.setItem(foundUserKey, JSON.stringify(targetUser));
-            if(currentUser.id === targetUser.id) currentUser = targetUser;
-            closeModal('modal-admin');
-            filterAdminUsers();
-        }
-
-        function sendChatMessage() {
-            const now = new Date().getTime();
-            if(currentUser.muteUntil && now < currentUser.muteUntil) {
-                const dateStr = new Date(currentUser.muteUntil).toLocaleString();
-                alert(`Diqqət! ${dateStr} tarixinə kimi susdurulmusunuz.`);
-                return;
-            }
-            const input = document.getElementById('chat-input');
-            const txt = input.value.trim();
-            if(!txt) return;
-
-            const chatBox = document.getElementById('chat-messages');
-            chatBox.innerHTML += `<p><strong>${currentUser.username}:</strong> ${txt}</p>`;
-            input.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function enterGameRoom() {
-            document.getElementById('game-dashboard').classList.add('hidden');
-            document.getElementById('game-room-screen').classList.remove('hidden');
-        }
-
-        function leaveGameRoom() {
-            document.getElementById('game-room-screen').classList.add('hidden');
-            document.getElementById('game-dashboard').classList.remove('hidden');
-        }
-
-        function spinTheBottle() {
-            const bottle = document.getElementById('rotating-bottle');
-            const randomDegree = Math.floor(1000 + Math.random() * 2000);
-            bottle.style.transform = `rotate(${randomDegree}deg)`;
-            setTimeout(() => { alert('Şüşə dayandı!'); }, 3000);
-        }
-
-        function buyVip(cost, title) {
-            if(currentUser.coins < cost) { alert('Jeton çatmır!'); return; }
-            currentUser.coins -= cost;
-            saveUserData();
-            alert(`Təbriklər! ${title} aktivləşdi.`);
-            closeModal('modal-vip');
-            loadDashboard();
-        }
-
-        function buyCoins(pkg, price) {
-            alert(`Sifariş göndərildi! Alik bildiriş aldı.`);
-            closeModal('modal-shop');
-        }
-
-        function createTable() {
-            if(currentUser.coins < 5000) { alert('Masa yaratmaq üçün 5000 jeton lazımdır!'); return; }
-            currentUser.coins -= 5000;
-            saveUserData();
-            closeModal('modal-create-table');
-            alert('Masa uğurla yaradıldı!');
-            loadDashboard();
         }
 
         function uploadProfilePhoto(event) {
@@ -721,58 +535,125 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    currentUser.avatar = e.target.result;
-                    document.getElementById('user-avatar').src = currentUser.avatar;
-                    document.getElementById('settings-avatar-preview').src = currentUser.avatar;
-                    saveUserData();
+                    const base64Img = e.target.result;
+                    currentUser.avatar = base64Img;
+                    document.getElementById('user-avatar').src = base64Img;
+                    document.getElementById('settings-avatar-preview').src = base64Img;
+                    updateUserStorage();
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        function saveUserData() {
-            localStorage.setItem('user_' + currentUser.username, JSON.stringify(currentUser));
-            localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
+        function onCountryChange() {
+            const countryVal = document.getElementById('edit-country').value;
+            const citySelect = document.getElementById('edit-city-select');
+            const cityText = document.getElementById('edit-city-text');
+
+            if (cityData[countryVal]) {
+                citySelect.classList.remove('hidden');
+                cityText.classList.add('hidden');
+                citySelect.innerHTML = cityData[countryVal].map(c => `<option value="${c}">${c}</option>`).join('');
+            } else {
+                citySelect.classList.add('hidden');
+                cityText.classList.remove('hidden');
+            }
         }
 
         function saveSettings() {
             const newName = document.getElementById('edit-username').value.trim();
             const newSt = document.getElementById('edit-status').value.trim();
-            const newCity = document.getElementById('edit-city').value.trim();
-            const newAge = document.getElementById('edit-age').value.trim();
-            const newCountry = document.getElementById('edit-country').value;
+            const countrySel = document.getElementById('edit-country');
+            const countryVal = countrySel.value;
+            const selectedOpt = countrySel.options[countrySel.selectedIndex];
+            const flag = selectedOpt ? selectedOpt.getAttribute('data-flag') : '';
+            
+            const ageVal = parseInt(document.getElementById('edit-age').value);
+
+            if(ageVal < 18 || ageVal > 99) {
+                alert('Yaş 18 ilə 99 arasında olmalıdır!');
+                return;
+            }
+
+            let cityVal = '';
+            const citySelect = document.getElementById('edit-city-select');
+            if(!citySelect.classList.contains('hidden')) {
+                cityVal = citySelect.value;
+            } else {
+                cityVal = document.getElementById('edit-city-text').value.trim();
+            }
 
             if(newName) currentUser.username = newName;
             currentUser.status = newSt;
-            currentUser.city = newCity;
-            currentUser.age = newAge;
-            currentUser.country = newCountry;
-            currentUser.gender = settingsGender;
+            currentUser.country = countryVal;
+            currentUser.countryFlag = flag || '';
+            currentUser.city = cityVal;
+            currentUser.age = ageVal;
+            currentUser.gender = editGenderVal;
 
-            saveUserData();
+            updateUserStorage();
             loadDashboard();
-            alert('Profil tənzimləmələri yadda saxlanıldı!');
+            alert('Dəyişikliklər uğurla yadda saxlanıldı!');
             closeModal('modal-settings');
         }
 
-        function openModal(id) { 
-            document.getElementById(id).classList.remove('hidden'); 
-            if(id === 'modal-admin') filterAdminUsers();
-        }
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function goHome() { 
-            document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); 
-            document.getElementById('game-room-screen').classList.add('hidden');
-            document.getElementById('game-dashboard').classList.remove('hidden');
+        function goHome() { document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); }
+
+        function buyVip(cost, title) {
+            if(currentUser.coins < cost) { alert('Jeton çatmır!'); return; }
+            currentUser.coins -= cost;
+            updateUserStorage();
+            alert(`Təbriklər! ${title} aktivləşdi.`);
+            closeModal('modal-vip');
         }
+
+        function createTable() {
+            if(currentUser.coins < 5000) { alert('Masa yaratmaq üçün 5000 jeton lazımdır!'); return; }
+            currentUser.coins -= 5000;
+            updateUserStorage();
+            closeModal('modal-create-table');
+            alert('Masa yaratma prosesi uğurla həyata keçirildi!');
+        }
+
+        function buyCoins(pkg, price) {
+            alert(`Sifariş göndərildi! Alik bildiriş aldı.`);
+            closeModal('modal-shop');
+        }
+
+        function adminGrantCoins() {
+            const amount = parseInt(document.getElementById('admin-grant-coins').value);
+            if(amount) {
+                currentUser.coins += amount;
+                updateUserStorage();
+                alert(`${amount} Jeton əlavə olundu!`);
+                closeModal('modal-admin');
+            }
+        }
+
+        function changePassword() {
+            const oldP = document.getElementById('old-pass').value;
+            const newP = document.getElementById('new-pass').value;
+            if(oldP !== currentUser.pass) { alert('Hazırkı şifrə yanlışdır!'); return; }
+            if(!newP || newP.length < 6) { alert('Yeni şifrə ən azı 6 simvol olmalıdır!'); return; }
+            currentUser.pass = newP;
+            updateUserStorage();
+            alert('Şifrəniz uğurla yeniləndi!');
+            document.getElementById('old-pass').value = '';
+            document.getElementById('new-pass').value = '';
+        }
+
+        function updateUserStorage() {
+            document.getElementById('user-coins').innerText = currentUser.coins;
+            document.getElementById('profile-status').innerText = currentUser.status || "";
+            localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
+            localStorage.setItem('user_' + currentUser.username, JSON.stringify(currentUser));
+        }
+
         function handleLogout() {
             localStorage.removeItem('putulka_logged_user');
             location.reload();
-        }
-
-        function changeLang(lang) {
-            document.querySelectorAll('.lang-bar .lang-btn').forEach(b => b.classList.remove('active'));
-            if(event && event.target) event.target.classList.add('active');
         }
     </script>
 </body>
