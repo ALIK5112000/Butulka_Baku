@@ -12,7 +12,7 @@
         .hidden { display: none !important; }
         
         .auth-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; }
-        .lang-bar { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.05); padding: 6px 10px; border-radius: 20px; margin-bottom: 25px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .lang-bar { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.05); padding: 6px 10px; border-radius: 20px; margin-bottom: 25px; border: 1px solid rgba(255, 255, 255, 0.1); flex-wrap: wrap; justify-content: center; }
         .lang-btn { padding: 5px 10px; border-radius: 15px; font-size: 12px; cursor: pointer; color: #b3b3b3; }
         .lang-btn.active { background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color: white; }
         
@@ -115,7 +115,7 @@
             az: { tSub: "Hesabına daxil ol və oyuna davam et", tLogin: "Giriş", tReg: "Qeydiyyat", tUserLabel: "İstifadəçi adı və ya ID", tPassLabel: "Şifrə", tLoginBtn: "Daxil ol", tRegBtn: "Hesab yarat", tNotice: "⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar.", tGenderLabel: "Cinsiyyət", tMale: "Kişi", tFemale: "Qadın" },
             ka: { tSub: "შედით თქვენს ანგარიშში", tLogin: "შესვლა", tReg: "რეგისტრაცია", tUserLabel: "მომხმარებელი ან ID", tPassLabel: "პაროლი", tLoginBtn: "შესვლა", tRegBtn: "რეგისტრაცია", tNotice: "⚠️ <strong>ყურადღება!</strong> 1 მოწყობილობიდან მაქსიმუმ 2 ნიკია დასაშვები.", tGenderLabel: "სქესი", tMale: "კაცი", tFemale: "ქალი" },
             tr: { tSub: "Hesabınıza giriş yapın", tLogin: "Giriş", tReg: "Kayıt Ol", tUserLabel: "Kullanıcı adı veya ID", tPassLabel: "Şifre", tLoginBtn: "Giriş Yap", tRegBtn: "Hesap Oluştur", tNotice: "⚠️ <strong>Dikkat!</strong> 1 cihazdan en fazla 2 nick açılabilir.", tGenderLabel: "Cinsiyet", tMale: "Erkek", tFemale: "Kadın" },
-            en: { tSub: "Log in to your account", tLogin: "Login", tReg: "Register", tUserLabel: "Username or ID", tPassLabel: "Password", tLoginBtn: "Log In", tRegBtn: "Create Account", tNotice: "⚠️ <strong>Attention!</strong> Max 2 nicknames per device.", tGenderLabel: "Gender", tMale: "Male", tFemale: "Female" }
+            en: { tSub: "Log in to your account", tLogin: "Login", tRegister: "Register", tUserLabel: "Username or ID", tPassLabel: "Password", tLoginBtn: "Log In", tRegBtn: "Create Account", tNotice: "⚠️ <strong>Attention!</strong> Max 2 nicknames per device.", tGenderLabel: "Gender", tMale: "Male", tFemale: "Female" }
         };
 
         function changeLang(lang) {
@@ -128,7 +128,6 @@
             });
         }
 
-        // TAM UNİKAL ID YARADAN FUNKSİYA
         function generateUniqueId() {
             let existingIds = [];
             for(let i=0; i<localStorage.length; i++) {
@@ -138,16 +137,15 @@
                     if(uData.id) existingIds.push(uData.id.toString());
                 }
             }
-
             let newId;
             do {
                 newId = Math.floor(1000 + Math.random() * 9000).toString();
             } while (existingIds.includes(newId));
-
             return parseInt(newId);
         }
 
         window.onload = function() {
+            // Admin profilinin həmişə mövcud olmasını təmin edirik
             if(!localStorage.getItem('user_Alik')) {
                 const defaultAdmin = {
                     username: "Alik", pass: "ALIYEV511@", gender: 'male', 
@@ -187,9 +185,7 @@
                 return;
             }
 
-            // Təkrarlanmayan unikal ID çağırılır
             const uniqueId = generateUniqueId();
-
             const newUser = { 
                 username: u, pass: p, gender: selectedGender, 
                 id: uniqueId, 
@@ -201,6 +197,8 @@
 
             localStorage.setItem('user_' + u, JSON.stringify(newUser));
             localStorage.setItem('putulka_logged_user', JSON.stringify(newUser));
+            
+            // Oyun səhifəsinə keçid
             window.location.href = "game.html";
         }
 
@@ -226,11 +224,13 @@
 
             const now = new Date().getTime();
             if(parsedUser.banUntil && now < parsedUser.banUntil) {
-                alert('Diqqət! Bu hesab admin tərəfindən bloklanmışdır.');
+                alert('Diqqət! Bu hesab bloklanmışdır.');
                 return;
             }
 
             localStorage.setItem('putulka_logged_user', JSON.stringify(parsedUser));
+            
+            // Oyun səhifəsinə keçid
             window.location.href = "game.html";
         }
     </script>
