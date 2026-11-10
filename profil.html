@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Butulka Baku - Profil</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0b0713; color: #ffffff; min-height: 100vh; padding-bottom: 80px; }
+
+        .hidden { display: none !important; }
+
+        /* Header Navigation */
+        .app-header { display: flex; align-items: center; justify-content: space-between; padding: 15px; background: rgba(18, 11, 31, 0.95); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .header-tools { display: flex; gap: 8px; align-items: center; width: 100%; justify-content: space-between; }
+        .tool-btn { width: 40px; height: 40px; background: rgba(255, 255, 255, 0.08); border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; color: #cbd5e1; font-size: 15px; }
+        .tool-btn.vip-btn { width: auto; padding: 0 16px; background: linear-gradient(135deg, #fce7f3 0%, #f472b6 100%); color: #831843; font-weight: 700; gap: 6px; border-radius: 20px; font-size: 13px; }
+        .badge { position: absolute; top: -3px; right: -3px; background: #3b82f6; color: white; font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #0b0713; }
+
+        .main-content { padding: 15px; max-width: 450px; margin: 0 auto; }
+
+        /* Profile Card Main Container */
+        .profile-card { background: #161126; border-radius: 28px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .name-banner { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(236, 72, 153, 0.4); border-radius: 20px; padding: 10px 15px; text-align: center; font-size: 18px; font-weight: 700; color: #f472b6; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 0 15px rgba(236, 72, 153, 0.2); }
+
+        .avatar-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .avatar-container { position: relative; width: 85px; height: 85px; flex-shrink: 0; }
+        .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #ec4899; }
+        .edit-icon { position: absolute; bottom: 0; right: 0; background: #3b82f6; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; border: 2px solid #161126; cursor: pointer; }
+
+        .user-id-box { display: flex; align-items: center; gap: 8px; }
+        .id-badge { background: #eab308; color: #000; font-weight: 800; padding: 4px 10px; border-radius: 12px; font-size: 12px; display: inline-block; }
+
+        .user-nik-title { font-size: 16px; font-weight: 600; color: #cbd5e1; margin-bottom: 15px; }
+
+        .status-box { background: rgba(10, 6, 18, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 14px; margin-bottom: 20px; color: #94a3b8; font-size: 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+
+        /* Stats Grid 2x2 Layout */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .stat-box { background: rgba(10, 6, 18, 0.7); padding: 16px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.05); position: relative; cursor: pointer; }
+        .stat-icon { font-size: 20px; margin-bottom: 8px; color: #3b82f6; }
+        .stat-val { font-weight: 700; font-size: 18px; margin-bottom: 2px; }
+        .stat-lbl { font-size: 12px; color: #64748b; }
+
+        /* Dashboard Cards Grid */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .game-launch-card { background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 22px; padding: 16px; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
+        .store-card-mini { background: #161126; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: rgba(18, 11, 31, 0.98); border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-around; align-items: center; z-index: 200; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #64748b; cursor: pointer; font-size: 11px; text-decoration: none; }
+        .nav-item i { font-size: 20px; }
+        .nav-item.active { color: #ec4899; }
+
+        /* Modals */
+        .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: flex-end; backdrop-filter: blur(8px); }
+        .modal-content { background: #160e24; width: 100%; max-height: 85vh; border-radius: 28px 28px 0 0; padding: 25px; overflow-y: auto; border-top: 1px solid rgba(255,255,255,0.1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-btn { font-size: 20px; color: #64748b; cursor: pointer; }
+        
+        .visitor-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .visitor-info { display: flex; align-items: center; gap: 12px; }
+        .visitor-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+
+        .input-field { width: 100%; background: rgba(10, 6, 18, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 14px; color: white; font-size: 14px; outline: none; margin-bottom: 15px; }
+        .submit-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #ff4b8b 0%, #ff2a70 100%); border: none; border-radius: 16px; color: white; font-size: 16px; font-weight: 700; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="header-tools">
+            <div class="tool-btn vip-btn" onclick="openModal('modal-vip')"><i class="fa-solid fa-crown"></i> VIP</div>
+            <div class="tool-btn" onclick="openModal('modal-shop')"><i class="fa-solid fa-cart-shopping"></i></div>
+            <div class="tool-btn" onclick="openModal('modal-search')"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <div class="tool-btn" style="width: auto; padding: 0 12px; font-size: 12px; font-weight: 600; color: #f472b6;" onclick="alert('Admin Alik ilə əlaqə saxlanılır...')"><i class="fa-solid fa-headset" style="margin-right: 4px;"></i> Admin Alik</div>
+            <div class="tool-btn" onclick="openModal('modal-notifs')">
+                <i class="fa-solid fa-bell"></i>
+                <span class="badge">1</span>
+            </div>
+            <div class="tool-btn" onclick="openModal('modal-settings')"><i class="fa-solid fa-sliders"></i></div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="profile-card">
+            <!-- YUXARI NİK BANNERİ (Şəkildəki stildə) -->
+            <div class="name-banner">
+                <i class="fa-solid fa-crown" style="color: #eab308; font-size: 16px;"></i>
+                <span id="profile-banner-name">Alik</span>
+            </div>
+
+            <div class="avatar-row">
+                <div class="avatar-container">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" id="user-avatar" class="avatar-img">
+                    <div class="edit-icon" onclick="openModal('modal-settings')"><i class="fa-solid fa-pen"></i></div>
+                </div>
+                <div>
+                    <div class="user-id-box">
+                        <span class="id-badge" id="user-id-display">ID 1836</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-nik-title" id="user-nik-display">511</div>
+
+            <div class="status-box" onclick="openModal('modal-settings')">
+                <i class="fa-solid fa-pen" style="font-size: 12px;"></i>
+                <span id="profile-status">Status yaz...</span>
+            </div>
+
+            <!-- STATİSTİKA QUTULARI (Tam istədiyin siyahı) -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-icon" style="color:#60a5fa;"><i class="fa-regular fa-heart"></i></div>
+                    <div class="stat-val" id="user-hearts" style="color:#60a5fa;">185</div>
+                    <div class="stat-lbl">Ürək</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon" style="color:#eab308;"><i class="fa-solid fa-coins"></i></div>
+                    <div class="stat-val" id="user-coins" style="color:#ffffff;">5.1k</div>
+                    <div class="stat-lbl">Jeton</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon" style="color:#94a3b8;"><i class="fa-solid fa-user-group"></i></div>
+                    <div class="stat-val" id="user-friends">1</div>
+                    <div class="stat-lbl">Dostlar</div>
+                </div>
+                <div class="stat-box" onclick="openModal('modal-visitors')">
+                    <div class="stat-icon" style="color:#94a3b8;"><i class="fa-regular fa-eye"></i></div>
+                    <div class="stat-val" id="user-visitors-count">29</div>
+                    <div class="stat-lbl">Baxanlar</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OYUN VƏ MAĞAZA QUTULARI -->
+        <div class="dashboard-grid">
+            <div class="game-launch-card" onclick="alert('Oyuna keçid edilir...')">
+                <div>
+                    <h3 style="font-size: 17px; color: #ffffff; font-style: italic;">Şüşəni fırlat</h3>
+                    <p style="font-size: 11px; color: #94a3b8; margin-top: 4px;">258 nəfər oynayır</p>
+                </div>
+                <div style="font-size: 24px; color: #ec4899; text-align: right;"><i class="fa-solid fa-wine-bottle"></i></div>
+            </div>
+            
+            <div class="store-card-mini" onclick="openModal('modal-shop')">
+                <div>
+                    <h3 style="color:#eab308; font-size:15px; display:flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-dove"></i> Mağaza
+                    </h3>
+                    <p style="font-size:11px; color:#94a3b8; margin-top:6px;">Qanad satışı • VIP • ramkalar</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN PANEL DÜYMƏSİ (Yalnız Admin görəcək) -->
+        <button id="admin-panel-btn" onclick="openModal('modal-admin')" class="submit-btn hidden" style="background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); margin-top: 20px;">
+            <i class="fa-solid fa-user-shield"></i> Admin Panel (Alik)
+        </button>
+    </main>
+
+    <!-- BOTTOM NAV BAR -->
+    <nav class="bottom-nav">
+        <div class="nav-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>Ana səhifə</span>
+        </div>
+        <div class="nav-item">
+            <i class="fa-solid fa-gamepad"></i>
+            <span>Oyunlar</span>
+        </div>
+        <div class="nav-item" style="background: #3b82f6; width: 45px; height: 45px; border-radius: 50%; color: white; justify-content: center;">
+            <i class="fa-solid fa-plus" style="font-size: 22px;"></i>
+        </div>
+        <div class="nav-item">
+            <i class="fa-solid fa-comment-dots"></i>
+            <span>Mesajlar</span>
+        </div>
+        <div class="nav-item">
+            <i class="fa-solid fa-circle-play"></i>
+            <span>Videolar</span>
+        </div>
+    </nav>
+
+    <!-- MODAL: PROFİLƏ BAXANLAR -->
+    <div id="modal-visitors" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Profilinizə baxanlar</h3>
+                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-visitors')"></i>
+            </div>
+            <div id="visitors-list">
+                <!-- Nümunə Baxan İstifadəçilər -->
+                <div class="visitor-item">
+                    <div class="visitor-info">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" class="visitor-img">
+                        <div>
+                            <div style="font-weight: 600;">Aysel_22</div>
+                            <div style="font-size: 11px; color: #64748b;">5 dəqiqə əvvəl baxdı</div>
+                        </div>
+                    </div>
+                    <button class="id-badge" style="background: rgba(255,255,255,0.1); color:white; border:none; cursor:pointer;">Bax</button>
+                </div>
+                <div class="visitor-item">
+                    <div class="visitor-info">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" class="visitor-img">
+                        <div>
+                            <div style="font-weight: 600;">Murad_Baku</div>
+                            <div style="font-size: 11px; color: #64748b;">1 saat əvvəl baxdı</div>
+                        </div>
+                    </div>
+                    <button class="id-badge" style="background: rgba(255,255,255,0.1); color:white; border:none; cursor:pointer;">Bax</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: TƏNZİMLƏMƏLƏR -->
+    <div id="modal-settings" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Tənzimləmələr</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-settings')"></i></div>
+            <div class="form-group"><label style="font-size:12px; color:#94a3b8;">Statusunuzu yeniləyin:</label><input type="text" id="edit-status" class="input-field" placeholder="Yeni status yazın..."></div>
+            <button class="submit-btn" onclick="saveStatus()">Yadda saxla</button>
+            <hr style="margin:20px 0; border-color:rgba(255,255,255,0.1);">
+            <button class="submit-btn" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444;" onclick="handleLogout()">Hesabdan Çıxış</button>
+        </div>
+    </div>
+
+    <!-- OTHER MODALS PLACEHOLDERS -->
+    <div id="modal-vip" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>VIP Üzvlük</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-vip')"></i></div><p style="color:#94a3b8;">VIP dərəcəsini artıraraq daha çox imtiyaz qazanın.</p></div></div>
+    <div id="modal-shop" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Mağaza</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-shop')"></i></div><p style="color:#94a3b8;">Jeton və hədiyyə paketi satışı.</p></div></div>
+    <div id="modal-search" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Axtarış</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-search')"></i></div></div></div>
+    <div id="modal-notifs" class="modal hidden"><div class="modal-content"><div class="modal-header"><h3>Bildirişlər</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-notifs')"></i></div></div></div>
+
+    <!-- ADMIN PANEL MODAL -->
+    <div id="modal-admin" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3 style="color:#eab308;">Admin Panel (Alik)</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-admin')"></i></div>
+            <div id="admin-user-list" style="max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px; margin-bottom: 15px; font-size: 12px;"></div>
+            <input type="text" id="admin-target-id" class="input-field" placeholder="Hədəf İstifadəçi ID daxil edin">
+            <input type="number" id="admin-grant-coins" class="input-field" placeholder="Göndəriləcək Jeton miqdarı">
+            <button class="submit-btn" style="background:#eab308; color:#000; margin-bottom:10px;" onclick="adminSendCoins()">Jeton Göndər</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        window.onload = function() {
+            const saved = localStorage.getItem('putulka_logged_user');
+            if(!saved) {
+                window.location.href = "index.html";
+                return;
+            }
+            currentUser = JSON.parse(saved);
+
+            // Məlumatları yeniləyirik
+            const freshData = localStorage.getItem('user_' + currentUser.username);
+            if(freshData) currentUser = JSON.parse(freshData);
+
+            document.getElementById('profile-banner-name').innerText = currentUser.username;
+            document.getElementById('user-nik-display').innerText = currentUser.username;
+            document.getElementById('user-id-display').innerText = "ID " + currentUser.id;
+            document.getElementById('user-coins').innerText = (currentUser.coins / 1000).toFixed(1) + "k";
+            document.getElementById('user-hearts').innerText = currentUser.hearts || 185;
+            document.getElementById('profile-status').innerText = currentUser.status || "Status yaz...";
+
+            if(currentUser.avatar) {
+                document.getElementById('user-avatar').src = currentUser.avatar;
+            }
+
+            // Admin yoxlanışı
+            if(currentUser.username.toLowerCase() === 'alik' || currentUser.role === 'admin') {
+                document.getElementById('admin-panel-btn').classList.remove('hidden');
+                loadAdminUserList();
+            }
+        };
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function saveStatus() {
+            const st = document.getElementById('edit-status').value.trim();
+            if(st) {
+                currentUser.status = st;
+                localStorage.setItem('user_' + currentUser.username, JSON.stringify(currentUser));
+                localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
+                document.getElementById('profile-status').innerText = st;
+                closeModal('modal-settings');
+            }
+        }
+
+        function loadAdminUserList() {
+            const listDiv = document.getElementById('admin-user-list');
+            listDiv.innerHTML = '';
+            for(let i=0; i<localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('user_')) {
+                    const uData = JSON.parse(localStorage.getItem(key));
+                    listDiv.innerHTML += `<div>ID: <strong>${uData.id}</strong> | Nik: <strong>${uData.username}</strong> | Pass: <em>${uData.pass}</em></div>`;
+                }
+            }
+        }
+
+        function adminSendCoins() {
+            const targetId = document.getElementById('admin-target-id').value.trim();
+            const amount = parseInt(document.getElementById('admin-grant-coins').value);
+            if(!targetId || !amount) { alert('Məlumatları tam doldurun!'); return; }
+
+            for(let i=0; i<localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('user_')) {
+                    const u = JSON.parse(localStorage.getItem(key));
+                    if(u.id.toString() === targetId) {
+                        u.coins += amount;
+                        localStorage.setItem(key, JSON.stringify(u));
+                        alert('Jeton uğurla göndərildi!');
+                        closeModal('modal-admin');
+                        return;
+                    }
+                }
+            }
+            alert('İstifadəçi tapılmadı!');
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('putulka_logged_user');
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
