@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Butulka_Baku</title>
+    <title>Butulka Baku</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -11,31 +11,44 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
         body {
-            background: #0f0715;
-            background: radial-gradient(circle at center, #240b36 0%, #0c0514 100%);
+            background: #0d0814;
+            background: radial-gradient(circle at top, #1c0c2e 0%, #08040d 100%);
             color: #ffffff;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
+            padding-bottom: 80px;
+        }
+        
+        .hidden { display: none !important; }
+
+        /* --- AUTH SECTION --- */
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
             padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .lang-bar {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             background: rgba(255, 255, 255, 0.05);
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 20px;
             margin-bottom: 25px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .lang-btn {
-            padding: 5px 12px;
+            padding: 5px 10px;
             border-radius: 15px;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             color: #b3b3b3;
         }
@@ -43,59 +56,33 @@
             background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
             color: white;
         }
-        .logo-box {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        .logo-box { text-align: center; margin-bottom: 20px; }
         .logo-icon {
-            width: 70px;
-            height: 70px;
+            width: 70px; height: 70px;
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
             border-radius: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 32px;
-            color: white;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 15px; font-size: 32px; color: white;
             box-shadow: 0 0 25px rgba(236, 72, 153, 0.5);
         }
-        .brand-title {
-            font-size: 36px;
-            font-weight: 700;
-            font-style: italic;
-            color: #f472b6;
-            margin-bottom: 5px;
-        }
-        .brand-subtitle {
-            font-size: 14px;
-            color: #94a3b8;
-        }
+        .brand-title { font-size: 32px; font-weight: 700; font-style: italic; color: #f472b6; margin-bottom: 5px; }
+        .brand-subtitle { font-size: 14px; color: #94a3b8; }
+        
         .auth-card {
             background: rgba(23, 15, 38, 0.9);
             border-radius: 28px;
-            padding: 25px;
-            width: 100%;
-            max-width: 400px;
+            padding: 25px; width: 100%;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
         .tab-switcher {
-            display: flex;
-            background: rgba(10, 6, 18, 0.6);
-            border-radius: 16px;
-            padding: 4px;
-            margin-bottom: 20px;
+            display: flex; background: rgba(10, 6, 18, 0.6);
+            border-radius: 16px; padding: 4px; margin-bottom: 20px;
         }
         .tab-btn {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-            color: #94a3b8;
+            flex: 1; padding: 12px; text-align: center;
+            border-radius: 12px; font-weight: 600; font-size: 15px;
+            cursor: pointer; color: #94a3b8;
         }
         .tab-btn.active {
             background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%);
@@ -104,221 +91,563 @@
         .notice-box {
             background: rgba(245, 158, 11, 0.1);
             border: 1px solid rgba(245, 158, 11, 0.3);
-            border-radius: 14px;
-            padding: 12px 15px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: #fbbf24;
+            border-radius: 14px; padding: 12px 15px;
+            margin-bottom: 20px; font-size: 13px; color: #fbbf24; line-height: 1.4;
         }
-        .form-group {
-            margin-bottom: 16px;
-        }
-        .form-label {
-            display: block;
-            font-size: 13px;
-            color: #cbd5e1;
-            margin-bottom: 8px;
-        }
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-        .input-icon {
-            position: absolute;
-            left: 16px;
-            color: #64748b;
-        }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 8px; }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-icon { position: absolute; left: 16px; color: #64748b; }
         .input-field {
-            width: 100%;
-            background: rgba(10, 6, 18, 0.7);
+            width: 100%; background: rgba(10, 6, 18, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
-            padding: 14px 16px 14px 45px;
-            color: white;
-            font-size: 14px;
-            outline: none;
+            border-radius: 14px; padding: 14px 16px 14px 45px;
+            color: white; font-size: 14px; outline: none;
         }
-        .input-field:focus {
-            border-color: #ec4899;
-        }
-        .gender-options {
-            display: flex;
-            gap: 12px;
-        }
+        .gender-options { display: flex; gap: 12px; }
         .gender-btn {
-            flex: 1;
-            padding: 15px;
-            background: rgba(10, 6, 18, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            color: #64748b;
+            flex: 1; padding: 15px; background: rgba(10, 6, 18, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            cursor: pointer; color: #64748b;
         }
-        .gender-btn.active {
-            border-color: #3b82f6;
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-        }
+        .gender-btn.active { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
         .submit-btn {
-            width: 100%;
-            padding: 16px;
+            width: 100%; padding: 16px;
             background: linear-gradient(135deg, #ff4b8b 0%, #ff2a70 100%);
-            border: none;
-            border-radius: 16px;
-            color: white;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 10px;
+            border: none; border-radius: 16px; color: white;
+            font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px;
         }
-        .form-footer {
+        .form-footer, .switch-prompt { display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-top: 15px; }
+        .switch-prompt a, .form-footer a { color: #f59e0b; text-decoration: none; }
+
+        /* --- PROFILE VIEW SECTION --- */
+        .profile-container {
+            width: 100%;
+            max-width: 430px;
+            padding: 10px 15px;
+        }
+        
+        /* Top Header Icons */
+        .profile-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-top: 15px;
-            font-size: 13px;
-            color: #94a3b8;
+            justify-content: space-between;
+            padding: 10px 0 15px 0;
         }
-        .switch-prompt {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 13px;
-            color: #94a3b8;
+        .vip-badge {
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(255, 117, 140, 0.4);
         }
-        .switch-prompt a, .form-footer a {
-            color: #f59e0b;
-            text-decoration: none;
+        .header-icons {
+            display: flex;
+            gap: 14px;
+            color: #93c5fd;
+            font-size: 16px;
         }
-        .hidden {
-            display: none !important;
+        .header-icons i { cursor: pointer; }
+
+        /* Main Profile Card */
+        .profile-card {
+            background: rgba(22, 17, 36, 0.85);
+            border-radius: 24px;
+            padding: 20px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            margin-bottom: 15px;
         }
-        .profile-box {
-            text-align: center;
-            padding: 10px 0;
+        
+        .profile-top-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
         }
-        .avatar-circle {
-            width: 80px;
-            height: 80px;
+        
+        .avatar-box {
+            position: relative;
+            width: 75px;
+            height: 75px;
+        }
+        .avatar-img {
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
+            object-fit: cover;
+            border: 2px solid #3b82f6;
+        }
+        .avatar-edit-icon {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: #6366f1;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 32px;
+            font-size: 10px;
+            border: 2px solid #161124;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+        .user-name-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .user-name-title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, #93c5fd, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .verified-badge {
+            color: #3b82f6;
+            font-size: 14px;
+        }
+
+        .user-tags-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .id-badge {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .verify-btn {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .frames-btn {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 5px;
+        }
+
+        .status-box {
+            background: rgba(10, 6, 18, 0.4);
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .stat-card {
+            background: rgba(15, 10, 26, 0.6);
+            border-radius: 16px;
+            padding: 12px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .stat-card i {
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+        .stat-num {
+            font-size: 16px;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 2px;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* Store Banner */
+        .store-banner {
+            background: linear-gradient(135deg, #1e1035 0%, #2a1147 100%);
+            border-radius: 20px;
+            padding: 15px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            margin-top: 15px;
+        }
+        .store-info h4 {
+            color: #fbbf24;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        .store-info p {
+            color: #94a3b8;
+            font-size: 11px;
+        }
+        .store-icon {
+            font-size: 28px;
+            color: #fbbf24;
+        }
+
+        /* Bottom Nav Bar */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(13, 8, 20, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 8px 0;
+            backdrop-filter: blur(15px);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #64748b;
+            font-size: 10px;
+            cursor: pointer;
+            position: relative;
+        }
+        .nav-item i { font-size: 18px; }
+        .nav-item.active { color: #93c5fd; }
+        
+        .nav-center-btn {
+            background: linear-gradient(135deg, #60a5fa 0%, #a855f7 100%);
+            width: 44px;
+            height: 38px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 0 15px rgba(96, 165, 250, 0.4);
+        }
+        .badge-count {
+            position: absolute;
+            top: -3px;
+            right: 4px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
 <body>
 
-    <div class="lang-bar">
-        <div class="lang-btn active">🇦🇿 Azərbaycanca</div>
-        <div class="lang-btn">🇷🇺 Русский</div>
-        <div class="lang-btn">🇬🇧 English</div>
-    </div>
-
-    <div class="logo-box">
-        <div class="logo-icon"><i class="fa-solid fa-heart"></i></div>
-        <h1 class="brand-title">Putulka</h1>
-        <p class="brand-subtitle" id="logo-subtitle">Hesabına daxil ol və oyuna davam et</p>
-    </div>
-
-    <div class="auth-card">
-        <div class="tab-switcher" id="tab-container">
-            <div class="tab-btn active" id="tab-login" onclick="switchTab('login')">Giriş</div>
-            <div class="tab-btn" id="tab-register" onclick="switchTab('register')">Qeydiyyat</div>
+    <!-- ================= AUTH SECTION ================= -->
+    <div id="auth-section" class="auth-container">
+        <div class="lang-bar">
+            <div class="lang-btn active" onclick="changeLang('az')">🇦🇿 Azərbaycanca</div>
+            <div class="lang-btn" onclick="changeLang('ru')">🇷🇺 Русский</div>
+            <div class="lang-btn" onclick="changeLang('en')">🇬🇧 English</div>
         </div>
 
-        <form id="login-form" onsubmit="handleLogin(event)">
-            <div class="form-group">
-                <label class="form-label">İstifadəçi adı</label>
-                <div class="input-wrapper">
-                    <i class="fa-regular fa-user input-icon"></i>
-                    <input type="text" id="login-user" class="input-field" placeholder="İstifadəçi adı və ya ID" required>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Şifrə</label>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-lock input-icon"></i>
-                    <input type="password" id="login-pass" class="input-field" placeholder="••••••••" required>
-                </div>
-            </div>
-            <div class="form-footer">
-                <label><input type="checkbox"> Məni xatırla</label>
-                <a href="#">Şifrəni unutmusan?</a>
-            </div>
-            <button type="submit" class="submit-btn">Daxil ol</button>
-            <div class="switch-prompt">Hesabın yoxdur? <a href="#" onclick="switchTab('register')">Qeydiyyatdan keç</a></div>
-        </form>
+        <div class="logo-box">
+            <div class="logo-icon"><i class="fa-solid fa-heart"></i></div>
+            <h1 class="brand-title">Butulka Baku</h1>
+            <p class="brand-subtitle" id="logo-subtitle" data-i18n="subLogin">Hesabına daxil ol və oyuna davam et</p>
+        </div>
 
-        <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
-            <div class="notice-box">⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar. 3-cü nik qadağandır və ban olunur.</div>
-            <div class="form-group">
-                <label class="form-label">İstifadəçi adı</label>
-                <div class="input-wrapper">
-                    <i class="fa-regular fa-user input-icon"></i>
-                    <input type="text" id="reg-user" class="input-field" placeholder="İstifadəçi adı seç" required>
-                </div>
+        <div class="auth-card">
+            <div class="tab-switcher" id="tab-container">
+                <div class="tab-btn active" id="tab-login" onclick="switchTab('login')" data-i18n="tabLogin">Giriş</div>
+                <div class="tab-btn" id="tab-register" onclick="switchTab('register')" data-i18n="tabRegister">Qeydiyyat</div>
             </div>
-            <div class="form-group">
-                <label class="form-label">Şifrə</label>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-lock input-icon"></i>
-                    <input type="password" id="reg-pass" class="input-field" placeholder="Ən azı 6 simvol" required>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Cinsiyyət</label>
-                <div class="gender-options">
-                    <div class="gender-btn active" id="gender-male" onclick="selectGender('male')"><i class="fa-solid fa-mars"></i> Kişi</div>
-                    <div class="gender-btn" id="gender-female" onclick="selectGender('female')"><i class="fa-solid fa-venus"></i> Qadın</div>
-                </div>
-            </div>
-            <button type="submit" class="submit-btn">Hesab yarat</button>
-            <div class="switch-prompt">Artıq hesabın var? <a href="#" onclick="switchTab('login')">Daxil ol</a></div>
-        </form>
 
-        <div id="profile-view" class="profile-box hidden">
-            <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
-            <h2 id="user-display-name" style="margin-bottom: 5px;">Xoş gəldin!</h2>
-            <p id="user-display-gender" style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Oyunçu</p>
-            <button class="submit-btn" style="margin-bottom: 12px;">Oyuna Başla</button>
-            <button onclick="handleLogout()" class="submit-btn" style="background: rgba(255,255,255,0.1);">Çıxış et</button>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label" data-i18n="usernameLabel">İstifadəçi adı</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-user input-icon"></i>
+                        <input type="text" id="login-user" class="input-field" placeholder="İstifadəçi adı və ya ID" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="passLabel">Şifrə</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="login-pass" class="input-field" placeholder="••••••••" required>
+                    </div>
+                </div>
+                <div class="form-footer">
+                    <label><input type="checkbox"> <span data-i18n="remember">Məni xatırla</span></label>
+                    <a href="#" data-i18n="forgot">Şifrəni unutmusan?</a>
+                </div>
+                <button type="submit" class="submit-btn" data-i18n="loginBtn">Daxil ol</button>
+                <div class="switch-prompt"><span data-i18n="noAccount">Hesabın yoxdur?</span> <a href="#" onclick="switchTab('register')" data-i18n="registerLink">Qeydiyyatdan keç</a></div>
+            </form>
+
+            <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
+                <div class="notice-box" data-i18n="noticeBox">⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar. 3-cü nik qadağandır və ban olunur.</div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="usernameLabel">İstifadəçi adı</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-user input-icon"></i>
+                        <input type="text" id="reg-user" class="input-field" placeholder="İstifadəçi adı seç" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="passLabel">Şifrə</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="reg-pass" class="input-field" placeholder="Ən azı 6 simvol" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" data-i18n="genderLabel">Cinsiyyət</label>
+                    <div class="gender-options">
+                        <div class="gender-btn active" id="gender-male" onclick="selectGender('male')"><i class="fa-solid fa-mars"></i> <span data-i18n="male">Kişi</span></div>
+                        <div class="gender-btn" id="gender-female" onclick="selectGender('female')"><i class="fa-solid fa-venus"></i> <span data-i18n="female">Qadın</span></div>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn" data-i18n="regBtn">Hesab yarat</button>
+                <div class="switch-prompt"><span data-i18n="hasAccount">Artıq hesabın var?</span> <a href="#" onclick="switchTab('login')" data-i18n="loginLink">Daxil ol</a></div>
+            </form>
         </div>
     </div>
 
+
+    <!-- ================= PROFILE VIEW SECTION ================= -->
+    <div id="profile-section" class="profile-container hidden">
+        
+        <!-- Header Icons Bar -->
+        <div class="profile-header">
+            <div class="vip-badge">
+                <i class="fa-solid fa-crown"></i> VIP
+            </div>
+            <div class="header-icons">
+                <i class="fa-solid fa-basket-shopping"></i>
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <i class="fa-solid fa-headphones"></i>
+                <i class="fa-regular fa-bell"></i>
+                <i class="fa-solid fa-gamepad"></i>
+                <i class="fa-solid fa-sliders" onclick="handleLogout()" title="Çıxış Et"></i>
+            </div>
+        </div>
+
+        <!-- Main User Card -->
+        <div class="profile-card">
+            <div class="profile-top-info">
+                <div class="avatar-box">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" alt="Avatar" class="avatar-img">
+                    <div class="avatar-edit-icon"><i class="fa-solid fa-pen"></i></div>
+                </div>
+                <div class="user-details">
+                    <div class="user-name-row">
+                        <span class="user-name-title" id="prof-username">A L I K</span>
+                        <i class="fa-solid fa-circle-check verified-badge"></i>
+                    </div>
+                    <div class="user-tags-row">
+                        <span class="id-badge">ID 1836</span>
+                        <button class="verify-btn">Təsdiq al</button>
+                    </div>
+                    <div class="frames-btn">
+                        🖼️ Ramkalar
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="status-box">
+                <i class="fa-solid fa-pen"></i>
+                <span>Şirin Dil 😒</span>
+            </div>
+
+            <!-- 6 Block Grid Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fa-regular fa-heart" style="color: #60a5fa;"></i>
+                    <div class="stat-num">185</div>
+                    <div class="stat-label">Ürək</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-regular fa-gem" style="color: #a855f7;"></i>
+                    <div class="stat-num">1.1k</div>
+                    <div class="stat-label">Kristal</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-user-group" style="color: #38bdf8;"></i>
+                    <div class="stat-num">1</div>
+                    <div class="stat-label">Dostlar</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-regular fa-eye" style="color: #818cf8;"></i>
+                    <div class="stat-num">29</div>
+                    <div class="stat-label">Baxanlar</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-user-plus" style="color: #c084fc;"></i>
+                    <div class="stat-num">1</div>
+                    <div class="stat-label">İzlədiyim</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-regular fa-star" style="color: #f472b6;"></i>
+                    <div class="stat-num">3</div>
+                    <div class="stat-label">İzləyən</div>
+                </div>
+            </div>
+
+            <!-- Store Banner -->
+            <div class="store-banner">
+                <div class="store-info">
+                    <h4>Mağaza</h4>
+                    <p>Qanad satışı · VIP · ramkalar</p>
+                </div>
+                <div class="store-icon">
+                    🦇
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <div class="bottom-nav">
+            <div class="nav-item active">
+                <i class="fa-solid fa-house"></i>
+                <span>Ana səhifə</span>
+            </div>
+            <div class="nav-item">
+                <i class="fa-solid fa-gamepad"></i>
+                <span>Oyunlar</span>
+            </div>
+            <div class="nav-center-btn">
+                <i class="fa-solid fa-plus"></i>
+            </div>
+            <div class="nav-item">
+                <i class="fa-regular fa-comment"></i>
+                <span class="badge-count">1</span>
+                <span>Mesajlar</span>
+            </div>
+            <div class="nav-item">
+                <i class="fa-regular fa-square-caret-right"></i>
+                <span>Videolar</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script Logic -->
     <script>
+        let currentLang = 'az';
         let selectedGender = 'male';
+
+        const translations = {
+            az: {
+                subLogin: "Hesabına daxil ol və oyuna davam et",
+                subReg: "Yeni hesab yarat və oyuna qoşul",
+                tabLogin: "Giriş", tabRegister: "Qeydiyyat",
+                usernameLabel: "İstifadəçi adı", passLabel: "Şifrə",
+                remember: "Məni xatırla", forgot: "Şifrəni unutmusan?",
+                loginBtn: "Daxil ol", regBtn: "Hesab yarat",
+                noAccount: "Hesabın yoxdur?", hasAccount: "Artıq hesabın var?",
+                registerLink: "Qeydiyyatdan keç", loginLink: "Daxil ol",
+                noticeBox: "⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar. 3-cü nik qadağandır və ban olunur.",
+                genderLabel: "Cinsiyyət", male: "Kişi", female: "Qadın"
+            },
+            ru: {
+                subLogin: "Войдите в аккаунт и продолжите игру",
+                subReg: "Создайте аккаунт и присоединяйтесь",
+                tabLogin: "Вход", tabRegister: "Регистрация",
+                usernameLabel: "Имя пользователя", passLabel: "Пароль",
+                remember: "Запомнить меня", forgot: "Забыли пароль?",
+                loginBtn: "Войти", regBtn: "Создать аккаунт",
+                noAccount: "Нет аккаунта?", hasAccount: "Уже есть аккаунт?",
+                registerLink: "Регистрация", loginLink: "Войти",
+                noticeBox: "⚠️ <strong>Внимание!</strong> С 1 устройства можно создать максимум 2 ника. 3-й ник запрещен.",
+                genderLabel: "Пол", male: "Мужской", female: "Женский"
+            },
+            en: {
+                subLogin: "Log in to your account and continue",
+                subReg: "Create a new account and join",
+                tabLogin: "Login", tabRegister: "Register",
+                usernameLabel: "Username", passLabel: "Password",
+                remember: "Remember me", forgot: "Forgot password?",
+                loginBtn: "Log In", regBtn: "Create Account",
+                noAccount: "Don't have an account?", hasAccount: "Already have an account?",
+                registerLink: "Register", loginLink: "Log In",
+                noticeBox: "⚠️ <strong>Attention!</strong> You can create up to 2 nicknames per device.",
+                genderLabel: "Gender", male: "Male", female: "Female"
+            }
+        };
+
+        function changeLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) el.innerHTML = translations[lang][key];
+            });
+        }
+
         window.onload = function() {
             const loggedInUser = localStorage.getItem('putulka_logged_user');
-            if (loggedInUser) showProfile(JSON.parse(loggedInUser));
-        };
-        function switchTab(type) {
-            if (type === 'login') {
-                document.getElementById('login-form').classList.remove('hidden');
-                document.getElementById('register-form').classList.add('hidden');
-                document.getElementById('tab-login').classList.add('active');
-                document.getElementById('tab-register').classList.remove('active');
-                document.getElementById('logo-subtitle').innerText = "Hesabına daxil ol və oyuna davam et";
-            } else {
-                document.getElementById('login-form').classList.add('hidden');
-                document.getElementById('register-form').classList.remove('hidden');
-                document.getElementById('tab-register').classList.add('active');
-                document.getElementById('tab-login').classList.remove('active');
-                document.getElementById('logo-subtitle').innerText = "Yeni hesab yarat və oyuna qoşul";
+            if (loggedInUser) {
+                showProfile(JSON.parse(loggedInUser));
             }
+        };
+
+        function switchTab(type) {
+            const isLogin = type === 'login';
+            document.getElementById('login-form').classList.toggle('hidden', !isLogin);
+            document.getElementById('register-form').classList.toggle('hidden', isLogin);
+            document.getElementById('tab-login').classList.toggle('active', isLogin);
+            document.getElementById('tab-register').classList.toggle('active', !isLogin);
+            document.getElementById('logo-subtitle').innerText = translations[currentLang][isLogin ? 'subLogin' : 'subReg'];
         }
+
         function selectGender(gender) {
             selectedGender = gender;
             document.getElementById('gender-male').classList.toggle('active', gender === 'male');
             document.getElementById('gender-female').classList.toggle('active', gender === 'female');
         }
+
         function handleRegister(e) {
             e.preventDefault();
             const user = document.getElementById('reg-user').value.trim();
@@ -328,6 +657,7 @@
             localStorage.setItem('putulka_logged_user', JSON.stringify(userData));
             showProfile(userData);
         }
+
         function handleLogin(e) {
             e.preventDefault();
             const user = document.getElementById('login-user').value.trim();
@@ -339,14 +669,15 @@
             localStorage.setItem('putulka_logged_user', JSON.stringify(parsedData));
             showProfile(parsedData);
         }
+
         function showProfile(userData) {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('register-form').classList.add('hidden');
-            document.getElementById('tab-container').classList.add('hidden');
-            document.getElementById('profile-view').classList.remove('hidden');
-            document.getElementById('user-display-name').innerText = userData.username;
-            document.getElementById('user-display-gender').innerText = userData.gender === 'male' ? 'Kişi Oyunçu' : 'Qadın Oyunçu';
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('profile-section').classList.remove('hidden');
+            
+            // Set user name
+            document.getElementById('prof-username').innerText = userData.username.toUpperCase();
         }
+
         function handleLogout() {
             localStorage.removeItem('putulka_logged_user');
             location.reload();
