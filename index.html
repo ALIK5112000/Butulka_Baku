@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Putulka Game - Giriş və Qeydiyyat</title>
+    <title>Butulka_Baku</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -12,7 +12,6 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
         body {
             background: #0f0715;
             background: radial-gradient(circle at center, #240b36 0%, #0c0514 100%);
@@ -24,8 +23,6 @@
             justify-content: flex-start;
             padding: 20px 15px;
         }
-
-        /* Lang Bar */
         .lang-bar {
             display: flex;
             gap: 8px;
@@ -33,35 +30,23 @@
             padding: 6px 12px;
             border-radius: 20px;
             margin-bottom: 25px;
-            backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .lang-btn {
-            display: flex;
-            align-items: center;
-            gap: 5px;
             padding: 5px 12px;
             border-radius: 15px;
             font-size: 13px;
-            font-weight: 500;
             cursor: pointer;
             color: #b3b3b3;
-            transition: all 0.3s;
         }
-
         .lang-btn.active {
             background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
             color: white;
-            box-shadow: 0 0 12px rgba(236, 72, 153, 0.4);
         }
-
-        /* Logo */
         .logo-box {
             text-align: center;
             margin-bottom: 20px;
         }
-
         .logo-icon {
             width: 70px;
             height: 70px;
@@ -71,43 +56,30 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 15px;
-            box-shadow: 0 0 25px rgba(236, 72, 153, 0.5);
-        }
-
-        .logo-icon i {
             font-size: 32px;
             color: white;
+            box-shadow: 0 0 25px rgba(236, 72, 153, 0.5);
         }
-
         .brand-title {
             font-size: 36px;
             font-weight: 700;
-            font-family: 'Georgia', serif;
             font-style: italic;
-            background: linear-gradient(to right, #ffffff, #f472b6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #f472b6;
             margin-bottom: 5px;
         }
-
         .brand-subtitle {
             font-size: 14px;
             color: #94a3b8;
         }
-
-        /* Card Container */
         .auth-card {
-            background: rgba(23, 15, 38, 0.85);
+            background: rgba(23, 15, 38, 0.9);
             border-radius: 28px;
             padding: 25px;
             width: 100%;
             max-width: 400px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(15px);
         }
-
-        /* Tabs */
         .tab-switcher {
             display: flex;
             background: rgba(10, 6, 18, 0.6);
@@ -115,7 +87,6 @@
             padding: 4px;
             margin-bottom: 20px;
         }
-
         .tab-btn {
             flex: 1;
             padding: 12px;
@@ -125,8 +96,261 @@
             font-size: 15px;
             cursor: pointer;
             color: #94a3b8;
-            transition: all 0.3s;
         }
-
         .tab-btn.active {
-            background: linear-gradient(135deg, #
+            background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%);
+            color: white;
+        }
+        .notice-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 14px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #fbbf24;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            color: #64748b;
+        }
+        .input-field {
+            width: 100%;
+            background: rgba(10, 6, 18, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 14px 16px 14px 45px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+        }
+        .input-field:focus {
+            border-color: #ec4899;
+        }
+        .gender-options {
+            display: flex;
+            gap: 12px;
+        }
+        .gender-btn {
+            flex: 1;
+            padding: 15px;
+            background: rgba(10, 6, 18, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            color: #64748b;
+        }
+        .gender-btn.active {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ff4b8b 0%, #ff2a70 100%);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        .switch-prompt {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        .switch-prompt a, .form-footer a {
+            color: #f59e0b;
+            text-decoration: none;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .profile-box {
+            text-align: center;
+            padding: 10px 0;
+        }
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 32px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lang-bar">
+        <div class="lang-btn active">🇦🇿 Azərbaycanca</div>
+        <div class="lang-btn">🇷🇺 Русский</div>
+        <div class="lang-btn">🇬🇧 English</div>
+    </div>
+
+    <div class="logo-box">
+        <div class="logo-icon"><i class="fa-solid fa-heart"></i></div>
+        <h1 class="brand-title">Putulka</h1>
+        <p class="brand-subtitle" id="logo-subtitle">Hesabına daxil ol və oyuna davam et</p>
+    </div>
+
+    <div class="auth-card">
+        <div class="tab-switcher" id="tab-container">
+            <div class="tab-btn active" id="tab-login" onclick="switchTab('login')">Giriş</div>
+            <div class="tab-btn" id="tab-register" onclick="switchTab('register')">Qeydiyyat</div>
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label class="form-label">İstifadəçi adı</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-user input-icon"></i>
+                    <input type="text" id="login-user" class="input-field" placeholder="İstifadəçi adı və ya ID" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Şifrə</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" id="login-pass" class="input-field" placeholder="••••••••" required>
+                </div>
+            </div>
+            <div class="form-footer">
+                <label><input type="checkbox"> Məni xatırla</label>
+                <a href="#">Şifrəni unutmusan?</a>
+            </div>
+            <button type="submit" class="submit-btn">Daxil ol</button>
+            <div class="switch-prompt">Hesabın yoxdur? <a href="#" onclick="switchTab('register')">Qeydiyyatdan keç</a></div>
+        </form>
+
+        <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
+            <div class="notice-box">⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar. 3-cü nik qadağandır və ban olunur.</div>
+            <div class="form-group">
+                <label class="form-label">İstifadəçi adı</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-user input-icon"></i>
+                    <input type="text" id="reg-user" class="input-field" placeholder="İstifadəçi adı seç" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Şifrə</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" id="reg-pass" class="input-field" placeholder="Ən azı 6 simvol" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Cinsiyyət</label>
+                <div class="gender-options">
+                    <div class="gender-btn active" id="gender-male" onclick="selectGender('male')"><i class="fa-solid fa-mars"></i> Kişi</div>
+                    <div class="gender-btn" id="gender-female" onclick="selectGender('female')"><i class="fa-solid fa-venus"></i> Qadın</div>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn">Hesab yarat</button>
+            <div class="switch-prompt">Artıq hesabın var? <a href="#" onclick="switchTab('login')">Daxil ol</a></div>
+        </form>
+
+        <div id="profile-view" class="profile-box hidden">
+            <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
+            <h2 id="user-display-name" style="margin-bottom: 5px;">Xoş gəldin!</h2>
+            <p id="user-display-gender" style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Oyunçu</p>
+            <button class="submit-btn" style="margin-bottom: 12px;">Oyuna Başla</button>
+            <button onclick="handleLogout()" class="submit-btn" style="background: rgba(255,255,255,0.1);">Çıxış et</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedGender = 'male';
+        window.onload = function() {
+            const loggedInUser = localStorage.getItem('putulka_logged_user');
+            if (loggedInUser) showProfile(JSON.parse(loggedInUser));
+        };
+        function switchTab(type) {
+            if (type === 'login') {
+                document.getElementById('login-form').classList.remove('hidden');
+                document.getElementById('register-form').classList.add('hidden');
+                document.getElementById('tab-login').classList.add('active');
+                document.getElementById('tab-register').classList.remove('active');
+                document.getElementById('logo-subtitle').innerText = "Hesabına daxil ol və oyuna davam et";
+            } else {
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('register-form').classList.remove('hidden');
+                document.getElementById('tab-register').classList.add('active');
+                document.getElementById('tab-login').classList.remove('active');
+                document.getElementById('logo-subtitle').innerText = "Yeni hesab yarat və oyuna qoşul";
+            }
+        }
+        function selectGender(gender) {
+            selectedGender = gender;
+            document.getElementById('gender-male').classList.toggle('active', gender === 'male');
+            document.getElementById('gender-female').classList.toggle('active', gender === 'female');
+        }
+        function handleRegister(e) {
+            e.preventDefault();
+            const user = document.getElementById('reg-user').value.trim();
+            const pass = document.getElementById('reg-pass').value;
+            const userData = { username: user, gender: selectedGender, pass: pass };
+            localStorage.setItem('user_' + user, JSON.stringify(userData));
+            localStorage.setItem('putulka_logged_user', JSON.stringify(userData));
+            showProfile(userData);
+        }
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('login-user').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            const savedUser = localStorage.getItem('user_' + user);
+            if (!savedUser) { alert('İstifadəçi tapılmadı!'); return; }
+            const parsedData = JSON.parse(savedUser);
+            if (parsedData.pass !== pass) { alert('Şifrə yanlışdır!'); return; }
+            localStorage.setItem('putulka_logged_user', JSON.stringify(parsedData));
+            showProfile(parsedData);
+        }
+        function showProfile(userData) {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('tab-container').classList.add('hidden');
+            document.getElementById('profile-view').classList.remove('hidden');
+            document.getElementById('user-display-name').innerText = userData.username;
+            document.getElementById('user-display-gender').innerText = userData.gender === 'male' ? 'Kişi Oyunçu' : 'Qadın Oyunçu';
+        }
+        function handleLogout() {
+            localStorage.removeItem('putulka_logged_user');
+            location.reload();
+        }
+    </script>
+</body>
+</html>
