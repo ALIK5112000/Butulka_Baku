@@ -12,7 +12,7 @@
         .hidden { display: none !important; }
         
         .auth-container { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; }
-        .lang-bar { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.05); padding: 6px 10px; border-radius: 20px; margin-bottom: 25px; border: 1px solid rgba(255, 255, 255, 0.1); flex-wrap: wrap; justify-content: center; }
+        .lang-bar { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.05); padding: 6px 10px; border-radius: 20px; margin-bottom: 25px; border: 1px solid rgba(255, 255, 255, 0.1); }
         .lang-btn { padding: 5px 10px; border-radius: 15px; font-size: 12px; cursor: pointer; color: #b3b3b3; }
         .lang-btn.active { background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color: white; }
         
@@ -66,7 +66,7 @@
                     <label class="form-label" data-t="tUserLabel">İstifadəçi adı və ya ID</label>
                     <div class="input-wrapper">
                         <i class="fa-regular fa-user input-icon"></i>
-                        <input type="text" id="login-user" class="input-field" placeholder="Nik və ya ID yazın" required data-placeholder="tUserPh">
+                        <input type="text" id="login-user" class="input-field" placeholder="Nik və ya ID yazın" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -111,72 +111,40 @@
     <script>
         let selectedGender = 'male';
 
-        // Tərcümə lüğəti
         const dict = {
-            az: {
-                tSub: "Hesabına daxil ol və oyuna davam et",
-                tLogin: "Giriş",
-                tReg: "Qeydiyyat",
-                tUserLabel: "İstifadəçi adı və ya ID",
-                tPassLabel: "Şifrə",
-                tLoginBtn: "Daxil ol",
-                tRegBtn: "Hesab yarat",
-                tNotice: "⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar.",
-                tGenderLabel: "Cinsiyyət",
-                tMale: "Kişi",
-                tFemale: "Qadın"
-            },
-            ka: {
-                tSub: "შედით თქვენს ანგარიშში",
-                tLogin: "შესვლა",
-                tReg: "რეგისტრაცია",
-                tUserLabel: "მომხმარებელი ან ID",
-                tPassLabel: "პაროლი",
-                tLoginBtn: "შესვლა",
-                tRegBtn: "რეგისტრაცია",
-                tNotice: "⚠️ <strong>ყურადღება!</strong> 1 მოწყობილობიდან მაქსიმუმ 2 ნიკია დასაშვები.",
-                tGenderLabel: "სქესი",
-                tMale: "კაცი",
-                tFemale: "ქალი"
-            },
-            tr: {
-                tSub: "Hesabınıza giriş yapın",
-                tLogin: "Giriş",
-                tReg: "Kayıt Ol",
-                tUserLabel: "Kullanıcı adı veya ID",
-                tPassLabel: "Şifre",
-                tLoginBtn: "Giriş Yap",
-                tRegBtn: "Hesap Oluştur",
-                tNotice: "⚠️ <strong>Dikkat!</strong> 1 cihazdan en fazla 2 nick açılabilir.",
-                tGenderLabel: "Cinsiyet",
-                tMale: "Erkek",
-                tFemale: "Kadın"
-            },
-            en: {
-                tSub: "Log in to your account",
-                tLogin: "Login",
-                tReg: "Register",
-                tUserLabel: "Username or ID",
-                tPassLabel: "Password",
-                tLoginBtn: "Log In",
-                tRegBtn: "Create Account",
-                tNotice: "⚠️ <strong>Attention!</strong> Max 2 nicknames per device.",
-                tGenderLabel: "Gender",
-                tMale: "Male",
-                tFemale: "Female"
-            }
+            az: { tSub: "Hesabına daxil ol və oyuna davam et", tLogin: "Giriş", tReg: "Qeydiyyat", tUserLabel: "İstifadəçi adı və ya ID", tPassLabel: "Şifrə", tLoginBtn: "Daxil ol", tRegBtn: "Hesab yarat", tNotice: "⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar.", tGenderLabel: "Cinsiyyət", tMale: "Kişi", tFemale: "Qadın" },
+            ka: { tSub: "შედით თქვენს ანგარიშში", tLogin: "შესვლა", tReg: "რეგისტრაცია", tUserLabel: "მომხმარებელი ან ID", tPassLabel: "პაროლი", tLoginBtn: "შესვლა", tRegBtn: "რეგისტრაცია", tNotice: "⚠️ <strong>ყურადღება!</strong> 1 მოწყობილობიდან მაქსიმუმ 2 ნიკია დასაშვები.", tGenderLabel: "სქესი", tMale: "კაცი", tFemale: "ქალი" },
+            tr: { tSub: "Hesabınıza giriş yapın", tLogin: "Giriş", tReg: "Kayıt Ol", tUserLabel: "Kullanıcı adı veya ID", tPassLabel: "Şifre", tLoginBtn: "Giriş Yap", tRegBtn: "Hesap Oluştur", tNotice: "⚠️ <strong>Dikkat!</strong> 1 cihazdan en fazla 2 nick açılabilir.", tGenderLabel: "Cinsiyet", tMale: "Erkek", tFemale: "Kadın" },
+            en: { tSub: "Log in to your account", tLogin: "Login", tReg: "Register", tUserLabel: "Username or ID", tPassLabel: "Password", tLoginBtn: "Log In", tRegBtn: "Create Account", tNotice: "⚠️ <strong>Attention!</strong> Max 2 nicknames per device.", tGenderLabel: "Gender", tMale: "Male", tFemale: "Female" }
         };
 
         function changeLang(lang) {
             document.querySelectorAll('.lang-bar .lang-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            if(event && event.target) event.target.classList.add('active');
 
             document.querySelectorAll('[data-t]').forEach(el => {
                 const k = el.getAttribute('data-t');
-                if(dict[lang][k]) {
-                    el.innerHTML = dict[lang][k];
-                }
+                if(dict[lang][k]) el.innerHTML = dict[lang][k];
             });
+        }
+
+        // TAM UNİKAL ID YARADAN FUNKSİYA
+        function generateUniqueId() {
+            let existingIds = [];
+            for(let i=0; i<localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key.startsWith('user_')) {
+                    const uData = JSON.parse(localStorage.getItem(key));
+                    if(uData.id) existingIds.push(uData.id.toString());
+                }
+            }
+
+            let newId;
+            do {
+                newId = Math.floor(1000 + Math.random() * 9000).toString();
+            } while (existingIds.includes(newId));
+
+            return parseInt(newId);
         }
 
         window.onload = function() {
@@ -219,9 +187,12 @@
                 return;
             }
 
+            // Təkrarlanmayan unikal ID çağırılır
+            const uniqueId = generateUniqueId();
+
             const newUser = { 
                 username: u, pass: p, gender: selectedGender, 
-                id: Math.floor(1000 + Math.random() * 9000), 
+                id: uniqueId, 
                 coins: 5100, hearts: 185, status: "Şirin Dil 😔",
                 country: "🇦🇿 Azərbaycan", city: "Bakı", age: "20",
                 role: 'user', muteUntil: 0, banUntil: 0, notification: null,
