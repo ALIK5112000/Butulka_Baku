@@ -7,7 +7,6 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        /* Atdığın şəkildəki tünd neon qəşəng arxa fon */
         body {
             background: linear-gradient(135deg, #090314, #120624, #180933, #090314);
             background-size: 400% 400%;
@@ -27,7 +26,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Yuxarı Menü (VIP, Mağaza, Axtarış, Qulaqlıq, Bildiriş, Çıxış) */
         .top-nav {
             width: 100%;
             max-width: 450px;
@@ -70,7 +68,6 @@
         }
         .icon-pill:hover { background: rgba(255, 255, 255, 0.12); }
 
-        /* Profil Kartı (Şəkildəki tünd rəng və incə çərçivə) */
         .profile-card {
             width: 100%;
             max-width: 450px;
@@ -141,7 +138,6 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* Status sətri */
         .status-box {
             background: rgba(0, 0, 0, 0.25);
             border: 1px solid rgba(255, 255, 255, 0.04);
@@ -155,7 +151,6 @@
             gap: 10px;
         }
 
-        /* Statistika Grid Qutuları */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -177,7 +172,6 @@
         .stat-value { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 2px; }
         .stat-label { font-size: 12px; color: #888; }
 
-        /* Mağaza Banneri (Şəkildəki kimi) */
         .store-banner {
             background: linear-gradient(135deg, rgba(30, 12, 56, 0.9), rgba(45, 18, 78, 0.9));
             border: 1px solid rgba(255, 170, 51, 0.25);
@@ -192,7 +186,6 @@
         .store-title { font-weight: bold; font-size: 16px; color: #ffaa33; margin-bottom: 3px; }
         .store-desc { font-size: 12px; color: #999; }
 
-        /* Aşağı Naviqasiya Menü (Footer) */
         .footer-menu {
             position: fixed;
             bottom: 0; left: 0; width: 100%;
@@ -233,7 +226,6 @@
 </head>
 <body>
 
-    <!-- Yuxarı Menü Barı -->
     <div class="top-nav">
         <button class="vip-btn">👑 VIP</button>
         <div class="top-icons">
@@ -245,17 +237,14 @@
         </div>
     </div>
 
-    <!-- Əsas Profil Kartı -->
     <div class="profile-card">
         <div class="user-header">
             <div class="avatar-box">
                 <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Avatar">
             </div>
             <div class="user-info">
-                <!-- Qeydiyyat zamanı yazılan real ad -->
                 <div class="username-badge" id="profileUsername">Yüklənir...</div>
                 <div class="id-badge-row">
-                    <!-- Qeydiyyat zamanı verilən real ID -->
                     <div class="id-pill">ID <span id="profileId">-----</span></div>
                     <div class="tasdiq-pill">Təsdiq al</div>
                 </div>
@@ -266,41 +255,39 @@
             <span>✏️</span> Status yaz...
         </div>
 
-        <!-- Statistika Qutuları -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">❤️</div>
-                <div class="stat-value" id="profileHearts">7.2k</div>
+                <div class="stat-value" id="profileHearts">7200</div>
                 <div class="stat-label">Ürək</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">💎</div>
-                <div class="stat-value" id="profileJetons">1.4k</div>
+                <div class="stat-value" id="profileJetons">1400</div>
                 <div class="stat-label">Kristal</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">👥</div>
-                <div class="stat-value">1</div>
+                <div class="stat-value" id="profileFriends">0</div>
                 <div class="stat-label">Dostlar</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">👁️</div>
-                <div class="stat-value" id="profileViews">30</div>
+                <div class="stat-value" id="profileViews">1</div>
                 <div class="stat-label">Baxanlar</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">👤</div>
-                <div class="stat-value">1</div>
+                <div class="stat-value">0</div>
                 <div class="stat-label">İzlədiyim</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">⭐</div>
-                <div class="stat-value">3</div>
+                <div class="stat-value">0</div>
                 <div class="stat-label">İzləyən</div>
             </div>
         </div>
 
-        <!-- Mağaza Banneri -->
         <div class="store-banner">
             <div>
                 <div class="store-title">🦋 Mağaza</div>
@@ -310,40 +297,79 @@
         </div>
     </div>
 
-    <!-- Aşağı Naviqasiya Menü (Footer) -->
     <div class="footer-menu">
         <a href="profile.html" class="footer-item active">
             <div>🏠</div>
             <div>Ana səhifə</div>
         </a>
-        <div class="footer-item">
+        <div class="footer-item" onclick="alert('Oyun masaları tezliklə aktivləşəcək!')">
             <div>🎮</div>
             <div>Oyunlar</div>
         </div>
         <div class="footer-center-btn">+</div>
-        <div class="footer-item">
+        <div class="footer-item" onclick="alert('Mesajlar bölməsi açılır...')">
             <div>💬</div>
             <div>Mesajlar</div>
         </div>
-        <div class="footer-item">
+        <div class="footer-item" onclick="alert('Videolar bölməsi...')">
             <div>🎬</div>
             <div>Videolar</div>
         </div>
     </div>
 
-    <!-- JavaScript: Real İstifadəçi Məlumatları -->
-    <script>
-        const savedUser = localStorage.getItem("currentUser");
-        
-        if(savedUser) {
+    <!-- Firebase Canlı Bağlantı və Real Göstəricilər Skripti -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAANVVrJKhZyaCErn8YFNVTUPF70A9xlmQ",
+          authDomain: "butulka-baku-istifadeci-bazasi.firebaseapp.com",
+          projectId: "butulka-baku-istifadeci-bazasi",
+          storageBucket: "butulka-baku-istifadeci-bazasi.firebasestorage.app",
+          messagingSenderId: "52438073026",
+          appId: "1:52438073026:web:1c4a0a8d1fc1ce5f78455b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadProfileData() {
+            const savedUser = localStorage.getItem("currentUser");
+            if (!savedUser) {
+                window.location.href = "index.html";
+                return;
+            }
+
             const userData = JSON.parse(savedUser);
+            
+            // Ekrandakı yerli məlumatları dərhal yazırıq
             document.getElementById('profileUsername').innerText = userData.username || "İstifadəçi";
             document.getElementById('profileId').innerText = userData.id || "0000";
             if(userData.jetons) document.getElementById('profileJetons').innerText = userData.jetons;
             if(userData.hearts) document.getElementById('profileHearts').innerText = userData.hearts;
-        } else {
-            window.location.href = "index.html";
+
+            // Real vaxt rejimində bazadan ən son məlumatı yoxlayırıq
+            try {
+                const q = query(collection(db, "users"), where("id", "==", userData.id));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if(data.username) document.getElementById('profileUsername').innerText = data.username;
+                    if(data.jetons !== undefined) document.getElementById('profileJetons').innerText = data.jetons;
+                    if(data.hearts !== undefined) document.getElementById('profileHearts').innerText = data.hearts;
+                });
+            } catch(e) {
+                console.log("Bazadan oxuma xətası:", e);
+            }
+
+            // Canlı baxış sayğacı (hər dəfə daxil olanda real artım)
+            let viewKey = "profile_views_" + userData.id;
+            let currentViews = parseInt(localStorage.getItem(viewKey) || "1");
+            document.getElementById('profileViews').innerText = currentViews;
         }
+
+        loadProfileData();
 
         window.logout = function() {
             localStorage.removeItem("currentUser");
