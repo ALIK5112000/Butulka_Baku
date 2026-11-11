@@ -1,1 +1,721 @@
+```html
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Butulka Baku - Profil & Mesajlar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050814; /* Very dark background */
+            color: #ffffff;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* App Container for Desktop constraints */
+        .app-container {
+            max-w-md;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #0d1123 0%, #050814 100%);
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+            overflow-x: hidden;
+            padding-bottom: 90px; /* Space for bottom nav */
+        }
+
+        /* Glassmorphism */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1.25rem;
+        }
+        
+        .glass-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        .glass-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+            outline: none;
+        }
+
+        /* Glowing VIP Button */
+        .vip-btn-glow {
+            background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            color: #d10068;
+            box-shadow: 0 0 15px rgba(255, 154, 158, 0.5);
+        }
+
+        /* Neon Borders for Name */
+        .neon-border-name {
+            border: 1px solid #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5), inset 0 0 10px rgba(59, 130, 246, 0.3);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Modals (Bottom Sheets) */
+        .bottom-sheet {
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bottom-sheet.open {
+            transform: translateY(0);
+        }
+        .overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Scrollbar hide */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Custom Toast Notification */
+        #toast {
+            transform: translateY(-150%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #toast.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+
+    <!-- Toast Notification (Replaces alerts) -->
+    <div id="toast" class="fixed top-4 left-0 right-0 z-[100] flex justify-center pointer-events-none px-4">
+        <div class="glass-card bg-[#1e2445]/90 border-blue-500/50 text-white px-6 py-3 rounded-2xl shadow-[0_0_20px_rgba(59,130,246,0.3)] flex items-center space-x-3 pointer-events-auto">
+            <i class="fas fa-bell text-blue-400"></i>
+            <span id="toast-message" class="text-sm font-medium text-blue-50">Bildiriş mesajı</span>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="app-container max-w-md w-full mx-auto relative flex flex-col">
+
+        <!-- ================= TOP NAVIGATION ================= -->
+        <header class="sticky top-0 z-40 bg-[#0d1123]/80 backdrop-blur-md px-4 py-3 flex justify-between items-center border-b border-white/5">
+            <!-- VIP Button -->
+            <button onclick="openModal('vip-modal')" class="vip-btn-glow px-4 py-1.5 rounded-full font-bold text-sm flex items-center shadow-lg active:scale-95 transition">
+                <i class="fas fa-crown mr-2"></i> <span data-i18n="nav_vip">VIP</span>
+            </button>
+            
+            <!-- Right Icons -->
+            <div class="flex items-center space-x-3 text-gray-400">
+                <button onclick="openModal('store-modal')" class="w-9 h-9 rounded-full glass-card flex items-center justify-center hover:text-white active:scale-95"><i class="fas fa-shopping-cart text-sm"></i></button>
+                <button onclick="openModal('search-modal')" class="w-9 h-9 rounded-full glass-card flex items-center justify-center hover:text-white active:scale-95"><i class="fas fa-search text-sm"></i></button>
+                <button class="w-9 h-9 rounded-full glass-card flex items-center justify-center hover:text-white active:scale-95"><i class="fas fa-headphones text-sm"></i></button>
+                <button class="w-9 h-9 rounded-full glass-card flex items-center justify-center hover:text-white active:scale-95 relative">
+                    <i class="fas fa-bell text-sm"></i>
+                    <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-[#0d1123]"></span>
+                </button>
+                <button class="w-9 h-9 rounded-full glass-card flex items-center justify-center hover:text-white active:scale-95"><i class="fas fa-palette text-sm"></i></button>
+                <button class="w-9 h-9 rounded-full glass-card flex items-center justify-center hover:text-white active:scale-95"><i class="fas fa-sliders-h text-sm"></i></button>
+            </div>
+        </header>
+
+        <!-- ================= VIEW 1: PROFILE / DASHBOARD ================= -->
+        <main id="view-profile" class="flex-1 p-4 flex flex-col space-y-5 animate-[fadeIn_0.3s]">
+            
+            <!-- Profile Card -->
+            <div class="glass-card p-5 relative overflow-hidden bg-gradient-to-br from-[#1a203f]/50 to-transparent">
+                <!-- Name & Crown area -->
+                <div class="flex flex-col items-end absolute top-5 right-5 space-y-2">
+                    <div class="neon-border-name px-4 py-1.5 rounded-full flex items-center space-x-2">
+                        <!-- Hidden crown by default -->
+                        <i id="profile-crown" class="fas fa-crown text-yellow-400 drop-shadow-[0_0_5px_#facc15] hidden"></i>
+                        <span class="font-mono text-gray-300 tracking-widest text-sm">| A | L | I | K |</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-blue-500 w-4 h-4 rounded-full flex items-center justify-center"><i class="fas fa-check text-[10px] text-white"></i></span>
+                        <div class="bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 px-2 py-0.5 rounded-full text-xs font-bold flex items-center shadow-[0_0_10px_rgba(234,179,8,0.2)]">
+                            <span class="bg-yellow-500 text-black text-[10px] px-1 rounded mr-1">ID</span> 1836
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Avatar Area -->
+                <div class="flex flex-col mb-4 w-fit relative z-10">
+                    <div class="relative w-20 h-20 rounded-full p-1 bg-gradient-to-tr from-blue-400 to-indigo-600 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                        <img id="avatar-img" src="https://placehold.co/150x150/1e293b/ffffff?text=Alik" alt="Profile" class="w-full h-full rounded-full object-cover bg-gray-800">
+                        <!-- Edit Icon overlay -->
+                        <label for="avatar-upload" class="absolute bottom-0 right-0 w-7 h-7 bg-blue-500 rounded-full border-2 border-[#1a203f] flex items-center justify-center cursor-pointer shadow-lg active:scale-95 transition">
+                            <i class="fas fa-pen text-[10px] text-white"></i>
+                        </label>
+                        <input type="file" id="avatar-upload" class="hidden" accept="image/*" onchange="previewAvatar(event)">
+                    </div>
+                    <span class="text-xs text-gray-400 mt-2 font-mono ml-2">511</span>
+                </div>
+
+                <!-- Status Input Box -->
+                <div class="glass-input rounded-xl flex items-center px-4 py-3 mt-4">
+                    <i class="fas fa-pen text-gray-500 text-sm mr-3"></i>
+                    <input type="text" class="bg-transparent w-full text-sm text-gray-300 outline-none placeholder-gray-600" data-i18n-placeholder="status_placeholder" placeholder="Status yaz...">
+                </div>
+            </div>
+
+            <!-- Stats Grid (4 Boxes as requested) -->
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Box 1: Bonus -->
+                <div class="glass-card p-4 flex flex-col justify-center bg-black/20">
+                    <i class="fas fa-gift text-pink-400 mb-2 drop-shadow-[0_0_5px_rgba(244,114,182,0.5)] text-lg"></i>
+                    <span class="text-2xl font-bold text-white mb-0.5">5</span>
+                    <span class="text-xs text-gray-400" data-i18n="stat_bonus">Bonus</span>
+                </div>
+                <!-- Box 2: Jeton -->
+                <div class="glass-card p-4 flex flex-col justify-center bg-black/20">
+                    <i class="fas fa-coins text-yellow-400 mb-2 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)] text-lg"></i>
+                    <span id="user-jeton-display" class="text-2xl font-bold text-white mb-0.5">1.4k</span>
+                    <span class="text-xs text-gray-400" data-i18n="stat_jeton">Jeton</span>
+                </div>
+                <!-- Box 3: Friends -->
+                <div class="glass-card p-4 flex flex-col justify-center bg-black/20">
+                    <i class="fas fa-user-friends text-blue-400 mb-2 text-lg"></i>
+                    <span class="text-2xl font-bold text-white mb-0.5">1</span>
+                    <span class="text-xs text-gray-400" data-i18n="stat_friends">Dostlar</span>
+                </div>
+                <!-- Box 4: Views -->
+                <div class="glass-card p-4 flex flex-col justify-center bg-black/20">
+                    <i class="fas fa-eye text-purple-400 mb-2 text-lg"></i>
+                    <span class="text-2xl font-bold text-white mb-0.5">30</span>
+                    <span class="text-xs text-gray-400" data-i18n="stat_views">Baxanlar</span>
+                </div>
+            </div>
+
+            <!-- Edit Profile Form -->
+            <div class="space-y-4 pt-2">
+                <!-- Ad -->
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5 ml-1" data-i18n="lbl_name">Ad</label>
+                    <input type="text" class="glass-input w-full rounded-xl px-4 py-3 text-sm text-white" value="| A | L | I | K |">
+                </div>
+                
+                <!-- Ölkə -->
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5 ml-1" data-i18n="lbl_country">Ölkə</label>
+                    <div class="relative">
+                        <select class="glass-input w-full rounded-xl px-4 py-3 text-sm text-gray-300 appearance-none">
+                            <option value="">— seçilməyib —</option>
+                            <option value="az" selected>🇦🇿 Azərbaycan</option>
+                            <option value="tr">🇹🇷 Türkiyə</option>
+                            <option value="ru">🇷🇺 Rusiya</option>
+                            <option value="ge">🇬🇪 Gürcüstan</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-4 top-4 text-gray-500 text-xs pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- Rayon / Şəhər & Yaş Row -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5 ml-1" data-i18n="lbl_city">Rayon / şəhər</label>
+                        <input type="text" class="glass-input w-full rounded-xl px-4 py-3 text-sm text-white" value="511">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1.5 ml-1" data-i18n="lbl_age">Yaş</label>
+                        <input type="number" min="18" max="99" class="glass-input w-full rounded-xl px-4 py-3 text-sm text-white" value="99">
+                    </div>
+                </div>
+
+                <!-- Cinsiyyət -->
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1.5 ml-1" data-i18n="lbl_gender">Cinsiyyət</label>
+                    <div class="flex space-x-3">
+                        <button id="btn-male" onclick="setGender('male')" class="flex-1 py-3 rounded-xl border border-blue-500 bg-blue-500/20 text-blue-400 font-medium text-sm transition active:scale-95" data-i18n="gen_male">Kişi</button>
+                        <button id="btn-female" onclick="setGender('female')" class="flex-1 py-3 rounded-xl glass-input text-gray-400 font-medium text-sm transition active:scale-95" data-i18n="gen_female">Qadın</button>
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <button onclick="showToast('Dəyişikliklər yadda saxlanıldı!')" class="w-full bg-gradient-to-r from-blue-500 to-indigo-500 py-3.5 rounded-xl text-white font-bold shadow-lg shadow-blue-500/30 active:scale-95 transition mt-2" data-i18n="btn_save">
+                    Yadda saxla
+                </button>
+            </div>
+
+            <!-- Settings (Şifrə dəyişmə) -->
+            <div class="pt-6 pb-2">
+                <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-4 ml-1" data-i18n="hdr_pass">Şifrəni Dəyiş</h4>
+                <div class="space-y-3">
+                    <input type="password" class="glass-input w-full rounded-xl px-4 py-3 text-sm text-white" placeholder="Hazırkı şifrə" data-i18n-placeholder="pl_curr_pass">
+                    <input type="password" class="glass-input w-full rounded-xl px-4 py-3 text-sm text-white" placeholder="Yeni şifrə (ən azı 6 simvol)" data-i18n-placeholder="pl_new_pass">
+                    
+                    <button onclick="showToast('Şifrə yeniləndi!')" class="w-full glass-card bg-black/40 hover:bg-white/5 py-3.5 rounded-xl text-white font-semibold text-sm transition active:scale-95" data-i18n="btn_upd_pass">
+                        Şifrəni yenilə
+                    </button>
+                    <button onclick="showToast('Digər cihazlardan çıxış edildi!')" class="w-full glass-card bg-black/40 hover:bg-white/5 py-3.5 rounded-xl text-white font-semibold text-sm transition active:scale-95" data-i18n="btn_logout_others">
+                        Başqa cihazlardan çıx
+                    </button>
+                </div>
+            </div>
+
+            <!-- Other Links List -->
+            <div class="pt-4 pb-6">
+                <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-3 ml-1" data-i18n="hdr_other">Digər</h4>
+                <div class="glass-card flex flex-col divide-y divide-white/5 overflow-hidden">
+                    
+                    <!-- Language Link -->
+                    <button onclick="openModal('lang-modal')" class="flex items-center p-4 hover:bg-white/5 transition active:bg-white/10 text-left">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mr-4">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h5 class="text-sm font-semibold text-white mb-0.5" data-i18n="lbl_lang">Dil</h5>
+                            <p class="text-[10px] text-gray-400">Azərbaycanca • Русский • English • ქართული</p>
+                        </div>
+                    </button>
+
+                    <!-- About Link -->
+                    <button onclick="openModal('about-modal')" class="flex items-center p-4 hover:bg-white/5 transition active:bg-white/10 text-left">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center mr-4">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h5 class="text-sm font-semibold text-white mb-0.5" data-i18n="lbl_about">Oyun haqqında</h5>
+                            <p class="text-[10px] text-gray-400" data-i18n="desc_about">Oyun nədir, nə var, kim yaradıb</p>
+                        </div>
+                    </button>
+
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ================= VIEW 2: MESSAGES (Hidden by default) ================= -->
+        <main id="view-messages" class="flex-1 p-4 flex flex-col space-y-5 hidden animate-[fadeIn_0.3s]">
+            
+            <div class="pt-2 pb-2">
+                <h2 class="text-3xl font-bold text-white tracking-wide" data-i18n="hdr_messages">Mesajlar</h2>
+                <p class="text-xs text-gray-400 mt-1" data-i18n="desc_messages">Dostlarınla yazışmaların</p>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="glass-input rounded-2xl flex items-center px-4 py-3">
+                <i class="fas fa-search text-gray-500 text-sm mr-3"></i>
+                <input type="text" class="bg-transparent w-full text-sm text-white outline-none placeholder-gray-500" placeholder="Axtar..." data-i18n-placeholder="pl_search">
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex bg-black/30 rounded-xl p-1">
+                <button class="flex-1 py-2 rounded-lg bg-blue-500 text-white text-sm font-semibold shadow-md" data-i18n="tab_all">Hamısı</button>
+                <button class="flex-1 py-2 rounded-lg text-gray-400 text-sm font-medium hover:text-white transition" data-i18n="tab_hidden">Gizlədilənlər</button>
+            </div>
+
+            <!-- Friend Requests (Dostluq sorğuları) -->
+            <div class="glass-card p-4">
+                <h4 class="text-sm font-bold text-white mb-4 flex justify-between">
+                    <span data-i18n="hdr_req">Dostluq sorğuları</span>
+                    <span class="text-gray-400">1</span>
+                </h4>
+                
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <img src="https://placehold.co/100x100/333/fff?text=L" alt="Avatar" class="w-12 h-12 rounded-full object-cover">
+                        <div>
+                            <h5 class="text-sm font-bold text-gray-200">Летаю...</h5>
+                            <p class="text-[10px] text-gray-500" data-i18n="txt_sent_req">sənə dostluq s...</p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="showToast('Sorğu qəbul edildi')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg active:scale-95 transition" data-i18n="btn_accept">Qəbul et</button>
+                        <button onclick="showToast('Sorğu rədd edildi')" class="bg-white/10 hover:bg-white/20 text-gray-300 text-xs font-semibold px-3 py-1.5 rounded-lg active:scale-95 transition" data-i18n="btn_reject">Rədd et</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat List -->
+            <div class="glass-card p-2 flex flex-col">
+                <!-- Chat Item 1 -->
+                <div class="flex items-center p-3 hover:bg-white/5 rounded-xl cursor-pointer transition">
+                    <div class="relative">
+                        <img src="https://placehold.co/100x100/1e293b/fff?text=AM" alt="Avatar" class="w-14 h-14 rounded-full object-cover">
+                        <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#121832] rounded-full"></div>
+                    </div>
+                    <div class="flex-1 ml-4 border-b border-white/5 pb-3">
+                        <div class="flex justify-between items-center mb-1">
+                            <h5 class="text-sm font-bold text-gray-200 tracking-wider">| A | L | I | K | M |</h5>
+                            <span class="text-[10px] text-gray-500">10 okt</span>
+                        </div>
+                        <p class="text-xs text-gray-400 truncate w-48"><span class="text-blue-400 font-medium" data-i18n="txt_you">Siz:</span> 😔</p>
+                    </div>
+                </div>
+                
+                <button class="mt-2 py-3 w-full bg-black/30 hover:bg-black/50 text-white text-sm font-semibold rounded-xl transition" data-i18n="btn_write_friend">
+                    Dostuna yaz
+                </button>
+            </div>
+            
+        </main>
+
+        <!-- ================= BOTTOM NAVIGATION BAR ================= -->
+        <nav class="fixed bottom-0 w-full max-w-md mx-auto z-40 bg-[#0a0d1d]/90 backdrop-blur-xl border-t border-white/5 px-6 py-2 rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+            <ul class="flex justify-between items-center">
+                <!-- Home -->
+                <li onclick="switchTab('profile')" class="flex flex-col items-center group cursor-pointer w-12 pt-1">
+                    <i id="nav-icon-profile" class="fas fa-home text-blue-400 text-xl transition-all"></i>
+                    <span id="nav-text-profile" class="text-[9px] font-semibold text-blue-400 mt-1" data-i18n="nav_home">Ana səhifə</span>
+                </li>
+                <!-- Games -->
+                <li class="flex flex-col items-center group cursor-pointer w-12 pt-1 opacity-60 hover:opacity-100 transition">
+                    <i class="fas fa-gamepad text-gray-300 text-xl"></i>
+                    <span class="text-[9px] text-gray-400 mt-1" data-i18n="nav_games">Oyunlar</span>
+                </li>
+                <!-- Central Plus Button -->
+                <li class="flex flex-col items-center -mt-8 relative z-10">
+                    <button class="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/40 text-white text-2xl active:scale-95 transition transform hover:-translate-y-1">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </li>
+                <!-- Messages -->
+                <li onclick="switchTab('messages')" class="flex flex-col items-center group cursor-pointer w-12 pt-1 opacity-60 hover:opacity-100 transition relative">
+                    <div class="relative">
+                        <i id="nav-icon-messages" class="fas fa-comment-dots text-gray-300 text-xl transition-all"></i>
+                        <span class="absolute -top-1 -right-2 bg-blue-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-[#0a0d1d]">1</span>
+                    </div>
+                    <span id="nav-text-messages" class="text-[9px] text-gray-400 mt-1" data-i18n="nav_messages">Mesajlar</span>
+                </li>
+                <!-- Videos -->
+                <li class="flex flex-col items-center group cursor-pointer w-12 pt-1 opacity-60 hover:opacity-100 transition">
+                    <i class="far fa-play-circle text-gray-300 text-xl"></i>
+                    <span class="text-[9px] text-gray-400 mt-1" data-i18n="nav_videos">Videolar</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- ================= MODALS & OVERLAYS ================= -->
+        
+        <!-- Dark Overlay -->
+        <div id="main-overlay" onclick="closeAllModals()" class="overlay fixed inset-0 bg-black/70 backdrop-blur-sm z-50"></div>
+
+        <!-- 1. VIP MODAL -->
+        <div id="vip-modal" class="bottom-sheet fixed bottom-0 w-full max-w-md mx-auto z-50 glass-card bg-[#121832] rounded-t-3xl border-b-0 p-6 flex flex-col items-center">
+            <button onclick="closeModal('vip-modal')" class="absolute top-4 right-4 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-gray-400 hover:text-white active:scale-95"><i class="fas fa-times"></i></button>
+            
+            <i class="fas fa-crown text-5xl text-yellow-400 drop-shadow-[0_0_15px_#facc15] mb-3 mt-4"></i>
+            <h3 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 to-yellow-200 mb-1" data-i18n="vip_title">Hamıdan seçil</h3>
+            <p class="text-xs text-gray-400 text-center mb-6" data-i18n="vip_desc">Hərəkətli ad çərçivəsi və oyunda xüsusi rəng</p>
+
+            <div class="grid grid-cols-2 gap-4 w-full mb-6">
+                <!-- Weekly -->
+                <div onclick="buyVIP(500)" class="glass-card bg-[#1a203f] p-4 text-center cursor-pointer hover:bg-white/5 active:scale-95 transition border border-white/5">
+                    <h5 class="text-xs text-gray-400 font-bold mb-2 uppercase tracking-widest" data-i18n="vip_weekly">Həftəlik</h5>
+                    <div class="flex items-center justify-center text-3xl font-bold text-white mb-1">
+                        500<i class="fas fa-coins text-yellow-400 ml-1 text-xl drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]"></i>
+                    </div>
+                    <span class="text-[10px] text-gray-500">7 gün</span>
+                </div>
+                <!-- Monthly (Highlighted) -->
+                <div onclick="buyVIP(1200)" class="glass-card bg-[#1a203f] p-4 text-center cursor-pointer hover:bg-white/5 active:scale-95 transition border-2 border-yellow-500/70 shadow-[0_0_15px_rgba(234,179,8,0.2)] relative">
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-black text-[9px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap" data-i18n="vip_save">Ən sərfəli - 44% qənaət</div>
+                    <h5 class="text-xs text-gray-400 font-bold mb-2 uppercase tracking-widest" data-i18n="vip_monthly">Aylıq</h5>
+                    <div class="flex items-center justify-center text-3xl font-bold text-white mb-1">
+                        1.2k<i class="fas fa-coins text-yellow-400 ml-1 text-xl drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]"></i>
+                    </div>
+                    <span class="text-[10px] text-gray-500">30 gün</span>
+                </div>
+            </div>
+            
+            <button class="w-full bg-gradient-to-r from-yellow-200 to-pink-300 text-[#0d1123] font-bold py-3.5 rounded-xl shadow-[0_0_15px_rgba(253,164,175,0.4)]" data-i18n="btn_buy_vip">
+                Aylıq VIP • 1200 jeton
+            </button>
+            <div class="w-12 h-1 bg-gray-600 rounded-full mt-6 opacity-50"></div>
+        </div>
+
+        <!-- 2. STORE MODAL -->
+        <div id="store-modal" class="bottom-sheet fixed bottom-0 w-full max-w-md mx-auto z-50 glass-card bg-[#121832] rounded-t-3xl border-b-0 p-6 max-h-[80vh] overflow-y-auto no-scrollbar">
+            <button onclick="closeModal('store-modal')" class="absolute top-4 right-4 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-gray-400 hover:text-white active:scale-95 z-10"><i class="fas fa-times"></i></button>
+            
+            <h3 class="text-lg font-bold text-white mb-1" data-i18n="store_title">Mağaza</h3>
+            <p class="text-sm text-gray-300 mb-6"><span data-i18n="store_bal">Balans:</span> <strong id="store-jeton-display" class="text-blue-400">1.4k</strong> <i class="fas fa-coins text-yellow-400"></i></p>
+
+            <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3" data-i18n="store_pack">Jeton Paketləri</h4>
+            
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div onclick="buyJeton('1k', '5.00 AZN')" class="glass-card bg-[#1a203f] p-4 text-center cursor-pointer hover:bg-white/5 active:scale-95 border border-white/5">
+                    <div class="text-xl font-bold text-white mb-1">1k <i class="fas fa-coins text-yellow-400"></i></div>
+                    <div class="text-xs text-blue-400 font-semibold">5.00 AZN</div>
+                </div>
+                <div onclick="buyJeton('3k', '10.00 AZN')" class="glass-card bg-[#1a203f] p-4 text-center cursor-pointer hover:bg-white/5 active:scale-95 border border-white/5">
+                    <div class="text-xl font-bold text-white mb-1">3k <i class="fas fa-coins text-yellow-400"></i></div>
+                    <div class="text-xs text-blue-400 font-semibold">10.00 AZN</div>
+                </div>
+                <div onclick="buyJeton('5k', '15.00 AZN')" class="glass-card bg-[#1a203f] p-4 text-center cursor-pointer hover:bg-white/5 active:scale-95 border border-white/5">
+                    <div class="text-xl font-bold text-white mb-1">5k <i class="fas fa-coins text-yellow-400"></i></div>
+                    <div class="text-xs text-blue-400 font-semibold">15.00 AZN</div>
+                </div>
+                <div onclick="buyJeton('11k', '25.00 AZN')" class="glass-card bg-[#1a203f] p-4 text-center cursor-pointer hover:bg-white/5 active:scale-95 border border-white/5 relative">
+                    <div class="absolute -top-2 -right-2 bg-pink-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-lg">+1k Hədiyyə</div>
+                    <div class="text-xl font-bold text-white mb-1">11k <i class="fas fa-coins text-yellow-400"></i></div>
+                    <div class="text-xs text-blue-400 font-semibold">25.00 AZN</div>
+                </div>
+            </div>
+            <p class="text-[10px] text-gray-500 leading-relaxed text-center pb-4" data-i18n="store_info">Ödəniş əl ilə təsdiqlənir: sifariş ver, ödə - admin təsdiqləyəndən sonra jeton hesabına düşür.</p>
+        </div>
+
+        <!-- 3. SEARCH MODAL -->
+        <div id="search-modal" class="bottom-sheet fixed bottom-0 w-full max-w-md mx-auto z-50 glass-card bg-[#121832] rounded-t-3xl border-b-0 p-6">
+            <button onclick="closeModal('search-modal')" class="absolute top-4 right-4 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-gray-400 hover:text-white active:scale-95"><i class="fas fa-times"></i></button>
+            <h3 class="text-lg font-bold text-white mb-4" data-i18n="search_title">Oyunçu axtar</h3>
+            <div class="glass-input rounded-2xl flex items-center px-4 py-3 border border-blue-500/30">
+                <i class="fas fa-search text-gray-400 text-sm mr-3"></i>
+                <input type="text" class="bg-transparent w-full text-sm text-white outline-none placeholder-gray-500" placeholder="Nik və ya ID yaz" data-i18n-placeholder="pl_search_user">
+            </div>
+            <p class="text-[10px] text-gray-500 mt-3 ml-2" data-i18n="search_desc">Nikin bir hissəsi və ya tam ID nömrəsi</p>
+            <div class="w-12 h-1 bg-gray-600 rounded-full mt-6 mx-auto opacity-50"></div>
+        </div>
+
+        <!-- 4. LANGUAGE MODAL -->
+        <div id="lang-modal" class="bottom-sheet fixed bottom-0 w-full max-w-md mx-auto z-50 glass-card bg-[#121832] rounded-t-3xl border-b-0 p-6">
+            <button onclick="closeModal('lang-modal')" class="absolute top-4 right-4 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-gray-400 hover:text-white active:scale-95"><i class="fas fa-times"></i></button>
+            <h3 class="text-lg font-bold text-white mb-4">Dil / Язык / Language / ენა</h3>
+            
+            <div class="space-y-2">
+                <button onclick="setLang('az')" class="w-full text-left glass-card bg-[#1a203f] p-4 rounded-xl hover:bg-white/10 active:scale-95 transition font-semibold text-sm">🇦🇿 Azərbaycanca</button>
+                <button onclick="setLang('ru')" class="w-full text-left glass-card bg-[#1a203f] p-4 rounded-xl hover:bg-white/10 active:scale-95 transition font-semibold text-sm">🇷🇺 Русский</button>
+                <button onclick="setLang('en')" class="w-full text-left glass-card bg-[#1a203f] p-4 rounded-xl hover:bg-white/10 active:scale-95 transition font-semibold text-sm">🇬🇧 English</button>
+                <button onclick="setLang('ge')" class="w-full text-left glass-card bg-[#1a203f] p-4 rounded-xl hover:bg-white/10 active:scale-95 transition font-semibold text-sm">🇬🇪 ქართული</button>
+            </div>
+            <div class="w-12 h-1 bg-gray-600 rounded-full mt-6 mx-auto opacity-50"></div>
+        </div>
+
+        <!-- 5. ABOUT MODAL -->
+        <div id="about-modal" class="bottom-sheet fixed bottom-0 w-full max-w-md mx-auto z-50 glass-card bg-[#121832] rounded-t-3xl border-b-0 p-6 text-center">
+            <button onclick="closeModal('about-modal')" class="absolute top-4 right-4 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-gray-400 hover:text-white active:scale-95"><i class="fas fa-times"></i></button>
+            
+            <div class="w-16 h-16 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 2v5l-3 4v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9l-3-4V2"/><path d="M8.5 2h7"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-1">Butulka Baku</h3>
+            <p class="text-sm text-gray-400 mb-6">Versiya 2.0.1</p>
+            
+            <div class="glass-card bg-[#1a203f] p-4 rounded-xl inline-block border border-blue-500/30">
+                <p class="text-xs text-gray-400 mb-1" data-i18n="txt_creator">Oyunu Yaradan</p>
+                <p class="text-lg font-bold text-blue-400">Admin Alik 511</p>
+            </div>
+
+            <div class="w-12 h-1 bg-gray-600 rounded-full mt-8 mx-auto opacity-50"></div>
+        </div>
+
+    </div>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <style>
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+    </style>
+
+    <script>
+        // --- State Variables ---
+        let currentJeton = 1400; // 1.4k equivalent internally
+        let isVip = false;
+
+        // --- Tab Switching Logic (Profile vs Messages) ---
+        function switchTab(tabId) {
+            const vProfile = document.getElementById('view-profile');
+            const vMessages = document.getElementById('view-messages');
+            const iProfile = document.getElementById('nav-icon-profile');
+            const tProfile = document.getElementById('nav-text-profile');
+            const iMessages = document.getElementById('nav-icon-messages');
+            const tMessages = document.getElementById('nav-text-messages');
+
+            if(tabId === 'profile') {
+                vProfile.classList.remove('hidden');
+                vMessages.classList.add('hidden');
+                
+                // Active Profile Nav
+                iProfile.classList.replace('text-gray-300', 'text-blue-400');
+                iProfile.parentElement.classList.replace('opacity-60', 'opacity-100');
+                tProfile.classList.replace('text-gray-400', 'text-blue-400');
+                
+                // Inactive Messages Nav
+                iMessages.classList.replace('text-blue-400', 'text-gray-300');
+                iMessages.parentElement.classList.replace('opacity-100', 'opacity-60');
+                tMessages.classList.replace('text-blue-400', 'text-gray-400');
+            } else {
+                vProfile.classList.add('hidden');
+                vMessages.classList.remove('hidden');
+                
+                // Active Messages Nav
+                iMessages.classList.replace('text-gray-300', 'text-blue-400');
+                iMessages.parentElement.classList.replace('opacity-60', 'opacity-100');
+                tMessages.classList.replace('text-gray-400', 'text-blue-400');
+                
+                // Inactive Profile Nav
+                iProfile.classList.replace('text-blue-400', 'text-gray-300');
+                iProfile.parentElement.classList.replace('opacity-100', 'opacity-60');
+                tProfile.classList.replace('text-blue-400', 'text-gray-400');
+            }
+            window.scrollTo(0,0);
+        }
+
+        // --- Gender Toggle Logic ---
+        function setGender(gender) {
+            const btnMale = document.getElementById('btn-male');
+            const btnFemale = document.getElementById('btn-female');
+            
+            if(gender === 'male') {
+                btnMale.className = "flex-1 py-3 rounded-xl border border-blue-500 bg-blue-500/20 text-blue-400 font-medium text-sm transition active:scale-95";
+                btnFemale.className = "flex-1 py-3 rounded-xl glass-input text-gray-400 font-medium text-sm transition active:scale-95";
+            } else {
+                btnFemale.className = "flex-1 py-3 rounded-xl border border-pink-500 bg-pink-500/20 text-pink-400 font-medium text-sm transition active:scale-95";
+                btnMale.className = "flex-1 py-3 rounded-xl glass-input text-gray-400 font-medium text-sm transition active:scale-95";
+            }
+        }
+
+        // --- Image Upload Preview Logic ---
+        function previewAvatar(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatar-img').src = e.target.result;
+                    showToast('Profil şəkli yeniləndi!');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // --- Custom Toast Notification Logic (No Alerts) ---
+        let toastTimeout;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            
+            toast.classList.add('show');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- Modals Logic ---
+        function openModal(id) {
+            document.getElementById('main-overlay').classList.add('open');
+            document.getElementById(id).classList.add('open');
+        }
+
+        function closeModal(id) {
+            document.getElementById('main-overlay').classList.remove('open');
+            document.getElementById(id).classList.remove('open');
+        }
+
+        function closeAllModals() {
+            document.getElementById('main-overlay').classList.remove('open');
+            const modals = document.querySelectorAll('.bottom-sheet');
+            modals.forEach(m => m.classList.remove('open'));
+        }
+
+        // --- Store / VIP Logic ---
+        function formatJeton(val) {
+            return val >= 1000 ? (val/1000).toFixed(1) + 'k' : val;
+        }
+
+        function updateJetonUI() {
+            const formatted = formatJeton(currentJeton);
+            document.getElementById('user-jeton-display').textContent = formatted;
+            document.getElementById('store-jeton-display').textContent = formatted;
+        }
+
+        function buyVIP(cost) {
+            if(currentJeton >= cost) {
+                currentJeton -= cost;
+                isVip = true;
+                updateJetonUI();
+                document.getElementById('profile-crown').classList.remove('hidden');
+                closeModal('vip-modal');
+                showToast(`Təbriklər! VIP statusunuz aktivləşdi.`);
+            } else {
+                showToast(`Kifayət qədər jeton yoxdur!`);
+            }
+        }
+
+        function buyJeton(amountStr, price) {
+            closeModal('store-modal');
+            // Simulate sending notification to admin
+            showToast(`Sifariş Admin Alik 511-ə göndərildi! (${amountStr} - ${price})`);
+            
+            // Just for testing/simulation, lets add it after 2 seconds
+            setTimeout(() => {
+                let amount = parseInt(amountStr.replace('k','000'));
+                currentJeton += amount;
+                updateJetonUI();
+                showToast(`${amountStr} Jeton hesabınıza əlavə edildi!`);
+            }, 2500);
+        }
+
+        // --- Translation Logic ---
+        const dict = {
+            az: {
+                nav_vip: "VIP", nav_home: "Ana səhifə", nav_games: "Oyunlar", nav_messages: "Mesajlar", nav_videos: "Videolar",
+                status_placeholder: "Status yaz...", stat_bonus: "Bonus", stat_jeton: "Jeton", stat_friends: "Dostlar", stat_views: "Baxanlar",
+                lbl_name: "Ad", lbl_country: "Ölkə", lbl_city: "Rayon / şəhər", lbl_age: "Yaş", lbl_gender: "Cinsiyyət",
+                gen_male: "Kişi", gen_female: "Qadın", btn_save: "Yadda saxla", hdr_pass: "Şifrəni Dəyiş",
+                pl_curr_pass: "Hazırkı şifrə", pl_new_pass: "Yeni şifrə (ən azı 6 simvol)", btn_upd_pass: "Şifrəni yenilə",
+                btn_logout_others: "Başqa cihazlardan çıx", hdr_other: "Digər", lbl_lang: "Dil", lbl_about: "Oyun haqqında",
+                desc_about: "Oyun nədir, nə var, kim yaradıb", hdr_messages: "Mesajlar", desc_messages: "Dostlarınla yazışmaların",
+                pl_search: "Axtar...", tab_all: "Hamısı", tab_hidden: "Gizlədilənlər", hdr_req: "Dostluq sorğuları",
+                txt_sent_req: "sənə dostluq s...", btn_accept: "Qəbul et", btn_reject: "Rədd et", txt_you: "Siz:",
+                btn_write_friend: "Dostuna yaz", vip_title: "Hamıdan seçil", vip_desc: "Hərəkətli ad çərçivəsi və oyunda xüsusi rəng",
+                vip_weekly: "Həftəlik", vip_monthly: "Aylıq", vip_save: "Ən sərfəli - 44% qənaət", btn_buy_vip: "Aylıq VIP • 1200 jeton",
+                store_title: "Mağaza", store_bal: "Balans:", store_pack: "Jeton Paketləri", store_info: "Ödəniş əl ilə təsdiqlənir: sifariş ver, ödə - admin təsdiqləyəndən sonra jeton hesabına düşür.",
+                search_title: "Oyunçu axtar", pl_search_user: "Nik və ya ID yaz", search_desc: "Nikin bir hissəsi və ya tam ID nömrəsi",
+                txt_creator: "Oyunu Yaradan"
+            },
+            ru: {
+                nav_vip: "VIP", nav_home: "Главная", nav_games: "Игры", nav_messages: "Сообщения", nav_videos: "Видео",
+                status_placeholder: "Статус...", stat_bonus: "Бонус", stat_jeton: "Жетоны", stat_friends: "Друзья", stat_views: "Просмотры",
+                lbl_name: "Имя", lbl_country: "Страна", lbl_city: "Город", lbl_age: "Возраст", lbl_gender: "Пол",
+                gen_male: "Муж", gen_female: "Жен", btn_save: "Сохранить", hdr_pass: "Изменить пароль",
+                pl_curr_pass: "Текущий пароль", pl_new_pass: "Новый пароль (мин. 6)", btn_upd_pass: "Обновить пароль",
+                btn_logout_others: "Выйти с других уст-в", hdr_other: "Другое", lbl_lang: "Язык", lbl_about: "Об игре",
+                desc_about: "Что это, кто создал", hdr_messages: "Сообщения", desc_messages: "Переписки с друзьями",
+                pl_search: "Поиск...", tab_all: "Все", tab_hidden: "Скрытые", hdr_req: "Запросы в друзья",
+                txt_sent_req: "отправил запрос...", btn_accept: "Принять", btn_reject: "Отклонить", txt_you: "Вы:",
+                btn_write_friend: "Написать другу", vip_title: "Выделяйся", vip_desc: "Анимированная рамка и цвет",
+                vip_weekly: "Неделя", vip_monthly: "Месяц", vip_save: "Выгодно - 44%", btn_buy_vip: "Месяц VIP • 1200 жетонов",
+                store_title: "Магазин", store_bal: "Баланс:", store_pack: "Пакеты Жетонов", store_info: "Оплата подтверждается админом.",
+                search_title: "Поиск игрока", pl_search_user: "Ник или ID", search_desc: "Часть ника или полный ID",
+                txt_creator: "Создатель игры"
+            }
+            // Add EN, GE here as needed
+        };
+
+        function setLang(langCode) {
+            closeModal('lang-modal');
+            showToast(`Dil dəyişdirildi: ${langCode.toUpperCase()}`);
+            
+            if(!dict[langCode]) return;
+            
+            // Update InnerText
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(dict[langCode][key]) el.textContent = dict[langCode][key];
+            });
+
+            // Update Placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if(dict[langCode][key]) el.setAttribute('placeholder', dict[langCode][key]);
+            });
+        }
+    </script>
+</body>
+</html>
+```
