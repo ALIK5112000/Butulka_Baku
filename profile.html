@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Butulka Baku - Profil</title>
+    <title>Butulka Baku - Profil və Oyun</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
@@ -25,6 +25,10 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
+
+        /* Səhifə bölmələri (Profil və Oyun ekranları) */
+        .page-section { display: none; width: 100%; max-width: 450px; flex-direction: column; align-items: center; }
+        .page-section.active { display: flex; }
 
         .top-nav {
             width: 100%;
@@ -49,28 +53,19 @@
             box-shadow: 0 0 15px rgba(255, 107, 149, 0.4);
             cursor: pointer;
         }
-        .top-icons {
-            display: flex;
-            gap: 6px;
-        }
+        .top-icons { display: flex; gap: 6px; }
         .icon-pill {
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            width: 36px;
-            height: 36px;
+            width: 36px; height: 36px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 15px;
-            transition: 0.3s;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 15px; transition: 0.3s;
         }
         .icon-pill:hover { background: rgba(255, 255, 255, 0.12); }
 
         .profile-card {
             width: 100%;
-            max-width: 450px;
             background: rgba(18, 9, 36, 0.85);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 107, 149, 0.2);
@@ -80,93 +75,51 @@
             margin-bottom: 15px;
         }
 
-        .user-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
+        .user-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
         .avatar-box {
-            position: relative;
-            width: 75px;
-            height: 75px;
-            border-radius: 50%;
-            border: 2px solid #ff6b95;
-            overflow: hidden;
-            background: #0d041a;
+            position: relative; width: 75px; height: 75px;
+            border-radius: 50%; border: 2px solid #ff6b95;
+            overflow: hidden; background: #0d041a;
             box-shadow: 0 0 15px rgba(255, 107, 149, 0.3);
         }
-        .avatar-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
         
         .user-info { flex: 1; }
         .username-badge {
             background: rgba(0, 0, 0, 0.35);
             border: 1px solid rgba(255, 107, 149, 0.25);
-            padding: 8px 14px;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #fff;
-            display: inline-block;
-            margin-bottom: 8px;
+            padding: 8px 14px; border-radius: 14px;
+            font-size: 16px; font-weight: bold; color: #fff;
+            display: inline-block; margin-bottom: 8px;
         }
-        .id-badge-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .id-badge-row { display: flex; align-items: center; gap: 8px; }
         .id-pill {
             background: linear-gradient(135deg, #d4af37, #f1c40f);
-            color: #000;
-            font-weight: bold;
-            font-size: 12px;
-            padding: 4px 12px;
-            border-radius: 10px;
+            color: #000; font-weight: bold; font-size: 12px;
+            padding: 4px 12px; border-radius: 10px;
             box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
         }
         .tasdiq-pill {
-            background: rgba(255, 255, 255, 0.08);
-            color: #bbb;
-            font-size: 12px;
-            padding: 4px 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.08); color: #bbb;
+            font-size: 12px; padding: 4px 12px; border-radius: 10px; cursor: pointer;
         }
 
         .status-box {
             background: rgba(0, 0, 0, 0.25);
             border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 16px;
-            padding: 14px 16px;
-            color: #888;
-            font-size: 14px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            border-radius: 16px; padding: 14px 16px;
+            color: #888; font-size: 14px; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px;
         }
 
         .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 15px;
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 10px; margin-bottom: 15px;
         }
         .stat-card {
             background: rgba(14, 6, 28, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 14px 10px;
-            text-align: center;
-            transition: 0.3s;
-        }
-        .stat-card:hover {
-            border-color: rgba(255, 107, 149, 0.3);
+            border-radius: 16px; padding: 14px 10px; text-align: center;
         }
         .stat-icon { font-size: 16px; margin-bottom: 4px; color: #ff6b95; }
         .stat-value { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 2px; }
@@ -175,57 +128,101 @@
         .store-banner {
             background: linear-gradient(135deg, rgba(30, 12, 56, 0.9), rgba(45, 18, 78, 0.9));
             border: 1px solid rgba(255, 170, 51, 0.25);
-            border-radius: 18px;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            margin-top: 15px;
+            border-radius: 18px; padding: 15px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; margin-top: 15px;
         }
         .store-title { font-weight: bold; font-size: 16px; color: #ffaa33; margin-bottom: 3px; }
         .store-desc { font-size: 12px; color: #999; }
 
-        .footer-menu {
-            position: fixed;
-            bottom: 0; left: 0; width: 100%;
-            background: rgba(10, 4, 22, 0.95);
-            backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        /* --- OYUN MASASI ÜSLUBU --- */
+        .game-wrapper {
+            width: 100%;
+            background: linear-gradient(135deg, #b87a42, #8c5324, #6e3d16);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            position: relative;
+            border: 2px solid rgba(255,204,51,0.3);
+        }
+        .table-area {
+            position: relative;
             display: flex;
-            justify-content: space-around;
             align-items: center;
-            padding: 8px 5px;
-            z-index: 1000;
+            justify-content: center;
+            height: 320px;
+        }
+        .bottle-img {
+            width: 85px;
+            transition: transform 3s cubic-bezier(0.15, 0.9, 0.2, 1);
+            cursor: pointer;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
+        }
+        .center-text {
+            position: absolute; top: 15px;
+            font-size: 13px; font-weight: bold; color: #fff;
+            background: rgba(0,0,0,0.5); padding: 5px 12px; border-radius: 10px;
+        }
+        .player-seat {
+            position: absolute; right: 15px; bottom: 15px;
+            background: rgba(20, 10, 30, 0.9);
+            border: 2px solid #ff758c; border-radius: 14px;
+            padding: 6px; text-align: center; width: 85px;
+        }
+        .seat-avatar {
+            width: 45px; height: 45px; border-radius: 50%;
+            object-fit: cover; border: 2px solid #ffcc00; margin: 0 auto 4px auto;
+        }
+        .seat-name { font-size: 11px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .seat-id { font-size: 9px; color: #ffcc00; }
+
+        .chat-section {
+            background: rgba(15, 8, 28, 0.95);
+            padding: 12px; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .chat-messages {
+            height: 100px; overflow-y: auto; display: flex;
+            flex-direction: column; gap: 6px; margin-bottom: 8px; padding-right: 4px;
+        }
+        .chat-msg { background: rgba(255,255,255,0.07); padding: 5px 8px; border-radius: 8px; font-size: 12px; word-break: break-word; }
+        .chat-msg span { color: #ff758c; font-weight: bold; margin-right: 4px; }
+        .chat-input-row { display: flex; gap: 6px; }
+        .chat-input-row input {
+            flex: 1; padding: 8px 12px; background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; color: #fff; outline: none; font-size: 13px;
+        }
+        .send-btn {
+            background: linear-gradient(135deg, #ff758c, #ffaa33); border: none;
+            width: 38px; height: 38px; border-radius: 12px; color: #fff; font-size: 16px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+
+        /* Aşağı Naviqasiya Menü (Footer) */
+        .footer-menu {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(10, 4, 22, 0.95); backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 8px 5px; z-index: 1000;
         }
         .footer-item {
-            text-align: center;
-            color: #777;
-            font-size: 11px;
-            cursor: pointer;
-            text-decoration: none;
+            text-align: center; color: #777; font-size: 11px; cursor: pointer; text-decoration: none;
         }
         .footer-item.active { color: #ff6b95; }
         .footer-item div:first-child { font-size: 20px; margin-bottom: 2px; }
         
         .footer-center-btn {
-            width: 46px;
-            height: 46px;
+            width: 46px; height: 46px;
             background: linear-gradient(135deg, #ff6b95, #956bff);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #fff;
-            box-shadow: 0 0 15px rgba(255, 107, 149, 0.5);
-            margin-top: -12px;
-            cursor: pointer;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: #fff; box-shadow: 0 0 15px rgba(255, 107, 149, 0.5);
+            margin-top: -12px; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
+    <!-- ÜST MENÜ -->
     <div class="top-nav">
         <button class="vip-btn">👑 VIP</button>
         <div class="top-icons">
@@ -237,78 +234,107 @@
         </div>
     </div>
 
-    <div class="profile-card">
-        <div class="user-header">
-            <div class="avatar-box">
-                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Avatar">
-            </div>
-            <div class="user-info">
-                <div class="username-badge" id="profileUsername">Yüklənir...</div>
-                <div class="id-badge-row">
-                    <div class="id-pill">ID <span id="profileId">-----</span></div>
-                    <div class="tasdiq-pill">Təsdiq al</div>
+    <!-- 1. PROFİL SƏHİFƏSİ BÖLMƏSİ -->
+    <div id="profileSection" class="page-section active">
+        <div class="profile-card">
+            <div class="user-header">
+                <div class="avatar-box">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Avatar">
+                </div>
+                <div class="user-info">
+                    <div class="username-badge" id="profileUsername">Yüklənir...</div>
+                    <div class="id-badge-row">
+                        <div class="id-pill">ID <span id="profileId">-----</span></div>
+                        <div class="tasdiq-pill">Təsdiq al</div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="status-box">
-            <span>✏️</span> Status yaz...
-        </div>
+            <div class="status-box">
+                <span>✏️</span> Status yaz...
+            </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">❤️</div>
-                <div class="stat-value" id="profileHearts">7200</div>
-                <div class="stat-label">Ürək</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">❤️</div>
+                    <div class="stat-value" id="profileHearts">7200</div>
+                    <div class="stat-label">Ürək</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💎</div>
+                    <div class="stat-value" id="profileJetons">1400</div>
+                    <div class="stat-label">Kristal</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Dostlar</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👁️</div>
+                    <div class="stat-value" id="profileViews">1</div>
+                    <div class="stat-label">Baxanlar</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👤</div>
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">İzlədiyim</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">İzləyən</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">💎</div>
-                <div class="stat-value" id="profileJetons">1400</div>
-                <div class="stat-label">Kristal</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div class="stat-value" id="profileFriends">0</div>
-                <div class="stat-label">Dostlar</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">👁️</div>
-                <div class="stat-value" id="profileViews">1</div>
-                <div class="stat-label">Baxanlar</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">👤</div>
-                <div class="stat-value">0</div>
-                <div class="stat-label">İzlədiyim</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⭐</div>
-                <div class="stat-value">0</div>
-                <div class="stat-label">İzləyən</div>
-            </div>
-        </div>
 
-        <div class="store-banner">
-            <div>
-                <div class="store-title">🦋 Mağaza</div>
-                <div class="store-desc">Qanad satışı · VIP · Ramkalar</div>
+            <div class="store-banner">
+                <div>
+                    <div class="store-title">🦋 Mağaza</div>
+                    <div class="store-desc">Qanad satışı · VIP · Ramkalar</div>
+                </div>
+                <div style="font-size: 24px;">✨</div>
             </div>
-            <div style="font-size: 24px;">✨</div>
         </div>
     </div>
 
-    <!-- Aşağı Menü (Oyunlar səhifəsinə düzgün keçid ilə) -->
+    <!-- 2. OYUN MASASI SƏHİFƏSİ BÖLMƏSİ -->
+    <div id="gameSection" class="page-section">
+        <div class="game-wrapper">
+            <div class="table-area">
+                <div class="center-text">Şüşəni fırlatmaq üçün toxun!</div>
+                <img id="bottle" class="bottle-img" src="https://i.imgur.com/8QWv2bZ.png" alt="Butulka" onclick="spinBottle()">
+
+                <div class="player-seat">
+                    <img class="seat-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Avatar">
+                    <div id="gamePlayerName" class="seat-name">Alik</div>
+                    <div id="gamePlayerId" class="seat-id">ID 1836</div>
+                </div>
+            </div>
+
+            <div class="chat-section">
+                <div class="chat-messages" id="chatBox">
+                    <div class="chat-msg"><span>Admin 📢:</span> Oyuna xoş gəldiniz! Şüşəni fırladın.</div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="chatInput" placeholder="Mesaj yazın..." onkeypress="checkEnter(event)">
+                    <button class="send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AŞAĞI MENÜ (Sehifələr arası keçid) -->
     <div class="footer-menu">
-        <a href="profile.html" class="footer-item active">
+        <div class="footer-item active" id="menuProfile" onclick="switchPage('profile')">
             <div>🏠</div>
             <div>Ana səhifə</div>
-        </a>
-        <a href="oyun.html" class="footer-item">
+        </div>
+        <div class="footer-item" id="menuGame" onclick="switchPage('game')">
             <div>🎮</div>
             <div>Oyunlar</div>
-        </a>
+        </div>
         <div class="footer-center-btn">+</div>
-        <div class="footer-item" onclick="alert('Mesajlar bölməsi açılır...')">
+        <div class="footer-item" onclick="alert('Mesajlar bölməsi...')">
             <div>💬</div>
             <div>Mesajlar</div>
         </div>
@@ -318,7 +344,7 @@
         </div>
     </div>
 
-    <!-- Firebase Canlı Bağlantı və Real Göstəricilər Skripti -->
+    <!-- Skriptlər -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -344,8 +370,12 @@
 
             const userData = JSON.parse(savedUser);
             
+            // Profildə və oyunda məlumatları göstəririk
             document.getElementById('profileUsername').innerText = userData.username || "İstifadəçi";
             document.getElementById('profileId').innerText = userData.id || "0000";
+            document.getElementById('gamePlayerName').innerText = userData.username || "İstifadəçi";
+            document.getElementById('gamePlayerId').innerText = "ID " + (userData.id || "0000");
+
             if(userData.jetons) document.getElementById('profileJetons').innerText = userData.jetons;
             if(userData.hearts) document.getElementById('profileHearts').innerText = userData.hearts;
 
@@ -354,7 +384,10 @@
                 const querySnapshot = await getDocs(q);
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    if(data.username) document.getElementById('profileUsername').innerText = data.username;
+                    if(data.username) {
+                        document.getElementById('profileUsername').innerText = data.username;
+                        document.getElementById('gamePlayerName').innerText = data.username;
+                    }
                     if(data.jetons !== undefined) document.getElementById('profileJetons').innerText = data.jetons;
                     if(data.hearts !== undefined) document.getElementById('profileHearts').innerText = data.hearts;
                 });
@@ -368,6 +401,59 @@
         }
 
         loadProfileData();
+    </script>
+
+    <script>
+        // Səhifələr arası keçid (Profil <-> Oyunlar) 100% işlək
+        window.switchPage = function(page) {
+            const profileSec = document.getElementById('profileSection');
+            const gameSec = document.getElementById('gameSection');
+            const menuProfile = document.getElementById('menuProfile');
+            const menuGame = document.getElementById('menuGame');
+
+            if(page === 'profile') {
+                profileSec.classList.add('active');
+                gameSec.classList.remove('active');
+                menuProfile.classList.add('active');
+                menuGame.classList.remove('active');
+            } else {
+                gameSec.classList.add('active');
+                profileSec.classList.remove('active');
+                menuGame.classList.add('active');
+                menuProfile.classList.remove('active');
+            }
+        };
+
+        // Şüşəni fırlatmaq
+        let currentRotation = 0;
+        window.spinBottle = function() {
+            const bottle = document.getElementById('bottle');
+            const randomDeg = Math.floor(Math.random() * 1440) + 720;
+            currentRotation += randomDeg;
+            bottle.style.transform = `rotate(${currentRotation}deg)`;
+        };
+
+        // Canlı Çat Mesajı
+        window.sendMessage = function() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const chatBox = document.getElementById('chatBox');
+            const savedUser = localStorage.getItem("currentUser");
+            const username = savedUser ? JSON.parse(savedUser).username : "İstifadəçi";
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-msg';
+            msgDiv.innerHTML = `<span>${username}:</span> ${text}`;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            input.value = '';
+        };
+
+        window.checkEnter = function(e) {
+            if(e.key === 'Enter') sendMessage();
+        };
 
         window.logout = function() {
             localStorage.removeItem("currentUser");
