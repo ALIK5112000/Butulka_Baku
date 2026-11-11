@@ -9,192 +9,412 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
     body {
-      background: radial-gradient(circle at center, #1b023a 0%, #050014 100%);
+      background: #0f0718;
+      background: linear-gradient(180deg, #18092b 0%, #090312 100%);
       min-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      padding: 15px;
       color: #fff;
-      overflow: hidden;
     }
 
-    /* Arxa fonda parıldayan neon kürələr */
-    .glow-bg {
-      position: absolute;
-      width: 300px;
-      height: 300px;
-      background: #ff007f;
-      border-radius: 50%;
-      filter: blur(120px);
-      z-index: 1;
-      top: 10%;
-      left: 20%;
-      animation: float 6s ease-in-out infinite alternate;
-    }
-
-    .glow-bg-2 {
-      position: absolute;
-      width: 350px;
-      height: 350px;
-      background: #00f0ff;
-      border-radius: 50%;
-      filter: blur(140px);
-      z-index: 1;
-      bottom: 10%;
-      right: 20%;
-      animation: float 8s ease-in-out infinite alternate-reverse;
-    }
-
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      100% { transform: translateY(30px); }
-    }
-
-    /* Glassmorphism Qutusu */
-    .card-container {
-      position: relative;
-      z-index: 2;
-      width: 380px;
-      padding: 40px 30px;
+    /* Dil Seçimi Paneli */
+    .lang-bar {
+      display: flex;
+      gap: 8px;
       background: rgba(255, 255, 255, 0.05);
+      padding: 6px;
       border-radius: 20px;
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 0 30px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 25px;
+      overflow-x: auto;
+      max-width: 100%;
     }
 
-    .logo-title {
-      text-align: center;
+    .lang-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      color: #b3a9c9;
+      padding: 6px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .lang-btn.active {
+      background: linear-gradient(90deg, #e94560, #9131e8);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(233, 69, 96, 0.5);
+    }
+
+    /* Əsas Qutu */
+    .brand-title {
       font-size: 32px;
       font-weight: 800;
-      letter-spacing: 2px;
-      margin-bottom: 25px;
-      text-transform: uppercase;
-      background: linear-gradient(90deg, #ff007f, #00f0ff);
+      font-style: italic;
+      background: linear-gradient(180deg, #ffffff 0%, #d8b4fe 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 20px rgba(255, 0, 127, 0.5);
+      margin-bottom: 6px;
+      text-align: center;
     }
 
-    /* Tab Düyümələri */
+    .subtitle {
+      font-size: 13px;
+      color: #9a8eb7;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 380px;
+      background: rgba(33, 20, 52, 0.7);
+      border-radius: 24px;
+      padding: 24px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Tablar */
     .tabs {
       display: flex;
-      margin-bottom: 25px;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 10px;
+      background: rgba(15, 7, 24, 0.6);
       padding: 4px;
+      border-radius: 16px;
+      margin-bottom: 20px;
     }
 
     .tab-btn {
       flex: 1;
       padding: 12px;
-      text-align: center;
       border: none;
       background: transparent;
-      color: #aaa;
-      font-size: 15px;
-      font-weight: 600;
+      color: #8c7fa7;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 12px;
       cursor: pointer;
-      border-radius: 8px;
       transition: all 0.3s ease;
     }
 
     .tab-btn.active {
-      background: linear-gradient(90deg, #ff007f, #7928ca);
+      background: linear-gradient(90deg, #ff416c, #ff4b2b);
       color: #fff;
-      box-shadow: 0 0 15px rgba(255, 0, 127, 0.6);
+      box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
     }
 
-    /* Form Xanaları */
+    /* Xəbərdarlıq Qutusu */
+    .alert-box {
+      background: rgba(255, 179, 0, 0.1);
+      border: 1px solid rgba(255, 179, 0, 0.3);
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 12px;
+      color: #ffd54f;
+      line-height: 1.4;
+      margin-bottom: 18px;
+    }
+
+    /* Form */
     .form-group {
       display: none;
       flex-direction: column;
-      gap: 15px;
+      gap: 14px;
     }
 
     .form-group.active {
       display: flex;
     }
 
+    .field-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #b3a9c9;
+      margin-bottom: -6px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
     .input-box {
       width: 100%;
-      padding: 14px 16px;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(0, 240, 255, 0.3);
-      border-radius: 10px;
+      background: rgba(15, 7, 24, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 14px 14px 14px 40px;
       color: #fff;
       font-size: 14px;
       outline: none;
-      transition: all 0.3s ease;
+      transition: border 0.3s;
     }
 
     .input-box:focus {
+      border-color: #ff416c;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.5;
+    }
+
+    /* Cinsiyyət Seçimi */
+    .gender-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #b3a9c9;
+    }
+
+    .gender-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .gender-card {
+      flex: 1;
+      background: rgba(15, 7, 24, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 13px;
+    }
+
+    .gender-card.active {
       border-color: #00f0ff;
-      box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+      background: rgba(0, 240, 255, 0.1);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
     }
 
     .submit-btn {
       width: 100%;
-      padding: 14px;
-      margin-top: 10px;
+      background: linear-gradient(90deg, #ff416c, #ff4b2b);
       border: none;
-      border-radius: 10px;
-      background: linear-gradient(90deg, #00f0ff, #7928ca);
+      border-radius: 14px;
+      padding: 15px;
       color: #fff;
-      font-size: 16px;
-      font-weight: bold;
+      font-size: 15px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+      margin-top: 6px;
+      box-shadow: 0 5px 20px rgba(255, 65, 108, 0.4);
     }
 
-    .submit-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 30px rgba(0, 240, 255, 0.8);
+    .forgot-link {
+      text-align: right;
+      font-size: 12px;
+      color: #ffab40;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
 
-  <div class="glow-bg"></div>
-  <div class="glow-bg-2"></div>
+  <!-- Yuxarı Dil Paneli -->
+  <div class="lang-bar">
+    <button class="lang-btn active" onclick="setLang('az')">🇦🇿 Azərbaycanca</button>
+    <button class="lang-btn" onclick="setLang('ru')">🇷🇺 Русский</button>
+    <button class="lang-btn" onclick="setLang('en')">🇬🇧 English</button>
+    <button class="lang-btn" onclick="setLang('ge')">🇬🇪 ქართული</button>
+  </div>
 
-  <div class="card-container">
-    <div class="logo-title">Butulka Baku</div>
+  <div class="brand-title">Butulka Baku</div>
+  <div class="subtitle" id="t-subtitle">Hesabına daxil ol və oyuna davam et</div>
 
+  <div class="card">
     <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('login')">Giriş</button>
-      <button class="tab-btn" onclick="showTab('register')">Qeydiyyat</button>
+      <button class="tab-btn active" id="t-tab-login" onclick="showTab('login')">Giriş</button>
+      <button class="tab-btn" id="t-tab-reg" onclick="showTab('register')">Qeydiyyat</button>
     </div>
 
-    <!-- Giriş Formu -->
-    <form id="login" class="form-group active">
-      <input type="text" class="input-box" placeholder="İstifadəçi adı və ya Nik" required>
-      <input type="password" class="input-box" placeholder="Şifrə" required>
-      <button type="submit" class="submit-btn">Oyuna Daxil Ol</button>
+    <!-- GİRİŞ FORMU -->
+    <form id="login-form" class="form-group active">
+      <span class="field-label" id="t-lbl-user">İstifadəçi adı</span>
+      <div class="input-wrapper">
+        <span class="input-icon">👤</span>
+        <input type="text" class="input-box" id="p-user" placeholder="İstifadəçi adı və ya ID" required>
+      </div>
+
+      <span class="field-label" id="t-lbl-pass">Şifrə</span>
+      <div class="input-wrapper">
+        <span class="input-icon">🔒</span>
+        <input type="password" class="input-box" id="p-pass" placeholder="Şifrənizi yazın" required>
+      </div>
+
+      <a href="#" class="forgot-link" id="t-forgot" onclick="alert('Şifrəni unutmusansa Adminlə əlaqə saxla!')">Şifrəni unutmusan?</a>
+
+      <button type="submit" class="submit-btn" id="t-btn-login">Daxil ol</button>
     </form>
 
-    <!-- Qeydiyyat Formu -->
-    <form id="register" class="form-group">
-      <input type="text" class="input-box" placeholder="İstifadəçi adı" required>
-      <input type="email" class="input-box" placeholder="E-poçt (istəyə bağlı)">
-      <input type="password" class="input-box" placeholder="Şifrə təyin et" required>
-      <button type="submit" class="submit-btn">Hesab Yarat</button>
+    <!-- QEYDİYYAT FORMU -->
+    <form id="register-form" class="form-group">
+      <div class="alert-box" id="t-alert">
+        ⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar. 3-cü nik qadağandır və ban olunur.
+      </div>
+
+      <span class="field-label" id="t-lbl-reguser">İstifadəçi adı</span>
+      <div class="input-wrapper">
+        <span class="input-icon">👤</span>
+        <input type="text" class="input-box" id="p-reguser" placeholder="İstifadəçi adı seç" required>
+      </div>
+
+      <span class="field-label" id="t-lbl-regpass">Şifrə</span>
+      <div class="input-wrapper">
+        <span class="input-icon">🔒</span>
+        <input type="password" class="input-box" id="p-regpass" placeholder="Ən azı 6 simvol" required>
+      </div>
+
+      <span class="gender-title" id="t-lbl-gender">Cinsiyyət</span>
+      <div class="gender-group">
+        <div class="gender-card active" onclick="selectGender(this)">
+          <span style="font-size: 20px;">♂️</span>
+          <span id="t-male">Kişi</span>
+        </div>
+        <div class="gender-card" onclick="selectGender(this)">
+          <span style="font-size: 20px;">♀️</span>
+          <span id="t-female">Qadın</span>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="t-btn-reg">Hesab yarat</button>
     </form>
   </div>
 
   <script>
-    function showTab(tabName) {
-      document.querySelectorAll('.form-group').forEach(form => form.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      
-      document.getElementById(tabName).classList.add('active');
+    // Dil Lüğəti
+    const dict = {
+      az: {
+        subtitle: "Hesabına daxil ol və oyuna davam et",
+        tabLogin: "Giriş",
+        tabReg: "Qeydiyyat",
+        lblUser: "İstifadəçi adı",
+        lblPass: "Şifrə",
+        pUser: "İstifadəçi adı və ya ID",
+        pPass: "Şifrənizi yazın",
+        forgot: "Şifrəni unutmusan?",
+        btnLogin: "Daxil ol",
+        alert: "⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar. 3-cü nik qadağandır və ban olunur.",
+        pRegPass: "Ən azı 6 simvol",
+        lblGender: "Cinsiyyət",
+        male: "Kişi",
+        female: "Qadın",
+        btnReg: "Hesab yarat"
+      },
+      ru: {
+        subtitle: "Войдите в аккаунт и продолжайте игру",
+        tabLogin: "Вход",
+        tabReg: "Регистрация",
+        lblUser: "Имя пользователя",
+        lblPass: "Пароль",
+        pUser: "Имя пользователя или ID",
+        pPass: "Введите пароль",
+        forgot: "Забыли пароль?",
+        btnLogin: "Войти",
+        alert: "⚠️ <strong>Внимание!</strong> С 1 устройства можно создать максимум 2 ника. 3-й ник заблокирован.",
+        pRegPass: "Не менее 6 символов",
+        lblGender: "Пол",
+        male: "Мужской",
+        female: "Женский",
+        btnReg: "Создать аккаунт"
+      },
+      en: {
+        subtitle: "Log in to your account and continue playing",
+        tabLogin: "Login",
+        tabReg: "Register",
+        lblUser: "Username",
+        lblPass: "Password",
+        pUser: "Username or ID",
+        pPass: "Enter password",
+        forgot: "Forgot password?",
+        btnLogin: "Log In",
+        alert: "⚠️ <strong>Warning!</strong> Maximum 2 nicknames allowed per device. 3rd nick will be banned.",
+        pRegPass: "At least 6 characters",
+        lblGender: "Gender",
+        male: "Male",
+        female: "Female",
+        btnReg: "Create Account"
+      },
+      ge: {
+        subtitle: "შესულით ანგარიშზე და გააგრძელეთ თამაში",
+        tabLogin: "შესვლა",
+        tabReg: "რეგისტრაცია",
+        lblUser: "მომხმარებელი",
+        lblPass: "პაროლი",
+        pUser: "მომხმარებელი ან ID",
+        pPass: "შეიყვანეთ პაროლი",
+        forgot: "დაგავიწყდათ პაროლი?",
+        btnLogin: "შესვლა",
+        alert: "⚠️ <strong>ყურადღება!</strong> 1 მოწყობილობიდან მაქსიმუმ 2 ნიკი. მე-3 ბლოკირებულია.",
+        pRegPass: "მინიმუმ 6 სიმბოლო",
+        lblGender: "სქესი",
+        male: "კაცი",
+        female: "ქალი",
+        btnReg: "ანგარიშის შექმნა"
+      }
+    };
+
+    function setLang(lang) {
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
       event.target.classList.add('active');
+
+      const data = dict[lang];
+      document.getElementById('t-subtitle').innerText = data.subtitle;
+      document.getElementById('t-tab-login').innerText = data.tabLogin;
+      document.getElementById('t-tab-reg').innerText = data.tabReg;
+      document.getElementById('t-lbl-user').innerText = data.lblUser;
+      document.getElementById('t-lbl-pass').innerText = data.lblPass;
+      document.getElementById('p-user').placeholder = data.pUser;
+      document.getElementById('p-pass').placeholder = data.pPass;
+      document.getElementById('t-forgot').innerText = data.forgot;
+      document.getElementById('t-btn-login').innerText = data.btnLogin;
+      document.getElementById('t-alert').innerHTML = data.alert;
+      document.getElementById('t-lbl-reguser').innerText = data.lblUser;
+      document.getElementById('p-reguser').placeholder = data.pUser;
+      document.getElementById('t-lbl-regpass').innerText = data.lblPass;
+      document.getElementById('p-regpass').placeholder = data.pRegPass;
+      document.getElementById('t-lbl-gender').innerText = data.lblGender;
+      document.getElementById('t-male').innerText = data.male;
+      document.getElementById('t-female').innerText = data.female;
+      document.getElementById('t-btn-reg').innerText = data.btnReg;
+    }
+
+    function showTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.form-group').forEach(f => f.classList.remove('active'));
+      
+      if (tab === 'login') {
+        document.getElementById('t-tab-login').classList.add('active');
+        document.getElementById('login-form').classList.add('active');
+      } else {
+        document.getElementById('t-tab-reg').classList.add('active');
+        document.getElementById('register-form').classList.add('active');
+      }
+    }
+
+    function selectGender(element) {
+      document.querySelectorAll('.gender-card').forEach(c => c.classList.remove('active'));
+      element.classList.add('active');
     }
   </script>
 </body>
