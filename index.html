@@ -6,10 +6,12 @@
     <title>Butulka Baku - Giriş</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Hərəkətli Neon Arxa Fon (putulka.com stili) */
         body {
-            background: linear-gradient(135deg, #0d061f, #1a0b36, #2d1254);
+            background: linear-gradient(135deg, #0d061f, #1a0b36, #2d1254, #120324);
             background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            animation: gradientBG 12s ease infinite;
             color: #fff;
             min-height: 100vh;
             display: flex;
@@ -17,44 +19,103 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            overflow-x: hidden;
+            position: relative;
         }
+
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
+
+        /* Arxa fonda hərəkət edən kiçik neon icon elementləri */
+        .bg-particles {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            display: block;
+            list-style: none;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 117, 140, 0.15);
+            box-shadow: 0 0 10px rgba(255, 117, 140, 0.3);
+            animation: animateParticle 20s linear infinite;
+            bottom: -150px;
+            border-radius: 50%;
+        }
+        .particle:nth-child(1) { left: 10%; width: 40px; height: 40px; animation-duration: 15s; }
+        .particle:nth-child(2) { left: 20%; width: 20px; height: 20px; animation-duration: 12s; animation-delay: 2s; }
+        .particle:nth-child(3) { left: 35%; width: 50px; height: 50px; animation-duration: 18s; animation-delay: 4s; }
+        .particle:nth-child(4) { left: 50%; width: 25px; height: 25px; animation-duration: 10s; animation-delay: 1s; }
+        .particle:nth-child(5) { left: 65%; width: 35px; height: 35px; animation-duration: 14s; animation-delay: 3s; }
+        .particle:nth-child(6) { left: 80%; width: 45px; height: 45px; animation-duration: 16s; animation-delay: 5s; }
+
+        @keyframes animateParticle {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+        }
+
+        /* Əsas Konteyner (Neon Çərçivə) */
         .container {
             width: 100%;
             max-width: 420px;
-            background: rgba(26, 11, 54, 0.75);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            background: rgba(22, 10, 46, 0.85);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 117, 140, 0.4);
+            border-radius: 28px;
+            padding: 35px 30px;
+            box-shadow: 0 0 30px rgba(255, 117, 140, 0.25), 0 15px 35px rgba(0, 0, 0, 0.6);
+            z-index: 2;
+            position: relative;
+        }
+
+        /* Neon Logo və Başlıq */
+        .logo-box {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .logo-icon {
+            font-size: 45px;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 0 12px rgba(255, 117, 140, 0.8));
+            animation: pulseIcon 2s infinite ease-in-out;
+        }
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
         .logo-title {
-            text-align: center;
-            font-size: 32px;
-            font-weight: bold;
-            color: #ff758c;
-            text-shadow: 0 0 15px rgba(255, 117, 140, 0.6);
-            margin-bottom: 25px;
+            font-size: 34px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3, #ffa8b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 117, 140, 0.5);
             font-style: italic;
+            letter-spacing: 1px;
         }
+
+        /* Tabs (Giriş / Qeydiyyat düymələri) */
         .tabs {
             display: flex;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 14px;
-            padding: 5px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 6px;
             margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         .tab {
             flex: 1;
             text-align: center;
             padding: 12px;
             cursor: pointer;
-            border-radius: 10px;
+            border-radius: 12px;
             font-weight: 600;
             color: #aaa;
             transition: 0.3s;
@@ -62,8 +123,10 @@
         .tab.active {
             background: linear-gradient(135deg, #ff758c, #ff7eb3);
             color: #fff;
-            box-shadow: 0 5px 15px rgba(255, 117, 140, 0.4);
+            box-shadow: 0 0 15px rgba(255, 117, 140, 0.6);
         }
+
+        /* Formalar */
         .form-group {
             margin-bottom: 20px;
         }
@@ -71,14 +134,15 @@
             display: block;
             margin-bottom: 8px;
             font-size: 14px;
-            color: #ccc;
+            color: #ff9eb3;
+            font-weight: 500;
         }
         .form-group input {
             width: 100%;
-            padding: 14px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 117, 140, 0.2);
+            border-radius: 14px;
             color: #fff;
             font-size: 16px;
             outline: none;
@@ -86,8 +150,11 @@
         }
         .form-group input:focus {
             border-color: #ff758c;
-            box-shadow: 0 0 10px rgba(255, 117, 140, 0.3);
+            box-shadow: 0 0 15px rgba(255, 117, 140, 0.4);
+            background: rgba(0, 0, 0, 0.6);
         }
+
+        /* Neon Düymə */
         .btn {
             width: 100%;
             padding: 15px;
@@ -98,37 +165,54 @@
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(255, 117, 140, 0.4);
+            box-shadow: 0 0 20px rgba(255, 117, 140, 0.5);
             transition: 0.3s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            box-shadow: 0 0 25px rgba(255, 117, 140, 0.8);
+            transform: translateY(-2px);
         }
         .btn:active { transform: scale(0.98); }
+        
         .form-section { display: none; }
         .form-section.active { display: block; }
         
+        /* Modal Popup */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
         .modal-content {
-            background: #1e1035;
-            padding: 30px;
-            border-radius: 20px;
+            background: #1a0b36;
+            padding: 35px 30px;
+            border-radius: 24px;
             text-align: center;
-            max-width: 320px;
+            max-width: 340px;
             width: 90%;
-            border: 1px solid rgba(255,117,140,0.3);
+            border: 2px solid rgba(255, 117, 140, 0.5);
+            box-shadow: 0 0 30px rgba(255, 117, 140, 0.4);
         }
     </style>
 </head>
 <body>
 
+    <!-- Arxa fonda hərəkət edən neon hissəciklər -->
+    <ul class="bg-particles">
+        <li></li><li></li><li></li><li></li><li></li><li></li>
+    </ul>
+
     <div class="container">
-        <div class="logo-title">Butulka Baku</div>
+        <div class="logo-box">
+            <div class="logo-icon">🍾</div>
+            <div class="logo-title">Butulka Baku</div>
+        </div>
         
         <div class="tabs">
             <div class="tab active" onclick="switchTab('login')">Giriş</div>
@@ -165,14 +249,14 @@
     <!-- UĞURLU QEYDİYYAT MODALI -->
     <div id="successModal" class="modal">
         <div class="modal-content">
-            <h3 style="color:#ff758c; margin-bottom:15px;">Uğurlu Qeydiyyat!</h3>
-            <p style="color:#ccc; margin-bottom:10px;">Sizin unikal ID nömrəniz:</p>
-            <h2 id="newIdText" style="color:#fff; margin-bottom:20px;">1836</h2>
+            <h3 style="color:#ff758c; margin-bottom:15px; font-size: 22px;">Uğurlu Qeydiyyat!</h3>
+            <p style="color:#ddd; margin-bottom:10px;">Sizin unikal ID nömrəniz:</p>
+            <h2 id="newIdText" style="color:#fff; margin-bottom:25px; font-size: 36px; text-shadow: 0 0 10px #ff758c;">1836</h2>
             <button class="btn" onclick="goToProfile()">Bağla</button>
         </div>
     </div>
 
-    <!-- Firebase Script Qoşulması -->
+    <!-- Firebase Bazası ilə Əlaqə -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
