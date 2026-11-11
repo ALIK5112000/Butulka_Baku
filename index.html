@@ -1,491 +1,201 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Butulka Baku - Onlayn Oyun</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #0b0713; color: #ffffff; min-height: 100vh; padding-bottom: 70px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Butulka Baku - Giriş və Qeydiyyat</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-        .hidden { display: none !important; }
-        .flex { display: flex; }
-        .center { align-items: center; justify-content: center; }
+    body {
+      background: radial-gradient(circle at center, #1b023a 0%, #050014 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      overflow: hidden;
+    }
 
-        /* Auth Screen */
-        .auth-container { display: flex; flex-direction: column; align-items: center; padding: 20px 15px; }
-        .lang-bar { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.05); padding: 6px 10px; border-radius: 20px; margin-bottom: 25px; border: 1px solid rgba(255, 255, 255, 0.1); }
-        .lang-btn { padding: 5px 10px; border-radius: 15px; font-size: 12px; cursor: pointer; color: #b3b3b3; }
-        .lang-btn.active { background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color: white; }
-        .logo-box { text-align: center; margin-bottom: 20px; }
-        .logo-icon { width: 70px; height: 70px; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); border-radius: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 32px; color: white; box-shadow: 0 0 25px rgba(236, 72, 153, 0.5); }
-        .brand-title { font-size: 32px; font-weight: 700; font-style: italic; color: #f472b6; }
-        .auth-card { background: rgba(23, 15, 38, 0.9); border-radius: 28px; padding: 25px; width: 100%; max-width: 400px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .tab-switcher { display: flex; background: rgba(10, 6, 18, 0.6); border-radius: 16px; padding: 4px; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; text-align: center; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; color: #94a3b8; }
-        .tab-btn.active { background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%); color: white; }
-        .notice-box { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 12px 15px; margin-bottom: 20px; font-size: 13px; color: #fbbf24; }
-        .form-group { margin-bottom: 16px; }
-        .form-label { display: block; font-size: 13px; color: #cbd5e1; margin-bottom: 8px; }
-        .input-wrapper { position: relative; display: flex; align-items: center; }
-        .input-icon { position: absolute; left: 16px; color: #64748b; }
-        .input-field { width: 100%; background: rgba(10, 6, 18, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 14px 16px 14px 45px; color: white; font-size: 14px; outline: none; }
-        .gender-options { display: flex; gap: 12px; }
-        .gender-btn { flex: 1; padding: 15px; background: rgba(10, 6, 18, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; color: #64748b; }
-        .gender-btn.active { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-        .submit-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #ff4b8b 0%, #ff2a70 100%); border: none; border-radius: 16px; color: white; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+    /* Arxa fonda parıldayan neon kürələr */
+    .glow-bg {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: #ff007f;
+      border-radius: 50%;
+      filter: blur(120px);
+      z-index: 1;
+      top: 10%;
+      left: 20%;
+      animation: float 6s ease-in-out infinite alternate;
+    }
 
-        /* Main Game Layout */
-        .app-header { display: flex; align-items: center; justify-content: space-between; padding: 15px; background: rgba(18, 11, 31, 0.95); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .header-tools { display: flex; gap: 8px; align-items: center; }
-        .tool-btn { width: 42px; height: 42px; background: rgba(255, 255, 255, 0.08); border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; color: #cbd5e1; font-size: 16px; }
-        .tool-btn.vip-btn { width: auto; padding: 0 16px; background: linear-gradient(135deg, #fce7f3 0%, #f472b6 100%); color: #831843; font-weight: 700; gap: 6px; }
-        .badge { position: absolute; top: -4px; right: -4px; background: #3b82f6; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #0b0713; }
+    .glow-bg-2 {
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      background: #00f0ff;
+      border-radius: 50%;
+      filter: blur(140px);
+      z-index: 1;
+      bottom: 10%;
+      right: 20%;
+      animation: float 8s ease-in-out infinite alternate-reverse;
+    }
 
-        .main-content { padding: 15px; max-width: 500px; margin: 0 auto; }
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(30px); }
+    }
 
-        /* Profile Box */
-        .profile-card { background: rgba(23, 15, 38, 0.8); border-radius: 24px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 20px; text-align: center; }
-        .avatar-container { position: relative; width: 90px; height: 90px; margin: 0 auto 12px; }
-        .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #ec4899; }
-        .id-badge { background: #eab308; color: #000; font-weight: 800; padding: 2px 8px; border-radius: 12px; font-size: 12px; display: inline-block; margin-bottom: 8px; }
-        .user-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-        .user-status { color: #94a3b8; font-size: 14px; margin-bottom: 15px; font-style: italic; }
+    /* Glassmorphism Qutusu */
+    .card-container {
+      position: relative;
+      z-index: 2;
+      width: 380px;
+      padding: 40px 30px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(255, 255, 255, 0.05);
+    }
 
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .stat-box { background: rgba(10, 6, 18, 0.6); padding: 12px 8px; border-radius: 16px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .stat-icon { font-size: 18px; margin-bottom: 4px; color: #ec4899; }
-        .stat-val { font-weight: 700; font-size: 15px; }
-        .stat-lbl { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .logo-title {
+      text-align: center;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin-bottom: 25px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #ff007f, #00f0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(255, 0, 127, 0.5);
+    }
 
-        /* Tables Section */
-        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .tables-list { display: flex; flex-direction: column; gap: 12px; }
-        .table-card { background: rgba(23, 15, 38, 0.8); border-radius: 18px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; }
-        .table-info h4 { font-size: 16px; margin-bottom: 4px; }
-        .table-info p { font-size: 12px; color: #94a3b8; }
-        .join-btn { background: #3b82f6; color: white; padding: 8px 16px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; }
+    /* Tab Düyümələri */
+    .tabs {
+      display: flex;
+      margin-bottom: 25px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 4px;
+    }
 
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: rgba(18, 11, 31, 0.98); border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-around; align-items: center; z-index: 200; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #64748b; cursor: pointer; font-size: 11px; text-decoration: none; }
-        .nav-item i { font-size: 20px; }
-        .nav-item.active { color: #ec4899; }
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      border: none;
+      background: transparent;
+      color: #aaa;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
 
-        /* Modals */
-        .modal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: flex-end; backdrop-filter: blur(8px); }
-        .modal-content { background: #160e24; width: 100%; max-height: 85vh; border-radius: 28px 28px 0 0; padding: 25px; overflow-y: auto; border-top: 1px solid rgba(255,255,255,0.1); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .close-btn { font-size: 20px; color: #64748b; cursor: pointer; }
-        
-        select.input-field { background: #0a0612; color: white; }
-        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .shop-item { background: rgba(255,255,255,0.04); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.08); cursor: pointer; }
-        .shop-item:hover { border-color: #ec4899; }
-    </style>
+    .tab-btn.active {
+      background: linear-gradient(90deg, #ff007f, #7928ca);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.6);
+    }
+
+    /* Form Xanaları */
+    .form-group {
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .form-group.active {
+      display: flex;
+    }
+
+    .input-box {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .input-box:focus {
+      border-color: #00f0ff;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #00f0ff, #7928ca);
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.8);
+    }
+  </style>
 </head>
 <body>
 
-    <!-- AUTHENTICATION SCREEN -->
-    <div id="auth-screen" class="auth-container">
-        <div class="lang-bar">
-            <div class="lang-btn active" onclick="changeLang('az')">🇦🇿 Azərbaycanca</div>
-            <div class="lang-btn" onclick="changeLang('ru')">🇷🇺 Русский</div>
-            <div class="lang-btn" onclick="changeLang('en')">🇬🇧 English</div>
-        </div>
+  <div class="glow-bg"></div>
+  <div class="glow-bg-2"></div>
 
-        <div class="logo-box">
-            <div class="logo-icon"><i class="fa-solid fa-heart"></i></div>
-            <h1 class="brand-title">Butulka Baku</h1>
-            <p style="color:#94a3b8; font-size: 14px;" id="logo-subtitle">Hesabına daxil ol və oyuna davam et</p>
-        </div>
+  <div class="card-container">
+    <div class="logo-title">Butulka Baku</div>
 
-        <div class="auth-card">
-            <div class="tab-switcher">
-                <div class="tab-btn active" id="tab-login" onclick="switchTab('login')">Giriş</div>
-                <div class="tab-btn" id="tab-register" onclick="switchTab('register')">Qeydiyyat</div>
-            </div>
-
-            <form id="login-form" onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label class="form-label">İstifadəçi adı</label>
-                    <div class="input-wrapper">
-                        <i class="fa-regular fa-user input-icon"></i>
-                        <input type="text" id="login-user" class="input-field" placeholder="İstifadəçi adı və ya ID" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Şifrə</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-lock input-icon"></i>
-                        <input type="password" id="login-pass" class="input-field" placeholder="••••••••" required>
-                    </div>
-                </div>
-                <button type="submit" class="submit-btn">Daxil ol</button>
-            </form>
-
-            <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
-                <div class="notice-box">⚠️ <strong>Diqqət!</strong> 1 cihazdan ən çox 2 nik açmaq olar.</div>
-                <div class="form-group">
-                    <label class="form-label">İstifadəçi adı</label>
-                    <div class="input-wrapper">
-                        <i class="fa-regular fa-user input-icon"></i>
-                        <input type="text" id="reg-user" class="input-field" placeholder="İstifadəçi adı seç" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Şifrə</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-lock input-icon"></i>
-                        <input type="password" id="reg-pass" class="input-field" placeholder="Ən azı 6 simvol" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Cinsiyyət</label>
-                    <div class="gender-options">
-                        <div class="gender-btn active" id="gender-male" onclick="selectGender('male')"><i class="fa-solid fa-mars"></i> Kişi</div>
-                        <div class="gender-btn" id="gender-female" onclick="selectGender('female')"><i class="fa-solid fa-venus"></i> Qadın</div>
-                    </div>
-                </div>
-                <button type="submit" class="submit-btn">Hesab yarat</button>
-            </form>
-        </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('login')">Giriş</button>
+      <button class="tab-btn" onclick="showTab('register')">Qeydiyyat</button>
     </div>
 
-    <!-- MAIN GAME DASHBOARD -->
-    <div id="game-dashboard" class="hidden">
-        
-        <!-- Header Tools -->
-        <header class="app-header">
-            <div class="header-tools">
-                <div class="tool-btn vip-btn" onclick="openModal('modal-vip')"><i class="fa-solid fa-crown"></i> VIP</div>
-                <div class="tool-btn" onclick="openModal('modal-shop')"><i class="fa-solid fa-cart-shopping"></i></div>
-                <div class="tool-btn" onclick="openModal('modal-search')"><i class="fa-solid fa-magnifying-glass"></i></div>
-                <div class="tool-btn" onclick="openModal('modal-support')"><i class="fa-solid fa-headset"></i></div>
-                <div class="tool-btn" onclick="openModal('modal-notifs')">
-                    <i class="fa-solid fa-bell"></i>
-                    <span class="badge" id="notif-count">1</span>
-                </div>
-                <div class="tool-btn" onclick="openModal('modal-settings')"><i class="fa-solid fa-sliders"></i></div>
-            </div>
-        </header>
+    <!-- Giriş Formu -->
+    <form id="login" class="form-group active">
+      <input type="text" class="input-box" placeholder="İstifadəçi adı və ya Nik" required>
+      <input type="password" class="input-box" placeholder="Şifrə" required>
+      <button type="submit" class="submit-btn">Oyuna Daxil Ol</button>
+    </form>
 
-        <main class="main-content">
-            <!-- User Profile Card -->
-            <div class="profile-card">
-                <div class="avatar-container">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" id="user-avatar" class="avatar-img">
-                </div>
-                <span class="id-badge" id="user-id-display">ID 1836</span>
-                <h2 class="user-name" id="profile-name">Alik</h2>
-                <p class="user-status" id="profile-status">Şirin Dil 😔</p>
+    <!-- Qeydiyyat Formu -->
+    <form id="register" class="form-group">
+      <input type="text" class="input-box" placeholder="İstifadəçi adı" required>
+      <input type="email" class="input-box" placeholder="E-poçt (istəyə bağlı)">
+      <input type="password" class="input-box" placeholder="Şifrə təyin et" required>
+      <button type="submit" class="submit-btn">Hesab Yarat</button>
+    </form>
+  </div>
 
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-icon"><i class="fa-solid fa-heart"></i></div>
-                        <div class="stat-val" id="user-hearts">185</div>
-                        <div class="stat-lbl">Ürək</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-icon" style="color:#eab308;"><i class="fa-solid fa-coins"></i></div>
-                        <div class="stat-val" id="user-coins">1.1k</div>
-                        <div class="stat-lbl">Jeton</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-icon" style="color:#3b82f6;"><i class="fa-solid fa-user-group"></i></div>
-                        <div class="stat-val" id="user-friends">1</div>
-                        <div class="stat-lbl">Dostlar</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-icon" style="color:#a855f7;"><i class="fa-solid fa-eye"></i></div>
-                        <div class="stat-val">29</div>
-                        <div class="stat-lbl">Baxanlar</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Admin Action Button (Visible only to Admin) -->
-            <button id="admin-panel-btn" onclick="openModal('modal-admin')" class="submit-btn hidden" style="background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); margin-bottom: 20px;">
-                <i class="fa-solid fa-user-shield"></i> Admin İdarəetmə Paneli
-            </button>
-
-            <!-- Game Tables Section -->
-            <div class="section-title">
-                <span>Masalar indi</span>
-                <span style="font-size: 13px; color: #ec4899; cursor: pointer;">Yenilə</span>
-            </div>
-
-            <div class="tables-list">
-                <div class="table-card">
-                    <div class="table-info">
-                        <h4>Masa 1</h4>
-                        <p>11/12 Oyunçu • ♂ 4 • ♀ 7</p>
-                    </div>
-                    <button class="join-btn">Qoşul →</button>
-                </div>
-                <div class="table-card">
-                    <div class="table-info">
-                        <h4>Masa 3</h4>
-                        <p>8/12 Oyunçu • ♂ 4 • ♀ 4</p>
-                    </div>
-                    <button class="join-btn">Qoşul →</button>
-                </div>
-            </div>
-        </main>
-
-        <!-- Bottom Navigation Bar -->
-        <nav class="bottom-nav">
-            <div class="nav-item active" onclick="goHome()">
-                <i class="fa-solid fa-house"></i>
-                <span>Ana Səhifə</span>
-            </div>
-            <div class="nav-item" onclick="openModal('modal-messages')">
-                <i class="fa-solid fa-comment-dots"></i>
-                <span>Mesajlar</span>
-            </div>
-        </nav>
-    </div>
-
-    <!-- MODALS SECTION -->
-
-    <!-- Shop Modal -->
-    <div id="modal-shop" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Mağaza - Jeton Paketləri</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-shop')"></i>
-            </div>
-            <div class="shop-grid">
-                <div class="shop-item" onclick="buyCoins('1k Jeton', '5.00 AZN')">
-                    <h3 style="color:#eab308;">1k 🪙</h3>
-                    <p>5.00 AZN</p>
-                </div>
-                <div class="shop-item" onclick="buyCoins('3k Jeton', '10.00 AZN')">
-                    <h3 style="color:#eab308;">3k 🪙</h3>
-                    <p>10.00 AZN</p>
-                </div>
-                <div class="shop-item" onclick="buyCoins('5k Jeton', '15.00 AZN')">
-                    <h3 style="color:#eab308;">5k 🪙</h3>
-                    <p>15.00 AZN</p>
-                </div>
-                <div class="shop-item" onclick="buyCoins('11k Jeton', '25.00 AZN')">
-                    <h3 style="color:#eab308;">11k 🪙</h3>
-                    <p>25.00 AZN</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Search Modal -->
-    <div id="modal-search" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>İstifadəçi Axtarışı</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-search')"></i>
-            </div>
-            <input type="text" class="input-field" placeholder="İstifadəçi adı və ya ID yazın..." onkeyup="searchUsers(this.value)">
-            <div id="search-results" style="margin-top: 15px;"></div>
-        </div>
-    </div>
-
-    <!-- Support Modal -->
-    <div id="modal-support" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Adminlə Əlaqə</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-support')"></i>
-            </div>
-            <p style="text-align: center; font-size: 18px; margin: 20px 0;">Baş Admin: <strong>Alik</strong></p>
-            <button class="submit-btn" onclick="alert('Admin Alik ilə mesajlaşma başladıldı!')">Mesaj Göndər</button>
-        </div>
-    </div>
-
-    <!-- Notifications Modal -->
-    <div id="modal-notifs" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Bildirişlər</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-notifs')"></i>
-            </div>
-            <div id="notifs-list">
-                <div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" style="width:40px; height:40px; border-radius:50%;">
-                    <div>
-                        <strong>Leyla</strong> sizə dostluq göndərdi.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div id="modal-settings" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Profil Tənzimləmələri</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-settings')"></i>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Profil Şəkli URL</label>
-                <input type="text" id="edit-avatar" class="input-field" placeholder="Şəkil linki yapışdırın">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Status</label>
-                <input type="text" id="edit-status" class="input-field" value="Şirin Dil 😔">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Ölkə</label>
-                <select id="edit-country" class="input-field">
-                    <option value="">— seçilməyib —</option>
-                    <option value="Azərbaycan">Azərbaycan</option>
-                    <option value="Türkiyə">Türkiyə</option>
-                    <option value="Rusiya">Rusiya</option>
-                    <option value="Gürcüstan">Gürcüstan</option>
-                    <option value="Amerika">Amerika</option>
-                    <option value="Qazaxıstan">Qazaxıstan</option>
-                    <option value="Türkmənistan">Türkmənistan</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Şəhər / Rayon</label>
-                <input type="text" id="edit-city" class="input-field" placeholder="Məsələn: Bakı">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Yaş (maks 99)</label>
-                <input type="number" id="edit-age" class="input-field" max="99">
-            </div>
-            <button class="submit-btn" onclick="saveSettings()">Yadda saxla</button>
-
-            <hr style="margin: 20px 0; border-color: rgba(255,255,255,0.1);">
-            <h4 style="margin-bottom: 12px;">Şifrəni Dəyiş</h4>
-            <input type="password" class="input-field" placeholder="Hazırkı şifrə" style="margin-bottom: 8px;">
-            <input type="password" class="input-field" placeholder="Yeni şifrə" style="margin-bottom: 8px;">
-            <button class="submit-btn" style="background: rgba(255,255,255,0.1);" onclick="alert('Şifrə yeniləndi!')">Şifrəni yenilə</button>
-        </div>
-    </div>
-
-    <!-- Admin Panel Modal -->
-    <div id="modal-admin" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 style="color:#eab308;">Admin Panel (Alik)</h3>
-                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('modal-admin')"></i>
-            </div>
-            <div class="form-group">
-                <label class="form-label">İstifadəçi ID-si</label>
-                <input type="text" id="admin-target-id" class="input-field" placeholder="Məs: 1836">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Göndəriləcək Jeton Məbləği</label>
-                <input type="number" id="admin-grant-coins" class="input-field" placeholder="1000">
-            </div>
-            <button class="submit-btn" style="background:#eab308; color:#000;" onclick="adminGrantCoins()">Jeton Göndər</button>
-            <div id="admin-notifications-log" style="margin-top:20px; font-size:13px; color:#94a3b8;">
-                <h4>Gələn Alış-Veriş İstəkləri:</h4>
-                <div id="requests-list">Hələlik yeni istək yoxdur.</div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let currentUser = null;
-        let selectedGender = 'male';
-
-        window.onload = function() {
-            const saved = localStorage.getItem('putulka_logged_user');
-            if(saved) {
-                currentUser = JSON.parse(saved);
-                if(!currentUser.id) currentUser.id = Math.floor(1000 + Math.random() * 9000);
-                if(!currentUser.coins) currentUser.coins = 1100;
-                if(!currentUser.hearts) currentUser.hearts = 185;
-                loadDashboard();
-            }
-        };
-
-        function switchTab(type) {
-            document.getElementById('login-form').classList.toggle('hidden', type !== 'login');
-            document.getElementById('register-form').classList.toggle('hidden', type === 'login');
-            document.getElementById('tab-login').classList.toggle('active', type === 'login');
-            document.getElementById('tab-register').classList.toggle('active', type !== 'login');
-        }
-
-        function selectGender(g) {
-            selectedGender = g;
-            document.getElementById('gender-male').classList.toggle('active', g === 'male');
-            document.getElementById('gender-female').classList.toggle('active', g === 'female');
-        }
-
-        function handleRegister(e) {
-            e.preventDefault();
-            const u = document.getElementById('reg-user').value.trim();
-            const p = document.getElementById('reg-pass').value;
-            const uid = Math.floor(1000 + Math.random() * 9000);
-            currentUser = { username: u, pass: p, gender: selectedGender, id: uid, coins: 1100, hearts: 185, status: "Şirin Dil 😔" };
-            localStorage.setItem('user_' + u, JSON.stringify(currentUser));
-            localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
-            loadDashboard();
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('login-user').value.trim();
-            const p = document.getElementById('login-pass').value;
-            const saved = localStorage.getItem('user_' + u);
-            if(!saved) { alert('İstifadəçi tapılmadı!'); return; }
-            const parsed = JSON.parse(saved);
-            if(parsed.pass !== p) { alert('Şifrə yanlışdır!'); return; }
-            currentUser = parsed;
-            localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
-            loadDashboard();
-        }
-
-        function loadDashboard() {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('game-dashboard').classList.remove('hidden');
-            document.getElementById('profile-name').innerText = currentUser.username;
-            document.getElementById('user-id-display').innerText = "ID " + currentUser.id;
-            document.getElementById('user-coins').innerText = currentUser.coins;
-            document.getElementById('user-hearts').innerText = currentUser.hearts;
-            document.getElementById('profile-status').innerText = currentUser.status || "Şirin Dil 😔";
-
-            // Show Admin button if username is Alik
-            if(currentUser.username.toLowerCase() === 'alik') {
-                document.getElementById('admin-panel-btn').classList.remove('hidden');
-            }
-        }
-
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function goHome() { document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden')); }
-
-        function buyCoins(pkg, price) {
-            alert(`Sifariş göndərildi! Admin bildiriş aldı: ID ${currentUser.id} - ${pkg} (${price})`);
-            closeModal('modal-shop');
-            const reqList = document.getElementById('requests-list');
-            reqList.innerHTML = `<p style="color:#eab308;">⚠️ ID ${currentUser.id} (${currentUser.username}) ${pkg} almaq istəyir!</p>` + reqList.innerHTML;
-        }
-
-        function saveSettings() {
-            const newSt = document.getElementById('edit-status').value;
-            if(newSt) {
-                currentUser.status = newSt;
-                document.getElementById('profile-status').innerText = newSt;
-            }
-            localStorage.setItem('putulka_logged_user', JSON.stringify(currentUser));
-            alert('Məlumatlar yadda saxlanıldı!');
-            closeModal('modal-settings');
-        }
-
-        function adminGrantCoins() {
-            const amount = parseInt(document.getElementById('admin-grant-coins').value);
-            if(amount) {
-                currentUser.coins += amount;
-                document.getElementById('user-coins').innerText = currentUser.coins;
-                alert(`${amount} Jeton hesaba əlavə olundu!`);
-                closeModal('modal-admin');
-            }
-        }
-    </script>
+  <script>
+    function showTab(tabName) {
+      document.querySelectorAll('.form-group').forEach(form => form.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+    }
+  </script>
 </body>
 </html>
