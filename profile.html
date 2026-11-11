@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Butulka Baku - Əsl Real-Time Oyun</title>
+    <title>Butulka Baku - Canlı Oyun</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
@@ -32,15 +32,15 @@
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .stat-card { background: rgba(14, 6, 28, 0.7); border-radius: 16px; padding: 14px 10px; text-align: center; }
 
-        /* ================= OYUN MASASI ================= */
+        /* ================= OYUN MASASI (ORİGİNAL STİL) ================= */
         .game-wrapper { width: 100%; height: 100vh; display: flex; flex-direction: column; background: #fff; }
 
-        .game-top-header { display: flex; justify-content: space-between; padding: 10px 12px; background: #da843d; color: #fff; }
-        .header-left { display: flex; gap: 10px; }
+        .game-top-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #da843d; color: #fff; }
+        .header-left { display: flex; gap: 10px; align-items: center; }
         .game-badge-group { display: flex; align-items: center; font-size: 14px; font-weight: bold; gap: 4px; }
-        .header-icons { display: flex; gap: 12px; font-size: 18px; }
+        .header-icons { display: flex; gap: 12px; font-size: 18px; cursor: pointer; }
 
-        /* Taxta Masa - Tam Orijinal Məntiq */
+        /* Taxta Masa Fonu */
         .table-area { 
             flex: 1; position: relative; width: 100%;
             background-color: #cb8447;
@@ -50,10 +50,9 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* Ortadakı Butulka */
+        /* Orijinal Yaşıl Butulka Şəkli */
         .bottle-img { 
-            width: 70px; position: absolute; z-index: 10;
-            /* Cubic-bezier - əsl şüşə fırlanma və dayanma fizikasıdır */
+            width: 75px; position: absolute; z-index: 10;
             transition: transform 4s cubic-bezier(0.2, 0.9, 0.2, 1); 
             cursor: pointer;
             filter: drop-shadow(10px 15px 15px rgba(0,0,0,0.7));
@@ -64,18 +63,18 @@
         .player-seat {
             position: absolute; width: 70px; height: 90px;
             display: flex; flex-direction: column; align-items: center;
-            transform: translate(-50%, -50%); /* Tam mərkəzə görə hesablamaq üçün */
+            transform: translate(-50%, -50%);
             pointer-events: auto; z-index: 5;
             transition: all 0.5s ease;
         }
         .seat-avatar { 
-            width: 55px; height: 55px; border-radius: 12px; object-fit: cover; 
+            width: 52px; height: 52px; border-radius: 12px; object-fit: cover; 
             border: 2px solid #ffcc00; box-shadow: 0 5px 10px rgba(0,0,0,0.5);
             background: #000;
         }
         .seat-name { 
-            font-size: 11px; font-weight: bold; color: #fff; 
-            background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 8px;
+            font-size: 10px; font-weight: bold; color: #fff; 
+            background: rgba(0,0,0,0.7); padding: 2px 6px; border-radius: 8px;
             margin-top: 4px; white-space: nowrap; text-shadow: 0 1px 2px #000;
         }
 
@@ -83,12 +82,12 @@
         .chat-section { background: #f4f5f7; height: 210px; display: flex; flex-direction: column; padding: 10px; border-top: 1px solid #ddd; }
         .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
         .chat-msg-row { display: flex; gap: 8px; align-items: flex-start; }
-        .chat-avatar-ph { width: 32px; height: 32px; background: #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .chat-avatar-ph { width: 32px; height: 32px; background: #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
         .chat-bubble { background: #fff; padding: 8px 12px; border-radius: 14px; border: 1px solid #eaeaea; font-size: 13px; color: #333; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .chat-bubble span { color: #d32f2f; font-weight: bold; margin-right: 4px; }
         .chat-input-row { display: flex; gap: 8px; background: #fff; border: 1px solid #ddd; border-radius: 20px; padding: 4px 6px; margin-top: 10px; }
-        .chat-input-row input { flex: 1; padding: 8px; border: none; background: transparent; outline: none; font-size: 14px; }
-        .send-btn { background: #f39c12; border: none; width: 36px; height: 36px; border-radius: 50%; color: #fff; font-size: 16px; cursor: pointer; }
+        .chat-input-row input { flex: 1; padding: 8px; border: none; background: transparent; outline: none; font-size: 14px; color: #333; }
+        .send-btn { background: #f39c12; border: none; width: 36px; height: 36px; border-radius: 50%; color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         /* AŞAĞI MENÜ */
         .footer-menu { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10, 4, 22, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.06); display: flex; justify-content: space-around; align-items: center; padding: 8px 5px; z-index: 1000; }
@@ -132,20 +131,16 @@
                     <div class="game-badge-group">❤️ <span id="gameHearts">0</span></div>
                     <div class="game-badge-group">💎 <span id="gameJetons">0</span></div>
                 </div>
-                <div class="header-icons">
-                    <div onclick="switchPage('profile')" style="cursor:pointer;">🚪</div>
-                </div>
+                <div class="header-icons" onclick="switchPage('profile')">🚪 Çıxış</div>
             </div>
 
-            <!-- Taxta Masa -->
+            <!-- Taxta Masa və Canlı Şüşə -->
             <div class="table-area" id="tableArea">
-                <!-- Tünd Şərab Şüşəsi -->
-                <img id="bottle" class="bottle-img" src="https://i.ibb.co/680S3g7/dark-wine-bottle.png" alt="Butulka" onclick="spinBottleRealTime()">
+                <!-- Orijinal Yaşıl Butulka -->
+                <img id="bottle" class="bottle-img" src="https://cdn-icons-png.flaticon.com/512/869/869688.png" alt="Butulka" onclick="spinBottleRealTime()">
                 
-                <!-- Dairəvi Oyunçular Konteyneri -->
-                <div class="players-container" id="playersContainer">
-                    <!-- Javascript vasitəsilə bura adamlar dairəvi düzüləcək -->
-                </div>
+                <!-- Dairəvi Oyunçular -->
+                <div class="players-container" id="playersContainer"></div>
             </div>
 
             <!-- Çat -->
@@ -153,7 +148,7 @@
                 <div class="chat-messages" id="chatBox">
                     <div class="chat-msg-row">
                         <div class="chat-avatar-ph">📢</div>
-                        <div class="chat-bubble"><span>Sistem:</span> Əsl onlayn masaya xoş gəldiniz!</div>
+                        <div class="chat-bubble"><span>Sistem:</span> Canlı masaya qoşuldunuz! Şüşəni fırladın.</div>
                     </div>
                 </div>
                 <div class="chat-input-row">
@@ -172,7 +167,7 @@
         <div class="footer-item"><div>💬</div><div>Mesajlar</div></div>
     </div>
 
-    <!-- Firebase Real-Time (Oyun Mühərriki Məntiqi) -->
+    <!-- Firebase Real-Time Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, query, orderBy, limit, serverTimestamp, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -188,7 +183,6 @@
         let currentUser = JSON.parse(localStorage.getItem("currentUser"));
         if (!currentUser) window.location.href = "index.html";
 
-        // Profili Doldur
         document.getElementById('profileUsername').innerText = currentUser.username || "İstifadəçi";
         document.getElementById('profileId').innerText = currentUser.id || "0000";
         document.getElementById('profileHearts').innerText = currentUser.hearts || 0;
@@ -199,7 +193,7 @@
         const tableArea = document.getElementById('tableArea');
         const playersContainer = document.getElementById('playersContainer');
 
-        // ================= 1. DAİRƏVİ OYUNÇULAR SİSTEMİ =================
+        // DAİRƏVİ OYUNÇULAR
         window.joinTable = async function() {
             const playerDoc = doc(db, "live_table_1_players", currentUser.id.toString());
             await setDoc(playerDoc, {
@@ -212,19 +206,16 @@
 
         const playersRef = collection(db, "live_table_1_players");
         
-        // Oyunçuları dairəvi yerləşdirmək üçün Riyazi Funksiya
         function arrangePlayersInCircle(playersList) {
             playersContainer.innerHTML = '';
             const total = playersList.length;
             if(total === 0) return;
 
-            // Masanın mərkəz nöqtəsi və dairənin radiusu
-            const radius = 100; // Şüşədən aralıq məsafə
+            const radius = 110; // Masanın mərkəzindən məsafə
             const centerX = tableArea.clientWidth / 2;
             const centerY = tableArea.clientHeight / 2;
 
             playersList.forEach((p, i) => {
-                // Hər bir oyunçu üçün bucaq hesablanır (Trigonometriya)
                 const angle = (i / total) * (2 * Math.PI) - (Math.PI / 2); 
                 const x = centerX + radius * Math.cos(angle);
                 const y = centerY + radius * Math.sin(angle);
@@ -237,7 +228,6 @@
             });
         }
 
-        // Baza yenilənəndə adamları yenidən masaya düzür
         onSnapshot(playersRef, (snapshot) => {
             const activePlayers = [];
             snapshot.forEach((docSnap) => {
@@ -247,43 +237,28 @@
             arrangePlayersInCircle(activePlayers);
         });
 
-        // Ekran ölçüsü dəyişsə dairəni yenilə
-        window.addEventListener('resize', async () => {
-            const snap = await getDocs(playersRef);
-            const activePlayers = [];
-            snap.forEach(d => { if(d.data().online) activePlayers.push(d.data()); });
-            arrangePlayersInCircle(activePlayers);
-        });
-
-        // ================= 2. CANLI ŞÜŞƏ FİZİKASI =================
+        // CANLI ŞÜŞƏ FİZİKASI
         const bottleStateRef = doc(db, "live_game_state", "table_1");
         
         onSnapshot(bottleStateRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                const bottle = document.getElementById('bottle');
-                // Hər kəsdə eyni yerə və eyni sürətlə fırlanır
-                bottle.style.transform = `rotate(${data.rotation}deg)`;
+                document.getElementById('bottle').style.transform = `rotate(${data.rotation}deg)`;
             }
         });
 
         window.spinBottleRealTime = async function() {
             const bottle = document.getElementById('bottle');
-            // Hazırki dərəcəni götürürük
             const transformValue = bottle.style.transform;
             let currentRot = 0;
             if(transformValue) {
                 currentRot = parseInt(transformValue.replace(/[^0-9\-]/g,'')) || 0;
             }
-            
-            // Ən azı 4 dövrə (1440 dərəcə) + təsadüfi bucaq
             const newRot = currentRot + 1440 + Math.floor(Math.random() * 360);
-            
-            // Bazaya yazan kimi hamıda işə düşəcək
             await setDoc(bottleStateRef, { rotation: newRot }, { merge: true });
         };
 
-        // ================= 3. CANLI ÇAT =================
+        // CANLI ÇAT
         const chatRef = collection(db, "live_table_1_chat");
         const qChat = query(chatRef, orderBy("timestamp", "asc"), limit(30));
         
@@ -312,7 +287,7 @@
 
         window.checkEnter = function(e) { if(e.key === 'Enter') sendRealTimeMessage(); };
 
-        // ================= SƏHİFƏ KEÇİDİ =================
+        // SƏHİFƏ KEÇİDİ
         window.switchPage = function(page) {
             document.getElementById('profileSection').classList.remove('active');
             document.getElementById('gameSection').classList.remove('active');
@@ -322,7 +297,7 @@
             if(page === 'game') {
                 document.getElementById('gameSection').classList.add('active');
                 document.getElementById('menuGame').classList.add('active');
-                joinTable(); // Masaya girən kimi dairəyə əlavə olunur
+                joinTable();
             } else {
                 document.getElementById('profileSection').classList.add('active');
                 document.getElementById('menuProfile').classList.add('active');
