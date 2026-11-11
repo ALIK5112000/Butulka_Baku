@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Butulka Baku - Şüşəni Fırlat</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body {
+            background: #120624;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* Yüklənmə Ekranı */
+        #loadingScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #5c9635 url('https://i.imgur.com/6X1omZC.png') repeat;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        .loading-bar-container {
+            width: 240px;
+            height: 16px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.4);
+            margin-top: 20px;
+        }
+        .loading-bar {
+            width: 0%;
+            height: 100%;
+            background: #a3d95c;
+            border-radius: 8px;
+            animation: loadProgress 2.5s forwards linear;
+        }
+        @keyframes loadProgress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+        .spin-title {
+            font-size: 42px;
+            font-weight: 900;
+            color: #ffcc33;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            font-style: italic;
+            display: none;
+        }
+
+        /* Oyun Masası (Taxta Fon) */
+        #gameContainer {
+            display: none;
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #b87a42, #8c5324, #6e3d16);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        /* Üst Menü Barı */
+        .game-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(5px);
+        }
+        .top-badge {
+            background: rgba(0,0,0,0.4);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        /* Şüşə Sahəsi */
+        .table-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 320px;
+        }
+        .bottle-img {
+            width: 90px;
+            transition: transform 3s cubic-bezier(0.15, 0.9, 0.2, 1);
+            cursor: pointer;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.6));
+        }
+        .center-text {
+            position: absolute;
+            top: 25%;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(0,0,0,0.4);
+            padding: 6px 15px;
+            border-radius: 12px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* İstifadəçi Profili Masada (Sağ tərəfdə)[span_9](start_span)[span_9](end_span) */
+        .player-seat {
+            position: absolute;
+            right: 20px;
+            bottom: 40px;
+            background: rgba(20, 10, 30, 0.85);
+            border: 2px solid #ff758c;
+            border-radius: 16px;
+            padding: 8px;
+            text-align: center;
+            width: 90px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .seat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ffcc00;
+            margin: 0 auto 5px auto;
+        }
+        .seat-name {
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .seat-id {
+            font-size: 10px;
+            color: #ffcc00;
+        }
+
+        /* Canlı Çat Paneli (Aşağıda) */
+        .chat-section {
+            background: rgba(15, 8, 28, 0.95);
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            padding: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .chat-messages {
+            height: 110px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+            padding-right: 5px;
+        }
+        .chat-msg {
+            background: rgba(255,255,255,0.07);
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: 13px;
+            word-break: break-word;
+        }
+        .chat-msg span {
+            color: #ff758c;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+        }
+        .chat-input-row input {
+            flex: 1;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            color: #fff;
+            outline: none;
+            font-size: 14px;
+        }
+        .send-btn {
+            background: linear-gradient(135deg, #ff758c, #ffaa33);
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,117,140,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Yüklənmə Ekranı[span_10](start_span)[span_10](end_span)[span_11](start_span)[span_11](end_span) -->
+    <div id="loadingScreen">
+        <div id="spinLogoText" class="spin-title">Spin the Bottle</div>
+        <div class="loading-bar-container">
+            <div class="loading-bar" id="loadBar"></div>
+        </div>
+    </div>
+
+    <!-- 2. Əsas Oyun Masası[span_12](start_span)[span_12](end_span) -->
+    <div id="gameContainer" style="display: none;">
+        <div class="game-top-bar">
+            <div class="top-badge">❤️ <span id="gameHearts">7200</span></div>
+            <div class="top-badge">💎 <span id="gameJetons">1400</span></div>
+            <div class="top-badge" onclick="window.location.href='profile.html'" style="cursor: pointer;">🏠 Çıxış</div>
+        </div>
+
+        <div class="table-area">
+            <div class="center-text">Şüşəni fırlatmaq üçün toxun!</div>
+            <!-- Ortada Fırlanan Şüşə[span_13](start_span)[span_13](end_span) -->
+            <img id="bottle" class="bottle-img" src="https://i.imgur.com/8QWv2bZ.png" alt="Butulka" onclick="spinBottle()" title="Fırlat!">
+
+            <!-- Masada Oturan Real İstifadəçi (Sənin profilin)[span_14](start_span)[span_14](end_span) -->
+            <div class="player-seat">
+                <img id="playerAvatar" class="seat-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Avatar">
+                <div id="playerName" class="seat-name">Alik</div>
+                <div id="playerId" class="seat-id">ID 1836</div>
+            </div>
+        </div>
+
+        <!-- Canlı Ümumi Çat (Sms)[span_15](start_span)[span_15](end_span) -->
+        <div class="chat-section">
+            <div class="chat-messages" id="chatBox">
+                <div class="chat-msg"><span>Admin 📢:</span> Oyuna xoş gəldiniz! Şüşəni fırladın və əylənin.</div>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" id="chatInput" placeholder="Mesaj yazın..." onkeypress="checkEnter(event)">
+                <button class="send-btn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Məntiqi -->
+    <script>
+        // Yüklənmə ekranını idarə etmək (2.5 saniyə sonra oyunu açır)
+        setTimeout(() => {
+            document.getElementById('loadingScreen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('gameContainer').style.display = 'flex';
+            }, 500);
+        }, 2500);
+
+        // Qeydiyyatdan keçmiş real istifadəçi məlumatlarını bazadan/localStorage-dən oxumaq
+        const savedUser = localStorage.getItem("currentUser");
+        if(savedUser) {
+            const userData = JSON.parse(savedUser);
+            if(userData.username) document.getElementById('playerName').innerText = userData.username;
+            if(userData.id) document.getElementById('playerId').innerText = "ID " + userData.id;
+            if(userData.hearts) document.getElementById('gameHearts').innerText = userData.hearts;
+            if(userData.jetons) document.getElementById('gameJetons').innerText = userData.jetons;
+        }
+
+        // Şüşəni fırlatmaq funksiyası
+        let currentRotation = 0;
+        function spinBottle() {
+            const bottle = document.getElementById('bottle');
+            const randomDeg = Math.floor(Math.random() * 1440) + 720; // 2-4 dövr edir
+            currentRotation += randomDeg;
+            bottle.style.transform = `rotate(${currentRotation}deg)`;
+        }
+
+        // Çat Mesaj Göndərmə
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const chatBox = document.getElementById('chatBox');
+            const username = savedUser ? JSON.parse(savedUser).username : "İstifadəçi";
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-msg';
+            msgDiv.innerHTML = `<span>${username}:</span> ${text}`;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            input.value = '';
+        }
+
+        function checkEnter(e) {
+            if(e.key === 'Enter') sendMessage();
+        }
+    </script>
+</body>
+</html>
