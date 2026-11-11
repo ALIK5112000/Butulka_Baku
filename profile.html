@@ -302,10 +302,10 @@
             <div>🏠</div>
             <div>Ana səhifə</div>
         </a>
-        <div class="footer-item" onclick="alert('Oyun masaları tezliklə aktivləşəcək!')">
+        <a href="oyun.html" class="footer-item">
             <div>🎮</div>
             <div>Oyunlar</div>
-        </div>
+        </a>
         <div class="footer-center-btn">+</div>
         <div class="footer-item" onclick="alert('Mesajlar bölməsi açılır...')">
             <div>💬</div>
@@ -343,13 +343,11 @@
 
             const userData = JSON.parse(savedUser);
             
-            // Ekrandakı yerli məlumatları dərhal yazırıq
             document.getElementById('profileUsername').innerText = userData.username || "İstifadəçi";
             document.getElementById('profileId').innerText = userData.id || "0000";
             if(userData.jetons) document.getElementById('profileJetons').innerText = userData.jetons;
             if(userData.hearts) document.getElementById('profileHearts').innerText = userData.hearts;
 
-            // Real vaxt rejimində bazadan ən son məlumatı yoxlayırıq
             try {
                 const q = query(collection(db, "users"), where("id", "==", userData.id));
                 const querySnapshot = await getDocs(q);
@@ -363,7 +361,6 @@
                 console.log("Bazadan oxuma xətası:", e);
             }
 
-            // Canlı baxış sayğacı (hər dəfə daxil olanda real artım)
             let viewKey = "profile_views_" + userData.id;
             let currentViews = parseInt(localStorage.getItem(viewKey) || "1");
             document.getElementById('profileViews').innerText = currentViews;
