@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Butulka Baku - Canlı Oyun</title>
+    <title>Butulka Baku - Canlı Oyun və Reytinq</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
@@ -32,13 +32,13 @@
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .stat-card { background: rgba(14, 6, 28, 0.7); border-radius: 16px; padding: 14px 10px; text-align: center; }
 
-        /* ================= OYUN MASASI (ORİGİNAL STİL) ================= */
+        /* ================= OYUN MASASI ================= */
         .game-wrapper { width: 100%; height: 100vh; display: flex; flex-direction: column; background: #fff; }
 
         .game-top-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #da843d; color: #fff; }
         .header-left { display: flex; gap: 10px; align-items: center; }
         .game-badge-group { display: flex; align-items: center; font-size: 14px; font-weight: bold; gap: 4px; }
-        .header-icons { display: flex; gap: 12px; font-size: 18px; cursor: pointer; }
+        .header-icons { display: flex; gap: 12px; font-size: 14px; font-weight: bold; cursor: pointer; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 12px; }
 
         /* Taxta Masa Fonu */
         .table-area { 
@@ -50,7 +50,7 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* Orijinal Yaşıl Butulka Şəkli */
+        /* Şüşə Şəkli */
         .bottle-img { 
             width: 75px; position: absolute; z-index: 10;
             transition: transform 4s cubic-bezier(0.2, 0.9, 0.2, 1); 
@@ -61,7 +61,7 @@
         /* Dairəvi Oyunçular Sistemi */
         .players-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         .player-seat {
-            position: absolute; width: 70px; height: 90px;
+            position: absolute; width: 75px; height: 95px;
             display: flex; flex-direction: column; align-items: center;
             transform: translate(-50%, -50%);
             pointer-events: auto; z-index: 5;
@@ -136,10 +136,7 @@
 
             <!-- Taxta Masa və Canlı Şüşə -->
             <div class="table-area" id="tableArea">
-                <!-- Orijinal Yaşıl Butulka -->
                 <img id="bottle" class="bottle-img" src="https://cdn-icons-png.flaticon.com/512/869/869688.png" alt="Butulka" onclick="spinBottleRealTime()">
-                
-                <!-- Dairəvi Oyunçular -->
                 <div class="players-container" id="playersContainer"></div>
             </div>
 
@@ -148,7 +145,7 @@
                 <div class="chat-messages" id="chatBox">
                     <div class="chat-msg-row">
                         <div class="chat-avatar-ph">📢</div>
-                        <div class="chat-bubble"><span>Sistem:</span> Canlı masaya qoşuldunuz! Şüşəni fırladın.</div>
+                        <div class="chat-bubble"><span>Sistem:</span> Canlı masaya qoşuldunuz! Reytinqlər və balans tam nəzarətinizdədir.</div>
                     </div>
                 </div>
                 <div class="chat-input-row">
@@ -167,10 +164,10 @@
         <div class="footer-item"><div>💬</div><div>Mesajlar</div></div>
     </div>
 
-    <!-- Firebase Real-Time Logic -->
+    <!-- Firebase Real-Time Logic (Sənin Bazan) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, query, orderBy, limit, serverTimestamp, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, query, orderBy, limit, serverTimestamp, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyAANVVrJKhZyaCErn8YFNVTUPF70A9xlmQ",
@@ -183,17 +180,32 @@
         let currentUser = JSON.parse(localStorage.getItem("currentUser"));
         if (!currentUser) window.location.href = "index.html";
 
-        document.getElementById('profileUsername').innerText = currentUser.username || "İstifadəçi";
-        document.getElementById('profileId').innerText = currentUser.id || "0000";
-        document.getElementById('profileHearts').innerText = currentUser.hearts || 0;
-        document.getElementById('profileJetons').innerText = currentUser.jetons || 0;
-        document.getElementById('gameHearts').innerText = currentUser.hearts || 0;
-        document.getElementById('gameJetons').innerText = currentUser.jetons || 0;
+        // Bazadan istifadəçinin real məlumatlarını (xal, balans) oxumaq
+        async function loadUserData() {
+            try {
+                const userDocRef = doc(db, "users", currentUser.id.toString());
+                const docSnap = await getDoc(userDocRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    currentUser.hearts = data.hearts || 7200;
+                    currentUser.jetons = data.jetons || 1400;
+                    currentUser.username = data.username || currentUser.username;
+                }
+            } catch(e) { console.log("Baza xətası:", e); }
+
+            document.getElementById('profileUsername').innerText = currentUser.username;
+            document.getElementById('profileId').innerText = currentUser.id;
+            document.getElementById('profileHearts').innerText = currentUser.hearts;
+            document.getElementById('profileJetons').innerText = currentUser.jetons;
+            document.getElementById('gameHearts').innerText = currentUser.hearts;
+            document.getElementById('gameJetons').innerText = currentUser.jetons;
+        }
+        loadUserData();
 
         const tableArea = document.getElementById('tableArea');
         const playersContainer = document.getElementById('playersContainer');
 
-        // DAİRƏVİ OYUNÇULAR
+        // OYUNÇULARI DAİRƏVİ DÜZMƏK
         window.joinTable = async function() {
             const playerDoc = doc(db, "live_table_1_players", currentUser.id.toString());
             await setDoc(playerDoc, {
@@ -211,7 +223,7 @@
             const total = playersList.length;
             if(total === 0) return;
 
-            const radius = 110; // Masanın mərkəzindən məsafə
+            const radius = 110;
             const centerX = tableArea.clientWidth / 2;
             const centerY = tableArea.clientHeight / 2;
 
