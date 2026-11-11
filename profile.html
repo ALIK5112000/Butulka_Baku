@@ -3,181 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Butulka Baku - Profil və Canlı Oyun</title>
+    <title>Butulka Baku - Əsl Real-Time Oyun</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-<!-- Yüklənmə Ekranı -->
-<div id="loadingScreen" style="
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: #88b15b; /* Şəkildəki yaşıl rəng */
-    background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); /* Arxa fon naxışları */
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 9999; transition: opacity 0.5s ease;
-">
-    <!-- 3D Spin the Bottle Yazısı -->
-    <div style="
-        font-size: 55px; font-weight: 900; 
-        color: #ffb300; 
-        text-transform: uppercase;
-        font-family: 'Arial Black', sans-serif;
-        text-shadow: 0 5px 0 #d87a00, 0px 8px 15px rgba(0,0,0,0.3);
-        margin-bottom: -10px;
-        letter-spacing: -2px;
-    ">Spin</div>
-    <div style="
-        font-size: 40px; font-weight: 900; 
-        color: #ffb300; 
-        text-transform: uppercase;
-        font-family: 'Arial Black', sans-serif;
-        text-shadow: 0 4px 0 #d87a00, 0px 6px 10px rgba(0,0,0,0.3);
-        letter-spacing: 1px;
-    ">the Bottle</div>
-
-    <!-- Yüklənmə xətti (Progress Bar) -->
-    <div style="
-        width: 180px; height: 12px; 
-        background: #fff; border-radius: 10px; 
-        margin-top: 50px; overflow: hidden;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    ">
-        <div style="
-            width: 70%; height: 100%; 
-            background: #aed581; 
-            border-radius: 10px;
-            animation: loadAnim 2s infinite ease-in-out;
-        "></div>
-    </div>
-</div>
-
-<style>
-    @keyframes loadAnim {
-        0% { width: 0%; }
-        50% { width: 80%; }
-        100% { width: 100%; }
-    }
-</style>
-
-<script>
-    // 3 saniyə sonra yüklənmə ekranını gizlət və əsas oyunu göstər
-    setTimeout(() => {
-        document.getElementById('loadingScreen').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('loadingScreen').style.display = 'none';
-        }, 500);
-    }, 3000);
-</script>
         
         body {
             background: linear-gradient(135deg, #090314, #120624, #180933, #090314);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0;
-            overflow-x: hidden;
+            color: #fff; min-height: 100vh; overflow-x: hidden;
+            display: flex; flex-direction: column; align-items: center;
         }
-
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .page-section { display: none; width: 100%; max-width: 480px; flex-direction: column; align-items: center; min-height: 100vh; }
         .page-section.active { display: flex; }
 
-        /* ================= PROFİL SƏHİFƏSİ DİZAYNI ================= */
+        /* ================= PROFİL SƏHİFƏSİ ================= */
         .profile-container { padding: 15px 15px 90px 15px; width: 100%; }
-        .top-nav { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 6px; }
-        .vip-btn { background: linear-gradient(135deg, #ff6b95, #ff8da1); border: none; padding: 8px 18px; border-radius: 20px; color: #fff; font-weight: bold; font-size: 14px; cursor: pointer; }
-        .top-icons { display: flex; gap: 6px; }
-        .icon-pill { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; }
+        .top-nav { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .vip-btn { background: linear-gradient(135deg, #ff6b95, #ff8da1); border: none; padding: 8px 18px; border-radius: 20px; color: #fff; font-weight: bold; cursor: pointer; }
+        .icon-pill { background: rgba(255, 255, 255, 0.06); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         
-        .profile-card { width: 100%; background: rgba(18, 9, 36, 0.85); border: 1px solid rgba(255, 107, 149, 0.2); border-radius: 26px; padding: 20px; margin-bottom: 15px; }
+        .profile-card { background: rgba(18, 9, 36, 0.85); border: 1px solid rgba(255, 107, 149, 0.2); border-radius: 26px; padding: 20px; margin-bottom: 15px; }
         .user-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .avatar-box { width: 75px; height: 75px; border-radius: 50%; border: 2px solid #ff6b95; overflow: hidden; background: #0d041a; }
+        .avatar-box { width: 75px; height: 75px; border-radius: 50%; border: 2px solid #ff6b95; overflow: hidden; }
         .avatar-box img { width: 100%; height: 100%; object-fit: cover; }
-        .user-info { flex: 1; }
-        .username-badge { background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 107, 149, 0.25); padding: 8px 14px; border-radius: 14px; font-size: 16px; font-weight: bold; color: #fff; display: inline-block; margin-bottom: 8px; }
-        .id-badge-row { display: flex; align-items: center; gap: 8px; }
+        .username-badge { background: rgba(0, 0, 0, 0.35); padding: 8px 14px; border-radius: 14px; font-weight: bold; margin-bottom: 8px; display: inline-block;}
         .id-pill { background: linear-gradient(135deg, #d4af37, #f1c40f); color: #000; font-weight: bold; font-size: 12px; padding: 4px 12px; border-radius: 10px; }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .stat-card { background: rgba(14, 6, 28, 0.7); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 14px 10px; text-align: center; }
-        .stat-icon { font-size: 16px; margin-bottom: 4px; color: #ff6b95; }
-        .stat-value { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 2px; }
-        .stat-label { font-size: 12px; color: #888; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .stat-card { background: rgba(14, 6, 28, 0.7); border-radius: 16px; padding: 14px 10px; text-align: center; }
 
-        /* ================= OYUN MASASI DİZAYNI ================= */
-        .game-wrapper {
-            width: 100%; height: 100vh;
-            display: flex; flex-direction: column;
-            background: #fff; /* Alt hissə (çat) ağ qalması üçün */
-        }
+        /* ================= OYUN MASASI ================= */
+        .game-wrapper { width: 100%; height: 100vh; display: flex; flex-direction: column; background: #fff; }
 
-        /* Narıncı Üst Panel */
-        .game-top-header { 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 8px 12px; background: #da843d; /* Şəkildəki narıncı rəng */
-            color: #fff;
-        }
-        .header-left { display: flex; align-items: center; gap: 10px; }
-        .game-badge-group { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: bold; }
-        .game-badge-group span { font-size: 15px; }
-        .header-icons { display: flex; align-items: center; gap: 12px; font-size: 18px; opacity: 0.9; }
-        .table-number { background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 4px; }
-        .table-number span { background: #ffaa00; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; color: #000; }
+        .game-top-header { display: flex; justify-content: space-between; padding: 10px 12px; background: #da843d; color: #fff; }
+        .header-left { display: flex; gap: 10px; }
+        .game-badge-group { display: flex; align-items: center; font-size: 14px; font-weight: bold; gap: 4px; }
+        .header-icons { display: flex; gap: 12px; font-size: 18px; }
 
-        /* Taxta Masa (Realistik Wood Texture) */
+        /* Taxta Masa - Tam Orijinal Məntiq */
         .table-area { 
-            flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            flex: 1; position: relative; width: 100%;
             background-color: #cb8447;
             background-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png"), linear-gradient(135deg, #d88e50, #b26c31);
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.3);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.4);
             overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
         }
-        
-        .center-msg-box { position: absolute; top: 35%; text-align: center; display: flex; flex-direction: column; align-items: center; z-index: 5; }
-        .center-msg { font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.6); margin-bottom: 5px; }
-        .vip-gold-badge { background: linear-gradient(135deg, #f1c40f, #d35400); color: #fff; font-size: 10px; font-weight: bold; padding: 2px 10px; border-radius: 10px; border: 1px solid #f39c12; }
 
-        /* Tünd Realistik Şüşə */
+        /* Ortadakı Butulka */
         .bottle-img { 
-            width: 70px; height: auto; 
-            transition: transform 3s cubic-bezier(0.15, 0.9, 0.2, 1); 
-            cursor: pointer; z-index: 10;
-            filter: drop-shadow(10px 15px 15px rgba(0,0,0,0.6));
+            width: 70px; position: absolute; z-index: 10;
+            /* Cubic-bezier - əsl şüşə fırlanma və dayanma fizikasıdır */
+            transition: transform 4s cubic-bezier(0.2, 0.9, 0.2, 1); 
+            cursor: pointer;
+            filter: drop-shadow(10px 15px 15px rgba(0,0,0,0.7));
         }
 
-        /* Oyunçuların Oturacaqları */
+        /* Dairəvi Oyunçular Sistemi */
         .players-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         .player-seat {
-            position: absolute; right: 20px; top: 50%; transform: translateY(-50%); pointer-events: auto;
-            background: rgba(15, 5, 25, 0.8); border-radius: 12px; padding: 8px; 
-            text-align: center; width: 85px; box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            position: absolute; width: 70px; height: 90px;
+            display: flex; flex-direction: column; align-items: center;
+            transform: translate(-50%, -50%); /* Tam mərkəzə görə hesablamaq üçün */
+            pointer-events: auto; z-index: 5;
+            transition: all 0.5s ease;
         }
-        .seat-avatar { width: 55px; height: 55px; border-radius: 10px; object-fit: cover; margin-bottom: 5px; }
-        .seat-name { font-size: 11px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
+        .seat-avatar { 
+            width: 55px; height: 55px; border-radius: 12px; object-fit: cover; 
+            border: 2px solid #ffcc00; box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+            background: #000;
+        }
+        .seat-name { 
+            font-size: 11px; font-weight: bold; color: #fff; 
+            background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 8px;
+            margin-top: 4px; white-space: nowrap; text-shadow: 0 1px 2px #000;
+        }
 
-        /* Ağ Çat Bölməsi (Orijinal) */
-        .chat-section { background: #f4f5f7; padding: 10px; display: flex; flex-direction: column; height: 190px; border-top: 1px solid #ddd; position: relative; }
-        .chat-side-buttons { position: absolute; right: 10px; top: -50px; display: flex; flex-direction: column; gap: 8px; z-index: 15; }
-        .side-btn { width: 35px; height: 35px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 8px rgba(0,0,0,0.2); font-size: 16px; border: 1px solid #eee; }
-        
-        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; padding-right: 5px; color: #333; }
+        /* Çat Bölməsi */
+        .chat-section { background: #f4f5f7; height: 210px; display: flex; flex-direction: column; padding: 10px; border-top: 1px solid #ddd; }
+        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
         .chat-msg-row { display: flex; gap: 8px; align-items: flex-start; }
-        .chat-avatar-ph { width: 35px; height: 35px; background: #e0e0e0; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #aaa; }
-        .chat-bubble { background: #fff; padding: 8px 12px; border-radius: 14px; border: 1px solid #eaeaea; font-size: 13px; color: #444; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); line-height: 1.4; }
-        .chat-bubble span { color: #0056b3; font-weight: bold; margin-right: 4px; }
-        .chat-bubble .admin-name { color: #d32f2f; font-weight: bold; }
-        
-        .chat-input-row { display: flex; gap: 8px; align-items: center; background: #fff; border: 1px solid #ddd; border-radius: 20px; padding: 4px 6px; }
-        .chat-input-row input { flex: 1; padding: 10px; border: none; background: transparent; color: #333; outline: none; font-size: 14px; }
-        .smile-btn { color: #999; font-size: 20px; padding: 0 5px; cursor: pointer; }
-        .send-btn { background: #f39c12; border: none; width: 38px; height: 38px; border-radius: 50%; color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(243, 156, 18, 0.4); }
+        .chat-avatar-ph { width: 32px; height: 32px; background: #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .chat-bubble { background: #fff; padding: 8px 12px; border-radius: 14px; border: 1px solid #eaeaea; font-size: 13px; color: #333; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .chat-bubble span { color: #d32f2f; font-weight: bold; margin-right: 4px; }
+        .chat-input-row { display: flex; gap: 8px; background: #fff; border: 1px solid #ddd; border-radius: 20px; padding: 4px 6px; margin-top: 10px; }
+        .chat-input-row input { flex: 1; padding: 8px; border: none; background: transparent; outline: none; font-size: 14px; }
+        .send-btn { background: #f39c12; border: none; width: 36px; height: 36px; border-radius: 50%; color: #fff; font-size: 16px; cursor: pointer; }
 
         /* AŞAĞI MENÜ */
-        .footer-menu { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10, 4, 22, 0.95); backdrop-filter: blur(15px); border-top: 1px solid rgba(255, 255, 255, 0.06); display: flex; justify-content: space-around; align-items: center; padding: 8px 5px; z-index: 1000; }
-        .footer-item { text-align: center; color: #777; font-size: 11px; cursor: pointer; text-decoration: none; }
+        .footer-menu { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10, 4, 22, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.06); display: flex; justify-content: space-around; align-items: center; padding: 8px 5px; z-index: 1000; }
+        .footer-item { text-align: center; color: #777; font-size: 11px; cursor: pointer; }
         .footer-item.active { color: #ff6b95; }
         .footer-item div:first-child { font-size: 20px; margin-bottom: 2px; }
         .footer-center-btn { width: 46px; height: 46px; background: linear-gradient(135deg, #ff6b95, #956bff); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; margin-top: -12px; cursor: pointer; }
@@ -185,91 +100,64 @@
 </head>
 <body>
 
-    <!-- ================= 1. PROFİL BÖLMƏSİ ================= -->
+    <!-- 1. PROFİL BÖLMƏSİ -->
     <div id="profileSection" class="page-section active">
         <div class="profile-container">
             <div class="top-nav">
                 <button class="vip-btn">👑 VIP</button>
-                <div class="top-icons">
-                    <div class="icon-pill">🔔</div>
-                    <div class="icon-pill" onclick="logout()" title="Çıxış">🚪</div>
-                </div>
+                <div class="icon-pill" onclick="logout()">🚪</div>
             </div>
             <div class="profile-card">
                 <div class="user-header">
                     <div class="avatar-box"><img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Avatar"></div>
-                    <div class="user-info">
+                    <div>
                         <div class="username-badge" id="profileUsername">Yüklənir...</div>
-                        <div class="id-badge-row"><div class="id-pill">ID <span id="profileId">-----</span></div></div>
+                        <div class="id-pill">ID <span id="profileId">-----</span></div>
                     </div>
                 </div>
                 <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-icon">❤️</div><div class="stat-value" id="profileHearts">0</div><div class="stat-label">Ürək</div></div>
-                    <div class="stat-card"><div class="stat-icon">💎</div><div class="stat-value" id="profileJetons">0</div><div class="stat-label">Kristal</div></div>
-                    <div class="stat-card"><div class="stat-icon">👁️</div><div class="stat-value" id="profileViews">1</div><div class="stat-label">Baxanlar</div></div>
+                    <div class="stat-card">❤️ <br> <b id="profileHearts">0</b></div>
+                    <div class="stat-card">💎 <br> <b id="profileJetons">0</b></div>
+                    <div class="stat-card">👁️ <br> <b>1</b></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ================= 2. CANLI OYUN MASASI BÖLMƏSİ ================= -->
+    <!-- 2. CANLI OYUN MASASI -->
     <div id="gameSection" class="page-section">
         <div class="game-wrapper">
-            <!-- Narıncı Üst Panel (Şəkildəki ikonlar) -->
             <div class="game-top-header">
                 <div class="header-left">
-                    <div class="game-badge-group">❤️ <span id="gameHearts">7200</span></div>
-                    <div class="game-badge-group">💎 <span>1400</span> <sub style="font-size: 8px; font-weight: normal; margin-left: 2px;">8 gün</sub></div>
+                    <div class="game-badge-group">❤️ <span id="gameHearts">0</span></div>
+                    <div class="game-badge-group">💎 <span id="gameJetons">0</span></div>
                 </div>
                 <div class="header-icons">
-                    <div>⚙️</div>
-                    <div>🏆</div>
-                    <div>≡</div>
-                    <div onclick="switchPage('profile')" style="cursor: pointer;">🚪</div>
+                    <div onclick="switchPage('profile')" style="cursor:pointer;">🚪</div>
                 </div>
-                <div class="table-number">Masa <span>🐸</span> 3</div>
             </div>
 
-            <!-- Taxta Masa (Wood) -->
-            <div class="table-area">
-                <div class="center-msg-box">
-                    <div class="center-msg">Oyuna başlamaq üçün<br>qızları gözləyirik</div>
-                    <div class="vip-gold-badge">VIP</div>
-                </div>
-                
-                <!-- Realistik Tünd Butulka -->
+            <!-- Taxta Masa -->
+            <div class="table-area" id="tableArea">
+                <!-- Tünd Şərab Şüşəsi -->
                 <img id="bottle" class="bottle-img" src="https://i.ibb.co/680S3g7/dark-wine-bottle.png" alt="Butulka" onclick="spinBottleRealTime()">
                 
-                <!-- Sağdakı Orijinal Forma Oyunçu Paneli -->
+                <!-- Dairəvi Oyunçular Konteyneri -->
                 <div class="players-container" id="playersContainer">
-                    <div class="player-seat">
-                        <img class="seat-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80">
-                        <div class="seat-name" id="gamePlayerName">|| A || L || I || K ||</div>
-                        <div class="seat-name" style="font-weight: normal; margin-top: 2px;">ID <span id="gamePlayerId">1836</span></div>
-                    </div>
+                    <!-- Javascript vasitəsilə bura adamlar dairəvi düzüləcək -->
                 </div>
             </div>
 
-            <!-- Ağ Çat Bölməsi (Şəkildəki Kimi) -->
+            <!-- Çat -->
             <div class="chat-section">
-                <div class="chat-side-buttons">
-                    <div class="side-btn">🎵</div>
-                    <div class="side-btn" style="color: purple;">🎶</div>
-                </div>
-
                 <div class="chat-messages" id="chatBox">
                     <div class="chat-msg-row">
-                        <div class="chat-avatar-ph">👤</div>
-                        <div class="chat-bubble">
-                            <span class="admin-name">Admin 📢:</span> Hər gün daha sürətli və keyfiyyətli oyun görəcəksiniz! 🚀🇦🇿 С каждым днём игра будет быстрее и качественнее!
-                            <div style="font-size: 11px; color: #999; margin-top: 5px;">Tərcüməni göstər</div>
-                        </div>
+                        <div class="chat-avatar-ph">📢</div>
+                        <div class="chat-bubble"><span>Sistem:</span> Əsl onlayn masaya xoş gəldiniz!</div>
                     </div>
                 </div>
-                
                 <div class="chat-input-row">
-                    <input type="text" id="chatInput" placeholder="Mesajı bura yaz" onkeypress="checkEnter(event)">
-                    <div class="smile-btn">😊</div>
+                    <input type="text" id="chatInput" placeholder="Mesaj yaz..." onkeypress="checkEnter(event)">
                     <button class="send-btn" onclick="sendRealTimeMessage()">➤</button>
                 </div>
             </div>
@@ -281,13 +169,13 @@
         <div class="footer-item active" id="menuProfile" onclick="switchPage('profile')"><div>🏠</div><div>Ana səhifə</div></div>
         <div class="footer-item" id="menuGame" onclick="switchPage('game')"><div>🎮</div><div>Oyunlar</div></div>
         <div class="footer-center-btn">+</div>
-        <div class="footer-item" onclick="alert('Mesajlar...')"><div>💬</div><div>Mesajlar</div></div>
+        <div class="footer-item"><div>💬</div><div>Mesajlar</div></div>
     </div>
 
-    <!-- Firebase Real-Time Logic -->
+    <!-- Firebase Real-Time (Oyun Mühərriki Məntiqi) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, query, orderBy, limit, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, query, orderBy, limit, serverTimestamp, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyAANVVrJKhZyaCErn8YFNVTUPF70A9xlmQ",
@@ -300,36 +188,110 @@
         let currentUser = JSON.parse(localStorage.getItem("currentUser"));
         if (!currentUser) window.location.href = "index.html";
 
+        // Profili Doldur
         document.getElementById('profileUsername').innerText = currentUser.username || "İstifadəçi";
         document.getElementById('profileId').innerText = currentUser.id || "0000";
-        document.getElementById('gamePlayerName').innerText = `|| ${currentUser.username || "Alik"} ||`;
-        document.getElementById('gamePlayerId').innerText = currentUser.id || "0000";
+        document.getElementById('profileHearts').innerText = currentUser.hearts || 0;
+        document.getElementById('profileJetons').innerText = currentUser.jetons || 0;
+        document.getElementById('gameHearts').innerText = currentUser.hearts || 0;
+        document.getElementById('gameJetons').innerText = currentUser.jetons || 0;
 
-        // CANLI ŞÜŞƏ SİSTEMİ
+        const tableArea = document.getElementById('tableArea');
+        const playersContainer = document.getElementById('playersContainer');
+
+        // ================= 1. DAİRƏVİ OYUNÇULAR SİSTEMİ =================
+        window.joinTable = async function() {
+            const playerDoc = doc(db, "live_table_1_players", currentUser.id.toString());
+            await setDoc(playerDoc, {
+                id: currentUser.id,
+                username: currentUser.username,
+                online: true,
+                timestamp: serverTimestamp()
+            }, { merge: true });
+        };
+
+        const playersRef = collection(db, "live_table_1_players");
+        
+        // Oyunçuları dairəvi yerləşdirmək üçün Riyazi Funksiya
+        function arrangePlayersInCircle(playersList) {
+            playersContainer.innerHTML = '';
+            const total = playersList.length;
+            if(total === 0) return;
+
+            // Masanın mərkəz nöqtəsi və dairənin radiusu
+            const radius = 100; // Şüşədən aralıq məsafə
+            const centerX = tableArea.clientWidth / 2;
+            const centerY = tableArea.clientHeight / 2;
+
+            playersList.forEach((p, i) => {
+                // Hər bir oyunçu üçün bucaq hesablanır (Trigonometriya)
+                const angle = (i / total) * (2 * Math.PI) - (Math.PI / 2); 
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+
+                playersContainer.innerHTML += `
+                <div class="player-seat" style="left: ${x}px; top: ${y}px;">
+                    <img class="seat-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80">
+                    <div class="seat-name">${p.username}</div>
+                </div>`;
+            });
+        }
+
+        // Baza yenilənəndə adamları yenidən masaya düzür
+        onSnapshot(playersRef, (snapshot) => {
+            const activePlayers = [];
+            snapshot.forEach((docSnap) => {
+                const p = docSnap.data();
+                if(p.online) activePlayers.push(p);
+            });
+            arrangePlayersInCircle(activePlayers);
+        });
+
+        // Ekran ölçüsü dəyişsə dairəni yenilə
+        window.addEventListener('resize', async () => {
+            const snap = await getDocs(playersRef);
+            const activePlayers = [];
+            snap.forEach(d => { if(d.data().online) activePlayers.push(d.data()); });
+            arrangePlayersInCircle(activePlayers);
+        });
+
+        // ================= 2. CANLI ŞÜŞƏ FİZİKASI =================
         const bottleStateRef = doc(db, "live_game_state", "table_1");
+        
         onSnapshot(bottleStateRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                document.getElementById('bottle').style.transform = `rotate(${data.rotation}deg)`;
+                const bottle = document.getElementById('bottle');
+                // Hər kəsdə eyni yerə və eyni sürətlə fırlanır
+                bottle.style.transform = `rotate(${data.rotation}deg)`;
             }
         });
 
         window.spinBottleRealTime = async function() {
             const bottle = document.getElementById('bottle');
-            const currentRot = parseInt(bottle.style.transform.replace(/[^0-9\-]/g,'')) || 0;
-            const newRot = currentRot + Math.floor(Math.random() * 1440) + 720;
+            // Hazırki dərəcəni götürürük
+            const transformValue = bottle.style.transform;
+            let currentRot = 0;
+            if(transformValue) {
+                currentRot = parseInt(transformValue.replace(/[^0-9\-]/g,'')) || 0;
+            }
+            
+            // Ən azı 4 dövrə (1440 dərəcə) + təsadüfi bucaq
+            const newRot = currentRot + 1440 + Math.floor(Math.random() * 360);
+            
+            // Bazaya yazan kimi hamıda işə düşəcək
             await setDoc(bottleStateRef, { rotation: newRot }, { merge: true });
         };
 
-        // CANLI ÇAT
+        // ================= 3. CANLI ÇAT =================
         const chatRef = collection(db, "live_table_1_chat");
         const qChat = query(chatRef, orderBy("timestamp", "asc"), limit(30));
         
         onSnapshot(qChat, (snapshot) => {
             const chatBox = document.getElementById('chatBox');
             snapshot.forEach((docSnap) => {
-                const msg = docSnap.data();
                 if (!document.getElementById(`msg-${docSnap.id}`)) {
+                    const msg = docSnap.data();
                     chatBox.innerHTML += `
                     <div class="chat-msg-row" id="msg-${docSnap.id}">
                         <div class="chat-avatar-ph">👤</div>
@@ -350,11 +312,21 @@
 
         window.checkEnter = function(e) { if(e.key === 'Enter') sendRealTimeMessage(); };
 
+        // ================= SƏHİFƏ KEÇİDİ =================
         window.switchPage = function(page) {
             document.getElementById('profileSection').classList.remove('active');
             document.getElementById('gameSection').classList.remove('active');
-            if(page === 'game') document.getElementById('gameSection').classList.add('active');
-            else document.getElementById('profileSection').classList.add('active');
+            document.getElementById('menuProfile').classList.remove('active');
+            document.getElementById('menuGame').classList.remove('active');
+
+            if(page === 'game') {
+                document.getElementById('gameSection').classList.add('active');
+                document.getElementById('menuGame').classList.add('active');
+                joinTable(); // Masaya girən kimi dairəyə əlavə olunur
+            } else {
+                document.getElementById('profileSection').classList.add('active');
+                document.getElementById('menuProfile').classList.add('active');
+            }
         };
 
         window.logout = function() { localStorage.removeItem("currentUser"); window.location.href = "index.html"; };
