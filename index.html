@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Butulka Baku - Giriş və Qeydiyyat</title>
+  <title>Butulka Baku</title>
   <style>
     * {
       box-sizing: border-box;
@@ -13,8 +13,8 @@
     }
 
     body {
-      background: #0f0718;
-      background: linear-gradient(180deg, #18092b 0%, #090312 100%);
+      background: #0d0614;
+      background: linear-gradient(180deg, #160a26 0%, #08030d 100%);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -23,15 +23,15 @@
       color: #fff;
     }
 
-    /* Dil Seçimi Paneli */
+    /* Dil Seçimi */
     .lang-bar {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       background: rgba(255, 255, 255, 0.05);
-      padding: 6px;
+      padding: 5px 8px;
       border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      margin-bottom: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 20px;
       overflow-x: auto;
       max-width: 100%;
     }
@@ -39,59 +39,79 @@
     .lang-btn {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       background: transparent;
       border: none;
-      color: #b3a9c9;
-      padding: 6px 12px;
-      border-radius: 14px;
+      color: #a89bc2;
+      padding: 6px 10px;
+      border-radius: 12px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.3s;
       white-space: nowrap;
     }
 
     .lang-btn.active {
-      background: linear-gradient(90deg, #e94560, #9131e8);
+      background: linear-gradient(90deg, #f7387d, #8f27ec);
       color: #fff;
-      box-shadow: 0 0 12px rgba(233, 69, 96, 0.5);
+      box-shadow: 0 0 10px rgba(247, 56, 125, 0.5);
     }
 
-    /* Əsas Qutu */
+    /* Xüsusi Yeni Loqo Alanı */
+    .logo-container {
+      width: 75px;
+      height: 75px;
+      background: linear-gradient(135deg, #ff2a8d, #8a2be2);
+      border-radius: 22px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 15px;
+      box-shadow: 0 8px 25px rgba(255, 42, 141, 0.4);
+      position: relative;
+    }
+
+    .logo-icon {
+      font-size: 40px;
+      transform: rotate(-15deg);
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+    }
+
     .brand-title {
-      font-size: 32px;
+      font-size: 34px;
       font-weight: 800;
       font-style: italic;
-      background: linear-gradient(180deg, #ffffff 0%, #d8b4fe 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #fff;
+      letter-spacing: 0.5px;
       margin-bottom: 6px;
       text-align: center;
+      text-shadow: 0 2px 10px rgba(255, 42, 141, 0.3);
     }
 
     .subtitle {
       font-size: 13px;
-      color: #9a8eb7;
-      margin-bottom: 20px;
+      color: #9d8ec4;
+      margin-bottom: 22px;
       text-align: center;
     }
 
+    /* Əsas Kart */
     .card {
       width: 100%;
       max-width: 380px;
-      background: rgba(33, 20, 52, 0.7);
-      border-radius: 24px;
+      background: rgba(30, 18, 50, 0.75);
+      border-radius: 26px;
       padding: 24px 20px;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(12px);
     }
 
     /* Tablar */
     .tabs {
       display: flex;
-      background: rgba(15, 7, 24, 0.6);
+      background: rgba(14, 7, 25, 0.7);
       padding: 4px;
       border-radius: 16px;
       margin-bottom: 20px;
@@ -99,27 +119,27 @@
 
     .tab-btn {
       flex: 1;
-      padding: 12px;
+      padding: 13px;
       border: none;
       background: transparent;
-      color: #8c7fa7;
-      font-size: 14px;
+      color: #8f82a9;
+      font-size: 15px;
       font-weight: 700;
-      border-radius: 12px;
+      border-radius: 14px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.3s;
     }
 
     .tab-btn.active {
-      background: linear-gradient(90deg, #ff416c, #ff4b2b);
+      background: linear-gradient(90deg, #f7387d, #e03268);
       color: #fff;
-      box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
+      box-shadow: 0 4px 15px rgba(247, 56, 125, 0.4);
     }
 
     /* Xəbərdarlıq Qutusu */
     .alert-box {
-      background: rgba(255, 179, 0, 0.1);
-      border: 1px solid rgba(255, 179, 0, 0.3);
+      background: rgba(255, 179, 0, 0.08);
+      border: 1px solid rgba(255, 179, 0, 0.25);
       border-radius: 14px;
       padding: 12px;
       font-size: 12px;
@@ -142,7 +162,7 @@
     .field-label {
       font-size: 12px;
       font-weight: 600;
-      color: #b3a9c9;
+      color: #b1a4cb;
       margin-bottom: -6px;
     }
 
@@ -152,10 +172,10 @@
 
     .input-box {
       width: 100%;
-      background: rgba(15, 7, 24, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 14px 14px 14px 40px;
+      background: rgba(13, 6, 23, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 14px 14px 14px 42px;
       color: #fff;
       font-size: 14px;
       outline: none;
@@ -163,7 +183,7 @@
     }
 
     .input-box:focus {
-      border-color: #ff416c;
+      border-color: #f7387d;
     }
 
     .input-icon {
@@ -174,11 +194,11 @@
       opacity: 0.5;
     }
 
-    /* Cinsiyyət Seçimi */
+    /* Cinsiyyət */
     .gender-title {
       font-size: 12px;
       font-weight: 600;
-      color: #b3a9c9;
+      color: #b1a4cb;
     }
 
     .gender-group {
@@ -188,8 +208,8 @@
 
     .gender-card {
       flex: 1;
-      background: rgba(15, 7, 24, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(13, 6, 23, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 14px;
       padding: 12px;
       display: flex;
@@ -202,14 +222,14 @@
     }
 
     .gender-card.active {
-      border-color: #00f0ff;
-      background: rgba(0, 240, 255, 0.1);
-      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+      border-color: #f7387d;
+      background: rgba(247, 56, 125, 0.1);
+      box-shadow: 0 0 10px rgba(247, 56, 125, 0.3);
     }
 
     .submit-btn {
       width: 100%;
-      background: linear-gradient(90deg, #ff416c, #ff4b2b);
+      background: linear-gradient(90deg, #f7387d, #e03268);
       border: none;
       border-radius: 14px;
       padding: 15px;
@@ -218,7 +238,7 @@
       font-weight: 700;
       cursor: pointer;
       margin-top: 6px;
-      box-shadow: 0 5px 20px rgba(255, 65, 108, 0.4);
+      box-shadow: 0 5px 20px rgba(247, 56, 125, 0.4);
     }
 
     .forgot-link {
@@ -237,6 +257,11 @@
     <button class="lang-btn" onclick="setLang('ru')">🇷🇺 Русский</button>
     <button class="lang-btn" onclick="setLang('en')">🇬🇧 English</button>
     <button class="lang-btn" onclick="setLang('ge')">🇬🇪 ქართული</button>
+  </div>
+
+  <!-- Saytın Loqosu -->
+  <div class="logo-container">
+    <span class="logo-icon">🍾</span>
   </div>
 
   <div class="brand-title">Butulka Baku</div>
@@ -302,7 +327,6 @@
   </div>
 
   <script>
-    // Dil Lüğəti
     const dict = {
       az: {
         subtitle: "Hesabına daxil ol və oyuna davam et",
