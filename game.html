@@ -39,7 +39,7 @@
             flex: 1; position: relative; display: flex; align-items: center; justify-content: center;
         }
         
-        /* Sənin göndərdiyin orijinal VIP Butulka dizaynı */
+        /* VIP Butulka Dizaynı */
         .center-bottle {
             width: 85px; height: 210px;
             background: url('https://i.ibb.co/68v4310/vip-bottle.png') center/contain no-repeat;
@@ -57,7 +57,7 @@
 
         .circle-container { width: 320px; height: 320px; position: relative; border-radius: 50%; }
         
-        /* Boş stullarda heç bir kölgə/qutu yoxdur, tam təmizdir */
+        /* Boş stullarda kölgə yoxdur, tam təmizdir */
         .seat {
             position: absolute; width: 64px; height: 64px; top: 50%; left: 50%; margin: -32px;
             display: flex; align-items: center; justify-content: center; transition: 0.3s;
@@ -88,7 +88,7 @@
 
         /* --- CANLI ÇAT --- */
         .chat-container {
-            height: 220px; background: #fff; display: flex; flex-direction: column; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -5px 20px rgba(0,0,0,0.3); z-index: 30;
+            height: 200px; background: #fff; display: flex; flex-direction: column; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -5px 20px rgba(0,0,0,0.3); z-index: 30;
         }
         .chat-messages { flex: 1; padding: 10px 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .chat-line { font-size: 14px; color: #333; line-height: 1.4; background: #f1f5f9; padding: 6px 12px; border-radius: 12px; align-self: flex-start; max-width: 90%; word-break: break-word; }
@@ -98,27 +98,36 @@
         .chat-input { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid #cbd5e1; outline: none; font-size: 14px; }
         .send-btn { background: #f97316; color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; }
 
+        /* --- 60 DƏQİQƏLİK BONUS SAYĞAC PANELİ --- */
         .bottom-bonus-bar {
-            height: 40px; background: #1e293b; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; font-size: 13px; font-weight: bold;
+            height: 45px; background: #1e293b; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; font-size: 13px; font-weight: bold; z-index: 35; border-top: 1px solid rgba(255,255,255,0.1);
         }
+        .bonus-claim-btn { background: #22c55e; color: #fff; border: none; padding: 6px 16px; border-radius: 12px; font-weight: bold; cursor: pointer; display: none; }
+
+        /* --- ÜRƏK VƏ BONUS MAĞAZASI MODALI --- */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+        }
+        .modal-content { background: #fff; color: #333; width: 90%; max-width: 380px; border-radius: 20px; overflow: hidden; position: relative; padding: 20px; text-align: center; }
+        .close-modal { position: absolute; right: 15px; top: 12px; background: #e2e8f0; border: none; width: 28px; height: 28px; border-radius: 50%; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <div class="hearts-box">
+        <div class="hearts-box" onclick="openShopModal()">
             <span style="color:#ef4444; font-size:20px;">❤️</span> 
             <span id="myHeartsDisplay">0</span>
         </div>
         <div class="top-icons">
             <button class="icon-btn" onclick="exitGame()">⚙️</button>
-            <div class="table-info">Masa<br><span id="tableNumberDisplay">511</span></div>
+            <div class="table-info" onclick="openTableModal()">Masa<br><span id="tableNumberDisplay">511</span></div>
             <button class="icon-btn" onclick="exitGame()" style="background:rgba(239,68,68,0.3);">🚪</button>
         </div>
     </div>
 
     <div class="game-board">
-        <!-- Masanın mərkəzində açılan 9 saniyəlik seçilib öpüşmə paneli -->
+        <!-- Masanın Mərkəzində Öpüşmə / İmtina Paneli -->
         <div class="kiss-overlay-board" id="kissBoard">
             <div class="kiss-title" id="kissMainTitle">Sənin seçimin</div>
             <div class="kiss-profiles-box">
@@ -126,7 +135,7 @@
                 <div class="kiss-timer" id="kissTimerNum">9</div>
                 <img src="" class="kiss-prof-img" id="kissUser2">
             </div>
-            <div class="kiss-buttons" id="kissBtnsContainer">
+            <div class="kiss-buttons">
                 <button class="btn-red-custom" onclick="resolveKiss('slap')">İmtina et</button>
                 <button class="btn-green-custom" onclick="resolveKiss('kiss')">Öp</button>
             </div>
@@ -140,6 +149,7 @@
         <div class="circle-container" id="seatsContainer"></div>
     </div>
 
+    <!-- Canlı Çat -->
     <div class="chat-container">
         <div class="chat-messages" id="chatBox">
             <div style="text-align:center; color:#94a3b8; font-size:12px; margin-bottom:10px;">
@@ -152,16 +162,31 @@
         </div>
     </div>
 
+    <!-- 60 Dəqiqəlik Bonus Sayğac Paneli -->
     <div class="bottom-bonus-bar">
-        <div>⏳ 105 <span style="color:#22c55e;">+300 ürək</span></div>
-        <div style="color:#cbd5e1;">60:00</div>
+        <div>⏳ Hədiyyə: <span style="color:#22c55e;">+300 Ürək</span></div>
+        <div id="bonusTimerText" style="color:#fbbf24; font-size:15px;">60:00</div>
+        <button class="bonus-claim-btn" id="claimBonusBtn" onclick="claimHourlyBonus()">Götür</button>
+    </div>
+
+    <!-- Mağaza Modalı -->
+    <div class="modal-overlay" id="shopModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeShopModal()">✕</button>
+            <h2 style="margin-bottom:15px;">❤️ Ürək Mağazası</h2>
+            <p style="font-size:13px; color:#666; margin-bottom:15px;">Hər 1 saatdan bir pulsuz ürək qazana və ya balansınızı artira bilərsiniz.</p>
+            <div style="background:#f1f5f9; padding:12px; border-radius:12px; font-weight:bold; margin-bottom:15px;">
+                Cari Ürəkləriniz: <span id="modalHeartsCount" style="color:#ef4444;">0</span> ❤️
+            </div>
+            <button style="width:100%; padding:12px; background:#ec4899; color:#fff; border:none; border-radius:12px; font-weight:bold; cursor:pointer;" onclick="closeShopModal()">Bağla</button>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import {
             getFirestore, collection, doc, getDoc, setDoc, updateDoc, 
-            onSnapshot, query, orderBy, limit, serverTimestamp, addDoc
+            onSnapshot, query, orderBy, limit, serverTimestamp, addDoc, increment
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -195,11 +220,18 @@
             if (!userSnap.exists()) return window.location.href = "index.html";
             
             myData = userSnap.data();
-            document.getElementById("myHeartsDisplay").textContent = myData.hearts || 0;
+            updateHeartsUI();
             document.getElementById("tableNumberDisplay").textContent = currentTableId;
 
             initEmptySeats();
             joinTableRealtime();
+            startBonusCountdown();
+        }
+
+        function updateHeartsUI() {
+            const h = myData.hearts || 0;
+            document.getElementById("myHeartsDisplay").textContent = h;
+            document.getElementById("modalHeartsCount").textContent = h;
         }
 
         function initEmptySeats() {
@@ -281,7 +313,7 @@
                             <div class="player-name" style="color: ${nameColor}">${p.vip ? "👑 " : ""}${p.username}</div>
                         </div>`;
                 } else {
-                    seatDiv.innerHTML = ""; // Boş stul tamamilə təmizdir
+                    seatDiv.innerHTML = ""; // Tamamilə təmiz boş stul
                 }
             }
         }
@@ -300,7 +332,7 @@
             }
         }
 
-        // Butulkanın fırlanma mexanizmi və 9 saniyəlik öpüşmə ekranı
+        // Butulkanın fırlanması və 9 saniyəlik öpüşmə pəncərəsi
         window.triggerSpin = function() {
             const bottle = document.getElementById("bottleImg");
             const rot = 1440 + Math.floor(Math.random() * 360);
@@ -346,6 +378,38 @@
                 alert("İmtina edildi.");
             }
         };
+
+        // 60 Dəqiqəlik Pulsuz Bonus Sayğacı
+        let bonusSeconds = 3600; // 1 saat (test üçün istəsənsə azalda bilərsən)
+        function startBonusCountdown() {
+            setInterval(() => {
+                if (bonusSeconds > 0) {
+                    bonusSeconds--;
+                    let m = Math.floor(bonusSeconds / 60);
+                    let s = bonusSeconds % 60;
+                    document.getElementById("bonusTimerText").textContent = `${m}:${s < 10 ? '0'+s : s}`;
+                } else {
+                    document.getElementById("bonusTimerText").style.display = "none";
+                    document.getElementById("claimBonusBtn").style.display = "block";
+                }
+            }, 1000);
+        }
+
+        window.claimHourlyBonus = async function() {
+            await updateDoc(doc(db, "users", sessionUser.docId), {
+                hearts: increment(300)
+            });
+            myData.hearts = (myData.hearts || 0) + 300;
+            updateHeartsUI();
+            alert("Təbriklər! 300 ürək balansınıza əlavə olundu! ❤️");
+            document.getElementById("claimBonusBtn").style.display = "none";
+            document.getElementById("bonusTimerText").style.display = "block";
+            bonusSeconds = 3600;
+        };
+
+        window.openShopModal = function() { document.getElementById("shopModal").style.display = "flex"; }
+        window.closeShopModal = function() { document.getElementById("shopModal").style.display = "none"; }
+        window.openTableModal = function() { alert("Masa nömrəsi: " + currentTableId); }
 
         // Canlı Çat
         window.sendTableMessage = async function() {
