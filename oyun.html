@@ -8,58 +8,112 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { 
-            background: linear-gradient(135deg, #a66e38 0%, #6b4423 50%, #4a2c13 100%); 
+            background: linear-gradient(135deg, #b5835a 0%, #8c5830 50%, #663d1e 100%); 
             font-family: sans-serif; 
             color: white; 
             height: 100vh; 
             overflow: hidden; 
         }
         .bottle { transition: transform 3s cubic-bezier(0.15, 0.9, 0.2, 1); }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="flex flex-col justify-between h-screen">
 
-    <!-- TOP BAR -->
-    <header class="flex items-center justify-between px-4 py-3 bg-black/30 backdrop-blur-md border-b border-white/10">
-        <a href="profil.html" class="text-yellow-300 text-xs font-bold flex items-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-full border border-yellow-500/30 hover:bg-black/60 transition">
-            <i class="fa-solid fa-arrow-left"></i> Profilə qayıt
-        </a>
-        <div class="bg-black/40 px-3 py-1 rounded-full text-xs text-yellow-300 font-bold border border-yellow-500/30">
-            Masa 511[span_3](start_span)[span_3](end_span)
+    <!-- TOP HEADER (Şəkildəki yuxarı status paneli) -->
+    <header class="flex items-center justify-between px-3 py-2 bg-black/40 backdrop-blur-md border-b border-white/10 text-xs">
+        <div class="flex items-center gap-2">
+            <!-- Ürək Balansı -->
+            <div class="flex items-center gap-1 bg-black/50 px-2.5 py-1 rounded-full border border-red-500/40">
+                <i class="fa-solid fa-heart text-red-500 text-sm"></i>
+                <span id="heartCount" class="font-bold text-yellow-100">7624</span>
+            </div>
+            <!-- Bonus Vaxtı -->
+            <div class="flex items-center gap-1 bg-black/50 px-2 py-1 rounded-full text-yellow-400 text-[10px] border border-yellow-500/30">
+                <i class="fa-solid fa-star"></i>
+                <span>6 gün</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 text-base">
+            <i class="fa-solid fa-circle-notch text-yellow-400 cursor-pointer"></i>
+            <i class="fa-solid fa-trophy text-yellow-400 cursor-pointer"></i>
+            <i class="fa-solid fa-bars text-gray-200 cursor-pointer"></i>
+            <i class="fa-solid fa-gear text-gray-200 cursor-pointer"></i>
+            <a href="profil.html" class="text-gray-200 hover:text-yellow-400"><i class="fa-solid fa-right-from-bracket"></i></a>
+            <!-- Masa Nömrəsi -->
+            <div class="bg-black/50 px-2 py-0.5 rounded text-center border border-white/10">
+                <div class="text-[8px] text-gray-400">Masa</div>
+                <div class="font-bold text-yellow-300 text-xs">511</div>
+            </div>
+            <i class="fa-solid fa-rotate text-gray-200 cursor-pointer"></i>
         </div>
     </header>
 
-    <!-- GAME TABLE AREA -->
-    <main class="flex-1 flex items-center justify-center relative p-4">
+    <!-- GAME TABLE AREA (Taxta Masa və Şüşə) -->
+    <main class="relative flex-1 flex items-center justify-center p-4">
         
-        <!-- Sol tərəfdə oturan oyunçu avatarı (məsələn, sənin profilin) -->
-        <div class="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col items-center">
-            <div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-yellow-500 shadow-2xl bg-black/50">
+        <!-- Sol tərəfdə oyunçu profili -->
+        <div class="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col items-center">
+            <div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-amber-500 shadow-2xl bg-black/60 relative">
                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover">
             </div>
-            <span id="tableName" class="text-[11px] mt-1.5 bg-black/50 px-2.5 py-0.5 rounded-full text-yellow-200 font-bold border border-yellow-500/20">| A | L | İ |</span>
+            <span id="tableName" class="text-[10px] mt-1 bg-black/60 px-2 py-0.5 rounded-full text-yellow-200 font-bold border border-yellow-500/30">| A | L | İ |</span>
         </div>
 
-        <!-- Mərkəzdə Şüşə və Yazı -->
+        <!-- Mərkəzdə Şüşə və Gözləmə Yazısı -->
         <div class="flex flex-col items-center">
-            <div id="bottleContainer" class="relative cursor-pointer mb-5" onclick="spinBottle()">
-                <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-yellow-600 text-yellow-100 text-[9px] font-bold px-2.5 py-0.5 rounded-full shadow-lg border border-yellow-300 z-10">VIP</div>
-                <!-- Realistik Şüşə Dizaynı -->
+            <div id="bottleContainer" class="relative cursor-pointer mb-4" onclick="spinBottle()">
+                <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-yellow-600 text-yellow-100 text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg border border-yellow-300 z-10">VIP</div>
+                
+                <!-- Realistik Şüşə Qrafikası -->
                 <svg id="bottle" class="bottle w-24 h-36 drop-shadow-2xl" viewBox="0 0 100 150">
                     <path d="M42 8 L58 8 L62 35 L68 45 C78 60 78 90 68 120 C58 142 42 142 32 120 C22 90 22 60 32 45 L38 35 Z" fill="#151515" stroke="#e6c667" stroke-width="3"/>
                     <rect x="43" y="15" width="14" height="10" fill="#e6c667" rx="2"/>
                     <path d="M40 50 L60 50" stroke="#e6c667" stroke-width="1.5" opacity="0.6"/>
                 </svg>
             </div>
+            
             <div class="bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 shadow-lg">
-                <p class="text-xs text-yellow-100 font-medium tracking-wide">Oyuna başlamaq üçün qızları gözləyirik</p>[span_4](start_span)[span_4](end_span)
+                <p class="text-xs text-yellow-100 font-medium tracking-wide">Oyuna başlamaq üçün qızları gözləyirik</p>
             </div>
+        </div>
+
+        <!-- Sağ tərəfdə musiqi / media düymələri -->
+        <div class="absolute right-4 bottom-4 flex flex-col gap-2">
+            <button class="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-purple-600 text-lg hover:scale-105 transition">
+                <i class="fa-solid fa-music"></i>
+            </button>
+            <button class="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-pink-600 text-lg hover:scale-105 transition">
+                <i class="fa-solid fa-headphones"></i>
+            </button>
         </div>
 
     </main>
 
+    <!-- CHAT & CONTROLS AREA (Aşağıdakı Çat və Admin Elanı) -->
+    <section class="bg-[#23140e] border-t border-[#4a2b18] flex flex-col h-44 shadow-2xl">
+        
+        <!-- Çat Mesajları Siyahısı -->
+        <div id="chatMessages" class="flex-1 p-2.5 overflow-y-auto text-xs space-y-2 scrollbar-none">
+            <!-- Admin Bildirişi (Şəkildəki mətn) -->
+            <div class="bg-black/30 p-2 rounded-xl border-l-4 border-yellow-500">
+                <span class="font-bold text-yellow-400">Admin:</span> 
+                <span class="text-gray-200">📢 🇦🇿 Sabahdan oyun arka fonda işləyəcək, masadan atmayacaq.🇷🇺 С завтрашнего дня игра будет работать в фоне...</span>
+            </div>
+        </div>
+
+        <!-- Mesaj Yazma Paneli -->
+        <div class="p-2 bg-[#170c08] flex items-center gap-2 border-t border-[#361f12]">
+            <input type="text" id="chatInput" placeholder="Mesajı bura yaz" class="flex-1 bg-[#23140e] border border-[#4a2b18] rounded-full px-4 py-2 text-xs text-white focus:outline-none focus:border-yellow-500">
+            <button onclick="sendMessage()" class="w-9 h-9 bg-amber-600 hover:bg-amber-500 rounded-full flex items-center justify-center text-white shadow">
+                <i class="fa-solid fa-paper-plane text-xs"></i>
+            </button>
+        </div>
+    </section>
+
     <script>
-        // İstifadəçi adını yaddaşdan oxuyub masada göstərmək
+        // İstifadəçi adını localStorage-dan oxumaq
         window.onload = function() {
             const storedUser = localStorage.getItem('currentUser');
             if(storedUser) {
@@ -68,16 +122,38 @@
                     if(userData.username) {
                         document.getElementById('tableName').innerText = userData.username;
                     }
+                    if(userData.hearts) {
+                        document.getElementById('heartCount').innerText = userData.hearts;
+                    }
                 } catch(e) {}
             }
         }
 
+        // Şüşə fırlatma mexanizmi
         let currentRotation = 0;
         function spinBottle() {
             const bottle = document.getElementById('bottle');
             const randomAngle = Math.floor(Math.random() * 1080) + 720;
             currentRotation += randomAngle;
             bottle.style.transform = `rotate(${currentRotation}deg)`;
+        }
+
+        // Çat mesajı göndərmək
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            if(input.value.trim() !== '') {
+                const chatContainer = document.getElementById('chatMessages');
+                const user = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')).username : "Sən";
+                
+                chatContainer.innerHTML += `
+                    <div class="bg-black/20 p-2 rounded-xl">
+                        <span class="font-bold text-yellow-300">${user}:</span> 
+                        <span class="text-gray-200">${input.value}</span>
+                    </div>
+                `;
+                input.value = '';
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
         }
     </script>
 </body>
