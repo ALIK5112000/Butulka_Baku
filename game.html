@@ -42,15 +42,19 @@
             flex: 1; position: relative; width: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
         
-        /* 🔥 Butulka şəkli: bottle.png */
+        /* 🔥 Butulka şəkli və ağ fonu təmizləyən hissə */
         .center-bottle-container {
             position: absolute; width: 65px; height: 175px; display: flex; align-items: center; justify-content: center;
             z-index: 15; transition: transform 3s cubic-bezier(0.15, 0.85, 0.25, 1);
             transform: rotate(28deg);
-            filter: drop-shadow(0 14px 18px rgba(0,0,0,0.75));
         }
         .center-bottle-container img {
-            width: 100%; height: 100%; object-fit: contain; pointer-events: none;
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+            pointer-events: none;
+            mix-blend-mode: multiply; /* 🔥 Bu əmr butulkanın arxasındakı ağ fonu avtomatik yox edir! */
+            filter: drop-shadow(0 10px 12px rgba(0,0,0,0.6));
         }
 
         .bottle-text-msg {
@@ -155,7 +159,7 @@
             </div>
         </div>
 
-        <!-- 🔥 Butulka şəkli (images/bottle.png) -->
+        <!-- 🔥 Butulka (images/bottle.png) -->
         <div class="center-bottle-container" id="bottleImg">
             <img src="images/bottle.png" alt="VIP Butulka">
             <div class="bottle-text-msg" id="bottleText">Oyuna başlamaq üçün qızları gözləyirik</div>
@@ -168,7 +172,7 @@
 
     <div class="chat-container">
         <div class="chat-messages" id="chatBox">
-            <div style="text-align:center; color:#94a3b8; font-size:11px;">📢 Yerli şəkillər (wood.jpg və bottle.png) aktivdir.</div>
+            <div style="text-align:center; color:#94a3b8; font-size:11px;">📢 Yerli şəkillər aktivdir və fon təmizlənib.</div>
         </div>
         <div class="chat-input-area">
             <input type="text" id="msgInput" class="chat-input" placeholder="Mesaj yaz..." onkeypress="if(event.key==='Enter') sendChat()">
