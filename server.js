@@ -9,21 +9,29 @@ const io = new Server(server);
 
 app.use(express.static(path.join(__dirname)));
 
+// Masalar və Otaqlar bazası
 let tables = {
-    "511": { players: {} }
+    "511": { 
+        id: "511",
+        players: {},
+        bottleAngle: 0,
+        isSpinning: false
+    }
 };
 
 io.on('connection', (socket) => {
-    console.log('Yeni oyunçu qoşuldu:', socket.id);
+    console.log('🔗 Yeni oyunçu qoşuldu:', socket.id);
 
+    // Masaya qoşulma
     socket.on('join_table', (data) => {
         const { tableId, user } = data;
         socket.join(tableId);
         socket.tableId = tableId;
 
-        let table = tables[tableId] || { players: {} };
+        let table = tables[tableId] || { id: tableId, players: {}, bottleAngle: 0, isSpinning: false };
         tables[tableId] = table;
 
+        // 12 stuldan boş olanı tapırıq
         let usedSeats = Object.values(table.players).map(p => p.seatIndex);
         let emptySeat = -1;
         for (let i = 0; i < 12; i++) {
@@ -45,19 +53,38 @@ io.on('connection', (socket) => {
             };
         }
 
+        // Masadakı hər kəsə yenilənmiş məlumatı göndəririk
         io.to(tableId).emit('update_table', table);
     });
 
+    // Butulkanın fırladılması məntiqi
     socket.on('spin_bottle', (tableId) => {
-        let randomRotation = 1440 + Math.floor(Math.random() * 360);
-        io.to(tableId).emit('bottle_spinning', randomRotation);
+        let table = tables[tableId];
+        if (table && !table.isSpinning) {
+            table.isSpinning = true;
+            // Təsadüfi fırlanma bucağı (çoxlu dövrə + random dərəcə)
+            let randomRotation = table.bottleAngle + 1800 + Math.floor(Math.random() * 360);
+            table.bottleAngle = randomRotation;
+
+            io.to(tableId).emit('bottle_spinning', {
+                rotation: randomRotation,
+                spinningPlayer: socket.id
+            });
+
+            // 3 saniyə sonra fırlanma bitir
+            setTimeout(() => {
+                table.isSpinning = false;
+                io.to(tableId).emit('bottle_stopped', table.bottleAngle);
+            }, 3000);
+        }
     });
 
+    // Canlı çat
     socket.on('send_chat', (data) => {
         io.to(data.tableId).emit('new_chat', data);
     });
 
-    // Kimsə çıxan kimi VƏ YA SƏHİFƏNİ BAĞLAYAN KİMİ anında masadan silinir!
+    // Oyunçu çıxan və ya səhifəni bağlayan kimi ANINDA masadan silinməsi
     socket.on('disconnect', () => {
         if (socket.tableId && tables[socket.tableId]) {
             let table = tables[socket.tableId];
@@ -66,11 +93,11 @@ io.on('connection', (socket) => {
                 io.to(socket.tableId).emit('update_table', table);
             }
         }
-        console.log('Oyunçu masadan ayrıldı:', socket.id);
+        console.log('❌ Oyunçu ayrıldı:', socket.id);
     });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`🚀 Server işləyir, port: ${PORT}`);
+    console.log(`🚀 Orijinal Butulka Baku serveri işləyir, port: ${PORT}`);
 });
