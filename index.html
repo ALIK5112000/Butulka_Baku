@@ -428,7 +428,8 @@
                     if(data.password === passwordInput) {
                         found = true;
                         localStorage.setItem("currentUser", JSON.stringify(data));
-                        window.location.href = "profile.html";
+                        // DÜZƏLDİLDİ: profile.html əvəzinə doğru fayl olan profil.html yazıldı
+                        window.location.href = "profil.html";
                     }
                 });
 
@@ -441,7 +442,8 @@
         };
 
         window.goToProfile = function() {
-            window.location.href = "profile.html";
+            // DÜZƏLDİLDİ: profile.html əvəzinə doğru fayl olan profil.html yazıldı
+            window.location.href = "profil.html";
         };
     </script>
 </body>
