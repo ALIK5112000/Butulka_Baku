@@ -40,11 +40,11 @@
             flex: 1; position: relative; display: flex; align-items: center; justify-content: center; width: 100%; overflow: hidden;
         }
         
-        /* VIP Butulka - birbaşa şəkil tagı ilə (şəffaf və təmiz) */
+        /* Orijinal VIP Butulka dizaynı */
         .center-bottle-container {
-            position: absolute; width: 80px; height: 200px; display: flex; align-items: center; justify-content: center;
+            position: absolute; width: 85px; height: 210px; display: flex; align-items: center; justify-content: center;
             z-index: 10; transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
-            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+            filter: drop-shadow(0 10px 12px rgba(0,0,0,0.6));
         }
         .center-bottle-container img {
             width: 100%; height: 100%; object-fit: contain; pointer-events: none;
@@ -54,10 +54,10 @@
             position: absolute; width: 200px; text-align: center; color: #fff; font-weight: bold; font-size: 13px; text-shadow: 1px 1px 3px #000; z-index: 12; bottom: -35px;
         }
         .spin-btn {
-            position: absolute; bottom: -45px; background: #ec4899; border: 2px solid #fff; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 12;
+            position: absolute; bottom: -45px; background: #ec4899; border: 2px solid #fff; padding: 6px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 12;
         }
 
-        /* Dairəvi Masa və Stullar (Tam mərkəzdə) */
+        /* Dairəvi Stullar */
         .circle-container {
             width: 300px; height: 300px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
@@ -76,7 +76,7 @@
         }
         .gender-icon { position: absolute; top: -5px; right: -5px; background: #1e293b; padding: 2px; border-radius: 50%; font-size: 10px; }
 
-        /* Öpüşmə Paneli */
+        /* Öpüşmə / Seçim Paneli (Masanın Üzərində) */
         .kiss-overlay-board {
             position: absolute; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(3px);
             z-index: 25; display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -86,8 +86,8 @@
         .kiss-prof-img { width: 75px; height: 75px; border-radius: 14px; border: 3px solid #fff; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .kiss-timer { font-size: 32px; font-weight: bold; color: #fbbf24; text-shadow: 2px 2px 5px #000; }
         .kiss-buttons { display: flex; gap: 12px; }
-        .btn-red-custom { background: #ef4444; color: #fff; padding: 8px 18px; border-radius: 10px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; }
-        .btn-green-custom { background: #22c55e; color: #fff; padding: 8px 20px; border-radius: 10px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .btn-red-custom { background: #ef4444; color: #fff; padding: 8px 18px; border-radius: 10px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(239,68,68,0.5); }
+        .btn-green-custom { background: #22c55e; color: #fff; padding: 8px 20px; border-radius: 10px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(34,197,94,0.5); }
 
         /* Canlı Çat */
         .chat-container {
@@ -121,23 +121,23 @@
     </div>
 
     <div class="game-board">
-        <!-- Öpüşmə Paneli -->
+        <!-- Öpüşmə / Seçim Paneli -->
         <div class="kiss-overlay-board" id="kissBoard">
-            <div class="kiss-title">Sənin seçimin</div>
+            <div class="kiss-title" id="kissMainTitle">Sənin seçimin</div>
             <div class="kiss-profiles-box">
                 <img src="" class="kiss-prof-img" id="kissUser1">
                 <div class="kiss-timer" id="kissTimerNum">9</div>
                 <img src="" class="kiss-prof-img" id="kissUser2">
             </div>
             <div class="kiss-buttons">
-                <button class="btn-red-custom" onclick="resolveKiss()">İmtina et</button>
-                <button class="btn-green-custom" onclick="resolveKiss()">Öp</button>
+                <button class="btn-red-custom" onclick="resolveKiss('slap')">İmtina et</button>
+                <button class="btn-green-custom" onclick="resolveKiss('kiss')">Öp</button>
             </div>
         </div>
 
-        <!-- Təmiz və Orijinal VIP Butulka (Şəkil etiketi ilə) -->
+        <!-- Sənin Göndərdiyin Orijinal VIP Butulka Şəkli -->
         <div class="center-bottle-container" id="bottleImg">
-            <img src="https://cdn-icons-png.flaticon.com/512/963/963953.png" alt="Butulka" id="bottlePic">
+            <img src="https://i.ibb.co/68v4310/vip-bottle.png" alt="VIP Butulka" id="bottlePic">
             <div class="bottle-text" id="bottleText">Qızları gözləyirik</div>
             <button class="spin-btn" id="spinBtn" onclick="requestSpin()">Fırlat!</button>
         </div>
@@ -170,16 +170,16 @@
 
         const currentTableId = "511";
         const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        let globalPlayersList = [];
 
         document.getElementById("myHeartsDisplay").textContent = sessionUser.hearts || 0;
 
-        // 12 stulun tam səliqəli dairəvi düzülüşü (Radius 120px)
         function initEmptySeats() {
             const container = document.getElementById("seatsContainer");
             container.innerHTML = "";
             const radius = 125; 
             for (let i = 0; i < 12; i++) {
-                const angle = (i * 30 - 90) * (Math.PI / 180); // Yuxarıdan başlayaraq
+                const angle = (i * 30 - 90) * (Math.PI / 180);
                 const x = radius * Math.cos(angle);
                 const y = radius * Math.sin(angle);
                 
@@ -205,11 +205,11 @@
 
         socket.on('update_table', (table) => {
             const playersMap = table.players || {};
-            const playersList = Object.values(playersMap);
+            globalPlayersList = Object.values(playersMap);
 
             for (let i = 0; i < 12; i++) {
                 const seatDiv = document.getElementById(`seat-${i}`);
-                const p = playersList.find(x => x.seatIndex === i);
+                const p = globalPlayersList.find(x => x.seatIndex === i);
                 
                 if (p) {
                     const genderIcon = p.gender === "Qadın" ? "♀️" : "♂️";
@@ -227,7 +227,7 @@
                 }
             }
 
-            const hasGirls = playersList.some(p => p.gender === "Qadın");
+            const hasGirls = globalPlayersList.some(p => p.gender === "Qadın");
             const bottleText = document.getElementById("bottleText");
             const spinBtn = document.getElementById("spinBtn");
             
@@ -247,7 +247,45 @@
         socket.on('bottle_spinning', (rotation) => {
             const bottle = document.getElementById("bottleImg");
             bottle.style.transform = `rotate(${rotation}deg)`;
+
+            // Fırlanma bitdikdən sonra (3 saniyə sonra) öpüşmə pəncərəsini açırıq
+            setTimeout(() => {
+                if (globalPlayersList.length >= 2) {
+                    startKissModal(globalPlayersList[0], globalPlayersList[1]);
+                }
+            }, 3000);
         });
+
+        let kissTimerInterval = null;
+        function startKissModal(p1, p2) {
+            const board = document.getElementById("kissBoard");
+            document.getElementById("kissUser1").src = p1.avatar || DEFAULT_AVATAR;
+            document.getElementById("kissUser2").src = p2.avatar || DEFAULT_AVATAR;
+            board.style.display = "flex";
+
+            let timeLeft = 9;
+            document.getElementById("kissTimerNum").textContent = timeLeft;
+
+            if (kissTimerInterval) clearInterval(kissTimerInterval);
+            kissTimerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById("kissTimerNum").textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(kissTimerInterval);
+                    board.style.display = "none";
+                }
+            }, 1000);
+        }
+
+        function resolveKiss(action) {
+            if (kissTimerInterval) clearInterval(kissTimerInterval);
+            document.getElementById("kissBoard").style.display = "none";
+            if(action === 'kiss') {
+                alert("Alovlu öpüş baş tutdu! ❤️");
+            } else {
+                alert("İmtina edildi.");
+            }
+        }
 
         function sendChat() {
             const input = document.getElementById("msgInput");
@@ -258,7 +296,7 @@
             socket.emit('send_chat', {
                 tableId: currentTableId,
                 senderName: sessionUser.username,
-                    text: text
+                text: text
             });
         }
 
@@ -270,10 +308,6 @@
                 </div>`;
             box.scrollTop = box.scrollHeight;
         });
-
-        function resolveKiss() {
-            document.getElementById("kissBoard").style.display = "none";
-        }
 
         function exitGame() {
             window.location.href = "profil.html";
