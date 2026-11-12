@@ -1,177 +1,346 @@
+
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Butulka Baku - Profil</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { background-color: #0d0914; font-family: sans-serif; color: white; height: 100vh; overflow: hidden; }
-        .scrollbar-none::-webkit-scrollbar { display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Butulka Baku - Profil</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(145deg,#10051f,#24103e,#10051f);
+    color: white;
+    padding-bottom: 35px;
+}
+
+header {
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,.06);
+    border-bottom: 1px solid rgba(255,255,255,.1);
+}
+
+.logo {
+    font-size: 21px;
+    font-weight: 900;
+    color: #ff789e;
+    text-shadow: 0 0 12px #ff4380;
+}
+
+.logout {
+    background: #43234e;
+    border: 1px solid #a45a9b;
+    color: white;
+    padding: 9px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.container {
+    width: 92%;
+    max-width: 500px;
+    margin: 25px auto;
+}
+
+.profile-card {
+    background: linear-gradient(145deg,#35154e,#1d1033);
+    border: 1px solid #a64d91;
+    border-radius: 22px;
+    padding: 25px 20px;
+    text-align: center;
+    box-shadow: 0 10px 35px #0008;
+}
+
+.avatar {
+    width: 95px;
+    height: 95px;
+    margin: 0 auto 15px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#ff758c,#b375ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    border: 3px solid white;
+}
+
+.username {
+    font-size: 25px;
+    font-weight: 800;
+}
+
+.user-id {
+    color: #c5a9d8;
+    margin-top: 7px;
+    font-size: 14px;
+}
+
+.vip {
+    display: inline-block;
+    margin-top: 12px;
+    background: linear-gradient(90deg,#f7bd35,#e87919);
+    padding: 6px 18px;
+    border-radius: 20px;
+    color: #301500;
+    font-weight: bold;
+}
+
+.balances {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.balance {
+    background: rgba(255,255,255,.08);
+    border: 1px solid #ffffff20;
+    padding: 16px 8px;
+    border-radius: 15px;
+}
+
+.balance span {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.balance small {
+    color: #cbb6d9;
+}
+
+.section-title {
+    margin: 28px 0 13px;
+    font-size: 19px;
+    font-weight: bold;
+}
+
+.game-card {
+    background: linear-gradient(135deg,#ff9b43,#d94b9c,#7839bd);
+    border-radius: 23px;
+    padding: 24px 18px;
+    text-align: center;
+    box-shadow: 0 8px 25px #e34b8050;
+}
+
+.bottle {
+    font-size: 65px;
+    margin-bottom: 10px;
+    animation: spin 5s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(-12deg); }
+    50% { transform: rotate(12deg); }
+    100% { transform: rotate(-12deg); }
+}
+
+.game-card h2 {
+    font-size: 25px;
+    margin-bottom: 8px;
+}
+
+.game-card p {
+    font-size: 14px;
+    color: #fff4f9;
+    margin-bottom: 18px;
+}
+
+.play-button {
+    display: block;
+    width: 100%;
+    background: white;
+    color: #a52d82;
+    text-decoration: none;
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 19px;
+    font-weight: 900;
+    box-shadow: 0 5px 15px #0003;
+}
+
+.menu {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.menu-item {
+    background: #29163e;
+    border: 1px solid #613d79;
+    border-radius: 15px;
+    padding: 18px 8px;
+    text-align: center;
+    color: white;
+}
+
+.menu-item .emoji {
+    font-size: 29px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.menu-item small {
+    color: #bda5ce;
+}
+
+footer {
+    text-align: center;
+    color: #876f9c;
+    font-size: 12px;
+    margin-top: 30px;
+}
+</style>
 </head>
-<body class="flex flex-col justify-between h-screen">
 
-    <!-- TOP HEADER -->
-    <header class="flex items-center justify-between px-4 py-3 bg-[#150f22] border-b border-[#231a38]">
-        <div class="flex items-center gap-2">
-            <div class="bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-extrabold px-3 py-1 rounded-full text-xs shadow-md">
-                👑 VIP
-            </div>
-        </div>
-        <div class="flex items-center gap-4 text-gray-300 text-base">
-            <i class="fa-solid fa-bell hover:text-yellow-400 cursor-pointer"></i>
-            <i class="fa-solid fa-user hover:text-yellow-400 cursor-pointer"></i>
-        </div>
-    </header>
+<body>
 
-    <!-- MAIN CONTENT CONTAINER -->
-    <main class="flex-1 overflow-y-auto p-4 space-y-4">
-        
-        <!-- STORIES ROW -->
-        <div>
-            <div class="text-xs font-semibold text-gray-400 mb-2">Stories</div>
-            <div class="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
-                <div class="flex flex-col items-center flex-shrink-0 cursor-pointer">
-                    <div class="w-14 h-14 rounded-full border-2 border-yellow-500 p-0.5 bg-gradient-to-tr from-yellow-500 to-amber-700">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover rounded-full">
-                    </div>
-                    <span class="text-[9px] mt-1 bg-red-600 px-1.5 py-0.2 rounded-full font-bold text-white">VIP</span>
-                </div>
-                <div class="flex flex-col items-center flex-shrink-0 cursor-pointer">
-                    <div class="w-14 h-14 rounded-full border-2 border-yellow-500 p-0.5 bg-gradient-to-tr from-yellow-500 to-amber-700">
-                        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150" class="w-full h-full object-cover rounded-full">
-                    </div>
-                    <span class="text-[9px] mt-1 bg-red-600 px-1.5 py-0.2 rounded-full font-bold text-white">VIP</span>
-                </div>
-                <div class="flex flex-col items-center flex-shrink-0 cursor-pointer">
-                    <div class="w-14 h-14 rounded-full border-2 border-yellow-500 p-0.5 bg-gradient-to-tr from-yellow-500 to-amber-700">
-                        <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150" class="w-full h-full object-cover rounded-full">
-                    </div>
-                    <span class="text-[9px] mt-1 bg-red-600 px-1.5 py-0.2 rounded-full font-bold text-white">VIP</span>
-                </div>
-                <div class="flex flex-col items-center flex-shrink-0 cursor-pointer">
-                    <div class="w-14 h-14 rounded-full border-2 border-yellow-500 p-0.5 bg-gradient-to-tr from-yellow-500 to-amber-700">
-                        <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150" class="w-full h-full object-cover rounded-full">
-                    </div>
-                    <span class="text-[9px] mt-1 bg-red-600 px-1.5 py-0.2 rounded-full font-bold text-white">VIP</span>
-                </div>
-            </div>
+<header>
+    <div class="logo">❤️ BUTULKA BAKU</div>
+    <button class="logout" onclick="logout()">Çıxış ↪</button>
+</header>
+
+<div class="container">
+
+    <div class="profile-card">
+
+        <div class="avatar">👤</div>
+
+        <div class="username" id="username">İstifadəçi</div>
+
+        <div class="user-id">
+            ID: <span id="userId">---</span>
         </div>
 
-        <!-- USER IDENTITY BANNER -->
-        <div class="bg-[#181124] border border-[#271d3a] rounded-2xl p-3 flex items-center justify-between shadow-lg">
-            <div class="flex items-center gap-3">
-                <div class="relative w-14 h-14 rounded-full overflow-hidden border-2 border-amber-500 bg-[#251b38] flex items-center justify-center">
-                    <i class="fa-solid fa-wine-bottle text-2xl text-yellow-400"></i>
-                    <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#181124] rounded-full"></div>
-                </div>
-                <div>
-                    <div class="flex items-center gap-1.5 text-yellow-400 font-bold text-sm">
-                        <span>👑</span> <span id="profileName">İstifadəçi</span>
-                    </div>
-                    <div id="profileId" class="text-[11px] text-gray-400 mt-0.5">ID: 1836</div>
-                </div>
+        <div id="vipBadge"></div>
+
+        <div class="balances">
+
+            <div class="balance">
+                ❤️
+                <span id="hearts">0</span>
+                <small>Ürəklər</small>
             </div>
-            <button class="w-9 h-9 bg-[#221833] hover:bg-[#2c2042] rounded-xl flex items-center justify-center text-yellow-400 border border-[#34264d]">
-                <i class="fa-solid fa-gear text-sm"></i>
-            </button>
+
+            <div class="balance">
+                🪙
+                <span id="jetons">0</span>
+                <small>Jetonlar</small>
+            </div>
+
         </div>
 
-        <!-- STATS GRID -->
-        <div class="grid grid-cols-3 gap-2">
-            <div class="bg-[#181124] border border-[#271d3a] p-2.5 rounded-2xl text-center">
-                <div class="text-amber-400 mb-0.5"><i class="fa-solid fa-crown text-xs"></i></div>
-                <div class="font-bold text-sm">1836</div>
-                <div class="text-[10px] text-gray-400">Stak</div>
-            </div>
-            <div class="bg-[#181124] border border-[#271d3a] p-2.5 rounded-2xl text-center">
-                <div class="font-bold text-sm mt-1">13</div>
-                <div class="text-[10px] text-gray-400">Stak</div>
-            </div>
-            <div class="bg-[#181124] border border-[#271d3a] p-2.5 rounded-2xl text-center">
-                <div class="font-bold text-sm mt-1">5</div>
-                <div class="text-[10px] text-gray-400">Stak</div>
-            </div>
-            <div class="bg-[#181124] border border-[#271d3a] p-2.5 rounded-2xl text-center">
-                <div class="font-bold text-sm mt-1">0</div>
-                <div class="text-[10px] text-gray-400">Sili</div>
-            </div>
-            <div class="bg-[#181124] border border-[#271d3a] p-2.5 rounded-2xl text-center">
-                <div class="font-bold text-sm mt-1">0</div>
-                <div class="text-[10px] text-gray-400">Açə</div>
-            </div>
-            <div class="bg-[#181124] border border-[#271d3a] p-2.5 rounded-2xl text-center">
-                <div class="font-bold text-sm mt-1">0</div>
-                <div class="text-[10px] text-gray-400">Vülol</div>
-            </div>
-        </div>
+    </div>
 
-        <!-- AKTİV OYUNLAR BÖLMƏSİ (oyun.html keçidi) -->
-        <div>
-            <h3 class="text-xs font-bold text-gray-400 mb-2">Aktiv Oyunlar</h3>
-            
-            <a href="oyun.html" class="block bg-gradient-to-r from-[#1d1226] to-[#2c1724] border border-amber-500/40 rounded-2xl p-3 shadow-xl hover:border-amber-400 transition cursor-pointer relative">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-xl bg-black/40 flex items-center justify-center border border-amber-500/30 flex-shrink-0">
-                        <i class="fa-solid fa-wine-bottle text-2xl text-yellow-400"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="text-xs font-bold text-yellow-300">Butulka Baku (Masa 511)</h4>
-                        <p class="text-[10px] text-gray-300 mt-0.5">Şüşəni fırlat, dostlarla əylən və tanış ol!</p>
-                    </div>
-                </div>
-                <div class="mt-3 w-full bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-black text-center font-bold text-xs py-2 rounded-xl shadow">
-                    Oyna 🚀
-                </div>
-            </a>
-        </div>
+    <div class="section-title">🍾 Oyun bölməsi</div>
 
-    </main>
+    <div class="game-card">
 
-    <!-- BOTTOM NAVIGATION BAR -->
-    <nav class="bg-[#150f22] border-t border-[#231a38] py-2 px-6 flex items-center justify-between">
-        <a href="profil.html" class="flex flex-col items-center text-yellow-400 cursor-pointer">
-            <i class="fa-solid fa-house text-base"></i>
-            <span class="text-[9px] mt-0.5">Ana səhifə</span>
+        <div class="bottle">🍾</div>
+
+        <h2>Целуй и Знакомься</h2>
+
+        <p>
+            Yeni insanlarla tanış ol, masalara qoşul,
+            butulkanı fırlat və əylən!
+        </p>
+
+        <a href="game.html" class="play-button">
+            🍾 OYUNA BAŞLA
         </a>
-        <a href="oyun.html" class="flex flex-col items-center text-gray-400 hover:text-yellow-400 cursor-pointer">
-            <i class="fa-solid fa-gamepad text-base"></i>
-            <span class="text-[9px] mt-0.5">Oyunlar</span>
-        </a>
-        <div class="w-10 h-10 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-xl flex items-center justify-center text-black shadow-lg -mt-3 cursor-pointer">
-            <i class="fa-solid fa-plus text-sm font-bold"></i>
-        </div>
-        <div class="flex flex-col items-center text-gray-400 relative cursor-pointer">
-            <i class="fa-solid fa-comment text-base"></i>
-            <span class="absolute -top-1 right-0 bg-red-500 text-white text-[8px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">1</span>
-            <span class="text-[9px] mt-0.5">Mesajlar</span>
-        </div>
-        <div class="flex flex-col items-center text-gray-400 cursor-pointer">
-            <i class="fa-solid fa-video text-base"></i>
-            <span class="text-[9px] mt-0.5">Videolar</span>
-        </div>
-    </nav>
 
-    <script>
-        // Qeydiyyatdan və ya girişdən gələn istifadəçi məlumatlarını oxuyub tətbiq etmək
-        window.onload = function() {
-            const storedUser = localStorage.getItem('currentUser');
-            if(storedUser) {
-                try {
-                    const userData = JSON.parse(storedUser);
-                    if(userData.username) {
-                        document.getElementById('profileName').innerText = userData.username;
-                    }
-                    if(userData.id) {
-                        document.getElementById('profileId').innerText = "ID: " + userData.id;
-                    }
-                } catch(e) {
-                    console.error("Məlumat oxunmadı", e);
-                }
-            }
+    </div>
+
+    <div class="section-title">Digər bölmələr</div>
+
+    <div class="menu">
+
+        <div class="menu-item">
+            <span class="emoji">👥</span>
+            Dostlar
+            <br><small>Tezliklə</small>
+        </div>
+
+        <div class="menu-item">
+            <span class="emoji">🏆</span>
+            Reytinqlər
+            <br><small>Tezliklə</small>
+        </div>
+
+        <div class="menu-item">
+            <span class="emoji">🎁</span>
+            Hədiyyələr
+            <br><small>Tezliklə</small>
+        </div>
+
+        <div class="menu-item">
+            <span class="emoji">👑</span>
+            VIP status
+            <br><small>Tezliklə</small>
+        </div>
+
+    </div>
+
+    <footer>
+        © 2026 Butulka Baku · Bütün hüquqlar qorunur
+    </footer>
+
+</div>
+
+<script>
+
+const userData = localStorage.getItem("currentUser");
+
+if (!userData) {
+    window.location.replace("index.html");
+} else {
+
+    try {
+        const user = JSON.parse(userData);
+
+        document.getElementById("username").textContent =
+            user.username || "İstifadəçi";
+
+        document.getElementById("userId").textContent =
+            user.id || "---";
+
+        document.getElementById("hearts").textContent =
+            Number(user.hearts || 0).toLocaleString("en-US");
+
+        document.getElementById("jetons").textContent =
+            Number(user.jetons || 0).toLocaleString("en-US");
+
+        if (user.vip === true) {
+            document.getElementById("vipBadge").innerHTML =
+                '<div class="vip">👑 VIP STATUS</div>';
         }
-    </script>
+
+    } catch (error) {
+        localStorage.removeItem("currentUser");
+        window.location.replace("index.html");
+    }
+}
+
+function logout() {
+    if (confirm("Hesabdan çıxmaq istəyirsən?")) {
+        localStorage.removeItem("currentUser");
+        window.location.replace("index.html");
+    }
+}
+
+</script>
+
 </body>
 </html>
