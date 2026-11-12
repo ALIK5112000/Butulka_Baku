@@ -4,702 +4,1323 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Butulka Baku - Profil</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        appBg: '#0a0e17',      /* Deep dark blue/black */
-                        cardBg: '#151b2b',     /* Slightly lighter blue for cards */
-                        cardBgHover: '#1c2438',
-                        primary: '#6a5acd',    /* Purple accent */
-                        accent: '#ff4d6d',     /* Pinkish red accent */
-                        jeton: '#00d2ff',      /* Light blue for Jeton/Diamond */
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            background-color: #000; /* Black background to center the app */
-            color: white;
-            overflow: hidden; /* App-like feel, no global scrolling */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body {
+            background: #0d0e1a;
+            color: #fff;
+            min-height: 100vh;
+            padding-bottom: 95px;
+            overflow-x: hidden;
         }
-        
-        .app-container {
-            width: 100%;
-            max-width: 500px;
-            height: 100%;
-            margin: 0 auto;
-            background-color: #0a0e17; /* App background */
-            position: relative;
+
+        /* Üst İkon Paneli */
+        .top-bar {
             display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: rgba(19, 21, 38, 0.92);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
         }
-
-        /* Hide scrollbar for stories and main content */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+        .vip-pill {
+            background: linear-gradient(135deg, #3c2e1e, #664a22);
+            border: 1px solid #f5b942;
+            color: #ffd573;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(245, 185, 66, 0.25);
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-
-        /* Glassmorphism utilities */
-        .glass {
-            background: rgba(21, 27, 43, 0.6);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* Bottom Sheet Modal Animation */
-        .bottom-sheet {
-            transform: translateY(100%);
-            transition: transform 0.3s ease-in-out;
-        }
-        .bottom-sheet.open {
-            transform: translateY(0);
-        }
-
-        /* Fade Animation for Backdrops */
-        .fade-in {
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-            pointer-events: none;
-        }
-        .fade-in.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* Status Gradient Border */
-        .status-ring {
-            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-            padding: 2px;
+        .top-icons { display: flex; align-items: center; gap: 10px; }
+        .icon-btn {
+            width: 38px; height: 38px;
             border-radius: 50%;
+            background: #1a1d33;
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #cbd5e1;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+            cursor: pointer;
+            position: relative;
+        }
+        .icon-btn:active { transform: scale(0.93); }
+        .badge {
+            position: absolute; top: -3px; right: -3px;
+            background: #ef4444; color: #fff;
+            font-size: 10px; font-weight: 700;
+            min-width: 17px; height: 17px;
+            border-radius: 99px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 4px;
+            border: 2px solid #0d0e1a;
         }
 
-        /* Content Area */
-        .content-area {
-            flex: 1;
-            overflow-y: auto;
-            padding-bottom: 80px; /* Space for bottom nav */
+        /* Statuslar (WhatsApp Stories stili) */
+        .stories-bar {
+            display: flex;
+            gap: 14px;
+            padding: 14px 16px;
+            overflow-x: auto;
+            scrollbar-width: none;
         }
+        .stories-bar::-webkit-scrollbar { display: none; }
+        .story-item {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 6px; min-width: 66px; cursor: pointer;
+        }
+        .story-ring {
+            width: 62px; height: 62px;
+            border-radius: 50%;
+            padding: 2px;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .story-ring.add-ring {
+            background: #1a1d33;
+            border: 1.5px dashed #64748b;
+        }
+        .story-ring img {
+            width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+            border: 2px solid #0d0e1a;
+        }
+        .story-name {
+            font-size: 11px; color: #94a3b8;
+            max-width: 66px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+
+        /* Əsas Profil Kartı */
+        .profile-card {
+            margin: 6px 16px 18px;
+            background: linear-gradient(180deg, #171a2e 0%, #121424 100%);
+            border: 1px solid rgba(99, 102, 241, 0.22);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+        }
+        .profile-top {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .avatar-wrap {
+            position: relative;
+            width: 78px; height: 78px;
+            flex-shrink: 0;
+        }
+        .avatar-wrap img {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #6366f1;
+            background: #1e223d;
+        }
+        .profile-info { flex: 1; min-width: 0; }
+        .name-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 19px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 6px;
+            max-width: 100%;
+        }
+        .name-box.vip-active {
+            padding: 4px 12px;
+            border-radius: 14px;
+            border: 1.5px solid #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
+            animation: vipGlow 2.5s infinite alternate;
+        }
+        @keyframes vipGlow {
+            from { box-shadow: 0 0 8px rgba(56, 189, 248, 0.4); border-color: #38bdf8; }
+            to { box-shadow: 0 0 18px rgba(245, 185, 66, 0.7); border-color: #f5b942; }
+        }
+        .user-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .id-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .id-badge {
+            background: rgba(245, 185, 66, 0.15);
+            border: 1px solid rgba(245, 185, 66, 0.45);
+            color: #fbbf24;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .settings-btn {
+            background: #232742;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #e2e8f0;
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .meta-line {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        /* Status Qutusu */
+        .status-box {
+            margin-top: 14px;
+            background: #1d2038;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            padding: 11px 14px;
+            font-size: 13px;
+            color: #cbd5e1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 4 Real-Vaxt Sayğac Qutusu */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .stat-card {
+            background: #1a1d33;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .stat-card:active { transform: scale(0.97); }
+        .stat-icon { font-size: 18px; margin-bottom: 6px; }
+        .stat-val { font-size: 20px; font-weight: 800; color: #818cf8; }
+        .stat-label { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+
+        /* Aşağıdakı Butulka Oyuna Keçid Kartı */
+        .play-card {
+            margin: 0 16px;
+            background: linear-gradient(135deg, #1e1b4b, #311042);
+            border: 1.5px solid rgba(236, 72, 153, 0.45);
+            border-radius: 22px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(236, 72, 153, 0.2);
+        }
+        .play-card:active { transform: scale(0.98); }
+
+        /* Alt Naviqasiya Paneli */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 70px;
+            background: #131526;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 60;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 4px; color: #94a3b8; font-size: 12px; font-weight: 600;
+            cursor: pointer; position: relative; padding: 6px 16px;
+        }
+        .nav-item.active { color: #818cf8; }
+        .nav-bottle-btn {
+            width: 58px; height: 58px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+            margin-top: -24px;
+            border: 4px solid #0d0e1a;
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.55);
+            cursor: pointer;
+        }
+
+        /* Bottom Sheet Modallar */
+        .sheet-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .sheet-overlay.open { display: flex; }
+        .sheet {
+            width: 100%; max-width: 500px;
+            max-height: 88vh;
+            overflow-y: auto;
+            background: #15182b;
+            border-top-left-radius: 26px;
+            border-top-right-radius: 26px;
+            border-top: 1px solid rgba(255,255,255,0.12);
+            padding: 20px;
+            animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .sheet-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .sheet-title { font-size: 19px; font-weight: 800; }
+        .close-btn {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #232742; border: none; color: #fff;
+            font-size: 16px; cursor: pointer;
+        }
+
+        /* Form və Düymələr */
+        .input-box {
+            width: 100%; padding: 13px 15px;
+            background: #1e223b;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            color: #fff; font-size: 15px; outline: none;
+            margin-bottom: 12px;
+        }
+        .input-box:focus { border-color: #818cf8; }
+        .primary-btn {
+            width: 100%; padding: 14px;
+            border-radius: 14px; border: none;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff; font-size: 15px; font-weight: 700;
+            cursor: pointer; margin-top: 4px;
+        }
+        .gold-btn {
+            background: linear-gradient(135deg, #f59e0b, #ec4899);
+            color: #fff;
+        }
+        .danger-btn {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+        }
+        .field-label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; font-weight: 600; }
+
+        /* VIP və Mağaza Kartları */
+        .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+        .plan-card {
+            background: #1c2038; border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 18px; padding: 16px; text-align: center; cursor: pointer;
+        }
+        .plan-card.selected { border-color: #f5b942; background: rgba(245, 185, 66, 0.1); }
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+        .shop-item {
+            background: #1c2038; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 14px; text-align: center;
+        }
+
+        /* İstifadəçi Siyahı Elementləri */
+        .user-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #1c2038; padding: 11px 13px; border-radius: 16px; margin-bottom: 10px;
+        }
+        .user-row-left { display: flex; align-items: center; gap: 11px; cursor: pointer; }
+        .user-row-left img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+
+        /* Çat Pəncərəsi */
+        .chat-messages {
+            height: 310px; overflow-y: auto;
+            background: #0f1120; border-radius: 16px;
+            padding: 12px; margin-bottom: 10px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .msg-bubble {
+            max-width: 78%; padding: 9px 13px; border-radius: 14px;
+            font-size: 14px; line-height: 1.4; word-break: break-word;
+        }
+        .msg-me { align-self: flex-end; background: #6366f1; color: #fff; border-bottom-right-radius: 4px; }
+        .msg-them { align-self: flex-start; background: #1e223d; color: #e2e8f0; border-bottom-left-radius: 4px; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-
-    <!-- View: HOME / PROFILE (Default) -->
-    <div id="view-home" class="content-area w-full h-full flex flex-col no-scrollbar relative">
-        
-        <!-- 1. Top Header -->
-        <div class="flex justify-between items-center px-4 pt-5 pb-2 z-10">
-            <!-- VIP Button -->
-            <button onclick="openModal('vip-modal')" class="bg-gradient-to-r from-orange-400 to-pink-500 rounded-full px-4 py-1.5 flex items-center space-x-2 shadow-lg shadow-pink-500/30">
-                <i class="fa-solid fa-crown text-white text-sm"></i>
-                <span class="text-white font-bold text-sm">VIP</span>
+    <!-- YUXARI PANEL -->
+    <div class="top-bar">
+        <div class="vip-pill" onclick="openSheet('vipSheet')">
+            <span>👑</span> <span data-i18n="vipBtn">VIP</span>
+        </div>
+        <div class="top-icons">
+            <button class="icon-btn" onclick="openSheet('shopSheet')" title="Mağaza">🛒</button>
+            <button class="icon-btn" onclick="openSheet('searchSheet')" title="Axtarış">🔍</button>
+            <button class="icon-btn" onclick="openSheet('adminSheet')" title="Adminlə Əlaqə">🎧</button>
+            <button class="icon-btn" onclick="openSheet('notifSheet')" title="Bildirişlər">
+                🔔
+                <span id="notifBadge" class="badge" style="display:none;">0</span>
             </button>
-            
-            <!-- Header Icons -->
-            <div class="flex space-x-3">
-                <button onclick="openModal('store-modal')" class="w-9 h-9 rounded-full glass flex items-center justify-center text-gray-300 hover:text-white">
-                    <i class="fa-solid fa-cart-shopping text-sm"></i>
-                </button>
-                <button onclick="openModal('search-modal')" class="w-9 h-9 rounded-full glass flex items-center justify-center text-gray-300 hover:text-white">
-                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                </button>
-                <button onclick="openModal('admin-modal')" class="w-9 h-9 rounded-full glass flex items-center justify-center text-gray-300 hover:text-white">
-                    <i class="fa-solid fa-headphones text-sm"></i>
-                </button>
-                <button onclick="openModal('notifications-modal')" class="w-9 h-9 rounded-full glass flex items-center justify-center text-gray-300 hover:text-white relative">
-                    <i class="fa-regular fa-bell text-sm"></i>
-                    <span class="absolute top-0 right-0 w-2 h-2 bg-accent rounded-full border border-[#0a0e17]"></span>
-                </button>
-                <!-- Settings Icon from Screenshot -->
-                <button onclick="openModal('settings-modal')" class="w-9 h-9 rounded-full glass flex items-center justify-center text-gray-300 hover:text-white">
-                    <i class="fa-solid fa-sliders text-sm"></i>
-                </button>
+        </div>
+    </div>
+
+    <!-- WHATSAPP STİLİ DOST STATUSLARI -->
+    <div class="stories-bar" id="storiesBar">
+        <div class="story-item" onclick="document.getElementById('storyFileInput').click()">
+            <div class="story-ring add-ring">
+                <span style="font-size:24px; color:#94a3b8;">+</span>
+            </div>
+            <span class="story-name" data-i18n="yourStory">Sənin</span>
+        </div>
+        <input type="file" id="storyFileInput" accept="image/*,video/*" style="display:none;" onchange="uploadStory(this)">
+        <div id="friendsStoriesList" style="display:flex; gap:14px;"></div>
+    </div>
+
+    <!-- ƏSAS PROFİL KARTI -->
+    <div class="profile-card">
+        <div class="profile-top">
+            <div class="avatar-wrap" onclick="openSheet('settingsSheet')">
+                <img id="myAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Avatar">
+            </div>
+            <div class="profile-info">
+                <div id="myNameBox" class="name-box">
+                    <span id="myVipCrown" style="display:none;">👑</span>
+                    <span id="myUsername" class="user-name-text">Yüklənir...</span>
+                </div>
+                <div class="id-row">
+                    <span class="id-badge">ID <span id="myUserId">-----</span></span>
+                    <button class="settings-btn" onclick="openSheet('settingsSheet')">⚙️ <span data-i18n="settings">Ayarlar</span></button>
+                </div>
+                <div id="myMetaLine" class="meta-line">18 yaş • Kişi</div>
             </div>
         </div>
 
-        <!-- 2. Stories / Status Bar -->
-        <div class="flex overflow-x-auto no-scrollbar px-4 py-4 space-x-4 items-center">
-            <!-- Add Status -->
-            <div class="flex flex-col items-center space-y-1 cursor-pointer" onclick="document.getElementById('status-upload').click()">
-                <div class="w-16 h-16 rounded-full border-2 border-dashed border-gray-600 flex items-center justify-center bg-gray-800/50">
-                    <i class="fa-solid fa-plus text-gray-400 text-xl"></i>
-                </div>
-                <span class="text-xs text-gray-400">Sənin</span>
-                <input type="file" id="status-upload" class="hidden" accept="video/*,image/*">
-            </div>
-            
-            <!-- Mock Friends Stories -->
-            <div class="flex flex-col items-center space-y-1">
-                <div class="status-ring w-16 h-16">
-                    <img src="https://placehold.co/100x100/1a1a1a/cccccc?text=Girl" class="w-full h-full rounded-full border-2 border-[#0a0e17] object-cover">
-                </div>
-                <span class="text-xs text-gray-300 w-16 truncate text-center">|A|L|...</span>
-            </div>
-            <div class="flex flex-col items-center space-y-1">
-                <div class="status-ring w-16 h-16">
-                    <img src="https://placehold.co/100x100/333333/cccccc?text=Car" class="w-full h-full rounded-full border-2 border-[#0a0e17] object-cover">
-                </div>
-                <span class="text-xs text-gray-300 w-16 truncate text-center">Niko</span>
-            </div>
-            <div class="flex flex-col items-center space-y-1">
-                <div class="w-16 h-16 rounded-full p-[2px] bg-gray-700">
-                    <img src="https://placehold.co/100x100/222222/cccccc?text=Boy" class="w-full h-full rounded-full border-2 border-[#0a0e17] object-cover">
-                </div>
-                <span class="text-xs text-gray-300 w-16 truncate text-center">🎁 ➔ |A|...</span>
-            </div>
+        <div class="status-box" onclick="openSheet('settingsSheet')">
+            <span>✏️</span>
+            <span id="myStatusText">Status yaz...</span>
         </div>
 
-        <!-- 3. Main Profile Card -->
-        <div class="px-4 mt-2">
-            <div class="bg-cardBg rounded-3xl p-5 shadow-lg relative border border-white/5">
-                
-                <!-- Avatar & ID Badge Row -->
-                <div class="flex justify-between items-start mb-4">
-                    <div class="relative">
-                        <img src="https://placehold.co/150x150/1a1a1a/cccccc?text=Ali" class="w-20 h-20 rounded-full border-2 border-primary object-cover shadow-lg">
-                        <!-- Edit Pencil -->
-                        <button onclick="openModal('settings-modal')" class="absolute bottom-0 right-0 w-7 h-7 bg-primary rounded-full flex items-center justify-center border-2 border-cardBg text-white text-xs shadow-md">
-                            <i class="fa-solid fa-pencil"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="flex flex-col items-end space-y-2 mt-2">
-                        <!-- Badges/Decorations (Qoca style, VIP border mock) -->
-                        <div class="border border-primary/50 rounded-full px-3 py-1 flex items-center space-x-2 bg-primary/10">
-                            <i class="fa-solid fa-crown text-yellow-500 text-xs"></i>
-                            <span class="text-white font-bold tracking-widest text-sm">|A|L|I|K|</span>
+        <!-- YALNIZ 4 REAL-VAXT SAYĞAC -->
+        <div class="stats-grid">
+            <div class="stat-card" onclick="openViewersList()">
+                <div class="stat-icon">👁️</div>
+                <div class="stat-val" id="statViews">0</div>
+                <div class="stat-label" data-i18n="views">Baxanlar</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">❤️</div>
+                <div class="stat-val" id="statHearts">0</div>
+                <div class="stat-label" data-i18n="hearts">Ürək</div>
+            </div>
+            <div class="stat-card" onclick="openSheet('shopSheet')">
+                <div class="stat-icon">🪙</div>
+                <div class="stat-val" id="statJetons">0</div>
+                <div class="stat-label" data-i18n="jetons">Jeton</div>
+            </div>
+            <div class="stat-card" onclick="openFriendsList()">
+                <div class="stat-icon">👥</div>
+                <div class="stat-val" id="statFriends">0</div>
+                <div class="stat-label" data-i18n="friends">Dostlar</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OYUNA KEÇİD (BUTULKA) -->
+    <div class="play-card" onclick="window.location.href='oyun.html'">
+        <div>
+            <div style="font-size:18px; font-weight:800; color:#fff;" data-i18n="enterGameTitle">🍾 Butulka Oyunu</div>
+            <div style="font-size:12px; color:#cbd5e1; margin-top:4px;" data-i18n="enterGameDesc">Masaya əyləş, şüşəni fırlat və tanış ol!</div>
+        </div>
+        <div style="background:#ec4899; padding:10px 18px; border-radius:14px; font-weight:700; font-size:14px;" data-i18n="playBtn">Oyna ▶</div>
+    </div>
+
+    <!-- ALT NAVİQASİYA -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="closeAllSheets()">
+            <span style="font-size:20px;">🏠</span>
+            <span data-i18n="home">Ana səhifə</span>
+        </div>
+        <div class="nav-bottle-btn" onclick="window.location.href='oyun.html'" title="Oyuna gir">🍾</div>
+        <div class="nav-item" onclick="openMessagesSheet()">
+            <span style="font-size:20px;">💬</span>
+            <span data-i18n="messages">Mesajlar</span>
+            <span id="msgNavBadge" class="badge" style="top:2px; right:10px; display:none;">0</span>
+        </div>
+    </div>
+
+    <!-- 1. VIP ÜZVLÜK SHEET -->
+    <div id="vipSheet" class="sheet-overlay" onclick="if(event.target===this) closeSheet('vipSheet')">
+        <div class="sheet">
+            <div class="sheet-header">
+                <div class="sheet-title">👑 VIP üzvlük</div>
+                <button class="close-btn" onclick="closeSheet('vipSheet')">✕</button>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:42px;">👑</div>
+                <h3 style="margin:6px 0;">Hamıdan seçil</h3>
+                <p style="font-size:13px; color:#94a3b8;">Hərəkətli ad çərçivəsi və oyunda xüsusi rəng</p>
+                <div id="vipStatusTag" style="margin-top:8px; font-size:12px; color:#fbbf24;"></div>
+            </div>
+            <div class="plan-grid">
+                <div id="planWeekly" class="plan-card" onclick="selectVipPlan('weekly', 500)">
+                    <div style="font-size:12px; color:#94a3b8;">HƏFTƏLİK</div>
+                    <div style="font-size:24px; font-weight:800; margin:6px 0;">500 🪙</div>
+                    <div style="font-size:12px; color:#94a3b8;">7 gün</div>
+                </div>
+                <div id="planMonthly" class="plan-card selected" onclick="selectVipPlan('monthly', 1200)">
+                    <div style="font-size:12px; color:#fbbf24;">AYLIQ • 44% qənaət</div>
+                    <div style="font-size:24px; font-weight:800; margin:6px 0;">1200 🪙</div>
+                    <div style="font-size:12px; color:#94a3b8;">30 gün</div>
+                </div>
+            </div>
+            <div style="font-size:13px; color:#cbd5e1; display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+                <div>✨ Dəhlizdə və profildə hərəkətli VIP ad çərçivəsi</div>
+                <div>🎨 Oyunda xüsusi ad rəngi: oğlanlar mavi, qızlar qırmızı</div>
+                <div>👆 Oyunda hədiyyəni basılı saxla - davamlı getsin</div>
+            </div>
+            <button id="buyVipBtn" class="primary-btn gold-btn" onclick="purchaseVip()">Aylıq VIP • 1200 🪙</button>
+        </div>
+    </div>
+
+    <!-- 2. MAĞAZA SHEET -->
+    <div id="shopSheet" class="sheet-overlay" onclick="if(event.target===this) closeSheet('shopSheet')">
+        <div class="sheet">
+            <div class="sheet-header">
+                <div class="sheet-title">Mağaza</div>
+                <button class="close-btn" onclick="closeSheet('shopSheet')">✕</button>
+            </div>
+            <div style="font-size:15px; font-weight:700; margin-bottom:10px;">
+                Balans: <span id="shopBalance" style="color:#fbbf24;">0</span> 🪙
+            </div>
+            <div style="font-size:12px; color:#94a3b8; font-weight:700;">JETON PAKETLƏRİ</div>
+            <div class="shop-grid">
+                <div class="shop-item"><div style="font-size:18px; font-weight:800;">1k 🪙</div><div style="color:#818cf8; font-size:13px; margin-top:4px;">5.00 AZN</div></div>
+                <div class="shop-item"><div style="font-size:18px; font-weight:800;">3k 🪙</div><div style="color:#818cf8; font-size:13px; margin-top:4px;">10.00 AZN</div></div>
+                <div class="shop-item"><div style="font-size:18px; font-weight:800;">5k 🪙</div><div style="color:#818cf8; font-size:13px; margin-top:4px;">15.00 AZN</div></div>
+                <div class="shop-item"><div style="font-size:18px; font-weight:800;">11k 🪙</div><div style="color:#818cf8; font-size:13px; margin-top:4px;">25.00 AZN</div></div>
+                <div class="shop-item"><div style="font-size:18px; font-weight:800;">23k 🪙</div><div style="color:#818cf8; font-size:13px; margin-top:4px;">50.00 AZN</div></div>
+                <div class="shop-item"><div style="font-size:18px; font-weight:800;">50k 🪙</div><div style="color:#818cf8; font-size:13px; margin-top:4px;">100.00 AZN</div></div>
+            </div>
+            <p style="font-size:12px; color:#94a3b8; line-height:1.5; margin-top:8px;">
+                Jeton almaq üçün yuxarıdakı 🎧 <b>Adminlə Əlaqə</b> bölməsindən Admin Alik ilə əlaqə saxlayın.
+            </p>
+        </div>
+    </div>
+
+    <!-- 3. OYUNÇU AXTAR SHEET -->
+    <div id="searchSheet" class="sheet-overlay" onclick="if(event.target===this) closeSheet('searchSheet')">
+        <div class="sheet">
+            <div class="sheet-header">
+                <div class="sheet-title">Oyunçu axtar</div>
+                <button class="close-btn" onclick="closeSheet('searchSheet')">✕</button>
+            </div>
+            <input type="text" id="searchInput" class="input-box" placeholder="Ad və ya ID nömrəsi yaz..." oninput="searchPlayers()">
+            <div id="searchResults"></div>
+        </div>
+    </div>
+
+    <!-- 4. BAŞQA OYUNÇUNUN PROFİLİ MODAL -->
+    <div id="otherProfileSheet" class="sheet-overlay" onclick="if(event.target===this) closeSheet('otherProfileSheet')">
+        <div class="sheet" style="text-align:center;">
+            <div class="sheet-header">
+                <div class="sheet-title">Profil</div>
+                <button class="close-btn" onclick="closeSheet('otherProfileSheet')">✕</button>
+            </div>
+            <img id="otherAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width:86px; height:86px; border-radius:50%; object-fit:cover; border:3px solid #6366f1;">
+            <h3 id="otherName" style="margin-top:10px; font-size:20px;">-</h3>
+            <div style="margin:6px 0;"><span class="id-badge">ID <span id="otherId">-</span></span></div>
+            <div id="otherMeta" style="font-size:12px; color:#94a3b8; margin-bottom:10px;">-</div>
+            <div id="otherStatus" style="font-size:13px; color:#cbd5e1; margin-bottom:18px;"></div>
+            <button id="sendFriendReqBtn" class="primary-btn" onclick="sendFriendRequest()">Dostluq sorğusu göndər</button>
+        </div>
+    </div>
+
+    <!-- 5. ADMİNLƏ ƏLAQƏ SHEET -->
+    <div id="adminSheet" class="sheet-overlay" onclick="if(event.target===this) closeSheet('adminSheet')">
+        <div class="sheet" style="text-align:center;">
+            <div class="sheet-header">
+                <div class="sheet-title">Adminlə Əlaqə</div>
+                <button class="close-btn" onclick="closeSheet('adminSheet')">✕</button>
+            </div>
+            <div style="font-size:48px; margin:10px 0;">🎧</div>
+            <h3 style="font-size:20px; color:#fbbf24;">Admin Alik</h3>
+            <p style="font-size:13px; color:#94a3b8; margin-top:8px;">Jeton sifarişi və dəstək üçün müraciət edə bilərsiniz.</p>
+        </div>
+    </div>
+
+    <!-- 6. BİLDİRİŞLƏR (DOSTLUQ SORĞULARI) SHEET -->
+    <div id="notifSheet" class="sheet-overlay" onclick="if(event.target===this) closeSheet('notifSheet')">
+        <div class="sheet">
+            <div class="sheet-header">
+                <div class="sheet-title">Bildirişlər</div>
+                <button class="close-btn" onclick="closeSheet('notifSheet')">✕</button>
+            </div>
+            <div id="friendRequestsList"></div>
+        </div>
+    </div>
+
+    <!-- 7. AYARLAR SHEET -->
+    <div id="settingsSheet" class="sheet-overlay" onclick="if(event.target===this) closeSheet('settingsSheet')">
+        <div class="sheet">
+            <div class="sheet-header">
+                <div class="sheet-title">Ayarlar</div>
+                <button class="close-btn" onclick="closeSheet('settingsSheet')">✕</button>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+                <img id="editAvatarPreview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" onclick="document.getElementById('avatarFileInput').click()" style="width:66px; height:66px; border-radius:50%; object-fit:cover; border:2px solid #818cf8; cursor:pointer;">
+                <button class="settings-btn" style="padding:10px 16px; font-size:13px;" onclick="document.getElementById('avatarFileInput').click()">📷 Şəkli dəyiş</button>
+                <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload(this)">
+            </div>
+
+            <label class="field-label">Ad</label>
+            <input type="text" id="editName" class="input-box">
+
+            <label class="field-label">Status</label>
+            <input type="text" id="editStatus" class="input-box" placeholder="Status yaz...">
+
+            <label class="field-label">Ölkə</label>
+            <select id="editCountry" class="input-box"></select>
+
+            <label class="field-label">Rayon / şəhər</label>
+            <input type="text" id="editCity" class="input-box" placeholder="Məs: Bakı, Yeni Günəşli">
+
+            <label class="field-label">Yaş (18 - 99)</label>
+            <input type="number" id="editAge" class="input-box" min="18" max="99" value="18">
+
+            <label class="field-label">Cinsiyyət</label>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+                <button id="genderMaleBtn" class="settings-btn" style="justify-content:center; padding:12px;" onclick="selectGender('Kişi')">Kişi</button>
+                <button id="genderFemaleBtn" class="settings-btn" style="justify-content:center; padding:12px;" onclick="selectGender('Qadın')">Qadın</button>
+            </div>
+
+            <button class="primary-btn" onclick="saveProfileSettings()">Yadda saxla</button>
+
+            <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin:20px 0;">
+
+            <div style="font-size:13px; font-weight:700; color:#94a3b8; margin-bottom:10px;">ŞİFRƏNİ DƏYİŞ</div>
+            <input type="password" id="oldPassInput" class="input-box" placeholder="Hazırkı şifrə">
+            <input type="password" id="newPassInput" class="input-box" placeholder="Yeni şifrə (ən azı 6 simvol)">
+            <button class="primary-btn" style="background:#232742; margin-bottom:10px;" onclick="changePassword()">Şifrəni yenilə</button>
+            <button class="primary-btn" style="background:#232742;" onclick="logoutOtherDevices()">Başqa cihazlardan çıx</button>
+
+            <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin:20px 0;">
+
+            <div style="font-size:13px; font-weight:700; color:#94a3b8; margin-bottom:10px;">DİGƏR</div>
+            <label class="field-label">Dil seçimi</label>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;">
+                <button class="settings-btn" onclick="applyAppLanguage('az')">🇦🇿 Azərbaycan</button>
+                <button class="settings-btn" onclick="applyAppLanguage('tr')">🇹🇷 Türk</button>
+                <button class="settings-btn" onclick="applyAppLanguage('ru')">🇷🇺 Русский</button>
+                <button class="settings-btn" onclick="applyAppLanguage('en')">🇬🇧 English</button>
+                <button class="settings-btn" onclick="applyAppLanguage('ka')">🇬🇪 ქართული</button>
+            </div>
+
+            <button class="primary-btn danger-btn" onclick="logoutAccount()">🚪 Çıxış</button>
+        </div>
+    </div>
+
+    <!-- 8. MESAJLAR SHEET -->
+    <div id="messagesSheet" class="sheet-overlay" onclick="if(event.target===this) closeSheet('messagesSheet')">
+        <div class="sheet">
+            <div class="sheet-header">
+                <div class="sheet-title" id="chatHeaderTitle">Mesajlar</div>
+                <button class="close-btn" onclick="closeSheet('messagesSheet')">✕</button>
+            </div>
+
+            <!-- Söhbətlər və Dostlar Siyahısı -->
+            <div id="chatListView">
+                <button class="primary-btn" style="margin-bottom:14px;" onclick="toggleFriendsToChat()">✍️ Dostuna yaz</button>
+                <div id="friendsToChatList" style="display:none; margin-bottom:14px;"></div>
+                <div style="font-size:12px; color:#94a3b8; margin-bottom:8px;">SON YAZIŞMALAR</div>
+                <div id="recentChatsList"></div>
+            </div>
+
+            <!-- Aktiv 1-1 Canlı Çat -->
+            <div id="activeChatView" style="display:none;">
+                <button class="settings-btn" style="margin-bottom:10px;" onclick="backToChatList()">← Geri</button>
+                <div id="chatMessagesBox" class="chat-messages"></div>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="chatInput" class="input-box" style="margin-bottom:0;" placeholder="Mesaj yaz..." onkeypress="if(event.key==='Enter') sendDirectMessage()">
+                    <button class="primary-btn" style="width:auto; padding:0 18px; margin-top:0;" onclick="sendDirectMessage()">➤</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. DOSTLAR / BAXANLAR SİYAHISI SHEET -->
+    <div id="listSheet" class="sheet-overlay" onclick="if(event.target===this) closeSheet('listSheet')">
+        <div class="sheet">
+            <div class="sheet-header">
+                <div class="sheet-title" id="listSheetTitle">Siyahı</div>
+                <button class="close-btn" onclick="closeSheet('listSheet')">✕</button>
+            </div>
+            <div id="listSheetBody"></div>
+        </div>
+    </div>
+
+    <!-- 10. STORY VIEWER MODAL -->
+    <div id="storyViewerModal" class="sheet-overlay" style="align-items:center;" onclick="closeSheet('storyViewerModal')">
+        <div style="width:92%; max-width:400px; background:#000; border-radius:20px; overflow:hidden; position:relative; border:1px solid #333;">
+            <div id="storyViewerOwner" style="padding:12px; background:rgba(0,0,0,0.7); font-weight:700; font-size:14px;"></div>
+            <div id="storyViewerMedia" style="min-height:320px; display:flex; align-items:center; justify-content:center;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import {
+            getFirestore, collection, doc, getDoc, getDocs, addDoc, updateDoc,
+            query, where, onSnapshot, arrayUnion, arrayRemove, increment
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAANVVrJKhZyaCErn8YFNVTUPF70A9xlmQ",
+          authDomain: "butulka-baku-istifadeci-bazasi.firebaseapp.com",
+          projectId: "butulka-baku-istifadeci-bazasi",
+          storageBucket: "butulka-baku-istifadeci-bazasi.firebasestorage.app",
+          messagingSenderId: "52438073026",
+          appId: "1:52438073026:web:1c4a0a8d1fc1ce5f78455b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const sessionRaw = localStorage.getItem("currentUser");
+        if (!sessionRaw) {
+            window.location.href = "index.html";
+        }
+        const sessionUser = JSON.parse(sessionRaw);
+
+        let myDocId = sessionUser.docId || null;
+        let myData = null;
+        let selectedGender = "Kişi";
+        let selectedVipPlan = { type: "monthly", price: 1200, days: 30 };
+        let viewedUserTarget = null;
+        let activeChatPartner = null;
+        let unsubscribeChat = null;
+
+        const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+        // Ölkələr siyahısı (Ermənistan istisna olmaqla, birinci Azərbaycan)
+        const countries = [
+            { value: "", label: "— seçilməyib —" },
+            { value: "🇦🇿 Azərbaycan", label: "🇦🇿 Azərbaycan" },
+            { value: "🇹🇷 Türkiyə", label: "🇹🇷 Türkiyə" },
+            { value: "🇷🇺 Rusiya", label: "🇷🇺 Rusiya" },
+            { value: "🇬🇪 Gürcüstan", label: "🇬🇪 Gürcüstan" },
+            { value: "🇺🇦 Ukrayna", label: "🇺🇦 Ukrayna" },
+            { value: "🇰🇿 Qazaxıstan", label: "🇰🇿 Qazaxıstan" },
+            { value: "🇺🇿 Özbəkistan", label: "🇺🇿 Özbəkistan" },
+            { value: "🇹🇲 Türkmənistan", label: "🇹🇲 Türkmənistan" },
+            { value: "🇰🇬 Qırğızıstan", label: "🇰🇬 Qırğızıstan" },
+            { value: "🇹🇯 Tacikistan", label: "🇹🇯 Tacikistan" },
+            { value: "🇮🇷 İran", label: "🇮🇷 İran" },
+            { value: "🇩🇪 Almaniya", label: "🇩🇪 Almaniya" },
+            { value: "🇬🇧 Böyük Britaniya", label: "🇬🇧 Böyük Britaniya" },
+            { value: "🇫🇷 Fransa", label: "🇫🇷 Fransa" },
+            { value: "🇮🇹 İtaliya", label: "🇮🇹 İtaliya" },
+            { value: "🇪🇸 İspaniya", label: "🇪🇸 İspaniya" },
+            { value: "🇺🇸 ABŞ", label: "🇺🇸 ABŞ" },
+            { value: "🇨🇦 Kanada", label: "🇨🇦 Kanada" },
+            { value: "🇦🇪 BƏƏ", label: "🇦🇪 BƏƏ" },
+            { value: "🇸🇦 Səudiyyə Ərəbistanı", label: "🇸🇦 Səudiyyə Ərəbistanı" },
+            { value: "🇯🇵 Yaponiya", label: "🇯🇵 Yaponiya" },
+            { value: "🇰🇷 Cənubi Koreya", label: "🇰🇷 Cənubi Koreya" },
+            { value: "🇨🇳 Çin", label: "🇨🇳 Çin" },
+            { value: "🇧🇷 Braziliya", label: "🇧🇷 Braziliya" }
+        ];
+
+        const countrySelect = document.getElementById("editCountry");
+        countries.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c.value;
+            opt.textContent = c.label;
+            countrySelect.appendChild(opt);
+        });
+
+        // İstifadəçi sənədini real vaxtda dinlə
+        async function initRealtimeProfile() {
+            if (!myDocId) {
+                const q = query(collection(db, "users"), where("id", "==", sessionUser.id));
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    myDocId = snap.docs[0].id;
+                    sessionUser.docId = myDocId;
+                    localStorage.setItem("currentUser", JSON.stringify(sessionUser));
+                } else {
+                    logoutAccount();
+                    return;
+                }
+            }
+
+            onSnapshot(doc(db, "users", myDocId), (docSnap) => {
+                if (!docSnap.exists()) {
+                    logoutAccount();
+                    return;
+                }
+                myData = docSnap.data();
+
+                // Başqa cihazdan çıxış basılıbsa bu cihazı çıxar
+                if ((myData.sessionVersion || 1) > (sessionUser.sessionVersion || 1)) {
+                    alert("Hesabınızdan bütün cihazlardan çıxış edildi.");
+                    logoutAccount();
+                    return;
+                }
+
+                renderMyProfile();
+                listenFriendsStories();
+            });
+
+            listenIncomingMessages();
+        }
+
+        function renderMyProfile() {
+            if (!myData) return;
+
+            document.getElementById("myUsername").textContent = myData.username;
+            document.getElementById("myUserId").textContent = myData.id;
+            document.getElementById("myAvatar").src = myData.avatar || DEFAULT_AVATAR;
+            document.getElementById("editAvatarPreview").src = myData.avatar || DEFAULT_AVATAR;
+
+            // VIP yoxlanışı
+            const isVip = myData.vip && (!myData.vipUntil || myData.vipUntil > Date.now());
+            const nameBox = document.getElementById("myNameBox");
+            const crown = document.getElementById("myVipCrown");
+            if (isVip) {
+                nameBox.classList.add("vip-active");
+                crown.style.display = "inline";
+                document.getElementById("vipStatusTag").textContent = "✅ VIP Aktivdir";
+            } else {
+                nameBox.classList.remove("vip-active");
+                crown.style.display = "none";
+                document.getElementById("vipStatusTag").textContent = "";
+            }
+
+            // Yaş, Cinsiyyət, Ölkə/Şəhər
+            const loc = [myData.country, myData.city].filter(Boolean).join(", ");
+            document.getElementById("myMetaLine").textContent = `${myData.age || 18} yaş • ${myData.gender || "Kişi"}${loc ? " • " + loc : ""}`;
+            document.getElementById("myStatusText").textContent = myData.status || "Status yaz...";
+
+            // 4 Real-vaxt Sayğac
+            document.getElementById("statViews").textContent = myData.views || 0;
+            document.getElementById("statHearts").textContent = myData.hearts || 0;
+            document.getElementById("statJetons").textContent = myData.jetons || 0;
+            document.getElementById("statFriends").textContent = (myData.friends || []).length;
+            document.getElementById("shopBalance").textContent = myData.jetons || 0;
+
+            // Bildirişlər (Dostluq sorğuları)
+            const reqs = myData.friendRequests || [];
+            const notifBadge = document.getElementById("notifBadge");
+            if (reqs.length > 0) {
+                notifBadge.style.display = "flex";
+                notifBadge.textContent = reqs.length;
+            } else {
+                notifBadge.style.display = "none";
+            }
+            renderFriendRequests(reqs);
+
+            // Ayarlar formunu doldur
+            document.getElementById("editName").value = myData.username || "";
+            document.getElementById("editStatus").value = myData.status || "";
+            document.getElementById("editCountry").value = myData.country || "";
+            document.getElementById("editCity").value = myData.city || "";
+            document.getElementById("editAge").value = myData.age || 18;
+            selectGender(myData.gender || "Kişi");
+        }
+
+        // Şəkil sıxışdırma və profil şəkli yükləmə
+        function compressImage(file, maxW = 300) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        const scale = Math.min(1, maxW / img.width);
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        const ctx = canvas.getContext("2d");
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL("image/jpeg", 0.72));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.handleAvatarUpload = async function(input) {
+            if (!input.files || !input.files[0]) return;
+            const base64 = await compressImage(input.files[0], 280);
+            await updateDoc(doc(db, "users", myDocId), { avatar: base64 });
+            alert("Profil şəkli yeniləndi!");
+        };
+
+        window.selectGender = function(g) {
+            selectedGender = g;
+            document.getElementById("genderMaleBtn").style.borderColor = g === "Kişi" ? "#818cf8" : "rgba(255,255,255,0.1)";
+            document.getElementById("genderFemaleBtn").style.borderColor = g === "Qadın" ? "#ec4899" : "rgba(255,255,255,0.1)";
+        };
+
+        window.saveProfileSettings = async function() {
+            const newName = document.getElementById("editName").value.trim();
+            const newStatus = document.getElementById("editStatus").value.trim();
+            const newCountry = document.getElementById("editCountry").value;
+            const newCity = document.getElementById("editCity").value.trim();
+            let newAge = parseInt(document.getElementById("editAge").value, 10);
+
+            if (!newName) return alert("Ad boş ola bilməz!");
+            if (isNaN(newAge) || newAge < 18 || newAge > 99) return alert("Yaş 18 ilə 99 arasında olmalıdır!");
+
+            await updateDoc(doc(db, "users", myDocId), {
+                username: newName,
+                status: newStatus,
+                country: newCountry,
+                city: newCity,
+                age: newAge,
+                gender: selectedGender
+            });
+
+            sessionUser.username = newName;
+            localStorage.setItem("currentUser", JSON.stringify(sessionUser));
+            closeSheet("settingsSheet");
+            alert("Məlumatlar yadda saxlanıldı!");
+        };
+
+        window.changePassword = async function() {
+            const oldP = document.getElementById("oldPassInput").value;
+            const newP = document.getElementById("newPassInput").value;
+            if (oldP !== myData.password) return alert("Hazırkı şifrə yanlışdır!");
+            if (newP.length < 6) return alert("Yeni şifrə ən azı 6 simvol olmalıdır!");
+
+            await updateDoc(doc(db, "users", myDocId), { password: newP });
+            document.getElementById("oldPassInput").value = "";
+            document.getElementById("newPassInput").value = "";
+            alert("Şifrə uğurla yeniləndi!");
+        };
+
+        window.logoutOtherDevices = async function() {
+            const nextVer = (myData.sessionVersion || 1) + 1;
+            sessionUser.sessionVersion = nextVer;
+            localStorage.setItem("currentUser", JSON.stringify(sessionUser));
+            await updateDoc(doc(db, "users", myDocId), { sessionVersion: nextVer });
+            alert("Başqa bütün cihazlardan çıxış edildi!");
+        };
+
+        window.logoutAccount = function() {
+            localStorage.removeItem("currentUser");
+            window.location.href = "index.html";
+        };
+
+        // VIP Alışı
+        window.selectVipPlan = function(type, price) {
+            selectedVipPlan = { type, price, days: type === "weekly" ? 7 : 30 };
+            document.getElementById("planWeekly").classList.toggle("selected", type === "weekly");
+            document.getElementById("planMonthly").classList.toggle("selected", type === "monthly");
+            document.getElementById("buyVipBtn").textContent = `${type === "weekly" ? "Həftəlik" : "Aylıq"} VIP • ${price} 🪙`;
+        };
+
+        window.purchaseVip = async function() {
+            const currentJetons = myData.jetons || 0;
+            if (currentJetons < selectedVipPlan.price) {
+                return alert("Balansınızda kifayət qədər jeton yoxdur!");
+            }
+            const baseTime = (myData.vipUntil && myData.vipUntil > Date.now()) ? myData.vipUntil : Date.now();
+            const newExpiry = baseTime + selectedVipPlan.days * 24 * 60 * 60 * 1000;
+
+            await updateDoc(doc(db, "users", myDocId), {
+                jetons: currentJetons - selectedVipPlan.price,
+                vip: true,
+                vipUntil: newExpiry
+            });
+            alert("Təbriklər! VIP statusunuz aktivləşdirildi!");
+            closeSheet("vipSheet");
+        };
+
+        // Real-Vaxt Oyunçu Axtarışı
+        window.searchPlayers = async function() {
+            const term = document.getElementById("searchInput").value.trim().toLowerCase();
+            const box = document.getElementById("searchResults");
+            if (!term) { box.innerHTML = ""; return; }
+
+            const snap = await getDocs(collection(db, "users"));
+            let html = "";
+            snap.forEach((docSnap) => {
+                const u = docSnap.data();
+                if (u.id === myData.id) return;
+                if (u.username.toLowerCase().includes(term) || String(u.id).includes(term)) {
+                    html += `
+                        <div class="user-row" onclick="viewOtherUser('${docSnap.id}')">
+                            <div class="user-row-left">
+                                <img src="${u.avatar || DEFAULT_AVATAR}">
+                                <div>
+                                    <div style="font-weight:700;">${u.vip ? "👑 " : ""}${u.username}</div>
+                                    <div style="font-size:12px; color:#fbbf24;">ID ${u.id}</div>
+                                </div>
+                            </div>
+                            <span style="color:#94a3b8;">›</span>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            <i class="fa-solid fa-circle-check text-blue-500 text-sm"></i>
-                            <div class="bg-yellow-600/20 border border-yellow-600/50 rounded-full px-2 py-0.5 flex items-center">
-                                <span class="bg-yellow-500 text-black text-[10px] font-bold px-1 rounded mr-1">ID</span>
-                                <span class="text-yellow-500 font-bold text-xs">1836</span>
+                    `;
+                }
+            });
+            box.innerHTML = html || `<p style="color:#94a3b8; font-size:13px;">Oyunçu tapılmadı.</p>`;
+        };
+
+        // Başqa oyunçunun profilinə baxmaq (Baxış sayını real vaxtda artırır!)
+        window.viewOtherUser = async function(targetDocId) {
+            const targetRef = doc(db, "users", targetDocId);
+            const snap = await getDoc(targetRef);
+            if (!snap.exists()) return;
+
+            const u = snap.data();
+            viewedUserTarget = { docId: targetDocId, ...u };
+
+            // Baxanlar sayını artır və baxanlar siyahısına əlavə et
+            await updateDoc(targetRef, {
+                views: increment(1),
+                viewers: arrayUnion({
+                    id: myData.id,
+                    username: myData.username,
+                    avatar: myData.avatar || "",
+                    time: Date.now()
+                })
+            });
+
+            document.getElementById("otherAvatar").src = u.avatar || DEFAULT_AVATAR;
+            document.getElementById("otherName").textContent = (u.vip ? "👑 " : "") + u.username;
+            document.getElementById("otherId").textContent = u.id;
+            const loc = [u.country, u.city].filter(Boolean).join(", ");
+            document.getElementById("otherMeta").textContent = `${u.age || 18} yaş • ${u.gender || "Kişi"}${loc ? " • " + loc : ""}`;
+            document.getElementById("otherStatus").textContent = u.status || "";
+
+            const isFriend = (myData.friends || []).some(f => f.id === u.id);
+            const btn = document.getElementById("sendFriendReqBtn");
+            if (isFriend) {
+                btn.textContent = "✅ Artıq dostsunuz";
+                btn.disabled = true;
+            } else {
+                btn.textContent = "Dostluq sorğusu göndər";
+                btn.disabled = false;
+            }
+
+            closeSheet("searchSheet");
+            openSheet("otherProfileSheet");
+        };
+
+        window.sendFriendRequest = async function() {
+            if (!viewedUserTarget) return;
+            await updateDoc(doc(db, "users", viewedUserTarget.docId), {
+                friendRequests: arrayUnion({
+                    docId: myDocId,
+                    id: myData.id,
+                    username: myData.username,
+                    avatar: myData.avatar || ""
+                })
+            });
+            document.getElementById("sendFriendReqBtn").textContent = "⏳ Sorğu göndərildi";
+            document.getElementById("sendFriendReqBtn").disabled = true;
+        };
+
+        function renderFriendRequests(reqs) {
+            const box = document.getElementById("friendRequestsList");
+            if (!reqs.length) {
+                box.innerHTML = `<p style="color:#94a3b8; font-size:13px;">Yeni dostluq sorğusu yoxdur.</p>`;
+                return;
+            }
+            box.innerHTML = reqs.map(r => `
+                <div class="user-row">
+                    <div class="user-row-left">
+                        <img src="${r.avatar || DEFAULT_AVATAR}">
+                        <div>
+                            <div style="font-weight:700;">${r.username}</div>
+                            <div style="font-size:12px; color:#fbbf24;">ID ${r.id}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button class="settings-btn" style="background:#22c55e; color:#fff;" onclick='acceptFriend(${JSON.stringify(r)})'>Qəbul</button>
+                        <button class="settings-btn" onclick='rejectFriend(${JSON.stringify(r)})'>✕</button>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        window.acceptFriend = async function(reqObj) {
+            await updateDoc(doc(db, "users", myDocId), {
+                friendRequests: arrayRemove(reqObj),
+                friends: arrayUnion({ docId: reqObj.docId, id: reqObj.id, username: reqObj.username, avatar: reqObj.avatar || "" })
+            });
+            if (reqObj.docId) {
+                await updateDoc(doc(db, "users", reqObj.docId), {
+                    friends: arrayUnion({ docId: myDocId, id: myData.id, username: myData.username, avatar: myData.avatar || "" })
+                });
+            }
+        };
+
+        window.rejectFriend = async function(reqObj) {
+            await updateDoc(doc(db, "users", myDocId), { friendRequests: arrayRemove(reqObj) });
+        };
+
+        // Baxanlar və Dostlar siyahıları
+        window.openViewersList = function() {
+            document.getElementById("listSheetTitle").textContent = "Profilə baxanlar";
+            const viewers = (myData.viewers || []).slice().reverse();
+            document.getElementById("listSheetBody").innerHTML = viewers.length
+                ? viewers.map(v => `
+                    <div class="user-row">
+                        <div class="user-row-left">
+                            <img src="${v.avatar || DEFAULT_AVATAR}">
+                            <div>
+                                <div style="font-weight:700;">${v.username}</div>
+                                <div style="font-size:12px; color:#fbbf24;">ID ${v.id}</div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </div>`).join("")
+                : `<p style="color:#94a3b8; font-size:13px;">Hələ profilinizə baxan olmayıb.</p>`;
+            openSheet("listSheet");
+        };
 
-                <!-- City / Meta -->
-                <div class="text-gray-400 text-sm mb-4">
-                    511
-                </div>
+        window.openFriendsList = function() {
+            document.getElementById("listSheetTitle").textContent = "Dostlarım";
+            const friends = myData.friends || [];
+            document.getElementById("listSheetBody").innerHTML = friends.length
+                ? friends.map(f => `
+                    <div class="user-row">
+                        <div class="user-row-left">
+                            <img src="${f.avatar || DEFAULT_AVATAR}">
+                            <div>
+                                <div style="font-weight:700;">${f.username}</div>
+                                <div style="font-size:12px; color:#fbbf24;">ID ${f.id}</div>
+                            </div>
+                        </div>
+                        <button class="settings-btn" onclick="startChatWith(${f.id}, '${f.username}')">💬 Yaz</button>
+                    </div>`).join("")
+                : `<p style="color:#94a3b8; font-size:13px;">Hələ dostunuz yoxdur.</p>`;
+            openSheet("listSheet");
+        };
 
-                <!-- Status Input -->
-                <div class="bg-[#0f1423] rounded-xl p-3 mb-5 flex items-center text-gray-400 cursor-pointer border border-white/5" onclick="openModal('settings-modal')">
-                    <i class="fa-solid fa-pen text-xs mr-3"></i>
-                    <span class="text-sm">Status yaz...</span>
-                </div>
-
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-3 gap-3">
-                    <!-- Ürək -->
-                    <div class="bg-[#0f1423] rounded-2xl p-3 flex flex-col border border-white/5">
-                        <i class="fa-regular fa-heart text-gray-500 mb-2"></i>
-                        <span class="text-white font-bold text-lg">4k</span>
-                        <span class="text-gray-500 text-xs">Ürək</span>
-                    </div>
-                    <!-- Jeton (Replaced Kristal) -->
-                    <div class="bg-[#0f1423] rounded-2xl p-3 flex flex-col border border-white/5">
-                        <i class="fa-regular fa-gem text-jeton mb-2"></i>
-                        <span class="text-white font-bold text-lg">1.4k</span>
-                        <span class="text-gray-500 text-xs">Jeton</span>
-                    </div>
-                    <!-- Dostlar -->
-                    <div class="bg-[#0f1423] rounded-2xl p-3 flex flex-col border border-white/5 cursor-pointer" onclick="switchView('view-messages')">
-                        <i class="fa-solid fa-user-group text-gray-500 mb-2"></i>
-                        <span class="text-white font-bold text-lg">1</span>
-                        <span class="text-gray-500 text-xs">Dostlar</span>
-                    </div>
-                    <!-- Baxanlar -->
-                    <div class="bg-[#0f1423] rounded-2xl p-3 flex flex-col border border-white/5">
-                        <i class="fa-regular fa-eye text-gray-500 mb-2"></i>
-                        <span class="text-white font-bold text-lg">30</span>
-                        <span class="text-gray-500 text-xs">Baxanlar</span>
-                    </div>
-                    <!-- İzlədiyim -->
-                    <div class="bg-[#0f1423] rounded-2xl p-3 flex flex-col border border-white/5">
-                        <i class="fa-solid fa-user-plus text-gray-500 mb-2"></i>
-                        <span class="text-white font-bold text-lg">1</span>
-                        <span class="text-gray-500 text-xs">İzlədiyim</span>
-                    </div>
-                    <!-- İzləyən -->
-                    <div class="bg-[#0f1423] rounded-2xl p-3 flex flex-col border border-white/5">
-                        <i class="fa-regular fa-star text-gray-500 mb-2"></i>
-                        <span class="text-white font-bold text-lg">3</span>
-                        <span class="text-gray-500 text-xs">İzləyən</span>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        
-    </div>
-
-    <!-- View: MESSAGES & FRIENDS -->
-    <div id="view-messages" class="content-area w-full h-full flex flex-col bg-appBg hidden">
-        <div class="p-4 border-b border-white/10 flex justify-between items-center bg-cardBg z-10 sticky top-0">
-            <h2 class="text-lg font-bold text-white">Mesajlar</h2>
-            <!-- "Dostuna yaz" Button -->
-            <button onclick="openModal('search-modal')" class="bg-primary text-white text-xs px-3 py-1.5 rounded-lg font-medium">
-                <i class="fa-solid fa-pen-to-square mr-1"></i> Dostuna yaz
-            </button>
-        </div>
-        
-        <!-- Chat List -->
-        <div class="flex-1 overflow-y-auto no-scrollbar p-2">
-            <!-- Chat Item -->
-            <div class="flex items-center p-3 hover:bg-cardBg rounded-xl cursor-pointer transition-colors mb-1">
-                <div class="relative">
-                    <img src="https://placehold.co/100x100/333333/cccccc?text=Fr" class="w-12 h-12 rounded-full object-cover">
-                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-appBg"></div>
-                </div>
-                <div class="ml-3 flex-1 border-b border-white/5 pb-3">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-white text-sm">|A|L|I|K| 2</h3>
-                        <span class="text-gray-500 text-xs">16:40</span>
-                    </div>
-                    <div class="flex justify-between items-center mt-1">
-                        <p class="text-gray-400 text-xs truncate">Salam qaqa necəsən?</p>
-                        <!-- Unread badge -->
-                        <span class="bg-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">1</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Chat Item Offline -->
-            <div class="flex items-center p-3 hover:bg-cardBg rounded-xl cursor-pointer transition-colors mb-1">
-                <img src="https://placehold.co/100x100/222222/cccccc?text=Niko" class="w-12 h-12 rounded-full object-cover">
-                <div class="ml-3 flex-1 border-b border-white/5 pb-3">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-white text-sm">Niko_511</h3>
-                        <span class="text-gray-500 text-xs">Dünən</span>
-                    </div>
-                    <div class="flex justify-between items-center mt-1">
-                        <p class="text-gray-500 text-xs truncate">Oyundasan?</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- 4. Bottom Navigation -->
-    <div class="absolute bottom-0 w-full glass rounded-t-3xl pb-safe pt-2 px-6 flex justify-between items-center h-[70px] z-30">
-        <button onclick="switchView('view-home')" id="nav-home" class="flex flex-col items-center space-y-1 text-white w-12">
-            <i class="fa-solid fa-house text-xl"></i>
-            <span class="text-[9px] font-medium">Ana səhifə</span>
-        </button>
-        
-        <!-- Games uses Wine Bottle icon linking to future game -->
-        <button onclick="alert('Tezliklə: Butulka Oyununa Keçid!')" class="flex flex-col items-center space-y-1 text-gray-500 hover:text-white w-12 transition-colors">
-            <i class="fa-solid fa-wine-bottle text-xl"></i>
-            <span class="text-[9px] font-medium">Oyunlar</span>
-        </button>
-        
-        <!-- Center Floating Action Button -->
-        <div class="relative -top-5">
-            <button class="w-14 h-14 bg-indigo-500 rounded-full flex items-center justify-center shadow-lg shadow-indigo-500/40 text-white text-2xl">
-                <i class="fa-solid fa-plus"></i>
-            </button>
-        </div>
-        
-        <button onclick="switchView('view-messages')" id="nav-messages" class="flex flex-col items-center space-y-1 text-gray-500 hover:text-white w-12 transition-colors relative">
-            <i class="fa-regular fa-comment-dots text-xl"></i>
-            <!-- Message Notification Badge -->
-            <span class="absolute -top-1 right-2 w-4 h-4 bg-accent text-white text-[9px] font-bold flex items-center justify-center rounded-full border border-cardBg">1</span>
-            <span class="text-[9px] font-medium">Mesajlar</span>
-        </button>
-        
-        <button class="flex flex-col items-center space-y-1 text-gray-500 hover:text-white w-12 transition-colors">
-            <i class="fa-regular fa-circle-play text-xl"></i>
-            <span class="text-[9px] font-medium">Videolar</span>
-        </button>
-    </div>
-
-
-    <!-- MODALS & BOTTOM SHEETS -->
-    
-    <!-- Dark Backdrop for all modals -->
-    <div id="modal-backdrop" class="fixed inset-0 bg-black/70 z-40 fade-in" onclick="closeAllModals()"></div>
-
-    <!-- 1. VIP Modal -->
-    <div id="vip-modal" class="bottom-sheet fixed inset-x-0 bottom-0 max-w-[500px] mx-auto bg-cardBg rounded-t-3xl z-50 p-6 flex flex-col items-center shadow-[0_-10px_40px_rgba(0,0,0,0.5)] h-[85%]">
-        <div class="w-12 h-1 bg-gray-600 rounded-full mb-6 cursor-pointer" onclick="closeAllModals()"></div>
-        <button onclick="closeAllModals()" class="absolute top-5 right-5 w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
-        
-        <i class="fa-solid fa-crown text-5xl text-yellow-500 mb-2 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]"></i>
-        <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-pink-500 mb-1">Hamıdan seçil</h2>
-        <p class="text-gray-400 text-sm mb-4 text-center">Hərəkətli ad çərçivəsi və oyunda xüsusi rəng</p>
-        <div class="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded mb-6 flex items-center"><i class="fa-solid fa-check mr-1"></i> VIP</div>
-
-        <!-- Sample Mocked Badge Preview -->
-        <div class="border border-blue-500 rounded-full px-4 py-1.5 flex items-center space-x-2 bg-blue-900/30 mb-8">
-            <i class="fa-solid fa-crown text-yellow-500"></i>
-            <span class="text-white font-bold tracking-widest">|A|L|I|K|</span>
-        </div>
-
-        <!-- Purchase Buttons -->
-        <div class="flex space-x-4 w-full mb-6">
-            <div class="flex-1 bg-[#1a2136] rounded-2xl p-4 border border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
-                <span class="text-gray-400 text-xs font-bold mb-1">HƏFTƏLİK</span>
-                <div class="flex items-center space-x-1">
-                    <span class="text-2xl font-bold text-white">500</span>
-                    <i class="fa-regular fa-gem text-jeton text-lg"></i>
-                </div>
-                <span class="text-gray-500 text-[10px] mt-1">7 gün</span>
-            </div>
-            
-            <div class="flex-1 bg-[#1a2136] rounded-2xl p-4 border-2 border-yellow-500 flex flex-col items-center justify-center relative cursor-pointer shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-                <div class="absolute -top-3 bg-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">Ən sərfəli · 44% qənaət</div>
-                <span class="text-gray-400 text-xs font-bold mb-1">AYLIQ</span>
-                <div class="flex items-center space-x-1">
-                    <span class="text-2xl font-bold text-white">1.2k</span>
-                    <i class="fa-regular fa-gem text-jeton text-lg"></i>
-                </div>
-                <span class="text-gray-500 text-[10px] mt-1">30 gün</span>
-            </div>
-        </div>
-        
-        <button class="w-full bg-gradient-to-r from-yellow-200 via-pink-300 to-pink-500 text-black font-bold py-3.5 rounded-2xl shadow-lg mt-auto mb-4">
-            Aylıq VIP · 1200 <i class="fa-regular fa-gem"></i>
-        </button>
-    </div>
-
-    <!-- 2. Store Modal -->
-    <div id="store-modal" class="bottom-sheet fixed inset-x-0 bottom-0 max-w-[500px] mx-auto bg-cardBg rounded-t-3xl z-50 p-6 flex flex-col h-[90%]">
-        <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeAllModals()"></div>
-        <button onclick="closeAllModals()" class="absolute top-5 right-5 w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
-        
-        <h2 class="text-xl font-bold text-white mb-2">Mağaza</h2>
-        <div class="flex items-center space-x-2 mb-6">
-            <span class="text-gray-400 text-sm">Balans:</span>
-            <span class="text-white font-bold text-lg">1.4k</span>
-            <i class="fa-regular fa-gem text-jeton"></i>
-        </div>
-
-        <h3 class="text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">Jeton Paketləri</h3>
-        <div class="grid grid-cols-2 gap-3 overflow-y-auto no-scrollbar pb-10">
-            <!-- Pack 1 -->
-            <div class="bg-[#1a2136] rounded-xl p-4 flex flex-col items-center justify-center border border-white/5 cursor-pointer hover:bg-[#232d47]">
-                <div class="flex items-center space-x-1 mb-1">
-                    <span class="text-xl font-bold text-white">1k</span>
-                    <i class="fa-regular fa-gem text-jeton text-lg"></i>
-                </div>
-                <span class="text-indigo-400 text-sm font-medium">5.00 AZN</span>
-            </div>
-            <!-- Pack 2 -->
-            <div class="bg-[#1a2136] rounded-xl p-4 flex flex-col items-center justify-center border border-white/5 cursor-pointer hover:bg-[#232d47]">
-                <div class="flex items-center space-x-1 mb-1">
-                    <span class="text-xl font-bold text-white">3k</span>
-                    <i class="fa-regular fa-gem text-jeton text-lg"></i>
-                </div>
-                <span class="text-indigo-400 text-sm font-medium">10.00 AZN</span>
-            </div>
-            <!-- Pack 3 (Highlighted) -->
-            <div class="bg-[#1a2136] rounded-xl p-4 flex flex-col items-center justify-center border-2 border-indigo-500 cursor-pointer">
-                <div class="flex items-center space-x-1 mb-1">
-                    <span class="text-xl font-bold text-white">5k</span>
-                    <i class="fa-regular fa-gem text-jeton text-lg"></i>
-                </div>
-                <span class="text-indigo-400 text-sm font-medium">15.00 AZN</span>
-            </div>
-            <!-- Pack 4 -->
-            <div class="bg-[#1a2136] rounded-xl p-4 flex flex-col items-center justify-center border border-white/5 cursor-pointer hover:bg-[#232d47]">
-                <div class="flex items-center space-x-1 mb-1">
-                    <span class="text-xl font-bold text-white">11k</span>
-                    <i class="fa-regular fa-gem text-jeton text-lg"></i>
-                </div>
-                <span class="text-indigo-400 text-sm font-medium">25.00 AZN</span>
-            </div>
-            
-            <div class="col-span-2 mt-2">
-                <p class="text-gray-500 text-xs text-center">Ödəniş əl ilə təsdiqlənir: sifariş ver, ödə - admin təsdiqləyəndən sonra jeton hesabına düşür.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. Search Modal -->
-    <div id="search-modal" class="bottom-sheet fixed inset-x-0 bottom-0 max-w-[500px] mx-auto bg-cardBg rounded-t-3xl z-50 p-6 flex flex-col h-[70%]">
-        <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeAllModals()"></div>
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-white">Oyunçu axtar</h2>
-            <button onclick="closeAllModals()" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        
-        <div class="bg-[#0f1423] rounded-xl p-3 flex items-center border border-white/10 mb-4 focus-within:border-primary transition-colors">
-            <i class="fa-solid fa-magnifying-glass text-gray-500 mr-3"></i>
-            <input type="text" placeholder="Nik və ya ID yaz" class="bg-transparent border-none outline-none text-white w-full placeholder-gray-500 text-sm">
-        </div>
-        <p class="text-gray-500 text-xs">Nikin bir hissəsi və ya tam ID nömrəsi</p>
-        
-        <!-- Search Results Area -->
-        <div class="mt-6">
-            <!-- Empty state usually, will populate dynamically in JS -->
-        </div>
-    </div>
-
-    <!-- 4. Notifications Modal -->
-    <div id="notifications-modal" class="bottom-sheet fixed inset-x-0 bottom-0 max-w-[500px] mx-auto bg-cardBg rounded-t-3xl z-50 p-6 flex flex-col h-[70%]">
-        <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeAllModals()"></div>
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-white">Bildirişlər</h2>
-            <button onclick="closeAllModals()" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="flex flex-col items-center justify-center h-full opacity-50 pb-10">
-            <i class="fa-regular fa-bell text-4xl mb-3"></i>
-            <p class="text-sm">Yeni bildiriş yoxdur</p>
-        </div>
-    </div>
-
-    <!-- 5. Admin Contact Modal -->
-    <div id="admin-modal" class="bottom-sheet fixed inset-x-0 bottom-0 max-w-[500px] mx-auto bg-cardBg rounded-t-3xl z-50 p-6 flex flex-col h-auto">
-        <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeAllModals()"></div>
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold text-white">Adminlə Əlaqə</h2>
-            <button onclick="closeAllModals()" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="bg-[#1a2136] rounded-xl p-4 flex items-center space-x-4 border border-white/5">
-            <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white text-xl shadow-lg">
-                <i class="fa-solid fa-user-shield"></i>
-            </div>
-            <div>
-                <h3 class="text-white font-bold">Admin Alik</h3>
-                <p class="text-gray-400 text-sm">Hər hansı probleminiz varsa, yazın.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- 6. Settings / Edit Profile Modal (Complex Form) -->
-    <div id="settings-modal" class="bottom-sheet fixed inset-x-0 bottom-0 max-w-[500px] mx-auto bg-cardBg rounded-t-3xl z-50 p-6 flex flex-col h-[92%] overflow-y-auto no-scrollbar">
-        <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer flex-shrink-0" onclick="closeAllModals()"></div>
-        <div class="flex justify-between items-center mb-6 flex-shrink-0">
-            <h2 class="text-xl font-bold text-white">Ayarlar</h2>
-            <button onclick="closeAllModals()" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        
-        <div class="space-y-5 pb-10">
-            <!-- Edit Picture -->
-            <div class="flex items-center space-x-4" onclick="document.getElementById('profile-upload').click()">
-                <img src="https://placehold.co/150x150/1a1a1a/cccccc?text=Ali" class="w-16 h-16 rounded-full object-cover border border-white/20">
-                <button class="bg-[#1a2136] text-white text-sm px-4 py-2 rounded-full border border-white/10">Şəkli dəyiş</button>
-                <input type="file" id="profile-upload" class="hidden" accept="image/*">
-            </div>
-
-            <!-- Name -->
-            <div>
-                <label class="text-gray-400 text-xs mb-1 block">Ad</label>
-                <input type="text" value="|A|L|I|K|" class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 focus:border-primary outline-none">
-            </div>
-
-            <!-- Status -->
-            <div>
-                <label class="text-gray-400 text-xs mb-1 block">Status</label>
-                <input type="text" placeholder="Status yaz..." class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 focus:border-primary outline-none">
-            </div>
-
-            <!-- Country Dropdown -->
-            <div>
-                <label class="text-gray-400 text-xs mb-1 block">Ölkə</label>
-                <select class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 focus:border-primary outline-none appearance-none">
-                    <option value="" disabled>— seçilməyib —</option>
-                    <option value="az" selected>🇦🇿 Azərbaycan</option>
-                    <option value="tr">🇹🇷 Türkiyə</option>
-                    <option value="ru">🇷🇺 Rusiya</option>
-                    <option value="ge">🇬🇪 Gürcüstan</option>
-                    <option value="gb">🇬🇧 İngiltərə</option>
-                </select>
-            </div>
-
-            <!-- City/Region -->
-            <div>
-                <label class="text-gray-400 text-xs mb-1 block">Rayon / şəhər</label>
-                <input type="text" value="511" class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 focus:border-primary outline-none">
-            </div>
-
-            <!-- Age -->
-            <div>
-                <label class="text-gray-400 text-xs mb-1 block">Yaş</label>
-                <input type="number" min="18" max="99" value="99" class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 focus:border-primary outline-none">
-            </div>
-
-            <!-- Gender -->
-            <div>
-                <label class="text-gray-400 text-xs mb-1 block">Cinsiyyət</label>
-                <div class="flex space-x-3">
-                    <button class="flex-1 bg-[#1a2136] text-white rounded-xl p-3 border border-primary text-sm transition-colors">Kişi</button>
-                    <button class="flex-1 bg-[#0f1423] text-gray-400 rounded-xl p-3 border border-white/5 text-sm transition-colors">Qadın</button>
-                </div>
-            </div>
-
-            <!-- Save Profile Button -->
-            <button class="w-full bg-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-indigo-600 transition-colors">
-                Yadda saxla
-            </button>
-
-            <div class="h-[1px] bg-white/10 w-full my-4"></div>
-
-            <!-- Password Change -->
-            <h3 class="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-3">Şifrəni Dəyiş</h3>
-            <div class="space-y-3">
-                <input type="password" placeholder="Hazırkı şifrə" class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 outline-none">
-                <input type="password" placeholder="Yeni şifrə (ən azı 6 simvol)" class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 outline-none">
-                <button class="w-full bg-[#1a2136] text-white font-bold py-3 rounded-xl border border-white/10 hover:bg-[#232d47]">Şifrəni yenilə</button>
-            </div>
-
-            <!-- Logout from other devices -->
-            <button class="w-full bg-[#1a2136] text-white font-bold py-3 rounded-xl border border-white/10 hover:bg-[#232d47] mt-3">
-                Başqa cihazlardan çıx
-            </button>
-            
-            <div class="h-[1px] bg-white/10 w-full my-4"></div>
-
-            <!-- Other Settings Menu Items -->
-            <h3 class="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-3">Digər</h3>
-            
-            <div class="bg-[#1a2136] rounded-xl border border-white/5 overflow-hidden">
-                <!-- Language -->
-                <div class="flex items-center p-4 border-b border-white/5 cursor-pointer hover:bg-white/5" onclick="alert('Dil seçimi açılacaq')">
-                    <div class="w-10 h-10 bg-[#0f1423] rounded-full flex items-center justify-center text-blue-400 mr-4">
-                        <i class="fa-solid fa-globe"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-white font-bold text-sm">Dil</h4>
-                        <p class="text-gray-400 text-[10px]">Azərbaycan · Русский · English · ქართული</p>
-                    </div>
-                </div>
-                
-                <!-- Logout -->
-                <div class="flex items-center p-4 cursor-pointer hover:bg-white/5" onclick="logout()">
-                    <div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center text-red-500 mr-4">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-red-500 font-bold text-sm">Çıxış</h4>
-                        <p class="text-gray-400 text-[10px]">Hesabdan çıx və giriş səhifəsinə qayıt</p>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-</div>
-
-<script>
-    // --- View Navigation Logic ---
-    function switchView(viewId) {
-        // Hide all views
-        document.getElementById('view-home').classList.add('hidden');
-        document.getElementById('view-messages').classList.add('hidden');
-        
-        // Reset bottom nav states (removing active color)
-        document.getElementById('nav-home').classList.remove('text-white');
-        document.getElementById('nav-home').classList.add('text-gray-500');
-        document.getElementById('nav-messages').classList.remove('text-white');
-        document.getElementById('nav-messages').classList.add('text-gray-500');
-
-        // Show selected view and set active nav color
-        document.getElementById(viewId).classList.remove('hidden');
-        if(viewId === 'view-home') {
-            document.getElementById('nav-home').classList.remove('text-gray-500');
-            document.getElementById('nav-home').classList.add('text-white');
-        } else if (viewId === 'view-messages') {
-            document.getElementById('nav-messages').classList.remove('text-gray-500');
-            document.getElementById('nav-messages').classList.add('text-white');
-        }
-    }
-
-    // --- Modal Logic ---
-    const backdrop = document.getElementById('modal-backdrop');
-    let currentOpenModal = null;
-
-    function openModal(modalId) {
-        closeAllModals(); // Ensure others are closed
-        const modal = document.getElementById(modalId);
-        if(modal) {
-            backdrop.classList.remove('hidden');
-            // small timeout to allow display:block to render before transitioning transform/opacity
-            setTimeout(() => {
-                backdrop.classList.add('open');
-                modal.classList.add('open');
-            }, 10);
-            currentOpenModal = modal;
-        }
-    }
-
-    function closeAllModals() {
-        backdrop.classList.remove('open');
-        const modals = document.querySelectorAll('.bottom-sheet');
-        modals.forEach(m => m.classList.remove('open'));
-        
-        // Hide backdrop completely after fade out animation
-        setTimeout(() => {
-            if(!backdrop.classList.contains('open')) {
-                backdrop.classList.add('hidden');
+        // WhatsApp Stili Status Yükləmə (Yalnız dostlar görür)
+        window.uploadStory = async function(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            if (file.size > 900000 && file.type.startsWith("video")) {
+                return alert("Video ölçüsü çox böyükdür (maksimum 900KB). Qısa video seçin.");
             }
-        }, 300);
-        currentOpenModal = null;
-    }
+            let dataUrl = "";
+            if (file.type.startsWith("image")) {
+                dataUrl = await compressImage(file, 450);
+            } else {
+                dataUrl = await new Promise(res => {
+                    const r = new FileReader();
+                    r.onload = e => res(e.target.result);
+                    r.readAsDataURL(file);
+                });
+            }
+            await addDoc(collection(db, "stories"), {
+                ownerId: myData.id,
+                ownerName: myData.username,
+                ownerAvatar: myData.avatar || "",
+                media: dataUrl,
+                type: file.type.startsWith("video") ? "video" : "image",
+                createdAt: Date.now()
+            });
+            alert("Status paylaşıldı! Yalnız dostlarınız görə biləcək.");
+        };
 
-    function logout() {
-        // Mock logout logic. In reality:
-        // auth.signOut().then(() => window.location.href = 'index.html');
-        alert('Çıxış edilir... Qeydiyyat səhifəsinə yönləndiriləcəksiniz.');
-    }
+        function listenFriendsStories() {
+            const friendIds = [myData.id, ...(myData.friends || []).map(f => f.id)];
+            onSnapshot(collection(db, "stories"), (snap) => {
+                const container = document.getElementById("friendsStoriesList");
+                const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+                let html = "";
+                snap.forEach(d => {
+                    const s = d.data();
+                    if (s.createdAt > dayAgo && friendIds.includes(s.ownerId)) {
+                        html += `
+                            <div class="story-item" onclick='openStoryViewer(${JSON.stringify({ownerName: s.ownerName, type: s.type, media: s.media})})'>
+                                <div class="story-ring">
+                                    <img src="${s.ownerAvatar || DEFAULT_AVATAR}">
+                                </div>
+                                <span class="story-name">${s.ownerName}</span>
+                            </div>
+                        `;
+                    }
+                });
+                container.innerHTML = html;
+            });
+        }
 
-    /* 
-     * --- FIREBASE INTEGRATION NOTES (For the future Backend setup) ---
-     * 
-     * 1. Fetching User Data on load:
-     *    auth.onAuthStateChanged(user => {
-     *        if (user) {
-     *            const userId = user.uid;
-     *            db.collection('users').doc(userId).onSnapshot(doc => {
-     *                const data = doc.data();
-     *                // Update UI: document.getElementById('profileName').innerText = data.name;
-     *                // Update UI: document.getElementById('profileJeton').innerText = data.jeton;
-     *            });
-     *        }
-     *    });
-     * 
-     * 2. Updating Settings:
-     *    const saveBtn = document.getElementById('btnSaveSettings');
-     *    saveBtn.addEventListener('click', async () => {
-     *       const newName = document.getElementById('inputName').value;
-     *       await db.collection('users').doc(userId).update({ name: newName });
-     *       closeAllModals();
-     *    });
-     * 
-     * 3. Real-time Messages:
-     *    db.collection('chats').where('participants', 'array-contains', userId)
-     *      .onSnapshot(snapshot => {
-     *          // Render chat list in #view-messages
-     *      });
-     */
+        window.openStoryViewer = function(s) {
+            document.getElementById("storyViewerOwner").textContent = s.ownerName;
+            document.getElementById("storyViewerMedia").innerHTML = s.type === "video"
+                ? `<video src="${s.media}" controls autoplay style="width:100%; max-height:420px;"></video>`
+                : `<img src="${s.media}" style="width:100%; max-height:420px; object-fit:contain;">`;
+            openSheet("storyViewerModal");
+        };
 
-</script>
+        // REAL-VAXT MESAJLAŞMA SİSTEMİ
+        function listenIncomingMessages() {
+            const q = query(collection(db, "messages"), where("participants", "array-contains", sessionUser.id));
+            onSnapshot(q, (snap) => {
+                let unreadCount = 0;
+                const partnersMap = new Map();
 
+                snap.forEach(d => {
+                    const m = d.data();
+                    if (m.toId === sessionUser.id && !m.read) {
+                        unreadCount++;
+                    }
+                    const partnerId = m.fromId === sessionUser.id ? m.toId : m.fromId;
+                    const partnerName = m.fromId === sessionUser.id ? m.toName : m.fromName;
+                    const existing = partnersMap.get(partnerId);
+                    if (!existing || m.createdAt > existing.createdAt) {
+                        partnersMap.set(partnerId, { partnerId, partnerName, lastText: m.text, createdAt: m.createdAt });
+                    }
+                });
+
+                const badge = document.getElementById("msgNavBadge");
+                if (unreadCount > 0) {
+                    badge.style.display = "flex";
+                    badge.textContent = unreadCount;
+                } else {
+                    badge.style.display = "none";
+                }
+
+                const recentBox = document.getElementById("recentChatsList");
+                const sorted = Array.from(partnersMap.values()).sort((a, b) => b.createdAt - a.createdAt);
+                recentBox.innerHTML = sorted.length
+                    ? sorted.map(c => `
+                        <div class="user-row" onclick="startChatWith(${c.partnerId}, '${c.partnerName}')">
+                            <div>
+                                <div style="font-weight:700;">${c.partnerName} <span style="font-size:11px; color:#fbbf24;">(ID ${c.partnerId})</span></div>
+                                <div style="font-size:12px; color:#94a3b8;">${c.lastText}</div>
+                            </div>
+                            <span>›</span>
+                        </div>`).join("")
+                    : `<p style="color:#94a3b8; font-size:13px;">Hələ mesajınız yoxdur.</p>`;
+            });
+        }
+
+        window.openMessagesSheet = function() {
+            backToChatList();
+            openSheet("messagesSheet");
+        };
+
+        window.toggleFriendsToChat = function() {
+            const box = document.getElementById("friendsToChatList");
+            if (box.style.display === "block") {
+                box.style.display = "none";
+                return;
+            }
+            const friends = myData.friends || [];
+            box.innerHTML = friends.length
+                ? friends.map(f => `
+                    <div class="user-row" onclick="startChatWith(${f.id}, '${f.username}')">
+                        <div class="user-row-left">
+                            <img src="${f.avatar || DEFAULT_AVATAR}">
+                            <div style="font-weight:700;">${f.username} (ID ${f.id})</div>
+                        </div>
+                        <span style="color:#818cf8; font-size:12px;">Yaz ›</span>
+                    </div>`).join("")
+                : `<p style="color:#94a3b8; font-size:12px;">Mesaj yazmaq üçün əvvəlcə dost əlavə edin.</p>`;
+            box.style.display = "block";
+        };
+
+        window.startChatWith = function(partnerId, partnerName) {
+            closeSheet("listSheet");
+            openSheet("messagesSheet");
+            activeChatPartner = { id: partnerId, username: partnerName };
+            document.getElementById("chatHeaderTitle").textContent = partnerName;
+            document.getElementById("chatListView").style.display = "none";
+            document.getElementById("activeChatView").style.display = "block";
+
+            if (unsubscribeChat) unsubscribeChat();
+            const q = query(collection(db, "messages"), where("participants", "array-contains", myData.id));
+            unsubscribeChat = onSnapshot(q, (snap) => {
+                const msgs = [];
+                snap.forEach(d => {
+                    const m = d.data();
+                    if ((m.fromId === myData.id && m.toId === partnerId) || (m.fromId === partnerId && m.toId === myData.id)) {
+                        msgs.push({ docId: d.id, ...m });
+                        if (m.toId === myData.id && !m.read) {
+                            updateDoc(doc(db, "messages", d.id), { read: true });
+                        }
+                    }
+                });
+                msgs.sort((a, b) => a.createdAt - b.createdAt);
+                const box = document.getElementById("chatMessagesBox");
+                box.innerHTML = msgs.map(m => `
+                    <div class="msg-bubble ${m.fromId === myData.id ? "msg-me" : "msg-them"}">${m.text}</div>
+                `).join("");
+                box.scrollTop = box.scrollHeight;
+            });
+        };
+
+        window.backToChatList = function() {
+            if (unsubscribeChat) unsubscribeChat();
+            activeChatPartner = null;
+            document.getElementById("chatHeaderTitle").textContent = "Mesajlar";
+            document.getElementById("activeChatView").style.display = "none";
+            document.getElementById("chatListView").style.display = "block";
+        };
+
+        window.sendDirectMessage = async function() {
+            const input = document.getElementById("chatInput");
+            const text = input.value.trim();
+            if (!text || !activeChatPartner) return;
+            input.value = "";
+
+            await addDoc(collection(db, "messages"), {
+                fromId: myData.id,
+                fromName: myData.username,
+                toId: activeChatPartner.id,
+                toName: activeChatPartner.username,
+                participants: [myData.id, activeChatPartner.id],
+                text: text,
+                read: false,
+                createdAt: Date.now()
+            });
+        };
+
+        // Çoxdilli sistem
+        const uiDict = {
+            az: { settings: "Ayarlar", views: "Baxanlar", hearts: "Ürək", jetons: "Jeton", friends: "Dostlar", home: "Ana səhifə", messages: "Mesajlar", yourStory: "Sənin", playBtn: "Oyna ▶" },
+            tr: { settings: "Ayarlar", views: "Bakanlar", hearts: "Kalp", jetons: "Jeton", friends: "Arkadaşlar", home: "Ana sayfa", messages: "Mesajlar", yourStory: "Senin", playBtn: "Oyna ▶" },
+            ru: { settings: "Настройки", views: "Просмотры", hearts: "Сердца", jetons: "Жетоны", friends: "Друзья", home: "Главная", messages: "Сообщения", yourStory: "Твоя", playBtn: "Играть ▶" },
+            en: { settings: "Settings", views: "Views", hearts: "Hearts", jetons: "Tokens", friends: "Friends", home: "Home", messages: "Messages", yourStory: "Yours", playBtn: "Play ▶" },
+            ka: { settings: "პარამეტრები", views: "ნახვები", hearts: "გული", jetons: "ჟეტონი", friends: "მეგობრები", home: "მთავარი", messages: "შეტყობინებები", yourStory: "შენი", playBtn: "თამაში ▶" }
+        };
+
+        window.applyAppLanguage = function(lang) {
+            const d = uiDict[lang] || uiDict.az;
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (d[key]) el.textContent = d[key];
+            });
+        };
+
+        window.openSheet = function(id) { document.getElementById(id).classList.add("open"); };
+        window.closeSheet = function(id) { document.getElementById(id).classList.remove("open"); };
+        window.closeAllSheets = function() {
+            document.querySelectorAll(".sheet-overlay").forEach(s => s.classList.remove("open"));
+        };
+
+        initRealtimeProfile();
+    </script>
 </body>
 </html>
