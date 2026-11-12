@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Butulka Baku - Canvas Oyun</title>
+    <title>Butulka Baku - Orijinal Oyun</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
-            background-color: #c87d43;
-            background-image: radial-gradient(circle, rgba(0,0,0,0) 30%, rgba(0,0,0,0.4) 100%), url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            background-color: #b56531;
+            background-image: radial-gradient(circle, rgba(0,0,0,0.1) 20%, rgba(0,0,0,0.5) 100%), url('https://www.transparenttextures.com/patterns/wood-pattern.png');
             color: #fff;
             height: 100vh;
             display: flex;
@@ -18,90 +18,103 @@
             position: relative;
         }
 
-        /* Yuxarı Panel */
+        /* Orijinal Yuxarı Panel (Şəkildəki kimi qızıl və narıncı tonlarda) */
         .top-bar {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 8px 12px; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(6px); z-index: 50; flex-shrink: 0;
+            padding: 8px 14px; background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(8px); z-index: 50; flex-shrink: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         .hearts-box {
-            display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: bold; background: rgba(0,0,0,0.35); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15);
+            display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: bold; background: linear-gradient(135deg, #ff7e5f, #feb47b); padding: 4px 12px; border-radius: 20px; color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.3); text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
         }
         .top-icons { display: flex; align-items: center; gap: 10px; }
         .icon-btn {
-            width: 34px; height: 34px; border-radius: 50%;
-            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+            width: 35px; height: 35px; border-radius: 50%;
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
             display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .table-info { text-align: center; line-height: 1.1; font-size: 12px; font-weight: bold; }
+        .table-info { text-align: center; line-height: 1.1; font-size: 12px; font-weight: bold; text-shadow: 1px 1px 2px #000; }
 
-        /* Oyun Masası Mərkəzi (Canvas Lövhəsi) */
+        /* Oyun Masası Mərkəzi */
         .game-board {
             flex: 1; position: relative; display: flex; align-items: center; justify-content: center; width: 100%; overflow: hidden;
         }
         
-        #gameCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10;
+        /* Şəkildəki kimi diagonal oturan real VIP Butulka */
+        .center-bottle-box {
+            position: absolute; width: 65px; height: 170px; display: flex; align-items: center; justify-content: center;
+            z-index: 10; transition: transform 3s cubic-bezier(0.15, 0.85, 0.25, 1);
+            transform: rotate(28deg);
+            filter: drop-shadow(0 12px 14px rgba(0,0,0,0.65));
+        }
+        .center-bottle-box img {
+            width: 100%; height: 100%; object-fit: contain; pointer-events: none;
         }
 
         .bottle-text {
-            position: absolute; width: 200px; text-align: center; color: #fff; font-weight: bold; font-size: 12px; text-shadow: 1px 1px 3px #000; z-index: 12; bottom: 35%;
+            position: absolute; width: 200px; text-align: center; color: #fff; font-weight: bold; font-size: 12px; text-shadow: 1px 1px 3px #000; z-index: 12; bottom: -35px; transform: rotate(-28deg);
         }
         .spin-btn {
-            position: absolute; bottom: 25%; background: #ec4899; color: #fff; border: 2px solid #fff; padding: 8px 22px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 15;
+            position: absolute; bottom: -45px; background: #ec4899; color: #fff; border: 2px solid #fff; padding: 6px 18px; border-radius: 18px; font-weight: bold; font-size: 12px; cursor: pointer; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 12; transform: rotate(-28deg);
         }
 
-        /* Dairəvi Stullar və Profillər (12 nəfərlik masa) */
+        /* Dairəvi Stullar və Şəkildəki Kimi Qızıl Çərçivəli Profillər */
         .circle-container {
-            width: 290px; height: 290px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 310px; height: 310px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
         .seat {
-            position: absolute; width: 54px; height: 54px; top: 50%; left: 50%; margin: -27px;
+            position: absolute; width: 58px; height: 58px; top: 50%; left: 50%; margin: -29px;
             display: flex; align-items: center; justify-content: center;
         }
         .player-card {
-            width: 100%; height: 100%; border-radius: 12px; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.2); background: #1a1d33; overflow: hidden;
+            width: 100%; height: 100%; border-radius: 14px; position: relative; box-shadow: 0 5px 12px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.25); background: #1a1d33; overflow: visible;
         }
-        .player-card.is-vip { border-color: #fbbf24; box-shadow: 0 0 12px rgba(251,191,36,0.6); }
-        .player-card img { width: 100%; height: 100%; object-fit: cover; }
+        /* Şəkildəki zəngli/qızıl VIP çərçivə effekti */
+        .player-card.is-vip { 
+            border: 3px solid #fbbf24; 
+            box-shadow: 0 0 14px rgba(251,191,36,0.7), inset 0 0 6px rgba(251,191,36,0.5); 
+        }
+        .player-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+        
         .player-name {
-            position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%);
-            font-size: 8px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.8); padding: 1px 5px; border-radius: 4px; white-space: nowrap;
+            position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%);
+            font-size: 9px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.8); padding: 1px 6px; border-radius: 6px; white-space: nowrap; border: 1px solid rgba(255,255,255,0.15);
         }
-        .gender-icon { position: absolute; top: -4px; right: -4px; background: #1e293b; padding: 1px; border-radius: 50%; font-size: 9px; z-index: 5; }
+        .gender-icon { position: absolute; top: -5px; right: -5px; background: #1e293b; padding: 1px; border-radius: 50%; font-size: 9px; z-index: 5; border: 1px solid #fff; }
+
+        /* Şəkildəki kimi Dodaq/Öpüş stikeri overlay-i */
+        .kiss-sticker {
+            position: absolute; bottom: -2px; right: -6px; font-size: 16px; z-index: 6; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
+        }
 
         /* Öpüşmə / Seçim Paneli */
         .kiss-overlay-board {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+            position: absolute; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(5px);
             z-index: 25; display: none; flex-direction: column; align-items: center; justify-content: center;
         }
         .kiss-title { font-size: 18px; font-weight: bold; margin-bottom: 12px; text-shadow: 1px 1px 4px #000; color: #fff; }
         .kiss-profiles-box { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .kiss-prof-img { width: 70px; height: 70px; border-radius: 14px; border: 3px solid #fff; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .kiss-prof-img { width: 70px; height: 70px; border-radius: 14px; border: 3px solid #fbbf24; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
         .kiss-timer { font-size: 30px; font-weight: bold; color: #fbbf24; text-shadow: 2px 2px 5px #000; }
         .kiss-buttons { display: flex; gap: 12px; }
-        .btn-red-custom { background: #ef4444; color: #fff; padding: 8px 18px; border-radius: 10px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; }
-        .btn-green-custom { background: #22c55e; color: #fff; padding: 8px 20px; border-radius: 10px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; }
+        .btn-red-custom { background: #ef4444; color: #fff; padding: 8px 18px; border-radius: 10px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(239,68,68,0.5); }
+        .btn-green-custom { background: #22c55e; color: #fff; padding: 8px 20px; border-radius: 10px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(34,197,94,0.5); }
 
-        /* Canlı Çat */
+        /* Canlı Çat (Şəkildəki ağ və səliqəli dizayn) */
         .chat-container {
             height: 150px; background: #fff; display: flex; flex-direction: column; border-top-left-radius: 18px; border-top-right-radius: 18px; box-shadow: 0 -4px 15px rgba(0,0,0,0.3); z-index: 30; flex-shrink: 0;
         }
         .chat-messages { flex: 1; padding: 6px 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
-        .chat-line { font-size: 12px; color: #333; line-height: 1.2; background: #f1f5f9; padding: 4px 8px; border-radius: 8px; align-self: flex-start; max-width: 90%; word-break: break-word; }
+        .chat-line { font-size: 12px; color: #333; line-height: 1.2; background: #f1f5f9; padding: 5px 10px; border-radius: 10px; align-self: flex-start; max-width: 90%; word-break: break-word; border-left: 3px solid #ec4899; }
         .chat-sender { font-weight: bold; color: #ec4899; }
         
         .chat-input-area { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-top: 1px solid #e2e8f0; background: #f8fafc; }
-        .chat-input { flex: 1; padding: 6px 10px; border-radius: 18px; border: 1px solid #cbd5e1; outline: none; font-size: 12px; }
-        .send-btn { background: #f97316; color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .chat-input { flex: 1; padding: 6px 12px; border-radius: 18px; border: 1px solid #cbd5e1; outline: none; font-size: 12px; }
+        .send-btn { background: #f97316; color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(249,115,22,0.4); }
 
         .bottom-bonus-bar {
-            height: 35px; background: #1e293b; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 11px; font-weight: bold; z-index: 35; flex-shrink: 0;
+            height: 35px; background: #1e293b; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 11px; font-weight: bold; z-index: 35; flex-shrink: 0; border-top: 1px solid rgba(255,255,255,0.08);
         }
     </style>
 </head>
@@ -109,7 +122,7 @@
 
     <div class="top-bar">
         <div class="hearts-box">
-            <span style="color:#ef4444; font-size:16px;">❤️</span> 
+            <span style="font-size:16px;">❤️</span> 
             <span id="myHeartsDisplay">0</span>
         </div>
         <div class="top-icons">
@@ -134,11 +147,12 @@
             </div>
         </div>
 
-        <!-- HTML5 Canvas Lövhəsi (Butulkanın hamar çəkildiyi yer) -->
-        <canvas id="gameCanvas"></canvas>
-
-        <div class="bottle-text" id="bottleText">Qızları gözləyirik</div>
-        <button class="spin-btn" id="spinBtn" onclick="requestSpin()">Fırlat!</button>
+        <!-- Orijinal VIP Butulka -->
+        <div class="center-bottle-box" id="bottleImg">
+            <img src="https://i.ibb.co/68v4310/vip-bottle.png" alt="VIP Butulka">
+            <div class="bottle-text" id="bottleText">Qızları gözləyirik</div>
+            <button class="spin-btn" id="spinBtn" onclick="requestSpin()">Fırlat!</button>
+        </div>
 
         <!-- Dairəvi Stullar -->
         <div class="circle-container" id="seatsContainer"></div>
@@ -172,44 +186,10 @@
 
         document.getElementById("myHeartsDisplay").textContent = sessionUser.hearts || 0;
 
-        // Canvas elementini tən mərkəzdə quraşdırırıq
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-
-        function resizeCanvas() {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        // VIP Butulka Şəkil Obyekti
-        const bottleImg = new Image();
-        bottleImg.src = "https://i.ibb.co/68v4310/vip-bottle.png";
-        let currentAngle = 0;
-
-        function drawBottle(angleInDegrees) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate((angleInDegrees * Math.PI) / 180);
-            
-            // Butulkanın ölçüləri və mərkəzlənməsi
-            const bWidth = 50;
-            const bHeight = 140;
-            ctx.drawImage(bottleImg, -bWidth / 2, -bHeight / 2, bWidth, bHeight);
-            
-            ctx.restore();
-        }
-
-        bottleImg.onload = () => {
-            drawBottle(currentAngle);
-        };
-
         function initEmptySeats() {
             const container = document.getElementById("seatsContainer");
             container.innerHTML = "";
-            const radius = 115; 
+            const radius = 120; 
             for (let i = 0; i < 12; i++) {
                 const angle = (i * 30 - 90) * (Math.PI / 180);
                 const x = radius * Math.cos(angle);
@@ -248,11 +228,14 @@
                     const vipClass = p.vip ? "is-vip" : "";
                     const nameColor = p.vip ? (p.gender === "Qadın" ? "#f43f5e" : "#38bdf8") : "#fff";
                     const userAvatar = p.avatar && p.avatar.trim() !== "" ? p.avatar : DEFAULT_AVATAR;
+                    // Şəkildəki kimi bəzi profillərə dodaq stikeri əlavə edirik (estetik görünüş üçün)
+                    const kissSticker = p.vip ? `<div class="kiss-sticker">💋</div>` : "";
 
                     seatDiv.innerHTML = `
                         <div class="player-card ${vipClass}">
                             <span class="gender-icon">${genderIcon}</span>
                             <img src="${userAvatar}">
+                            ${kissSticker}
                             <div class="player-name" style="color: ${nameColor}">${p.vip ? "👑 " : ""}${p.username}</div>
                         </div>`;
                 } else {
@@ -277,35 +260,12 @@
             socket.emit('spin_bottle', currentTableId);
         }
 
-        // Canvas üzərində hamar fırlanma animasiyası
         socket.on('bottle_spinning', (data) => {
-            let targetAngle = data.rotation;
-            let startAngle = currentAngle;
-            let startTime = null;
-            let duration = 3000; // 3 saniyə
-
-            function animateSpin(timestamp) {
-                if (!startTime) startTime = timestamp;
-                let progress = timestamp - startTime;
-                let percent = Math.min(progress / duration, 1);
-                
-                // EaseOut kubsik animasiya effekti
-                let ease = 1 - Math.pow(1 - percent, 3);
-                currentAngle = startAngle + (targetAngle - startAngle) * ease;
-
-                drawBottle(currentAngle);
-
-                if (percent < 1) {
-                    requestAnimationFrame(animateSpin);
-                }
-            }
-            requestAnimationFrame(animateSpin);
+            const bottle = document.getElementById("bottleImg");
+            bottle.style.transform = `rotate(${data.rotation + 28}deg)`;
         });
 
         socket.on('bottle_stopped', (finalAngle) => {
-            currentAngle = finalAngle % 360;
-            drawBottle(currentAngle);
-
             if (globalPlayersList.length >= 2) {
                 startKissModal(globalPlayersList[0], globalPlayersList[1]);
             }
@@ -338,7 +298,7 @@
             if(action === 'kiss') {
                 alert("Alovlu öpüş baş tutdu! ❤️");
             } else {
-                alert("İmtina edildi.");
+                avatar="İmtina edildi.";
             }
         }
 
