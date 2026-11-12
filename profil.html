@@ -1,344 +1,703 @@
-
 <!DOCTYPE html>
 <html lang="az">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Butulka Baku - Profil</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Butulka Baku - Profil</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        appBg: '#0a0e17',      /* Deep dark blue/black */
+                        cardBg: '#151b2b',     /* Slightly lighter blue for cards */
+                        cardBgHover: '#1c2438',
+                        primary: '#6a5acd',    /* Purple accent */
+                        accent: '#ff4d6d',     /* Pinkish red accent */
+                        jeton: '#00d2ff',      /* Light blue for Jeton/Diamond */
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            background-color: #000; /* Black background to center the app */
+            color: white;
+            overflow: hidden; /* App-like feel, no global scrolling */
+        }
+        
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            margin: 0 auto;
+            background-color: #0a0e17; /* App background */
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
 
-<style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', sans-serif;
-}
+        /* Hide scrollbar for stories and main content */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
 
-body {
-    min-height: 100vh;
-    background: linear-gradient(145deg,#10051f,#24103e,#10051f);
-    color: white;
-    padding-bottom: 35px;
-}
+        /* Glassmorphism utilities */
+        .glass {
+            background: rgba(21, 27, 43, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-header {
-    padding: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(255,255,255,.06);
-    border-bottom: 1px solid rgba(255,255,255,.1);
-}
+        /* Bottom Sheet Modal Animation */
+        .bottom-sheet {
+            transform: translateY(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        .bottom-sheet.open {
+            transform: translateY(0);
+        }
 
-.logo {
-    font-size: 21px;
-    font-weight: 900;
-    color: #ff789e;
-    text-shadow: 0 0 12px #ff4380;
-}
+        /* Fade Animation for Backdrops */
+        .fade-in {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+        }
+        .fade-in.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
-.logout {
-    background: #43234e;
-    border: 1px solid #a45a9b;
-    color: white;
-    padding: 9px 14px;
-    border-radius: 12px;
-    cursor: pointer;
-}
+        /* Status Gradient Border */
+        .status-ring {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            padding: 2px;
+            border-radius: 50%;
+        }
 
-.container {
-    width: 92%;
-    max-width: 500px;
-    margin: 25px auto;
-}
-
-.profile-card {
-    background: linear-gradient(145deg,#35154e,#1d1033);
-    border: 1px solid #a64d91;
-    border-radius: 22px;
-    padding: 25px 20px;
-    text-align: center;
-    box-shadow: 0 10px 35px #0008;
-}
-
-.avatar {
-    width: 95px;
-    height: 95px;
-    margin: 0 auto 15px;
-    border-radius: 50%;
-    background: linear-gradient(135deg,#ff758c,#b375ff);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 42px;
-    border: 3px solid white;
-}
-
-.username {
-    font-size: 25px;
-    font-weight: 800;
-}
-
-.user-id {
-    color: #c5a9d8;
-    margin-top: 7px;
-    font-size: 14px;
-}
-
-.vip {
-    display: inline-block;
-    margin-top: 12px;
-    background: linear-gradient(90deg,#f7bd35,#e87919);
-    padding: 6px 18px;
-    border-radius: 20px;
-    color: #301500;
-    font-weight: bold;
-}
-
-.balances {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.balance {
-    background: rgba(255,255,255,.08);
-    border: 1px solid #ffffff20;
-    padding: 16px 8px;
-    border-radius: 15px;
-}
-
-.balance span {
-    display: block;
-    font-size: 24px;
-    font-weight: bold;
-    margin-top: 5px;
-}
-
-.balance small {
-    color: #cbb6d9;
-}
-
-.section-title {
-    margin: 28px 0 13px;
-    font-size: 19px;
-    font-weight: bold;
-}
-
-.game-card {
-    background: linear-gradient(135deg,#ff9b43,#d94b9c,#7839bd);
-    border-radius: 23px;
-    padding: 24px 18px;
-    text-align: center;
-    box-shadow: 0 8px 25px #e34b8050;
-}
-
-.bottle {
-    font-size: 65px;
-    margin-bottom: 10px;
-    animation: spin 5s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(-12deg); }
-    50% { transform: rotate(12deg); }
-    100% { transform: rotate(-12deg); }
-}
-
-.game-card h2 {
-    font-size: 25px;
-    margin-bottom: 8px;
-}
-
-.game-card p {
-    font-size: 14px;
-    color: #fff4f9;
-    margin-bottom: 18px;
-}
-
-.play-button {
-    display: block;
-    width: 100%;
-    background: white;
-    color: #a52d82;
-    text-decoration: none;
-    padding: 16px;
-    border-radius: 14px;
-    font-size: 19px;
-    font-weight: 900;
-    box-shadow: 0 5px 15px #0003;
-}
-
-.menu {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 18px;
-}
-
-.menu-item {
-    background: #29163e;
-    border: 1px solid #613d79;
-    border-radius: 15px;
-    padding: 18px 8px;
-    text-align: center;
-    color: white;
-}
-
-.menu-item .emoji {
-    font-size: 29px;
-    display: block;
-    margin-bottom: 8px;
-}
-
-.menu-item small {
-    color: #bda5ce;
-}
-
-footer {
-    text-align: center;
-    color: #876f9c;
-    font-size: 12px;
-    margin-top: 30px;
-}
-</style>
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+    </style>
 </head>
-
 <body>
 
-<header>
-    <div class="logo">❤️ BUTULKA BAKU</div>
-    <button class="logout" onclick="logout()">Çıxış ↪</button>
-</header>
+<div class="app-container">
 
-<div class="container">
-
-    <div class="profile-card">
-
-        <div class="avatar">👤</div>
-
-        <div class="username" id="username">İstifadəçi</div>
-
-        <div class="user-id">
-            ID: <span id="userId">---</span>
+    <!-- View: HOME / PROFILE (Default) -->
+    <div id="view-home" class="content-area w-full h-full flex flex-col no-scrollbar relative">
+        
+        <!-- 1. Top Header -->
+        <div class="flex justify-between items-center px-4 pt-5 pb-2 z-10">
+            <!-- VIP Button -->
+            <button onclick="openModal('vip-modal')" class="bg-gradient-to-r from-orange-400 to-pink-500 rounded-full px-4 py-1.5 flex items-center space-x-2 shadow-lg shadow-pink-500/30">
+                <i class="fa-solid fa-crown text-white text-sm"></i>
+                <span class="text-white font-bold text-sm">VIP</span>
+            </button>
+            
+            <!-- Header Icons -->
+            <div class="flex space-x-3">
+                <button onclick="openModal('store-modal')" class="w-9 h-9 rounded-full glass flex items-center justify-center text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-cart-shopping text-sm"></i>
+                </button>
+                <button onclick="openModal('search-modal')" class="w-9 h-9 rounded-full glass flex items-center justify-center text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </button>
+                <button onclick="openModal('admin-modal')" class="w-9 h-9 rounded-full glass flex items-center justify-center text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-headphones text-sm"></i>
+                </button>
+                <button onclick="openModal('notifications-modal')" class="w-9 h-9 rounded-full glass flex items-center justify-center text-gray-300 hover:text-white relative">
+                    <i class="fa-regular fa-bell text-sm"></i>
+                    <span class="absolute top-0 right-0 w-2 h-2 bg-accent rounded-full border border-[#0a0e17]"></span>
+                </button>
+                <!-- Settings Icon from Screenshot -->
+                <button onclick="openModal('settings-modal')" class="w-9 h-9 rounded-full glass flex items-center justify-center text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-sliders text-sm"></i>
+                </button>
+            </div>
         </div>
 
-        <div id="vipBadge"></div>
+        <!-- 2. Stories / Status Bar -->
+        <div class="flex overflow-x-auto no-scrollbar px-4 py-4 space-x-4 items-center">
+            <!-- Add Status -->
+            <div class="flex flex-col items-center space-y-1 cursor-pointer" onclick="document.getElementById('status-upload').click()">
+                <div class="w-16 h-16 rounded-full border-2 border-dashed border-gray-600 flex items-center justify-center bg-gray-800/50">
+                    <i class="fa-solid fa-plus text-gray-400 text-xl"></i>
+                </div>
+                <span class="text-xs text-gray-400">Sənin</span>
+                <input type="file" id="status-upload" class="hidden" accept="video/*,image/*">
+            </div>
+            
+            <!-- Mock Friends Stories -->
+            <div class="flex flex-col items-center space-y-1">
+                <div class="status-ring w-16 h-16">
+                    <img src="https://placehold.co/100x100/1a1a1a/cccccc?text=Girl" class="w-full h-full rounded-full border-2 border-[#0a0e17] object-cover">
+                </div>
+                <span class="text-xs text-gray-300 w-16 truncate text-center">|A|L|...</span>
+            </div>
+            <div class="flex flex-col items-center space-y-1">
+                <div class="status-ring w-16 h-16">
+                    <img src="https://placehold.co/100x100/333333/cccccc?text=Car" class="w-full h-full rounded-full border-2 border-[#0a0e17] object-cover">
+                </div>
+                <span class="text-xs text-gray-300 w-16 truncate text-center">Niko</span>
+            </div>
+            <div class="flex flex-col items-center space-y-1">
+                <div class="w-16 h-16 rounded-full p-[2px] bg-gray-700">
+                    <img src="https://placehold.co/100x100/222222/cccccc?text=Boy" class="w-full h-full rounded-full border-2 border-[#0a0e17] object-cover">
+                </div>
+                <span class="text-xs text-gray-300 w-16 truncate text-center">🎁 ➔ |A|...</span>
+            </div>
+        </div>
 
-        <div class="balances">
+        <!-- 3. Main Profile Card -->
+        <div class="px-4 mt-2">
+            <div class="bg-cardBg rounded-3xl p-5 shadow-lg relative border border-white/5">
+                
+                <!-- Avatar & ID Badge Row -->
+                <div class="flex justify-between items-start mb-4">
+                    <div class="relative">
+                        <img src="https://placehold.co/150x150/1a1a1a/cccccc?text=Ali" class="w-20 h-20 rounded-full border-2 border-primary object-cover shadow-lg">
+                        <!-- Edit Pencil -->
+                        <button onclick="openModal('settings-modal')" class="absolute bottom-0 right-0 w-7 h-7 bg-primary rounded-full flex items-center justify-center border-2 border-cardBg text-white text-xs shadow-md">
+                            <i class="fa-solid fa-pencil"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="flex flex-col items-end space-y-2 mt-2">
+                        <!-- Badges/Decorations (Qoca style, VIP border mock) -->
+                        <div class="border border-primary/50 rounded-full px-3 py-1 flex items-center space-x-2 bg-primary/10">
+                            <i class="fa-solid fa-crown text-yellow-500 text-xs"></i>
+                            <span class="text-white font-bold tracking-widest text-sm">|A|L|I|K|</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-check text-blue-500 text-sm"></i>
+                            <div class="bg-yellow-600/20 border border-yellow-600/50 rounded-full px-2 py-0.5 flex items-center">
+                                <span class="bg-yellow-500 text-black text-[10px] font-bold px-1 rounded mr-1">ID</span>
+                                <span class="text-yellow-500 font-bold text-xs">1836</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="balance">
-                ❤️
-                <span id="hearts">0</span>
-                <small>Ürəklər</small>
+                <!-- City / Meta -->
+                <div class="text-gray-400 text-sm mb-4">
+                    511
+                </div>
+
+                <!-- Status Input -->
+                <div class="bg-[#0f1423] rounded-xl p-3 mb-5 flex items-center text-gray-400 cursor-pointer border border-white/5" onclick="openModal('settings-modal')">
+                    <i class="fa-solid fa-pen text-xs mr-3"></i>
+                    <span class="text-sm">Status yaz...</span>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-3 gap-3">
+                    <!-- Ürək -->
+                    <div class="bg-[#0f1423] rounded-2xl p-3 flex flex-col border border-white/5">
+                        <i class="fa-regular fa-heart text-gray-500 mb-2"></i>
+                        <span class="text-white font-bold text-lg">4k</span>
+                        <span class="text-gray-500 text-xs">Ürək</span>
+                    </div>
+                    <!-- Jeton (Replaced Kristal) -->
+                    <div class="bg-[#0f1423] rounded-2xl p-3 flex flex-col border border-white/5">
+                        <i class="fa-regular fa-gem text-jeton mb-2"></i>
+                        <span class="text-white font-bold text-lg">1.4k</span>
+                        <span class="text-gray-500 text-xs">Jeton</span>
+                    </div>
+                    <!-- Dostlar -->
+                    <div class="bg-[#0f1423] rounded-2xl p-3 flex flex-col border border-white/5 cursor-pointer" onclick="switchView('view-messages')">
+                        <i class="fa-solid fa-user-group text-gray-500 mb-2"></i>
+                        <span class="text-white font-bold text-lg">1</span>
+                        <span class="text-gray-500 text-xs">Dostlar</span>
+                    </div>
+                    <!-- Baxanlar -->
+                    <div class="bg-[#0f1423] rounded-2xl p-3 flex flex-col border border-white/5">
+                        <i class="fa-regular fa-eye text-gray-500 mb-2"></i>
+                        <span class="text-white font-bold text-lg">30</span>
+                        <span class="text-gray-500 text-xs">Baxanlar</span>
+                    </div>
+                    <!-- İzlədiyim -->
+                    <div class="bg-[#0f1423] rounded-2xl p-3 flex flex-col border border-white/5">
+                        <i class="fa-solid fa-user-plus text-gray-500 mb-2"></i>
+                        <span class="text-white font-bold text-lg">1</span>
+                        <span class="text-gray-500 text-xs">İzlədiyim</span>
+                    </div>
+                    <!-- İzləyən -->
+                    <div class="bg-[#0f1423] rounded-2xl p-3 flex flex-col border border-white/5">
+                        <i class="fa-regular fa-star text-gray-500 mb-2"></i>
+                        <span class="text-white font-bold text-lg">3</span>
+                        <span class="text-gray-500 text-xs">İzləyən</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- View: MESSAGES & FRIENDS -->
+    <div id="view-messages" class="content-area w-full h-full flex flex-col bg-appBg hidden">
+        <div class="p-4 border-b border-white/10 flex justify-between items-center bg-cardBg z-10 sticky top-0">
+            <h2 class="text-lg font-bold text-white">Mesajlar</h2>
+            <!-- "Dostuna yaz" Button -->
+            <button onclick="openModal('search-modal')" class="bg-primary text-white text-xs px-3 py-1.5 rounded-lg font-medium">
+                <i class="fa-solid fa-pen-to-square mr-1"></i> Dostuna yaz
+            </button>
+        </div>
+        
+        <!-- Chat List -->
+        <div class="flex-1 overflow-y-auto no-scrollbar p-2">
+            <!-- Chat Item -->
+            <div class="flex items-center p-3 hover:bg-cardBg rounded-xl cursor-pointer transition-colors mb-1">
+                <div class="relative">
+                    <img src="https://placehold.co/100x100/333333/cccccc?text=Fr" class="w-12 h-12 rounded-full object-cover">
+                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-appBg"></div>
+                </div>
+                <div class="ml-3 flex-1 border-b border-white/5 pb-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-white text-sm">|A|L|I|K| 2</h3>
+                        <span class="text-gray-500 text-xs">16:40</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-gray-400 text-xs truncate">Salam qaqa necəsən?</p>
+                        <!-- Unread badge -->
+                        <span class="bg-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">1</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Item Offline -->
+            <div class="flex items-center p-3 hover:bg-cardBg rounded-xl cursor-pointer transition-colors mb-1">
+                <img src="https://placehold.co/100x100/222222/cccccc?text=Niko" class="w-12 h-12 rounded-full object-cover">
+                <div class="ml-3 flex-1 border-b border-white/5 pb-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-white text-sm">Niko_511</h3>
+                        <span class="text-gray-500 text-xs">Dünən</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-gray-500 text-xs truncate">Oyundasan?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 4. Bottom Navigation -->
+    <div class="absolute bottom-0 w-full glass rounded-t-3xl pb-safe pt-2 px-6 flex justify-between items-center h-[70px] z-30">
+        <button onclick="switchView('view-home')" id="nav-home" class="flex flex-col items-center space-y-1 text-white w-12">
+            <i class="fa-solid fa-house text-xl"></i>
+            <span class="text-[9px] font-medium">Ana səhifə</span>
+        </button>
+        
+        <!-- Games uses Wine Bottle icon linking to future game -->
+        <button onclick="alert('Tezliklə: Butulka Oyununa Keçid!')" class="flex flex-col items-center space-y-1 text-gray-500 hover:text-white w-12 transition-colors">
+            <i class="fa-solid fa-wine-bottle text-xl"></i>
+            <span class="text-[9px] font-medium">Oyunlar</span>
+        </button>
+        
+        <!-- Center Floating Action Button -->
+        <div class="relative -top-5">
+            <button class="w-14 h-14 bg-indigo-500 rounded-full flex items-center justify-center shadow-lg shadow-indigo-500/40 text-white text-2xl">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+        </div>
+        
+        <button onclick="switchView('view-messages')" id="nav-messages" class="flex flex-col items-center space-y-1 text-gray-500 hover:text-white w-12 transition-colors relative">
+            <i class="fa-regular fa-comment-dots text-xl"></i>
+            <!-- Message Notification Badge -->
+            <span class="absolute -top-1 right-2 w-4 h-4 bg-accent text-white text-[9px] font-bold flex items-center justify-center rounded-full border border-cardBg">1</span>
+            <span class="text-[9px] font-medium">Mesajlar</span>
+        </button>
+        
+        <button class="flex flex-col items-center space-y-1 text-gray-500 hover:text-white w-12 transition-colors">
+            <i class="fa-regular fa-circle-play text-xl"></i>
+            <span class="text-[9px] font-medium">Videolar</span>
+        </button>
+    </div>
+
+
+    <!-- MODALS & BOTTOM SHEETS -->
+    
+    <!-- Dark Backdrop for all modals -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/70 z-40 fade-in" onclick="closeAllModals()"></div>
+
+    <!-- 1. VIP Modal -->
+    <div id="vip-modal" class="bottom-sheet fixed inset-x-0 bottom-0 max-w-[500px] mx-auto bg-cardBg rounded-t-3xl z-50 p-6 flex flex-col items-center shadow-[0_-10px_40px_rgba(0,0,0,0.5)] h-[85%]">
+        <div class="w-12 h-1 bg-gray-600 rounded-full mb-6 cursor-pointer" onclick="closeAllModals()"></div>
+        <button onclick="closeAllModals()" class="absolute top-5 right-5 w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+        
+        <i class="fa-solid fa-crown text-5xl text-yellow-500 mb-2 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]"></i>
+        <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-pink-500 mb-1">Hamıdan seçil</h2>
+        <p class="text-gray-400 text-sm mb-4 text-center">Hərəkətli ad çərçivəsi və oyunda xüsusi rəng</p>
+        <div class="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded mb-6 flex items-center"><i class="fa-solid fa-check mr-1"></i> VIP</div>
+
+        <!-- Sample Mocked Badge Preview -->
+        <div class="border border-blue-500 rounded-full px-4 py-1.5 flex items-center space-x-2 bg-blue-900/30 mb-8">
+            <i class="fa-solid fa-crown text-yellow-500"></i>
+            <span class="text-white font-bold tracking-widest">|A|L|I|K|</span>
+        </div>
+
+        <!-- Purchase Buttons -->
+        <div class="flex space-x-4 w-full mb-6">
+            <div class="flex-1 bg-[#1a2136] rounded-2xl p-4 border border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                <span class="text-gray-400 text-xs font-bold mb-1">HƏFTƏLİK</span>
+                <div class="flex items-center space-x-1">
+                    <span class="text-2xl font-bold text-white">500</span>
+                    <i class="fa-regular fa-gem text-jeton text-lg"></i>
+                </div>
+                <span class="text-gray-500 text-[10px] mt-1">7 gün</span>
+            </div>
+            
+            <div class="flex-1 bg-[#1a2136] rounded-2xl p-4 border-2 border-yellow-500 flex flex-col items-center justify-center relative cursor-pointer shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                <div class="absolute -top-3 bg-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">Ən sərfəli · 44% qənaət</div>
+                <span class="text-gray-400 text-xs font-bold mb-1">AYLIQ</span>
+                <div class="flex items-center space-x-1">
+                    <span class="text-2xl font-bold text-white">1.2k</span>
+                    <i class="fa-regular fa-gem text-jeton text-lg"></i>
+                </div>
+                <span class="text-gray-500 text-[10px] mt-1">30 gün</span>
+            </div>
+        </div>
+        
+        <button class="w-full bg-gradient-to-r from-yellow-200 via-pink-300 to-pink-500 text-black font-bold py-3.5 rounded-2xl shadow-lg mt-auto mb-4">
+            Aylıq VIP · 1200 <i class="fa-regular fa-gem"></i>
+        </button>
+    </div>
+
+    <!-- 2. Store Modal -->
+    <div id="store-modal" class="bottom-sheet fixed inset-x-0 bottom-0 max-w-[500px] mx-auto bg-cardBg rounded-t-3xl z-50 p-6 flex flex-col h-[90%]">
+        <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeAllModals()"></div>
+        <button onclick="closeAllModals()" class="absolute top-5 right-5 w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+        
+        <h2 class="text-xl font-bold text-white mb-2">Mağaza</h2>
+        <div class="flex items-center space-x-2 mb-6">
+            <span class="text-gray-400 text-sm">Balans:</span>
+            <span class="text-white font-bold text-lg">1.4k</span>
+            <i class="fa-regular fa-gem text-jeton"></i>
+        </div>
+
+        <h3 class="text-gray-400 text-xs font-bold mb-3 uppercase tracking-wider">Jeton Paketləri</h3>
+        <div class="grid grid-cols-2 gap-3 overflow-y-auto no-scrollbar pb-10">
+            <!-- Pack 1 -->
+            <div class="bg-[#1a2136] rounded-xl p-4 flex flex-col items-center justify-center border border-white/5 cursor-pointer hover:bg-[#232d47]">
+                <div class="flex items-center space-x-1 mb-1">
+                    <span class="text-xl font-bold text-white">1k</span>
+                    <i class="fa-regular fa-gem text-jeton text-lg"></i>
+                </div>
+                <span class="text-indigo-400 text-sm font-medium">5.00 AZN</span>
+            </div>
+            <!-- Pack 2 -->
+            <div class="bg-[#1a2136] rounded-xl p-4 flex flex-col items-center justify-center border border-white/5 cursor-pointer hover:bg-[#232d47]">
+                <div class="flex items-center space-x-1 mb-1">
+                    <span class="text-xl font-bold text-white">3k</span>
+                    <i class="fa-regular fa-gem text-jeton text-lg"></i>
+                </div>
+                <span class="text-indigo-400 text-sm font-medium">10.00 AZN</span>
+            </div>
+            <!-- Pack 3 (Highlighted) -->
+            <div class="bg-[#1a2136] rounded-xl p-4 flex flex-col items-center justify-center border-2 border-indigo-500 cursor-pointer">
+                <div class="flex items-center space-x-1 mb-1">
+                    <span class="text-xl font-bold text-white">5k</span>
+                    <i class="fa-regular fa-gem text-jeton text-lg"></i>
+                </div>
+                <span class="text-indigo-400 text-sm font-medium">15.00 AZN</span>
+            </div>
+            <!-- Pack 4 -->
+            <div class="bg-[#1a2136] rounded-xl p-4 flex flex-col items-center justify-center border border-white/5 cursor-pointer hover:bg-[#232d47]">
+                <div class="flex items-center space-x-1 mb-1">
+                    <span class="text-xl font-bold text-white">11k</span>
+                    <i class="fa-regular fa-gem text-jeton text-lg"></i>
+                </div>
+                <span class="text-indigo-400 text-sm font-medium">25.00 AZN</span>
+            </div>
+            
+            <div class="col-span-2 mt-2">
+                <p class="text-gray-500 text-xs text-center">Ödəniş əl ilə təsdiqlənir: sifariş ver, ödə - admin təsdiqləyəndən sonra jeton hesabına düşür.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Search Modal -->
+    <div id="search-modal" class="bottom-sheet fixed inset-x-0 bottom-0 max-w-[500px] mx-auto bg-cardBg rounded-t-3xl z-50 p-6 flex flex-col h-[70%]">
+        <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeAllModals()"></div>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-white">Oyunçu axtar</h2>
+            <button onclick="closeAllModals()" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div class="bg-[#0f1423] rounded-xl p-3 flex items-center border border-white/10 mb-4 focus-within:border-primary transition-colors">
+            <i class="fa-solid fa-magnifying-glass text-gray-500 mr-3"></i>
+            <input type="text" placeholder="Nik və ya ID yaz" class="bg-transparent border-none outline-none text-white w-full placeholder-gray-500 text-sm">
+        </div>
+        <p class="text-gray-500 text-xs">Nikin bir hissəsi və ya tam ID nömrəsi</p>
+        
+        <!-- Search Results Area -->
+        <div class="mt-6">
+            <!-- Empty state usually, will populate dynamically in JS -->
+        </div>
+    </div>
+
+    <!-- 4. Notifications Modal -->
+    <div id="notifications-modal" class="bottom-sheet fixed inset-x-0 bottom-0 max-w-[500px] mx-auto bg-cardBg rounded-t-3xl z-50 p-6 flex flex-col h-[70%]">
+        <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeAllModals()"></div>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-white">Bildirişlər</h2>
+            <button onclick="closeAllModals()" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="flex flex-col items-center justify-center h-full opacity-50 pb-10">
+            <i class="fa-regular fa-bell text-4xl mb-3"></i>
+            <p class="text-sm">Yeni bildiriş yoxdur</p>
+        </div>
+    </div>
+
+    <!-- 5. Admin Contact Modal -->
+    <div id="admin-modal" class="bottom-sheet fixed inset-x-0 bottom-0 max-w-[500px] mx-auto bg-cardBg rounded-t-3xl z-50 p-6 flex flex-col h-auto">
+        <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeAllModals()"></div>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-white">Adminlə Əlaqə</h2>
+            <button onclick="closeAllModals()" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="bg-[#1a2136] rounded-xl p-4 flex items-center space-x-4 border border-white/5">
+            <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white text-xl shadow-lg">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div>
+                <h3 class="text-white font-bold">Admin Alik</h3>
+                <p class="text-gray-400 text-sm">Hər hansı probleminiz varsa, yazın.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Settings / Edit Profile Modal (Complex Form) -->
+    <div id="settings-modal" class="bottom-sheet fixed inset-x-0 bottom-0 max-w-[500px] mx-auto bg-cardBg rounded-t-3xl z-50 p-6 flex flex-col h-[92%] overflow-y-auto no-scrollbar">
+        <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4 cursor-pointer flex-shrink-0" onclick="closeAllModals()"></div>
+        <div class="flex justify-between items-center mb-6 flex-shrink-0">
+            <h2 class="text-xl font-bold text-white">Ayarlar</h2>
+            <button onclick="closeAllModals()" class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div class="space-y-5 pb-10">
+            <!-- Edit Picture -->
+            <div class="flex items-center space-x-4" onclick="document.getElementById('profile-upload').click()">
+                <img src="https://placehold.co/150x150/1a1a1a/cccccc?text=Ali" class="w-16 h-16 rounded-full object-cover border border-white/20">
+                <button class="bg-[#1a2136] text-white text-sm px-4 py-2 rounded-full border border-white/10">Şəkli dəyiş</button>
+                <input type="file" id="profile-upload" class="hidden" accept="image/*">
             </div>
 
-            <div class="balance">
-                🪙
-                <span id="jetons">0</span>
-                <small>Jetonlar</small>
+            <!-- Name -->
+            <div>
+                <label class="text-gray-400 text-xs mb-1 block">Ad</label>
+                <input type="text" value="|A|L|I|K|" class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 focus:border-primary outline-none">
+            </div>
+
+            <!-- Status -->
+            <div>
+                <label class="text-gray-400 text-xs mb-1 block">Status</label>
+                <input type="text" placeholder="Status yaz..." class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 focus:border-primary outline-none">
+            </div>
+
+            <!-- Country Dropdown -->
+            <div>
+                <label class="text-gray-400 text-xs mb-1 block">Ölkə</label>
+                <select class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 focus:border-primary outline-none appearance-none">
+                    <option value="" disabled>— seçilməyib —</option>
+                    <option value="az" selected>🇦🇿 Azərbaycan</option>
+                    <option value="tr">🇹🇷 Türkiyə</option>
+                    <option value="ru">🇷🇺 Rusiya</option>
+                    <option value="ge">🇬🇪 Gürcüstan</option>
+                    <option value="gb">🇬🇧 İngiltərə</option>
+                </select>
+            </div>
+
+            <!-- City/Region -->
+            <div>
+                <label class="text-gray-400 text-xs mb-1 block">Rayon / şəhər</label>
+                <input type="text" value="511" class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 focus:border-primary outline-none">
+            </div>
+
+            <!-- Age -->
+            <div>
+                <label class="text-gray-400 text-xs mb-1 block">Yaş</label>
+                <input type="number" min="18" max="99" value="99" class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 focus:border-primary outline-none">
+            </div>
+
+            <!-- Gender -->
+            <div>
+                <label class="text-gray-400 text-xs mb-1 block">Cinsiyyət</label>
+                <div class="flex space-x-3">
+                    <button class="flex-1 bg-[#1a2136] text-white rounded-xl p-3 border border-primary text-sm transition-colors">Kişi</button>
+                    <button class="flex-1 bg-[#0f1423] text-gray-400 rounded-xl p-3 border border-white/5 text-sm transition-colors">Qadın</button>
+                </div>
+            </div>
+
+            <!-- Save Profile Button -->
+            <button class="w-full bg-indigo-500 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-indigo-600 transition-colors">
+                Yadda saxla
+            </button>
+
+            <div class="h-[1px] bg-white/10 w-full my-4"></div>
+
+            <!-- Password Change -->
+            <h3 class="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-3">Şifrəni Dəyiş</h3>
+            <div class="space-y-3">
+                <input type="password" placeholder="Hazırkı şifrə" class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 outline-none">
+                <input type="password" placeholder="Yeni şifrə (ən azı 6 simvol)" class="w-full bg-[#0f1423] text-white rounded-xl p-3 border border-white/5 outline-none">
+                <button class="w-full bg-[#1a2136] text-white font-bold py-3 rounded-xl border border-white/10 hover:bg-[#232d47]">Şifrəni yenilə</button>
+            </div>
+
+            <!-- Logout from other devices -->
+            <button class="w-full bg-[#1a2136] text-white font-bold py-3 rounded-xl border border-white/10 hover:bg-[#232d47] mt-3">
+                Başqa cihazlardan çıx
+            </button>
+            
+            <div class="h-[1px] bg-white/10 w-full my-4"></div>
+
+            <!-- Other Settings Menu Items -->
+            <h3 class="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-3">Digər</h3>
+            
+            <div class="bg-[#1a2136] rounded-xl border border-white/5 overflow-hidden">
+                <!-- Language -->
+                <div class="flex items-center p-4 border-b border-white/5 cursor-pointer hover:bg-white/5" onclick="alert('Dil seçimi açılacaq')">
+                    <div class="w-10 h-10 bg-[#0f1423] rounded-full flex items-center justify-center text-blue-400 mr-4">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold text-sm">Dil</h4>
+                        <p class="text-gray-400 text-[10px]">Azərbaycan · Русский · English · ქართული</p>
+                    </div>
+                </div>
+                
+                <!-- Logout -->
+                <div class="flex items-center p-4 cursor-pointer hover:bg-white/5" onclick="logout()">
+                    <div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center text-red-500 mr-4">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-red-500 font-bold text-sm">Çıxış</h4>
+                        <p class="text-gray-400 text-[10px]">Hesabdan çıx və giriş səhifəsinə qayıt</p>
+                    </div>
+                </div>
             </div>
 
         </div>
-
     </div>
-
-    <div class="section-title">🍾 Oyun bölməsi</div>
-
-    <div class="game-card">
-
-        <div class="bottle">🍾</div>
-
-        <h2>Целуй и Знакомься</h2>
-
-        <p>
-            Yeni insanlarla tanış ol, masalara qoşul,
-            butulkanı fırlat və əylən!
-        </p>
-
-        <a href="game.html" class="play-button">
-            🍾 OYUNA BAŞLA
-        </a>
-
-    </div>
-
-    <div class="section-title">Digər bölmələr</div>
-
-    <div class="menu">
-
-        <div class="menu-item">
-            <span class="emoji">👥</span>
-            Dostlar
-            <br><small>Tezliklə</small>
-        </div>
-
-        <div class="menu-item">
-            <span class="emoji">🏆</span>
-            Reytinqlər
-            <br><small>Tezliklə</small>
-        </div>
-
-        <div class="menu-item">
-            <span class="emoji">🎁</span>
-            Hədiyyələr
-            <br><small>Tezliklə</small>
-        </div>
-
-        <div class="menu-item">
-            <span class="emoji">👑</span>
-            VIP status
-            <br><small>Tezliklə</small>
-        </div>
-
-    </div>
-
-    <footer>
-        © 2026 Butulka Baku · Bütün hüquqlar qorunur
-    </footer>
 
 </div>
 
 <script>
+    // --- View Navigation Logic ---
+    function switchView(viewId) {
+        // Hide all views
+        document.getElementById('view-home').classList.add('hidden');
+        document.getElementById('view-messages').classList.add('hidden');
+        
+        // Reset bottom nav states (removing active color)
+        document.getElementById('nav-home').classList.remove('text-white');
+        document.getElementById('nav-home').classList.add('text-gray-500');
+        document.getElementById('nav-messages').classList.remove('text-white');
+        document.getElementById('nav-messages').classList.add('text-gray-500');
 
-const userData = localStorage.getItem("currentUser");
-
-if (!userData) {
-    window.location.replace("index.html");
-} else {
-
-    try {
-        const user = JSON.parse(userData);
-
-        document.getElementById("username").textContent =
-            user.username || "İstifadəçi";
-
-        document.getElementById("userId").textContent =
-            user.id || "---";
-
-        document.getElementById("hearts").textContent =
-            Number(user.hearts || 0).toLocaleString("en-US");
-
-        document.getElementById("jetons").textContent =
-            Number(user.jetons || 0).toLocaleString("en-US");
-
-        if (user.vip === true) {
-            document.getElementById("vipBadge").innerHTML =
-                '<div class="vip">👑 VIP STATUS</div>';
+        // Show selected view and set active nav color
+        document.getElementById(viewId).classList.remove('hidden');
+        if(viewId === 'view-home') {
+            document.getElementById('nav-home').classList.remove('text-gray-500');
+            document.getElementById('nav-home').classList.add('text-white');
+        } else if (viewId === 'view-messages') {
+            document.getElementById('nav-messages').classList.remove('text-gray-500');
+            document.getElementById('nav-messages').classList.add('text-white');
         }
-
-    } catch (error) {
-        localStorage.removeItem("currentUser");
-        window.location.replace("index.html");
     }
-}
 
-function logout() {
-    if (confirm("Hesabdan çıxmaq istəyirsən?")) {
-        localStorage.removeItem("currentUser");
-        window.location.replace("index.html");
+    // --- Modal Logic ---
+    const backdrop = document.getElementById('modal-backdrop');
+    let currentOpenModal = null;
+
+    function openModal(modalId) {
+        closeAllModals(); // Ensure others are closed
+        const modal = document.getElementById(modalId);
+        if(modal) {
+            backdrop.classList.remove('hidden');
+            // small timeout to allow display:block to render before transitioning transform/opacity
+            setTimeout(() => {
+                backdrop.classList.add('open');
+                modal.classList.add('open');
+            }, 10);
+            currentOpenModal = modal;
+        }
     }
-}
+
+    function closeAllModals() {
+        backdrop.classList.remove('open');
+        const modals = document.querySelectorAll('.bottom-sheet');
+        modals.forEach(m => m.classList.remove('open'));
+        
+        // Hide backdrop completely after fade out animation
+        setTimeout(() => {
+            if(!backdrop.classList.contains('open')) {
+                backdrop.classList.add('hidden');
+            }
+        }, 300);
+        currentOpenModal = null;
+    }
+
+    function logout() {
+        // Mock logout logic. In reality:
+        // auth.signOut().then(() => window.location.href = 'index.html');
+        alert('Çıxış edilir... Qeydiyyat səhifəsinə yönləndiriləcəksiniz.');
+    }
+
+    /* 
+     * --- FIREBASE INTEGRATION NOTES (For the future Backend setup) ---
+     * 
+     * 1. Fetching User Data on load:
+     *    auth.onAuthStateChanged(user => {
+     *        if (user) {
+     *            const userId = user.uid;
+     *            db.collection('users').doc(userId).onSnapshot(doc => {
+     *                const data = doc.data();
+     *                // Update UI: document.getElementById('profileName').innerText = data.name;
+     *                // Update UI: document.getElementById('profileJeton').innerText = data.jeton;
+     *            });
+     *        }
+     *    });
+     * 
+     * 2. Updating Settings:
+     *    const saveBtn = document.getElementById('btnSaveSettings');
+     *    saveBtn.addEventListener('click', async () => {
+     *       const newName = document.getElementById('inputName').value;
+     *       await db.collection('users').doc(userId).update({ name: newName });
+     *       closeAllModals();
+     *    });
+     * 
+     * 3. Real-time Messages:
+     *    db.collection('chats').where('participants', 'array-contains', userId)
+     *      .onSnapshot(snapshot => {
+     *          // Render chat list in #view-messages
+     *      });
+     */
 
 </script>
 
