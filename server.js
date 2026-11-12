@@ -9,12 +9,12 @@ const io = new Server(server);
 
 app.use(express.static(path.join(__dirname)));
 
-// Masalar və Otaqlar bazası
+// Masalar və Otaqlar bazası (RAM-da sürətli idarəetmə)
 let tables = {
     "511": { 
         id: "511",
         players: {},
-        bottleAngle: 0,
+        bottleAngle: 28,
         isSpinning: false
     }
 };
@@ -22,13 +22,13 @@ let tables = {
 io.on('connection', (socket) => {
     console.log('🔗 Yeni oyunçu qoşuldu:', socket.id);
 
-    // Masaya qoşulma
+    // Masaya qoşulma və stul bölgüsü
     socket.on('join_table', (data) => {
         const { tableId, user } = data;
         socket.join(tableId);
         socket.tableId = tableId;
 
-        let table = tables[tableId] || { id: tableId, players: {}, bottleAngle: 0, isSpinning: false };
+        let table = tables[tableId] || { id: tableId, players: {}, bottleAngle: 28, isSpinning: false };
         tables[tableId] = table;
 
         // 12 stuldan boş olanı tapırıq
@@ -53,25 +53,21 @@ io.on('connection', (socket) => {
             };
         }
 
-        // Masadakı hər kəsə yenilənmiş məlumatı göndəririk
         io.to(tableId).emit('update_table', table);
     });
 
-    // Butulkanın fırladılması məntiqi
+    // Butulkanın fırladılması (Server tərəfindən hesablanan ədalətli bucaq)
     socket.on('spin_bottle', (tableId) => {
         let table = tables[tableId];
         if (table && !table.isSpinning) {
             table.isSpinning = true;
-            // Təsadüfi fırlanma bucağı (çoxlu dövrə + random dərəcə)
             let randomRotation = table.bottleAngle + 1800 + Math.floor(Math.random() * 360);
             table.bottleAngle = randomRotation;
 
             io.to(tableId).emit('bottle_spinning', {
-                rotation: randomRotation,
-                spinningPlayer: socket.id
+                rotation: randomRotation
             });
 
-            // 3 saniyə sonra fırlanma bitir
             setTimeout(() => {
                 table.isSpinning = false;
                 io.to(tableId).emit('bottle_stopped', table.bottleAngle);
@@ -79,12 +75,12 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Canlı çat
+    // Canlı Çat
     socket.on('send_chat', (data) => {
         io.to(data.tableId).emit('new_chat', data);
     });
 
-    // Oyunçu çıxan və ya səhifəni bağlayan kimi ANINDA masadan silinməsi
+    // Oyunçu çıxan kimi ANINDA masadan silinməsi
     socket.on('disconnect', () => {
         if (socket.tableId && tables[socket.tableId]) {
             let table = tables[socket.tableId];
@@ -99,5 +95,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`🚀 Orijinal Butulka Baku serveri işləyir, port: ${PORT}`);
+    console.log(`🚀 Butulka Baku Klondike serveri işləyir, port: ${PORT}`);
 });
