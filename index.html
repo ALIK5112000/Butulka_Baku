@@ -6,7 +6,6 @@
     <title>Butulka Baku - Giriş</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
         body {
             background: linear-gradient(135deg, #0d061f, #1a0b36, #2d1254, #120324);
             background-size: 400% 400%;
@@ -19,16 +18,12 @@
             justify-content: center;
             padding: 20px;
             overflow-x: hidden;
-            position: relative;
         }
-
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-
-        /* Dillər Paneli (Yuxarıda) */
         .lang-bar {
             display: flex;
             gap: 8px;
@@ -37,7 +32,6 @@
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 25px;
-            z-index: 10;
             overflow-x: auto;
             max-width: 100%;
         }
@@ -58,8 +52,6 @@
             color: #fff;
             box-shadow: 0 0 10px rgba(255, 117, 140, 0.5);
         }
-
-        /* Əsas Konteyner */
         .container {
             width: 100%;
             max-width: 420px;
@@ -69,157 +61,76 @@
             border-radius: 28px;
             padding: 30px;
             box-shadow: 0 0 30px rgba(255, 117, 140, 0.25), 0 15px 35px rgba(0, 0, 0, 0.6);
-            z-index: 2;
-            position: relative;
         }
-
-        /* Logo və İcon */
-        .logo-box {
-            text-align: center;
-            margin-bottom: 25px;
-        }
+        .logo-box { text-align: center; margin-bottom: 25px; }
         .logo-icon {
-            width: 65px;
-            height: 65px;
+            width: 65px; height: 65px;
             background: linear-gradient(135deg, #ff758c, #b375ff);
             border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            display: inline-flex; align-items: center; justify-content: center;
             font-size: 32px;
             box-shadow: 0 0 20px rgba(255, 117, 140, 0.6);
             margin-bottom: 12px;
             animation: pulseIcon 2s infinite ease-in-out;
         }
-        @keyframes pulseIcon {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-        }
-
-        /* Göy, Qırmızı, Yaşıl Növbəli Hərəkətli Neon Yazı */
+        @keyframes pulseIcon { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
         .logo-title {
-            font-size: 34px;
-            font-weight: 800;
-            font-style: italic;
-            letter-spacing: 1px;
+            font-size: 34px; font-weight: 800; font-style: italic; letter-spacing: 1px;
             animation: rgbNeonText 4s infinite linear;
         }
         @keyframes rgbNeonText {
-            0% { color: #ff3366; text-shadow: 0 0 15px #ff3366, 0 0 30px #ff3366; }
-            33% { color: #00ffcc; text-shadow: 0 0 15px #00ffcc, 0 0 30px #00ffcc; }
-            66% { color: #3366ff; text-shadow: 0 0 15px #3366ff, 0 0 30px #3366ff; }
-            100% { color: #ff3366; text-shadow: 0 0 15px #ff3366, 0 0 30px #ff3366; }
+            0% { color: #ff3366; text-shadow: 0 0 15px #ff3366; }
+            33% { color: #00ffcc; text-shadow: 0 0 15px #00ffcc; }
+            66% { color: #3366ff; text-shadow: 0 0 15px #3366ff; }
+            100% { color: #ff3366; text-shadow: 0 0 15px #ff3366; }
         }
-
-        .subtitle {
-            font-size: 13px;
-            color: #aaa;
-            margin-top: 5px;
-        }
-
-        /* Tabs (Giriş / Qeydiyyat) */
+        .subtitle { font-size: 13px; color: #aaa; margin-top: 5px; }
         .tabs {
-            display: flex;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 16px;
-            padding: 6px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex; background: rgba(0, 0, 0, 0.4); border-radius: 16px;
+            padding: 6px; margin-bottom: 25px; border: 1px solid rgba(255, 255, 255, 0.05);
         }
         .tab {
-            flex: 1;
-            text-align: center;
-            padding: 12px;
-            cursor: pointer;
-            border-radius: 12px;
-            font-weight: 600;
-            color: #aaa;
-            transition: 0.3s;
+            flex: 1; text-align: center; padding: 12px; cursor: pointer;
+            border-radius: 12px; font-weight: 600; color: #aaa; transition: 0.3s;
         }
         .tab.active {
             background: linear-gradient(135deg, #ff758c, #ff7eb3);
-            color: #fff;
-            box-shadow: 0 0 15px rgba(255, 117, 140, 0.6);
+            color: #fff; box-shadow: 0 0 15px rgba(255, 117, 140, 0.6);
         }
-
-        /* Formalar */
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: #ff9eb3;
-            font-weight: 500;
-        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #ff9eb3; font-weight: 500; }
         .form-group input {
-            width: 100%;
-            padding: 14px 18px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 117, 140, 0.2);
-            border-radius: 14px;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-            transition: 0.3s;
+            width: 100%; padding: 14px 18px; background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 117, 140, 0.2); border-radius: 14px;
+            color: #fff; font-size: 16px; outline: none; transition: 0.3s;
         }
-        .form-group input:focus {
-            border-color: #ff758c;
-            box-shadow: 0 0 15px rgba(255, 117, 140, 0.4);
-            background: rgba(0, 0, 0, 0.6);
-        }
-
+        .form-group input:focus { border-color: #ff758c; box-shadow: 0 0 15px rgba(255, 117, 140, 0.4); }
         .btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #ff758c, #ff7eb3);
-            border: none;
-            border-radius: 14px;
-            color: #fff;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 0 20px rgba(255, 117, 140, 0.5);
-            transition: 0.3s;
-            margin-top: 10px;
+            width: 100%; padding: 15px; background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            border: none; border-radius: 14px; color: #fff; font-size: 18px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 0 20px rgba(255, 117, 140, 0.5); transition: 0.3s; margin-top: 10px;
         }
-        .btn:hover { box-shadow: 0 0 25px rgba(255, 117, 140, 0.8); }
-        .btn:active { transform: scale(0.98); }
-        
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .form-section { display: none; }
         .form-section.active { display: block; }
-        
         .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            justify-content: center; align-items: center; z-index: 1000;
         }
         .modal-content {
-            background: #1a0b36;
-            padding: 35px 30px;
-            border-radius: 24px;
-            text-align: center;
-            max-width: 340px;
-            width: 90%;
-            border: 2px solid rgba(255, 117, 140, 0.5);
-            box-shadow: 0 0 30px rgba(255, 117, 140, 0.4);
+            background: #1a0b36; padding: 35px 30px; border-radius: 24px; text-align: center;
+            max-width: 340px; width: 90%; border: 2px solid rgba(255, 117, 140, 0.5);
         }
     </style>
 </head>
 <body>
 
-    <!-- Yuxarıda Dil Seçimi Paneli -->
     <div class="lang-bar">
-        <button class="lang-btn active" onclick="setLanguage('az')">🇦🇿 Azərbaycanca</button>
-        <button class="lang-btn" onclick="setLanguage('ru')">🇷🇺 Русский</button>
-        <button class="lang-btn" onclick="setLanguage('en')">🇬🇧 English</button>
-        <button class="lang-btn" onclick="setLanguage('ka')">🇬🇪 ქართული</button>
+        <button class="lang-btn active" onclick="setLanguage('az', this)">🇦🇿 Azərbaycanca</button>
+        <button class="lang-btn" onclick="setLanguage('ru', this)">🇷🇺 Русский</button>
+        <button class="lang-btn" onclick="setLanguage('en', this)">🇬🇧 English</button>
+        <button class="lang-btn" onclick="setLanguage('ka', this)">🇬🇪 ქართული</button>
     </div>
 
     <div class="container">
@@ -234,7 +145,6 @@
             <div id="tabRegister" class="tab" onclick="switchTab('register')">Qeydiyyat</div>
         </div>
 
-        <!-- GİRİŞ FORMASI -->
         <div id="loginForm" class="form-section active">
             <div class="form-group">
                 <label id="lblUserInput">İstifadəçi adı və ya ID</label>
@@ -247,7 +157,6 @@
             <button id="btnLogin" class="btn" onclick="loginUser()">Daxil ol</button>
         </div>
 
-        <!-- QEYDİYYAT FORMASI -->
         <div id="registerForm" class="form-section">
             <div class="form-group">
                 <label id="lblRegUser">İstifadəçi adı</label>
@@ -261,17 +170,15 @@
         </div>
     </div>
 
-    <!-- MODAL -->
     <div id="successModal" class="modal">
         <div class="modal-content">
             <h3 id="modalTitle" style="color:#ff758c; margin-bottom:15px; font-size: 22px;">Uğurlu Qeydiyyat!</h3>
             <p id="modalDesc" style="color:#ddd; margin-bottom:10px;">Sizin unikal ID nömrəniz:</p>
-            <h2 id="newIdText" style="color:#fff; margin-bottom:25px; font-size: 36px; text-shadow: 0 0 10px #ff758c;">1836</h2>
-            <button id="modalBtn" class="btn" onclick="goToProfile()">Bağla</button>
+            <h2 id="newIdText" style="color:#fff; margin-bottom:25px; font-size: 36px; text-shadow: 0 0 10px #ff758c;">00000</h2>
+            <button id="modalBtn" class="btn" onclick="goToProfile()">Davam et</button>
         </div>
     </div>
 
-    <!-- Firebase və Çoxdilli Sistem Skripti -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -288,70 +195,21 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Çoxdilli lüğət
+        // Əgər istifadəçi artıq giriş edibsə birbaşa profilə at
+        if (localStorage.getItem("currentUser")) {
+            window.location.href = "profil.html";
+        }
+
         const translations = {
-            az: {
-                subtitle: "Hesabına daxil ol və oyuna davam et",
-                loginTab: "Giriş",
-                regTab: "Qeydiyyat",
-                lblUser: "İstifadəçi adı və ya ID",
-                lblPass: "Şifrə",
-                btnLogin: "Daxil ol",
-                lblRegUser: "İstifadəçi adı",
-                lblRegPass: "Şifrə (ən azı 6 simvol)",
-                btnReg: "Hesab yarat",
-                modalTitle: "Uğurlu Qeydiyyat!",
-                modalDesc: "Sizin unikal ID nömrəniz:",
-                modalBtn: "Bağla"
-            },
-            ru: {
-                subtitle: "Войдите в аккаунт и продолжайте игру",
-                loginTab: "Вход",
-                regTab: "Регистрация",
-                lblUser: "Имя пользователя или ID",
-                lblPass: "Пароль",
-                btnLogin: "Войти",
-                lblRegUser: "Имя пользователя",
-                lblRegPass: "Пароль (мин. 6 символов)",
-                btnReg: "Создать аккаунт",
-                modalTitle: "Успешная регистрация!",
-                modalDesc: "Ваш уникальный ID номер:",
-                modalBtn: "Закрыть"
-            },
-            en: {
-                subtitle: "Login to your account and continue playing",
-                loginTab: "Login",
-                regTab: "Register",
-                lblUser: "Username or ID",
-                lblPass: "Password",
-                btnLogin: "Sign In",
-                lblRegUser: "Username",
-                lblRegPass: "Password (min 6 chars)",
-                btnReg: "Create Account",
-                modalTitle: "Successful Registration!",
-                modalDesc: "Your unique ID number:",
-                modalBtn: "Close"
-            },
-            ka: {
-                subtitle: "შідით ანგარიშზე და გააგრძელეთ თამაში",
-                loginTab: "შესვლა",
-                regTab: "რეგისტრაცია",
-                lblUser: "მომხმარებელი ან ID",
-                lblPass: "პაროლი",
-                btnLogin: "შესვლა",
-                lblRegUser: "მომხმარებლის სახელი",
-                lblRegPass: "პაროლი (მინ. 6 სიმბოლო)",
-                btnReg: "ანგარიშის შექმნა",
-                modalTitle: "წარმატებული რეგისტრაცია!",
-                modalDesc: "თქვენი უნიკალური ID ნომერი:",
-                modalBtn: "დახურვა"
-            }
+            az: { subtitle: "Hesabına daxil ol və oyuna davam et", loginTab: "Giriş", regTab: "Qeydiyyat", lblUser: "İstifadəçi adı və ya ID", lblPass: "Şifrə", btnLogin: "Daxil ol", lblRegUser: "İstifadəçi adı", lblRegPass: "Şifrə (ən azı 6 simvol)", btnReg: "Hesab yarat", modalTitle: "Uğurlu Qeydiyyat!", modalDesc: "Sizin unikal ID nömrəniz:", modalBtn: "Davam et" },
+            ru: { subtitle: "Войдите в аккаунт и продолжайте игру", loginTab: "Вход", regTab: "Регистрация", lblUser: "Имя пользователя или ID", lblPass: "Пароль", btnLogin: "Войти", lblRegUser: "Имя пользователя", lblRegPass: "Пароль (мин. 6 символов)", btnReg: "Создать аккаунт", modalTitle: "Успешная регистрация!", modalDesc: "Ваш уникальный ID номер:", modalBtn: "Продолжить" },
+            en: { subtitle: "Login to your account and continue playing", loginTab: "Login", regTab: "Register", lblUser: "Username or ID", lblPass: "Password", btnLogin: "Sign In", lblRegUser: "Username", lblRegPass: "Password (min 6 chars)", btnReg: "Create Account", modalTitle: "Successful Registration!", modalDesc: "Your unique ID number:", modalBtn: "Continue" },
+            ka: { subtitle: "შედით ანგარიშზე და გააგრძელეთ თამაში", loginTab: "შესვლა", regTab: "რეგისტრაცია", lblUser: "მომხმარებელი ან ID", lblPass: "პაროლი", btnLogin: "შესვლა", lblRegUser: "მომხმარებლის სახელი", lblRegPass: "პაროლი (მინ. 6 სიმბოლო)", btnReg: "ანგარიშის შექმნა", modalTitle: "წარმატებული რეგისტრაცია!", modalDesc: "თქვენი უნიკალური ID ნომერი:", modalBtn: "გაგრძელება" }
         };
 
-        window.setLanguage = function(lang) {
+        window.setLanguage = function(lang, btn) {
             document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-
+            btn.classList.add('active');
             const t = translations[lang];
             document.getElementById('subtitleText').innerText = t.subtitle;
             document.getElementById('tabLogin').innerText = t.loginTab;
@@ -380,69 +238,109 @@
         };
 
         window.registerUser = async function() {
-            const username = document.getElementById('regUser').value;
+            const username = document.getElementById('regUser').value.trim();
             const password = document.getElementById('regPass').value;
+            const btn = document.getElementById('btnRegister');
 
             if(!username || password.length < 6) {
                 alert("Zəhmət olmasa adı daxil edin və şifrə ən az 6 simvol olsun!");
                 return;
             }
 
-            const uniqueId = Math.floor(10000 + Math.random() * 90000);
-
+            btn.disabled = true;
             try {
-                await addDoc(collection(db, "users"), {
+                // Adın artıq tutulub-tutulmadığını yoxla
+                const nameCheck = await getDocs(query(collection(db, "users"), where("username", "==", username)));
+                if (!nameCheck.empty) {
+                    alert("Bu istifadəçi adı artıq mövcuddur!");
+                    btn.disabled = false;
+                    return;
+                }
+
+                const uniqueId = Math.floor(10000 + Math.random() * 90000);
+                const newUserObj = {
                     username: username,
                     password: password,
                     id: uniqueId,
-                    jetons: 1400,
-                    hearts: 7200,
+                    jetons: 0,
+                    hearts: 0,
+                    views: 0,
+                    viewers: [],
+                    friends: [],
+                    friendRequests: [],
+                    status: "",
+                    avatar: "",
+                    country: "",
+                    city: "",
+                    age: 18,
+                    gender: "Kişi",
                     vip: false,
-                    createdAt: new Date()
-                });
+                    vipUntil: 0,
+                    sessionVersion: 1,
+                    createdAt: Date.now()
+                };
 
-                localStorage.setItem("currentUser", JSON.stringify({username, id: uniqueId, jetons: 1400, hearts: 7200}));
+                const docRef = await addDoc(collection(db, "users"), newUserObj);
+                localStorage.setItem("currentUser", JSON.stringify({
+                    docId: docRef.id,
+                    id: uniqueId,
+                    username: username,
+                    sessionVersion: 1
+                }));
+
                 document.getElementById('newIdText').innerText = uniqueId;
                 document.getElementById('successModal').style.display = 'flex';
             } catch(e) {
                 alert("Xəta baş verdi: " + e.message);
+                btn.disabled = false;
             }
         };
 
         window.loginUser = async function() {
-            const userInput = document.getElementById('loginUser').value;
+            const userInput = document.getElementById('loginUser').value.trim();
             const passwordInput = document.getElementById('loginPass').value;
+            const btn = document.getElementById('btnLogin');
 
             if(!userInput || !passwordInput) {
                 alert("Xanaları doldurun!");
                 return;
             }
 
+            btn.disabled = true;
             try {
-                const q = query(collection(db, "users"), where("username", "==", userInput));
-                const querySnapshot = await getDocs(q);
+                let querySnapshot = await getDocs(query(collection(db, "users"), where("username", "==", userInput)));
+                
+                // Əgər adla tapılmadısa və rəqəmdirsə, ID ilə axtar
+                if (querySnapshot.empty && !isNaN(userInput)) {
+                    querySnapshot = await getDocs(query(collection(db, "users"), where("id", "==", Number(userInput))));
+                }
                 
                 let found = false;
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
                     if(data.password === passwordInput) {
                         found = true;
-                        localStorage.setItem("currentUser", JSON.stringify(data));
-                        // DÜZƏLDİLDİ: profile.html əvəzinə doğru fayl olan profil.html yazıldı
+                        localStorage.setItem("currentUser", JSON.stringify({
+                            docId: docSnap.id,
+                            id: data.id,
+                            username: data.username,
+                            sessionVersion: data.sessionVersion || 1
+                        }));
                         window.location.href = "profil.html";
                     }
                 });
 
                 if(!found) {
-                    alert("İstifadəçi adı və ya şifrə yanlışdır!");
+                    alert("İstifadəçi adı/ID və ya şifrə yanlışdır!");
+                    btn.disabled = false;
                 }
             } catch(e) {
                 alert("Giriş xətası: " + e.message);
+                btn.disabled = false;
             }
         };
 
         window.goToProfile = function() {
-            // DÜZƏLDİLDİ: profile.html əvəzinə doğru fayl olan profil.html yazıldı
             window.location.href = "profil.html";
         };
     </script>
