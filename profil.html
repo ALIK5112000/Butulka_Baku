@@ -44,7 +44,7 @@
             </div>
         </div>
 
-        <!-- Profile Card (Şəkildəki dizayn)[span_4](start_span)[span_4](end_span) -->
+        <!-- Profile Card -->
         <div class="bg-[#191225] border border-[#2c2040] rounded-3xl p-5 shadow-xl relative">
             <div class="flex items-center gap-4">
                 <div class="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-amber-500 shadow-md">
@@ -91,25 +91,25 @@
         </div>
     </main>
 
-    <!-- BOTTOM NAVIGATION BAR (`oyun.html`-ə keçid düyməsi ilə)[span_5](start_span)[span_5](end_span) -->
+    <!-- BOTTOM NAVIGATION BAR (Tam işlək linklər) -->
     <nav class="bg-[#161022] border-t border-[#291f3d] py-2 px-6 flex items-center justify-between">
-        <a href="profil.html" class="flex flex-col items-center text-yellow-400">
+        <a href="profil.html" class="flex flex-col items-center text-yellow-400 cursor-pointer">
             <i class="fa-solid fa-house text-lg"></i>
             <span class="text-[10px] mt-1">Ana səhifə</span>
         </a>
-        <a href="oyun.html" class="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+        <a href="oyun.html" class="flex flex-col items-center text-gray-400 hover:text-yellow-400 cursor-pointer">
             <i class="fa-solid fa-gamepad text-lg"></i>
             <span class="text-[10px] mt-1">Oyunlar</span>
         </a>
-        <button class="w-12 h-12 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-2xl flex items-center justify-center text-black shadow-lg -mt-4">
+        <div class="w-12 h-12 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-2xl flex items-center justify-center text-black shadow-lg -mt-4 cursor-pointer">
             <i class="fa-solid fa-plus text-lg font-bold"></i>
-        </button>
-        <div class="flex flex-col items-center text-gray-400 relative cursor-pointer">
+        </div>
+        <div onclick="alert('Mesajlar bölməsi tezliklə açılacaq!')" class="flex flex-col items-center text-gray-400 relative cursor-pointer hover:text-white">
             <i class="fa-solid fa-comment text-lg"></i>
             <span class="absolute -top-1 right-0 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">1</span>
             <span class="text-[10px] mt-1">Mesajlar</span>
         </div>
-        <div class="flex flex-col items-center text-gray-400 cursor-pointer">
+        <div onclick="alert('Videolar bölməsi tezliklə açılacaq!')" class="flex flex-col items-center text-gray-400 cursor-pointer hover:text-white">
             <i class="fa-solid fa-video text-lg"></i>
             <span class="text-[10px] mt-1">Videolar</span>
         </div>
