@@ -42,7 +42,7 @@
             flex: 1; position: relative; width: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
         
-        /* 🔥 Butulka şəkli və ağ fonu təmizləyən hissə */
+        /* 🔥 Butulka və Ağ Fonu Qeyb Edən Sehrli Sətirlər */
         .center-bottle-container {
             position: absolute; width: 65px; height: 175px; display: flex; align-items: center; justify-content: center;
             z-index: 15; transition: transform 3s cubic-bezier(0.15, 0.85, 0.25, 1);
@@ -53,8 +53,8 @@
             height: 100%; 
             object-fit: contain; 
             pointer-events: none;
-            mix-blend-mode: multiply; /* 🔥 Bu əmr butulkanın arxasındakı ağ fonu avtomatik yox edir! */
-            filter: drop-shadow(0 10px 12px rgba(0,0,0,0.6));
+            mix-blend-mode: multiply; /* 🔥 Ağ fonu tamamilə yox edir */
+            filter: drop-shadow(0 10px 12px rgba(0,0,0,0.7));
         }
 
         .bottle-text-msg {
@@ -172,7 +172,7 @@
 
     <div class="chat-container">
         <div class="chat-messages" id="chatBox">
-            <div style="text-align:center; color:#94a3b8; font-size:11px;">📢 Yerli şəkillər aktivdir və fon təmizlənib.</div>
+            <div style="text-align:center; color:#94a3b8; font-size:11px;">📢 Fon təmizləmə filtri aktivdir.</div>
         </div>
         <div class="chat-input-area">
             <input type="text" id="msgInput" class="chat-input" placeholder="Mesaj yaz..." onkeypress="if(event.key==='Enter') sendChat()">
