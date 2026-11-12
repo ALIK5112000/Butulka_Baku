@@ -9,7 +9,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
             background-color: #b56531;
-            background-image: radial-gradient(circle, rgba(0,0,0,0.1) 20%, rgba(0,0,0,0.5) 100%), url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            background-image: radial-gradient(circle, rgba(0,0,0,0.15) 20%, rgba(0,0,0,0.55) 100%), url('https://www.transparenttextures.com/patterns/wood-pattern.png');
             color: #fff;
             height: 100vh;
             display: flex;
@@ -18,7 +18,7 @@
             position: relative;
         }
 
-        /* Orijinal Yuxarı Panel (Şəkildəki kimi qızıl və narıncı tonlarda) */
+        /* Yuxarı Panel (Orijinal Stildə) */
         .top-bar {
             display: flex; align-items: center; justify-content: space-between;
             padding: 8px 14px; background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(8px); z-index: 50; flex-shrink: 0;
@@ -41,15 +41,27 @@
             flex: 1; position: relative; display: flex; align-items: center; justify-content: center; width: 100%; overflow: hidden;
         }
         
-        /* Şəkildəki kimi diagonal oturan real VIP Butulka */
+        /* 🔥 Orijinal Qızıl VIP Butulka (CSS Qrafika - Heç vaxt sınmır və göy kvadrat olmur!) */
         .center-bottle-box {
-            position: absolute; width: 65px; height: 170px; display: flex; align-items: center; justify-content: center;
+            position: absolute; width: 55px; height: 160px; display: flex; align-items: center; justify-content: center;
             z-index: 10; transition: transform 3s cubic-bezier(0.15, 0.85, 0.25, 1);
-            transform: rotate(28deg);
-            filter: drop-shadow(0 12px 14px rgba(0,0,0,0.65));
+            transform: rotate(28deg); /* Şəkildəki kimi əyri duruş */
+            filter: drop-shadow(0 12px 14px rgba(0,0,0,0.7));
         }
-        .center-bottle-box img {
-            width: 100%; height: 100%; object-fit: contain; pointer-events: none;
+        
+        .real-vip-bottle {
+            width: 100%; height: 100%; background: linear-gradient(135deg, #2b1810 0%, #4a2e1b 40%, #1a0f0a 100%);
+            border-radius: 28px 28px 10px 10px; position: relative; border: 2.5px solid #d4af37;
+            display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 12px rgba(0,0,0,0.9);
+        }
+        .real-vip-bottle::before {
+            content: ''; position: absolute; top: -20px; width: 18px; height: 22px; background: #2b1810;
+            border-radius: 5px 5px 0 0; border: 2px solid #d4af37;
+        }
+        .real-vip-label {
+            background: linear-gradient(135deg, #f5df93 0%, #d4af37 100%); color: #1a0f0a; font-weight: bold; font-size: 11px; padding: 5px 3px;
+            border-radius: 4px; text-align: center; transform: rotate(-90deg); box-shadow: 0 2px 5px rgba(0,0,0,0.6);
+            letter-spacing: 1px;
         }
 
         .bottle-text {
@@ -59,7 +71,7 @@
             position: absolute; bottom: -45px; background: #ec4899; color: #fff; border: 2px solid #fff; padding: 6px 18px; border-radius: 18px; font-weight: bold; font-size: 12px; cursor: pointer; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 12; transform: rotate(-28deg);
         }
 
-        /* Dairəvi Stullar və Şəkildəki Kimi Qızıl Çərçivəli Profillər */
+        /* Dairəvi Stullar və Qızıl Çərçivəli Profillər */
         .circle-container {
             width: 310px; height: 310px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
@@ -70,7 +82,6 @@
         .player-card {
             width: 100%; height: 100%; border-radius: 14px; position: relative; box-shadow: 0 5px 12px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.25); background: #1a1d33; overflow: visible;
         }
-        /* Şəkildəki zəngli/qızıl VIP çərçivə effekti */
         .player-card.is-vip { 
             border: 3px solid #fbbf24; 
             box-shadow: 0 0 14px rgba(251,191,36,0.7), inset 0 0 6px rgba(251,191,36,0.5); 
@@ -82,11 +93,7 @@
             font-size: 9px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.8); padding: 1px 6px; border-radius: 6px; white-space: nowrap; border: 1px solid rgba(255,255,255,0.15);
         }
         .gender-icon { position: absolute; top: -5px; right: -5px; background: #1e293b; padding: 1px; border-radius: 50%; font-size: 9px; z-index: 5; border: 1px solid #fff; }
-
-        /* Şəkildəki kimi Dodaq/Öpüş stikeri overlay-i */
-        .kiss-sticker {
-            position: absolute; bottom: -2px; right: -6px; font-size: 16px; z-index: 6; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
-        }
+        .kiss-sticker { position: absolute; bottom: -2px; right: -6px; font-size: 16px; z-index: 6; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
 
         /* Öpüşmə / Seçim Paneli */
         .kiss-overlay-board {
@@ -101,7 +108,7 @@
         .btn-red-custom { background: #ef4444; color: #fff; padding: 8px 18px; border-radius: 10px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(239,68,68,0.5); }
         .btn-green-custom { background: #22c55e; color: #fff; padding: 8px 20px; border-radius: 10px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(34,197,94,0.5); }
 
-        /* Canlı Çat (Şəkildəki ağ və səliqəli dizayn) */
+        /* Canlı Çat */
         .chat-container {
             height: 150px; background: #fff; display: flex; flex-direction: column; border-top-left-radius: 18px; border-top-right-radius: 18px; box-shadow: 0 -4px 15px rgba(0,0,0,0.3); z-index: 30; flex-shrink: 0;
         }
@@ -133,7 +140,6 @@
     </div>
 
     <div class="game-board">
-        <!-- Öpüşmə / Seçim Paneli -->
         <div class="kiss-overlay-board" id="kissBoard">
             <div class="kiss-title" id="kissMainTitle">Sənin seçimin</div>
             <div class="kiss-profiles-box">
@@ -147,14 +153,15 @@
             </div>
         </div>
 
-        <!-- Orijinal VIP Butulka -->
+        <!-- 🔥 Əsl Qızıl VIP Butulka (CSS Dizayn) -->
         <div class="center-bottle-box" id="bottleImg">
-            <img src="https://i.ibb.co/68v4310/vip-bottle.png" alt="VIP Butulka">
+            <div class="real-vip-bottle">
+                <div class="real-vip-label">VIP</div>
+            </div>
             <div class="bottle-text" id="bottleText">Qızları gözləyirik</div>
             <button class="spin-btn" id="spinBtn" onclick="requestSpin()">Fırlat!</button>
         </div>
 
-        <!-- Dairəvi Stullar -->
         <div class="circle-container" id="seatsContainer"></div>
     </div>
 
@@ -228,7 +235,6 @@
                     const vipClass = p.vip ? "is-vip" : "";
                     const nameColor = p.vip ? (p.gender === "Qadın" ? "#f43f5e" : "#38bdf8") : "#fff";
                     const userAvatar = p.avatar && p.avatar.trim() !== "" ? p.avatar : DEFAULT_AVATAR;
-                    // Şəkildəki kimi bəzi profillərə dodaq stikeri əlavə edirik (estetik görünüş üçün)
                     const kissSticker = p.vip ? `<div class="kiss-sticker">💋</div>` : "";
 
                     seatDiv.innerHTML = `
@@ -298,7 +304,7 @@
             if(action === 'kiss') {
                 alert("Alovlu öpüş baş tutdu! ❤️");
             } else {
-                avatar="İmtina edildi.";
+                alert("İmtina edildi.");
             }
         }
 
