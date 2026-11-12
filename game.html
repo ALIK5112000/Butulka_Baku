@@ -1,265 +1,35 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <title>Butulka Baku - Oyun Masası</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            background: linear-gradient(135deg, #c88a4b 0%, #8b5420 100%);
-            color: #fff;
-            font-family: Arial, sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Butulka Baku - Oyun Masası</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0}
+  body{
+    display:flex;flex-direction:column;height:100vh;height:100dvh;background:#14141e;color:#fff;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overflow:hidden;
+  }
 
-        /* Yuxarı Panel (Balans, Masa nömrəsi, Ayarlar) */
-        .top-bar {
-            height: 50px;
-            background: rgba(0, 0, 0, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 15px;
-            z-index: 100;
-        }
-        .badge-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        .badge {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 13px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            border: 1px solid rgba(255,255,255,0.15);
-        }
+  /* ===== Yuxarı panel ===== */
+  .top{
+    flex:0 0 48px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;
+    background:linear-gradient(#a8631f,#8a4d14);border-bottom:2px solid #5d3209;
+  }
+  .badges{display:flex;gap:6px;align-items:center;min-width:96px}
+  .badges.r{justify-content:flex-end}
+  .badge{background:#0006;border:1px solid #fff3;border-radius:999px;padding:4px 10px;font-weight:700;font-size:14px;white-space:nowrap}
+  .tableNo{font-weight:700;font-size:15px;text-shadow:0 1px 2px #0008}
+  .icon{width:36px;height:36px;border:0;border-radius:50%;background:#0006;color:#fff;font-size:18px;cursor:pointer}
+  .icon:disabled{opacity:.5}
 
-        /* Oyun Masası Sahəsi (Yuxarı hissə) */
-        .game-area {
-            position: relative;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle, #b87333 0%, #704214 100%);
-            border-bottom: 4px solid #522d08;
-            overflow: hidden;
-        }
-
-        /* Mərkəzi Şüşə */
-        .center-bottle {
-            position: absolute;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-        .bottle {
-            width: 35px;
-            height: 110px;
-            background: #1a1a1a;
-            border: 2px solid #d4af37;
-            border-radius: 18px 18px 4px 4px;
-            position: relative;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
-        }
-        .bottle::before {
-            content: 'VIP';
-            position: absolute;
-            top: 35px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 9px;
-            color: #d4af37;
-            font-weight: bold;
-        }
-        .spin-hint {
-            margin-top: 8px;
-            font-size: 11px;
-            color: #ffeb3b;
-            background: rgba(0,0,0,0.5);
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
-
-        /* Oyunçu Profili (Kvadrat) */
-        .player-box {
-            position: absolute;
-            width: 55px;
-            height: 55px;
-            border-radius: 10px; /* Kvadrat və incə yuvarlaq */
-            border: 2px solid #00ffcc;
-            background: #222;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.5);
-        }
-        .player-box img {
-            width: 100%;
-            height: 100%;
-            border-radius: 8px;
-            object-fit: cover;
-        }
-        .player-label {
-            position: absolute;
-            bottom: -15px;
-            background: rgba(0,0,0,0.7);
-            padding: 1px 5px;
-            border-radius: 4px;
-            font-size: 9px;
-            white-space: nowrap;
-            color: #fff;
-        }
-
-        /* Aşağı Çat Paneli (Şəkildəki kimi) */
-        .chat-section {
-            height: 180px;
-            background: #14141e;
-            display: flex;
-            flex-direction: column;
-            border-top: 2px solid #2a2a3e;
-        }
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-            font-size: 13px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .chat-msg {
-            background: rgba(255,255,255,0.05);
-            padding: 5px 8px;
-            border-radius: 6px;
-            line-height: 1.3;
-        }
-        .chat-input-area {
-            display: flex;
-            padding: 8px;
-            background: #1a1a28;
-            border-top: 1px solid #222;
-        }
-        .chat-input-area input {
-            flex: 1;
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 20px;
-            padding: 8px 12px;
-            color: #fff;
-            font-size: 13px;
-            outline: none;
-        }
-        .chat-input-area button {
-            background: #ffcc40;
-            border: none;
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            margin-left: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Yuxarı Panel -->
-    <div class="top-bar">
-        <div class="badge-group">
-            <div class="badge" style="color: #ff4d4d;">❤️ 3968</div>
-            <div class="badge">🎁 6 gün</div>
-        </div>
-        <div class="badge">#17 Masa</div>
-        <div class="badge-group">
-            <div class="badge">⚙️</div>
-            <div class="badge">🚪</div>
-        </div>
-    </div>
-
-    <!-- Oyun Masası və Kvadrat Profillər -->
-    <div class="game-area" id="gameArea">
-        
-        <!-- Mərkəzdə Şüşə -->
-        <div class="center-bottle">
-            <div class="bottle"></div>
-            <div class="spin-hint">← Butulkanını fırlat</div>
-        </div>
-
-    </div>
-
-    <!-- Aşağı Çat Paneli -->
-    <div class="chat-section">
-        <div class="chat-messages" id="chatMessages">
-            <div class="chat-msg"><b>👑 Emil.:</b> ZLOY, salamatçılıqdı qaqadaş, nə var nə yox?</div>
-            <div class="chat-msg"><b>👑 ZLOY:</b> Emil., boba kimdi bura gələn?</div>
-            <div class="chat-msg" style="color: #ffcc40;"><b>Admin:</b> E-poçtunuzu profilə əlavə edin.</div>
-            <div class="chat-msg"><b>👑 Emil.:</b> var olasan əziz qardaş</div>
-        </div>
-        <div class="chat-input-area">
-            <input type="text" placeholder="Mesajı bura yaz..." id="msgInput">
-            <button>➔</button>
-        </div>
-    </div>
-
-    <script>
-        // Masanın ətrafında kvadrat profillərin dairəvi yerləşdirilməsi (12 nəfərlik)
-        const gameArea = document.getElementById('gameArea');
-        const totalSlots = 12;
-        const radius = 150; // Masanın mərkəzindən məsafə
-        const centerX = window.innerWidth / 2;
-        const centerY = 150; // Masanın mərkəzi Y
-
-        // Şəkildəki adlara uyğun nümunə oyunçular
-        const playersData = {
-            0: { name: "ZLOY", avatar: "https://via.placeholder.com/55" },
-            1: { name: "Плотник", avatar: "https://via.placeholder.com/55" },
-            2: { name: "Young Shin", avatar: "https://via.placeholder.com/55" },
-            3: { name: "Судьба", avatar: "https://via.placeholder.com/55" },
-            5: { name: "Али [АЛIК]", avatar: "https://via.placeholder.com/55" },
-            7: { name: "Z", avatar: "https://via.placeholder.com/55" },
-            9: { name: "Emil.", avatar: "https://via.placeholder.com/55" },
-            10: { name: "No Name", avatar: "https://via.placeholder.com/55" },
-            11: { name: "* Urfan *", avatar: "https://via.placeholder.com/55" }
-        };
-
-        for (let i = 0; i < totalSlots; i++) {
-            const angle = (i / totalSlots) * 2 * Math.PI - Math.PI / 2;
-            // X və Y koordinatları
-            const x = (gameArea.clientWidth / 2) + radius * Math.cos(angle) - 27.5;
-            const y = 145 + radius * Math.sin(angle) - 27.5;
-
-            const box = document.createElement('div');
-            box.className = 'player-box';
-            box.style.left = `${x}px`;
-            box.style.top = `${y}px`;
-
-            if (playersData[i]) {
-                box.innerHTML = `
-                    <img src="${playersData[i].avatar}" alt="">
-                    <div class="player-label">${playersData[i].name}</div>
-                `;
-            } else {
-                // Boş yer
-                box.innerHTML = `<span style="color:#777; font-size:18px;">+</span>`;
-                box.style.border = '2px dashed rgba(255,255,255,0.3)';
-                box.style.background = 'rgba(0,0,0,0.2)';
-            }
-
-            gameArea.appendChild(box);
-        }
-    </script>
-</body>
-</html>
+  /* ===== Oyun sahəsi ===== */
+  .arena{
+    flex:0 0 auto;position:relative;display:flex;justify-content:center;padding:8px 0;
+    background:repeating-linear-gradient(90deg,#c58a4a 0 22px,#b97d3d 22px 24px,#cf9655 24px 47px,#bd8142 47px 49px);
+    border-bottom:4px solid #522d08;
+  }
+  .stage{
+    position:relative;width:min(100%,calc(54vh / 1.1));width:min(100%,calc(54dvh / 1.1));aspect-ratio:1 / 1.1;
+  }
