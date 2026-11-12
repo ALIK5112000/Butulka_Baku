@@ -2,345 +2,189 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Butulka Baku - Yerli Şəkillər</title>
-    <script src="/socket.io/socket.io.js"></script>
+    <title>Butulka Baku - 12 Nəfərlik Masa</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; }
         body {
-            /* 🔥 Taxta masa şəkli: wood.jpg */
-            background-color: #b56531;
-            background-image: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.4) 100%), url('images/wood.jpg');
-            background-size: cover;
+            margin: 0;
+            /* Şəkildəki kimi isti taxta fon rəngi */
+            background: linear-gradient(135deg, #c88a4b 0%, #8b5420 100%);
             color: #fff;
+            font-family: Arial, sans-serif;
             height: 100vh;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
-            position: relative;
         }
 
-        /* Yuxarı Panel */
+        /* Yuxarı Panel (Şəkildəki kimi balans, otaq nömrəsi və çıxış) */
         .top-bar {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 8px 14px; background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(8px); z-index: 50; flex-shrink: 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
         }
-        .hearts-box {
-            display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: bold; background: linear-gradient(135deg, #ff7e5f, #feb47b); padding: 4px 12px; border-radius: 20px; color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-        }
-        .top-icons { display: flex; align-items: center; gap: 8px; }
-        .icon-btn {
-            width: 34px; height: 34px; border-radius: 50%;
-            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35);
-            display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer;
-        }
-        .table-info { text-align: center; line-height: 1.1; font-size: 11px; font-weight: bold; text-shadow: 1px 1px 2px #000; }
-
-        /* Oyun Masası Səhnəsi */
-        .game-board {
-            flex: 1; position: relative; width: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center;
-        }
-        
-        /* 🔥 Butulka və Ağ Fonu Qeyb Edən Sehrli Sətirlər */
-        .center-bottle-container {
-            position: absolute; width: 65px; height: 175px; display: flex; align-items: center; justify-content: center;
-            z-index: 15; transition: transform 3s cubic-bezier(0.15, 0.85, 0.25, 1);
-            transform: rotate(28deg);
-        }
-        .center-bottle-container img {
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; 
-            pointer-events: none;
-            mix-blend-mode: multiply; /* 🔥 Ağ fonu tamamilə yox edir */
-            filter: drop-shadow(0 10px 12px rgba(0,0,0,0.7));
+        .badge {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
-        .bottle-text-msg {
-            position: absolute; width: 220px; text-align: center; color: #fff; font-weight: bold; font-size: 12px; text-shadow: 1px 1px 4px #000; z-index: 18; bottom: -38px; transform: rotate(-28deg);
-        }
-        .spin-btn {
-            position: absolute; bottom: -48px; background: linear-gradient(135deg, #ec4899, #be185d); color: #fff; border: 2px solid #fff; padding: 6px 20px; border-radius: 18px; font-weight: bold; font-size: 12px; cursor: pointer; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 18; transform: rotate(-28deg); text-transform: uppercase;
-        }
-
-        /* Dairəvi Stul Yuvaları */
-        .circle-container {
-            width: 320px; height: 320px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 20;
-        }
-        .seat-slot {
-            position: absolute; width: 58px; height: 58px; top: 50%; left: 50%; margin: -29px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        
-        .empty-seat-hole {
-            width: 100%; height: 100%; border-radius: 14px;
-            background: rgba(0, 0, 0, 0.28);
-            box-shadow: inset 0 4px 10px rgba(0,0,0,0.7), 0 2px 4px rgba(255,255,255,0.12);
-            border: 1px dashed rgba(255,255,255,0.18);
-            display: flex; align-items: center; justify-content: center; font-size: 10px; color: rgba(255,255,255,0.4); font-weight: bold;
+        /* Dairəvi Taxta Masa */
+        .table-container {
+            position: relative;
+            width: 650px;
+            height: 650px;
+            background: radial-gradient(circle, #b87333 0%, #704214 100%);
+            border: 8px solid #522d08;
+            border-radius: 50%;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6), inset 0 0 60px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Dolu Profil Kartı */
-        .player-card {
-            width: 100%; height: 100%; border-radius: 14px; position: relative; box-shadow: 0 6px 14px rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.3); background: #1a1d33; overflow: visible;
+        /* Ortadakı Şüşə və Yazı */
+        .center-area {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            text-align: center;
         }
-        .player-card.is-vip { 
-            border: 3px solid #fbbf24; 
-            box-shadow: 0 0 16px rgba(251,191,36,0.8), inset 0 0 8px rgba(251,191,36,0.5); 
+        .center-text {
+            margin-top: 100px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #ffeb3b;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
-        .player-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
-        
+        .bottle {
+            width: 40px;
+            height: 120px;
+            background: #111;
+            border: 2px solid #d4af37;
+            border-radius: 20px 20px 5px 5px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .bottle::before {
+            content: 'VIP';
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #d4af37;
+            font-weight: bold;
+        }
+
+        /* Oyunçu Slotları (12 ədəd dairəvi yer) */
+        .player-slot {
+            position: absolute;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            border: 3px solid #ffcc40;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            transition: 0.3s;
+        }
+        .player-slot img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
         .player-name {
-            position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%);
-            font-size: 9px; font-weight: bold; color: #fff; background: rgba(0,0,0,0.85); padding: 1px 6px; border-radius: 6px; white-space: nowrap; border: 1px solid rgba(255,255,255,0.2);
-        }
-        .gender-icon { position: absolute; top: -5px; right: -5px; background: #1e293b; padding: 1px; border-radius: 50%; font-size: 9px; z-index: 5; border: 1px solid #fff; }
-        .kiss-sticker { position: absolute; bottom: -2px; right: -6px; font-size: 16px; z-index: 6; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
-
-        /* Öpüşmə Modalı */
-        .kiss-overlay-board {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
-            z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .kiss-card { background: #1e293b; border: 2px solid #fbbf24; padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); width: 280px; }
-        .kiss-profiles-box { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 15px 0; }
-        .kiss-prof-img { width: 65px; height: 65px; border-radius: 14px; border: 3px solid #fbbf24; object-fit: cover; }
-        .kiss-timer { font-size: 28px; font-weight: bold; color: #fbbf24; }
-        .kiss-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
-        .btn-red-custom { background: #ef4444; color: #fff; border: none; padding: 8px 16px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .btn-green-custom { background: #22c55e; color: #fff; border: none; padding: 8px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-
-        /* Canlı Çat Paneli */
-        .chat-container {
-            height: 140px; background: #fff; display: flex; flex-direction: column; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.4); z-index: 40; flex-shrink: 0;
-        }
-        .chat-messages { flex: 1; padding: 8px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-        .chat-line { font-size: 12px; color: #333; line-height: 1.3; background: #f1f5f9; padding: 5px 10px; border-radius: 10px; align-self: flex-start; max-width: 90%; word-break: break-word; border-left: 3px solid #ec4899; }
-        .chat-sender { font-weight: bold; color: #ec4899; }
-        
-        .chat-input-area { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid #e2e8f0; background: #f8fafc; }
-        .chat-input { flex: 1; padding: 7px 12px; border-radius: 18px; border: 1px solid #cbd5e1; outline: none; font-size: 12px; }
-        .send-btn { background: #f97316; color: #fff; border: none; width: 34px; height: 34px; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(249,115,22,0.4); }
-
-        .bottom-bonus-bar {
-            height: 32px; background: #1e293b; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 11px; font-weight: bold; z-index: 45; flex-shrink: 0; border-top: 1px solid rgba(255,255,255,0.08);
+            position: absolute;
+            bottom: -18px;
+            background: rgba(0,0,0,0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
         }
     </style>
 </head>
 <body>
 
+    <!-- Yuxarı Məlumat Paneli -->
     <div class="top-bar">
-        <div class="hearts-box">
-            <span>❤️</span> 
-            <span id="myHeartsDisplay">0</span>
-        </div>
-        <div class="top-icons">
-            <button class="icon-btn" onclick="window.location.href='profil.html'">⚙️</button>
-            <div class="table-info">Masa<br>511</div>
-            <button class="icon-btn" onclick="exitGame()" style="background:rgba(239,68,68,0.3);">🚪</button>
-        </div>
+        <div class="badge">❤️ 4968</div>
+        <div class="badge">#17 Masa</div>
+        <div class="badge">🚪 Çıxış</div>
     </div>
 
-    <div class="game-board">
-        <!-- Öpüşmə Modalı -->
-        <div class="kiss-overlay-board" id="kissBoard">
-            <div class="kiss-card">
-                <h3 style="color:#fff; font-size:16px;">Seçim Zamanı!</h3>
-                <div class="kiss-profiles-box">
-                    <img src="" class="kiss-prof-img" id="kissUser1">
-                    <div class="kiss-timer" id="kissTimerNum">9</div>
-                    <img src="" class="kiss-prof-img" id="kissUser2">
-                </div>
-                <div class="kiss-buttons">
-                    <button class="btn-red-custom" onclick="resolveKiss('slap')">İmtina et ❌</button>
-                    <button class="btn-green-custom" onclick="resolveKiss('kiss')">Öp 💋</button>
-                </div>
-            </div>
+    <!-- 12 Nəfərlik Stol -->
+    <div class="table-container" id="tableContainer">
+        
+        <!-- Mərkəzdə Şüşə və Yazı -->
+        <div class="center-area">
+            <div class="bottle" id="bottle"></div>
+            <div class="center-text">Oyuna başlamaq üçün qızları gözləyirik</div>
         </div>
 
-        <!-- 🔥 Butulka (images/bottle.png) -->
-        <div class="center-bottle-container" id="bottleImg">
-            <img src="https://i.ibb.co/6R2nQ68/bottle.png" alt="VIP Butulka">
-            <div class="bottle-text-msg" id="bottleText">Oyuna başlamaq üçün qızları gözləyirik</div>
-            <button class="spin-btn" id="spinBtn" onclick="requestSpin()">Fırlat!</button>
-        </div>
-
-        <!-- Dairəvi Stul Yuvaları -->
-        <div class="circle-container" id="seatsContainer"></div>
-    </div>
-
-    <div class="chat-container">
-        <div class="chat-messages" id="chatBox">
-            <div style="text-align:center; color:#94a3b8; font-size:11px;">📢 Fon təmizləmə filtri aktivdir.</div>
-        </div>
-        <div class="chat-input-area">
-            <input type="text" id="msgInput" class="chat-input" placeholder="Mesaj yaz..." onkeypress="if(event.key==='Enter') sendChat()">
-            <button class="send-btn" onclick="sendChat()">➤</button>
-        </div>
-    </div>
-
-    <div class="bottom-bonus-bar">
-        <div>⏳ Hədiyyə: <span style="color:#22c55e;">+300 Ürək</span></div>
-        <div style="color:#fbbf24;">60:00</div>
     </div>
 
     <script>
-        const socket = io();
+        // Masanın ətrafında 12 nəfərlik slotların avtomatik dairəvi düzülməsi
+        const tableContainer = document.getElementById('tableContainer');
+        const totalSlots = 12;
+        const radius = 250; // Masanın mərkəzindən slotlara olan məsafə
+        const centerX = 325; // Masanın mərkəzi X (650 / 2)
+        const centerY = 325; // Masanın mərkəzi Y (650 / 2)
 
-        const sessionRaw = localStorage.getItem("currentUser");
-        if (!sessionRaw) window.location.href = "index.html";
-        const sessionUser = JSON.parse(sessionRaw);
+        // Nümunə olaraq bəzi yerlərə oyunçu qoyaq, qalanları boş olsun (bos yerlər + yazısı)
+        const mockPlayers = {
+            0: { name: "Əli", avatar: "https://via.placeholder.com/65" }, // 1-ci yerdə Əli oturub
+            3: { name: "Aysel", avatar: "https://via.placeholder.com/65" } // 4-cü yerdə Aysel oturub
+        };
 
-        const currentTableId = "511";
-        const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-        let globalPlayersList = [];
+        for (let i = 0; i < totalSlots; i++) {
+            // Hər bir slot üçün bucağın hesablanması (360 dərəcə / 12)
+            const angle = (i / totalSlots) * 2 * Math.PI - Math.PI / 2; // Yuxarıdan başlasın deyə -PI/2
+            const x = centerX + radius * Math.cos(angle) - 32.5;
+            const y = centerY + radius * Math.sin(angle) - 32.5;
 
-        document.getElementById("myHeartsDisplay").textContent = sessionUser.hearts || 0;
+            const slot = document.createElement('div');
+            slot.className = 'player-slot';
+            slot.style.left = `${x}px`;
+            slot.style.top = `${y}px`;
 
-        function initEmptySeats() {
-            const container = document.getElementById("seatsContainer");
-            container.innerHTML = "";
-            const radius = 125; 
-            for (let i = 0; i < 12; i++) {
-                const angle = (i * 30 - 90) * (Math.PI / 180);
-                const x = radius * Math.cos(angle);
-                const y = radius * Math.sin(angle);
-                
-                const seatDiv = document.createElement("div");
-                seatDiv.className = "seat-slot";
-                seatDiv.id = `seat-${i}`;
-                seatDiv.style.transform = `translate(${x}px, ${y}px)`;
-                
-                seatDiv.innerHTML = `
-                    <div class="empty-seat-hole">
-                        <span>${i+1}</span>
-                    </div>`;
-                container.appendChild(seatDiv);
-            }
-        }
-        initEmptySeats();
-
-        socket.emit('join_table', {
-            tableId: currentTableId,
-            user: {
-                id: sessionUser.id,
-                username: sessionUser.username,
-                avatar: sessionUser.avatar || DEFAULT_AVATAR,
-                gender: sessionUser.gender || "Kişi",
-                vip: sessionUser.vip || false
-            }
-        });
-
-        socket.on('update_table', (table) => {
-            const playersMap = table.players || {};
-            globalPlayersList = Object.values(playersMap);
-
-            for (let i = 0; i < 12; i++) {
-                const seatDiv = document.getElementById(`seat-${i}`);
-                const p = globalPlayersList.find(x => x.seatIndex === i);
-                
-                if (p) {
-                    const genderIcon = p.gender === "Qadın" ? "♀️" : "♂️";
-                    const vipClass = p.vip ? "is-vip" : "";
-                    const nameColor = p.vip ? (p.gender === "Qadın" ? "#f43f5e" : "#38bdf8") : "#fff";
-                    const userAvatar = p.avatar && p.avatar.trim() !== "" ? p.avatar : DEFAULT_AVATAR;
-                    const kissSticker = p.vip ? `<div class="kiss-sticker">💋</div>` : "";
-
-                    seatDiv.innerHTML = `
-                        <div class="player-card ${vipClass}">
-                            <span class="gender-icon">${genderIcon}</span>
-                            <img src="${userAvatar}">
-                            ${kissSticker}
-                            <div class="player-name" style="color: ${nameColor}">${p.vip ? "👑 " : ""}${p.username}</div>
-                        </div>`;
-                } else {
-                    seatDiv.innerHTML = `
-                        <div class="empty-seat-hole">
-                            <span>${i+1}</span>
-                        </div>`;
-                }
-            }
-
-            const hasGirls = globalPlayersList.some(p => p.gender === "Qadın");
-            const bottleText = document.getElementById("bottleText");
-            const spinBtn = document.getElementById("spinBtn");
-            
-            if (!hasGirls) {
-                bottleText.style.display = "block";
-                spinBtn.style.display = "none";
+            if (mockPlayers[i]) {
+                // Əgər bu yerdə oyunçu varsa
+                slot.innerHTML = `
+                    <img src="${mockPlayers[i].avatar}" alt="Avatar">
+                    <div class="player-name">${mockPlayers[i].name}</div>
+                `;
+                slot.style.borderColor = '#00ffcc'; // Dolu yer yaşıl/mavi çərçivə
             } else {
-                bottleText.style.display = "none";
-                spinBtn.style.display = "block";
+                // Boş yer (oturmaq üçün)
+                slot.innerHTML = `<span style="font-size: 18px; color: #aaa;">+</span>`;
+                slot.style.border = '2px dashed rgba(255,255,255,0.4)';
             }
-        });
 
-        function requestSpin() {
-            socket.emit('spin_bottle', currentTableId);
-        }
-
-        socket.on('bottle_spinning', (data) => {
-            const bottle = document.getElementById("bottleImg");
-            bottle.style.transform = `rotate(${data.rotation + 28}deg)`;
-        });
-
-        socket.on('bottle_stopped', (finalAngle) => {
-            if (globalPlayersList.length >= 2) {
-                startKissModal(globalPlayersList[0], globalPlayersList[1]);
-            }
-        });
-
-        let kissTimerInterval = null;
-        function startKissModal(p1, p2) {
-            const board = document.getElementById("kissBoard");
-            document.getElementById("kissUser1").src = p1.avatar || DEFAULT_AVATAR;
-            document.getElementById("kissUser2").src = p2.avatar || DEFAULT_AVATAR;
-            board.style.display = "flex";
-
-            let timeLeft = 9;
-            document.getElementById("kissTimerNum").textContent = timeLeft;
-
-            if (kissTimerInterval) clearInterval(kissTimerInterval);
-            kissTimerInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById("kissTimerNum").textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(kissTimerInterval);
-                    board.style.display = "none";
-                }
-            }, 1000);
-        }
-
-        function resolveKiss(action) {
-            if (kissTimerInterval) clearInterval(kissTimerInterval);
-            document.getElementById("kissBoard").style.display = "none";
-            alert(action === 'kiss' ? "Öpüş baş tutdu! ❤️" : "İmtina edildi.");
-        }
-
-        function sendChat() {
-            const input = document.getElementById("msgInput");
-            const text = input.value.trim();
-            if (!text) return;
-            input.value = "";
-
-            socket.emit('send_chat', {
-                tableId: currentTableId,
-                senderName: sessionUser.username,
-                text: text
-            });
-        }
-
-        socket.on('new_chat', (data) => {
-            const box = document.getElementById("chatBox");
-            box.innerHTML += `
-                <div class="chat-line">
-                    <span class="chat-sender">${data.senderName}:</span> ${data.text}
-                </div>`;
-            box.scrollTop = box.scrollHeight;
-        });
-
-        function exitGame() {
-            window.location.href = "profil.html";
+            tableContainer.appendChild(slot);
         }
     </script>
 </body>
