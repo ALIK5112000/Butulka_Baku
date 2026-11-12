@@ -211,6 +211,7 @@
         let unsubscribeTable = null;
         let unsubscribeChat = null;
         let currentPlayersList = [];
+        let heartbeatInterval = null;
 
         const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
@@ -226,6 +227,7 @@
             initEmptySeats();
             joinTableRealtime();
             startBonusCountdown();
+            startHeartbeat(); // CANLI QALMAQ SİQNALI
         }
 
         function updateHeartsUI() {
@@ -257,6 +259,17 @@
             unsubscribeTable = onSnapshot(tableRef, async (docSnap) => {
                 let tData = docSnap.exists() ? docSnap.data() : { players: {} };
                 let playersMap = tData.players || {};
+                let now = Date.now();
+
+                // 10 saniyədən çox siqnal göndərməyən (çıxıb getmiş) oyunçuları avtomatik təmizləyirik
+                let cleaned = false;
+                Object.keys(playersMap).forEach(idx => {
+                    let p = playersMap[idx];
+                    if (p.lastSeen && (now - p.lastSeen > 12000)) {
+                        delete playersMap[idx];
+                        cleaned = true;
+                    }
+                });
 
                 let myIdStr = String(myData.id);
                 let alreadyInSeat = -1;
@@ -280,12 +293,19 @@
                             username: myData.username,
                             avatar: myData.avatar || DEFAULT_AVATAR,
                             gender: myData.gender || "Kişi",
-                            vip: myData.vip || false
+                            vip: myData.vip || false,
+                            lastSeen: now
                         };
-                        await setDoc(tableRef, { players: playersMap }, { merge: true });
+                        cleaned = true;
                     }
                 } else {
                     mySeatIndex = alreadyInSeat;
+                    playersMap[mySeatIndex].lastSeen = now; // Öz vaxtımızı yeniləyirik
+                    cleaned = true;
+                }
+
+                if (cleaned) {
+                    await setDoc(tableRef, { players: playersMap }, { merge: true });
                 }
 
                 currentPlayersList = Object.values(playersMap);
@@ -294,6 +314,23 @@
             });
 
             listenTableChat();
+        }
+
+        // Hər 5 saniyədən bir bazaya "Mən buradayam" siqnalı göndərir
+        function startHeartbeat() {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            heartbeatInterval = setInterval(async () => {
+                if (mySeatIndex === -1) return;
+                const tableRef = doc(db, "tables", currentTableId);
+                let snap = await getDoc(tableRef);
+                if (snap.exists()) {
+                    let playersMap = snap.data().players || {};
+                    if (playersMap[mySeatIndex]) {
+                        playersMap[mySeatIndex].lastSeen = Date.now();
+                        await setDoc(tableRef, { players: playersMap }, { merge: true });
+                    }
+                }
+            }, 5000);
         }
 
         function renderSeats(playersMap) {
@@ -332,7 +369,6 @@
             }
         }
 
-        // Butulkanın fırlanması və 9 saniyəlik öpüşmə pəncərəsi
         window.triggerSpin = function() {
             const bottle = document.getElementById("bottleImg");
             const rot = 1440 + Math.floor(Math.random() * 360);
@@ -379,8 +415,7 @@
             }
         };
 
-        // 60 Dəqiqəlik Pulsuz Bonus Sayğacı
-        let bonusSeconds = 3600; // 1 saat (test üçün istəsənsə azalda bilərsən)
+        let bonusSeconds = 3600;
         function startBonusCountdown() {
             setInterval(() => {
                 if (bonusSeconds > 0) {
@@ -411,7 +446,6 @@
         window.closeShopModal = function() { document.getElementById("shopModal").style.display = "none"; }
         window.openTableModal = function() { alert("Masa nömrəsi: " + currentTableId); }
 
-        // Canlı Çat
         window.sendTableMessage = async function() {
             const input = document.getElementById("msgInput");
             const text = input.value.trim();
@@ -452,6 +486,7 @@
         }
 
         window.exitGame = async function() {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
             if (unsubscribeTable) unsubscribeTable();
             if (unsubscribeChat) unsubscribeChat();
             
