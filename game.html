@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Butulka Baku - Oyun</title>
+    <title>Butulka Baku - Onlayn Oyun</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
@@ -51,7 +51,7 @@
             position: absolute; width: 180px; text-align: center; color: #fff; font-weight: bold; font-size: 14px; text-shadow: 1px 1px 3px #000; z-index: 11;
         }
         .spin-btn {
-            position: absolute; bottom: -40px; background: rgba(255,255,255,0.2); border: 2px solid #fff; padding: 6px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; display: none;
+            position: absolute; bottom: -45px; background: #ec4899; border: 2px solid #fff; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
         .circle-container { width: 320px; height: 320px; position: relative; border-radius: 50%; }
@@ -71,22 +71,6 @@
         }
         .gender-icon { position: absolute; top: -6px; right: -6px; background: #1e293b; padding: 2px; border-radius: 50%; font-size: 12px; }
 
-        /* Köməkçi Alətlər (Klip və Hədiyyə) */
-        .side-tools {
-            position: absolute; right: 10px; bottom: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 20;
-        }
-        .tool-btn {
-            width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center;
-        }
-
-        /* --- YOUTUBE PLEYER --- */
-        .active-media-player {
-            position: absolute; bottom: 270px; left: 10px; right: 60px; background: #fff; border-radius: 12px; display: none; align-items: center; padding: 6px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 15;
-        }
-        .media-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #38bdf8; margin-right: 10px; }
-        .media-info { flex: 1; color: #000; font-size: 12px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .media-controls { display: flex; align-items: center; gap: 8px; color: #333; font-size: 18px; }
-
         /* --- CANLI ÇAT --- */
         .chat-container {
             height: 220px; background: #fff; display: flex; flex-direction: column; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -5px 20px rgba(0,0,0,0.3); z-index: 30;
@@ -104,15 +88,6 @@
             height: 40px; background: #1e293b; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; font-size: 13px; font-weight: bold;
         }
         .bonus-btn { background: #22c55e; color: #fff; border: none; padding: 4px 12px; border-radius: 12px; font-weight: bold; cursor: pointer; display: none; }
-        
-        /* --- MODALLAR (OVERLAY) ÜMUMİ --- */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px);
-        }
-        .modal-content { background: #fff; color: #333; width: 90%; max-width: 400px; border-radius: 20px; overflow: hidden; position: relative; }
-        .modal-header { padding: 15px; background: #f8fafc; text-align: center; font-weight: bold; font-size: 16px; border-bottom: 1px solid #e2e8f0; position: relative; }
-        .close-modal-btn { position: absolute; right: 15px; top: 12px; background: #e2e8f0; border: none; width: 28px; height: 28px; border-radius: 50%; font-weight: bold; cursor: pointer; }
-
     </style>
 </head>
 <body>
@@ -123,22 +98,17 @@
             <span id="myHeartsDisplay">0</span>
         </div>
         <div class="top-icons">
-            <button class="icon-btn">🍾</button>
+            <button class="icon-btn" onclick="triggerSpin()">🍾</button>
             <button class="icon-btn" onclick="exitGame()">⚙️</button>
-            <div class="table-info">Masa<br><span id="tableNumberDisplay">---</span> 🔄</div>
+            <div class="table-info">Masa<br><span id="tableNumberDisplay">511</span></div>
             <button class="icon-btn" onclick="exitGame()" style="background:rgba(239,68,68,0.3);">🚪</button>
         </div>
     </div>
 
     <div class="game-board">
-        <div class="side-tools">
-            <button class="tool-btn">🎬</button>
-            <button class="tool-btn">🎁</button>
-        </div>
-
         <div class="center-bottle" id="bottleImg">
             <div class="bottle-text" id="bottleText">Oyuna başlamaq üçün qızları gözləyirik</div>
-            <button class="spin-btn" id="spinBtn" onclick="alert('Fırlanma tezliklə aktiv olacaq!')">Butulkanı fırlat!</button>
+            <button class="spin-btn" id="spinBtn" onclick="triggerSpin()">Butulkanı fırlat!</button>
         </div>
 
         <div class="circle-container" id="seatsContainer"></div>
@@ -147,11 +117,10 @@
     <div class="chat-container">
         <div class="chat-messages" id="chatBox">
             <div style="text-align:center; color:#94a3b8; font-size:12px; margin-bottom:10px;">
-                📢 Sistem: Masaya qoşuldunuz.
+                📢 Sistem: Masaya qoşuldunuz. Hər kəs canlı görünür.
             </div>
         </div>
         <div class="chat-input-area">
-            <button style="border:none; background:none; font-size:20px; cursor:pointer;">😊</button>
             <input type="text" id="msgInput" class="chat-input" placeholder="Mesajı bura yaz..." onkeypress="if(event.key==='Enter') sendTableMessage()">
             <button class="send-btn" onclick="sendTableMessage()">➤</button>
         </div>
@@ -167,7 +136,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import {
             getFirestore, collection, doc, getDoc, setDoc, updateDoc, 
-            arrayUnion, arrayRemove, onSnapshot, query, orderBy, limit, serverTimestamp
+            onSnapshot, query, orderBy, limit, serverTimestamp, addDoc
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -182,21 +151,19 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // 1. İSTİFADƏÇİ YOXLANIŞI
         const sessionRaw = localStorage.getItem("currentUser");
         if (!sessionRaw) window.location.href = "index.html";
         const sessionUser = JSON.parse(sessionRaw);
         
         let myData = null;
         let mySeatIndex = -1;
-        let currentTableId = "511"; // Real vaxt otaq
+        let currentTableId = "511";
         let unsubscribeTable = null;
         let unsubscribeChat = null;
 
         const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
         async function initGame() {
-            // Şəxsi profil məlumatlarını Firebase-dən çəkirik
             const userRef = doc(db, "users", sessionUser.docId);
             const userSnap = await getDoc(userRef);
             if (!userSnap.exists()) return window.location.href = "index.html";
@@ -205,11 +172,10 @@
             document.getElementById("myHeartsDisplay").textContent = myData.hearts || 0;
             document.getElementById("tableNumberDisplay").textContent = currentTableId;
 
-            initEmptySeats(); // Əvvəlcə 12 boş stul çəkilir
+            initEmptySeats();
             joinTableRealtime();
         }
 
-        // DOM-a 12 boş stulun yerləşdirilməsi
         function initEmptySeats() {
             const container = document.getElementById("seatsContainer");
             container.innerHTML = "";
@@ -227,62 +193,60 @@
             }
         }
 
-        // 2. MASANIN REAL VAXTDA İDARƏ OLUNMASI (MATRIX BURA)
+        // HƏR KƏSİN CANLI GÖRÜNMƏSİ ÜÇÜN OYNARAK TABLE SINXRONİZASİYASI
         async function joinTableRealtime() {
             const tableRef = doc(db, "tables", currentTableId);
-            const tableSnap = await getDoc(tableRef);
             
-            // Baza yoxdursa yaradırıq
-            if (!tableSnap.exists()) {
-                await setDoc(tableRef, { players: [], state: "idle" });
-            }
-
-            // MASANI CANLI DİNLƏMƏ
+            // Masanı real-vaxt dinləyirik
             unsubscribeTable = onSnapshot(tableRef, async (docSnap) => {
-                const tData = docSnap.data() || { players: [] };
-                let players = tData.players || [];
-                
-                // Mən bu masada artıq oturanlar siyahısında varammı?
-                const me = players.find(p => p.id === myData.id);
-                
-                if (!me && players.length < 12) {
-                    // Yoxamsa, masadakı boş stulu tap və məni oturt!
-                    let usedSeats = players.map(p => p.seatIndex);
+                let tData = docSnap.exists() ? docSnap.data() : { players: {} };
+                let playersMap = tData.players || {}; // Obyekt kimi saxlayırıq ki, ID ilə idarə edək
+
+                // Mən bu masada varammı? Və ya təzə girmişəm?
+                let myIdStr = String(myData.id);
+                let alreadyInSeat = -1;
+
+                // Tap gör kim hansı stuldadır
+                for (let i = 0; i < 12; i++) {
+                    if (playersMap[i] && String(playersMap[i].id) === myIdStr) {
+                        alreadyInSeat = i;
+                        break;
+                    }
+                }
+
+                if (alreadyInSeat === -1) {
+                    // Boş stul tapıb ora otururuq
                     let emptySeat = -1;
                     for (let i = 0; i < 12; i++) {
-                        if (!usedSeats.includes(i)) { emptySeat = i; break; }
+                        if (!playersMap[i]) { emptySeat = i; break; }
                     }
                     if (emptySeat !== -1) {
                         mySeatIndex = emptySeat;
-                        await updateDoc(tableRef, {
-                            players: arrayUnion({
-                                id: myData.id,
-                                username: myData.username,
-                                avatar: myData.avatar || DEFAULT_AVATAR,
-                                gender: myData.gender || "Kişi",
-                                vip: myData.vip || false,
-                                seatIndex: mySeatIndex
-                            })
-                        });
+                        playersMap[mySeatIndex] = {
+                            id: myData.id,
+                            username: myData.username,
+                            avatar: myData.avatar || DEFAULT_AVATAR,
+                            gender: myData.gender || "Kişi",
+                            vip: myData.vip || false
+                        };
+                        // Bazaya yenilənmiş obyekti yazırıq
+                        await setDoc(tableRef, { players: playersMap }, { merge: true });
                     }
-                } else if (me) {
-                    mySeatIndex = me.seatIndex;
+                } else {
+                    mySeatIndex = alreadyInSeat;
                 }
-                
-                // Ekrana çək
-                renderSeats(players);
-                checkBottleConditions(players);
+
+                renderSeats(playersMap);
+                checkBottleConditions(playersMap);
             });
 
-            // Çatı canlı dinləyək
             listenTableChat();
         }
 
-        // Stulların Firebase-dəki məlumatlara görə doldurulması
-        function renderSeats(players) {
+        function renderSeats(playersMap) {
             for (let i = 0; i < 12; i++) {
                 const seatDiv = document.getElementById(`seat-${i}`);
-                const p = players.find(x => x.seatIndex === i);
+                const p = playersMap[i];
                 
                 if (p) {
                     const genderIcon = p.gender === "Qadın" ? "♀️" : "♂️";
@@ -296,14 +260,14 @@
                             <div class="player-name" style="color: ${nameColor}">${p.vip ? "👑 " : ""}${p.username}</div>
                         </div>`;
                 } else {
-                    seatDiv.innerHTML = ""; // Stul boşdur
+                    seatDiv.innerHTML = "";
                 }
             }
         }
 
-        // Qadın yoxdursa butulka fırlanmır məntiqi
-        function checkBottleConditions(players) {
-            const hasGirls = players.some(p => p.gender === "Qadın");
+        function checkBottleConditions(playersMap) {
+            let playersList = Object.values(playersMap);
+            const hasGirls = playersList.some(p => p.gender === "Qadın");
             const bottleText = document.getElementById("bottleText");
             const spinBtn = document.getElementById("spinBtn");
             
@@ -316,7 +280,15 @@
             }
         }
 
-        // 3. CANLI ÇAT
+        // Fırlatma düyməsi simulyasiyası
+        window.triggerSpin = function() {
+            const bottle = document.getElementById("bottleImg");
+            const rot = 1440 + Math.floor(Math.random() * 360);
+            bottle.style.transform = `rotate(${rot}deg)`;
+            alert("Butulka fırlandı! (Tezliklə öpüşmə pəncərəsi aktivləşəcək)");
+        };
+
+        // CANLI ÇAT
         window.sendTableMessage = async function() {
             const input = document.getElementById("msgInput");
             const text = input.value.trim();
@@ -324,7 +296,6 @@
             input.value = "";
 
             await addDoc(collection(db, "tables", currentTableId, "chat"), {
-                senderId: myData.id,
                 senderName: myData.username,
                 text: text,
                 timestamp: serverTimestamp()
@@ -344,7 +315,7 @@
                 
                 const box = document.getElementById("chatBox");
                 box.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:12px; margin-bottom:10px;">
-                    📢 Sistem: ${currentTableId} nömrəli masaya daxil oldunuz.
+                    📢 Masaya qoşuldunuz.
                 </div>`;
                 
                 msgs.forEach(m => {
@@ -357,40 +328,33 @@
             });
         }
 
-        // Oyundan çıxarkən (və ya səhifə bağlanarkən) stulu azad etmək
+        // Çıxış edərkən stulu təmizləmək
         window.exitGame = async function() {
             if (unsubscribeTable) unsubscribeTable();
             if (unsubscribeChat) unsubscribeChat();
             
-            if (mySeatIndex !== -1 && myData) {
+            if (mySeatIndex !== -1) {
                 const tableRef = doc(db, "tables", currentTableId);
-                await updateDoc(tableRef, {
-                    players: arrayRemove({
-                        id: myData.id,
-                        username: myData.username,
-                        avatar: myData.avatar || DEFAULT_AVATAR,
-                        gender: myData.gender || "Kişi",
-                        vip: myData.vip || false,
-                        seatIndex: mySeatIndex
-                    })
-                });
+                let snap = await getDoc(tableRef);
+                if (snap.exists()) {
+                    let playersMap = snap.data().players || {};
+                    delete playersMap[mySeatIndex];
+                    await setDoc(tableRef, { players: playersMap }, { merge: true });
+                }
             }
             window.location.href = "profil.html";
         };
 
         window.onbeforeunload = function() {
-            if (mySeatIndex !== -1 && myData) {
-                // Səhifə anidən bağlananda Firebase-i məlumatlandırmaq
+            if (mySeatIndex !== -1) {
                 const tableRef = doc(db, "tables", currentTableId);
-                updateDoc(tableRef, {
-                    players: arrayRemove({
-                        id: myData.id,
-                        username: myData.username,
-                        avatar: myData.avatar || DEFAULT_AVATAR,
-                        gender: myData.gender || "Kişi",
-                        vip: myData.vip || false,
-                        seatIndex: mySeatIndex
-                    })
+                // Qısa sinxron təmizlənmə cəhdi
+                getDoc(tableRef).then(snap => {
+                    if (snap.exists()) {
+                        let pMap = snap.data().players || {};
+                        delete pMap[mySeatIndex];
+                        setDoc(tableRef, { players: pMap }, { merge: true });
+                    }
                 });
             }
         };
