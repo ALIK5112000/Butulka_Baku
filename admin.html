@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Butulka Baku - Admin Panel</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #0d0e1a;
+            color: #fff;
+            min-height: 100vh;
+            padding-bottom: 40px;
+            display: none; /* Yalnız ID 96446 təsdiqləndikdən sonra görünür */
+        }
+
+        /* Üst Panel */
+        .admin-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: rgba(19, 21, 38, 0.95);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 1px solid rgba(245, 185, 66, 0.3);
+        }
+        .back-btn {
+            background: #1e223d;
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .admin-badge {
+            background: rgba(245, 185, 66, 0.15);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        /* Ümumi Statistika Kartları */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 14px 16px;
+        }
+        .sum-card {
+            background: #171a2e;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 16px;
+            padding: 12px 10px;
+            text-align: center;
+        }
+        .sum-val {
+            font-size: 20px;
+            font-weight: 800;
+            color: #818cf8;
+        }
+        .sum-lbl {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+
+        /* Axtarış Qutusu */
+        .search-wrap {
+            padding: 0 16px 14px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 13px 15px;
+            background: #171a2e;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+        .search-input:focus {
+            border-color: #fbbf24;
+        }
+
+        /* İstifadəçi Kartları */
+        .users-list {
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .user-card {
+            background: #15182b;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+        }
+        .user-card.is-vip {
+            border-color: rgba(245, 185, 66, 0.45);
+        }
+        .user-card.is-blocked {
+            border-color: rgba(239, 68, 68, 0.55);
+            background: #1c131d;
+        }
+        .u-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .u-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #6366f1;
+            flex-shrink: 0;
+        }
+        .u-main {
+            flex: 1;
+            min-width: 0;
+        }
+        .u-name {
+            font-size: 16px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .u-meta {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 3px;
+        }
+        .u-secret-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            background: #0f1120;
+            padding: 9px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .tag-pill {
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 11px;
+        }
+        .tag-id { background: rgba(245,185,66,0.15); color: #fbbf24; }
+        .tag-pass { background: rgba(99,102,241,0.18); color: #a5b4fc; }
+        .tag-block { background: rgba(239,68,68,0.2); color: #f87171; }
+
+        /* Əməliyyat Düymələri */
+        .section-mini-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin: 10px 0 6px;
+            text-transform: uppercase;
+        }
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .act-btn {
+            background: #232742;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #e2e8f0;
+            padding: 7px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .act-btn:active { transform: scale(0.95); }
+        .btn-green { background: rgba(34, 197, 94, 0.18); border-color: rgba(34, 197, 94, 0.45); color: #4ade80; }
+        .btn-gold { background: rgba(245, 185, 66, 0.18); border-color: rgba(245, 185, 66, 0.45); color: #fbbf24; }
+        .btn-red { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.45); color: #f87171; }
+
+        .custom-jeton-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .mini-input {
+            flex: 1;
+            background: #1e223b;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            padding: 7px 10px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-top">
+        <button class="back-btn" onclick="window.location.href='profil.html'">← Profil</button>
+        <div class="admin-badge">🛡️ Admin Alik (ID 96446)</div>
+    </div>
+
+    <div class="summary-grid">
+        <div class="sum-card">
+            <div class="sum-val" id="totalUsersCount">0</div>
+            <div class="sum-lbl">Cəmi Oyunçu</div>
+        </div>
+        <div class="sum-card">
+            <div class="sum-val" style="color:#fbbf24;" id="totalVipCount">0</div>
+            <div class="sum-lbl">VIP Oyunçu</div>
+        </div>
+        <div class="sum-card">
+            <div class="sum-val" style="color:#f87171;" id="totalBlockedCount">0</div>
+            <div class="sum-lbl">Bloklu</div>
+        </div>
+    </div>
+
+    <div class="search-wrap">
+        <input type="text" id="adminSearchInput" class="search-input" placeholder="Ad, ID və ya ölkə üzrə axtar..." oninput="renderUsersList()">
+    </div>
+
+    <div id="usersListContainer" class="users-list"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import {
+            getFirestore, collection, doc, getDoc, updateDoc, deleteDoc,
+            onSnapshot, increment
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAANVVrJKhZyaCErn8YFNVTUPF70A9xlmQ",
+            authDomain: "butulka-baku-istifadeci-bazasi.firebaseapp.com",
+            projectId: "butulka-baku-istifadeci-bazasi",
+            storageBucket: "butulka-baku-istifadeci-bazasi.firebasestorage.app",
+            messagingSenderId: "52438073026",
+            appId: "1:52438073026:web:1c4a0a8d1fc1ce5f78455b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        const ADMIN_ID = 96446;
+
+        let allUsers = [];
+
+        // 1. TƏHLÜKƏSİZLİK YOXLANIŞI (YALNIZ ID 96446)
+        async function verifyAdminAccess() {
+            const raw = localStorage.getItem("currentUser");
+            if (!raw) {
+                window.location.href = "index.html";
+                return;
+            }
+            const session = JSON.parse(raw);
+            if (Number(session.id) !== ADMIN_ID || !session.docId) {
+                window.location.href = "profil.html";
+                return;
+            }
+
+            const adminSnap = await getDoc(doc(db, "users", session.docId));
+            if (!adminSnap.exists()) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            const adminData = adminSnap.data();
+            if (Number(adminData.id) !== ADMIN_ID || (adminData.sessionVersion || 1) > (session.sessionVersion || 1)) {
+                window.location.href = "profil.html";
+                return;
+            }
+
+            // Təsdiqləndi — səhifəni göstər və bütün bazanı dinlə
+            document.body.style.display = "block";
+            listenAllUsers();
+        }
+
+        function listenAllUsers() {
+            onSnapshot(collection(db, "users"), (snap) => {
+                allUsers = [];
+                let vipCount = 0;
+                let blockedCount = 0;
+                const now = Date.now();
+
+                snap.forEach((d) => {
+                    const u = { docId: d.id, ...d.data() };
+                    allUsers.push(u);
+                    if (u.vip && (!u.vipUntil || Number(u.vipUntil) > now)) vipCount++;
+                    if (u.blockedUntil && Number(u.blockedUntil) > now) blockedCount++;
+                });
+
+                // Ən yeni və ya ən çox jetonu olanları üstdə göstər
+                allUsers.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                document.getElementById("totalUsersCount").textContent = allUsers.length;
+                document.getElementById("totalVipCount").textContent = vipCount;
+                document.getElementById("totalBlockedCount").textContent = blockedCount;
+
+                renderUsersList();
+            });
+        }
+
+        window.renderUsersList = function() {
+            const term = document.getElementById("adminSearchInput").value.trim().toLowerCase();
+            const container = document.getElementById("usersListContainer");
+            const now = Date.now();
+
+            const filtered = allUsers.filter(u => {
+                if (!term) return true;
+                return (
+                    (u.username || "").toLowerCase().includes(term) ||
+                    String(u.id || "").includes(term) ||
+                    (u.country || "").toLowerCase().includes(term)
+                );
+            });
+
+            if (!filtered.length) {
+                container.innerHTML = `<p style="text-align:center; color:#94a3b8; padding:20px;">Heç bir istifadəçi tapılmadı.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(u => {
+                const isVip = u.vip && (!u.vipUntil || Number(u.vipUntil) > now);
+                const isBlocked = u.blockedUntil && Number(u.blockedUntil) > now;
+                const blockLeftMin = isBlocked ? Math.ceil((Number(u.blockedUntil) - now) / 60000) : 0;
+
+                return `
+                    <div class="user-card ${isVip ? "is-vip" : ""} ${isBlocked ? "is-blocked" : ""}">
+                        <div class="u-header">
+                            <img class="u-avatar" src="${u.avatar || DEFAULT_AVATAR}">
+                            <div class="u-main">
+                                <div class="u-name">
+                                    <span>${isVip ? "👑 " : ""}${u.username}</span>
+                                </div>
+                                <div class="u-meta">
+                                    ${u.age || 18} yaş • ${u.gender || "Kişi"} • 🪙 <b style="color:#fbbf24;">${u.jetons || 0}</b> • ❤️ ${u.hearts || 0}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="u-secret-row">
+                            <span class="tag-pill tag-id">ID ${u.id}</span>
+                            <span class="tag-pill tag-pass">Şifrə: ${u.password || "-"}</span>
+                            ${isBlocked ? `<span class="tag-pill tag-block">Bloklu (${blockLeftMin} dəq)</span>` : ""}
+                        </div>
+
+                        <div class="section-mini-title">🪙 Jeton İdarəsi</div>
+                        <div class="btn-row">
+                            <button class="act-btn btn-green" onclick="adminAddJetons('${u.docId}', 1000)">+1k</button>
+                            <button class="act-btn btn-green" onclick="adminAddJetons('${u.docId}', 5000)">+5k</button>
+                            <button class="act-btn btn-green" onclick="adminAddJetons('${u.docId}', 10000)">+10k</button>
+                            <button class="act-btn btn-red" onclick="adminAddJetons('${u.docId}', -1000)">-1k</button>
+                        </div>
+                        <div class="custom-jeton-row">
+                            <input type="number" id="customJeton_${u.docId}" class="mini-input" placeholder="Məbləğ yaz (məs: 3000 və ya -500)">
+                            <button class="act-btn btn-gold" onclick="adminApplyCustomJeton('${u.docId}')">Təsdiqlə</button>
+                        </div>
+
+                        <div class="section-mini-title">👑 VIP Statusu</div>
+                        <div class="btn-row">
+                            <button class="act-btn btn-gold" onclick="adminSetVip('${u.docId}', 7)">+7 Gün VIP</button>
+                            <button class="act-btn btn-gold" onclick="adminSetVip('${u.docId}', 30)">+30 Gün VIP</button>
+                            ${isVip ? `<button class="act-btn btn-red" onclick="adminRemoveVip('${u.docId}')">VIP Ləğv et</button>` : ""}
+                        </div>
+
+                        <div class="section-mini-title">🚫 Blok / Təhlükəsizlik</div>
+                        <div class="btn-row">
+                            <button class="act-btn btn-red" onclick="adminBlockUser('${u.docId}', 1)">1 Saat</button>
+                            <button class="act-btn btn-red" onclick="adminBlockUser('${u.docId}', 24)">24 Saat</button>
+                            <button class="act-btn btn-red" onclick="adminBlockUser('${u.docId}', 720)">30 Gün</button>
+                            ${isBlocked ? `<button class="act-btn btn-green" onclick="adminUnblockUser('${u.docId}')">Bloku Aç</button>` : ""}
+                            <button class="act-btn" onclick="adminChangeUserPass('${u.docId}')">🔑 Şifrə dəyiş</button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        };
+
+        window.adminAddJetons = async function(docId, amount) {
+            await updateDoc(doc(db, "users", docId), {
+                jetons: increment(amount)
+            });
+        };
+
+        window.adminApplyCustomJeton = async function(docId) {
+            const inp = document.getElementById(`customJeton_${docId}`);
+            const val = parseInt(inp.value, 10);
+            if (isNaN(val) || val === 0) return alert("Düzgün rəqəm yazın!");
+            inp.value = "";
+            await updateDoc(doc(db, "users", docId), {
+                jetons: increment(val)
+            });
+        };
+
+        window.adminSetVip = async function(docId, days) {
+            const target = allUsers.find(u => u.docId === docId);
+            const base = (target && target.vipUntil && Number(target.vipUntil) > Date.now()) ? Number(target.vipUntil) : Date.now();
+            await updateDoc(doc(db, "users", docId), {
+                vip: true,
+                vipUntil: base + days * 24 * 60 * 60 * 1000
+            });
+            alert(`${days} günlük VIP aktivləşdirildi!`);
+        };
+
+        window.adminRemoveVip = async function(docId) {
+            await updateDoc(doc(db, "users", docId), {
+                vip: false,
+                vipUntil: 0
+            });
+        };
+
+        window.adminBlockUser = async function(docId, hours) {
+            await updateDoc(doc(db, "users", docId), {
+                blockedUntil: Date.now() + hours * 60 * 60 * 1000
+            });
+            alert(`Oyunçu ${hours} saatlıq bloklandı!`);
+        };
+
+        window.adminUnblockUser = async function(docId) {
+            await updateDoc(doc(db, "users", docId), {
+                blockedUntil: 0
+            });
+            alert("Blok götürüldü!");
+        };
+
+        window.adminChangeUserPass = async function(docId) {
+            const newPass = prompt("Yeni şifrəni yazın (ən azı 6 simvol):");
+            if (!newPass) return;
+            if (newPass.length < 6) return alert("Şifrə ən azı 6 simvol olmalıdır!");
+            await updateDoc(doc(db, "users", docId), {
+                password: newPass
+            });
+            alert("İstifadəçinin şifrəsi yeniləndi!");
+        };
+
+        verifyAdminAccess();
+    </script>
+</body>
+</html>
