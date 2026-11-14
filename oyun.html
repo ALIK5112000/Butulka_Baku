@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Butulka Baku — Şüşəni Fırlat</title>
+  <link rel="stylesheet" href="css/oyun.css" />
+  <link rel="stylesheet" href="css/modallar.css" />
+</head>
+<body>
+  <div id="app" class="game-container">
+    <!-- YUXARI PANEL -->
+    <header class="top-bar">
+      <div class="top-left">
+        <!-- Ürək balansı və Jetonla Ürək almaq -->
+        <button id="btn-hearts-shop" class="stat-pill heart-pill" title="Ürək mağazası">
+          <span class="heart-icon">❤️</span>
+          <span id="ui-hearts-count">0</span>
+        </button>
+
+        <!-- 60 dəqiqəlik artan pulsuz bonus taymeri -->
+        <button id="btn-hourly-bonus" class="stat-pill timer-pill" title="Saatlıq pulsuz bonus">
+          <span class="gift-mini">🎁</span>
+          <span id="ui-hourly-timer">60:00</span>
+        </button>
+
+        <!-- VIP Tac düyməsi -->
+        <button id="btn-vip-modal" class="icon-circle-btn vip-crown-btn" title="VIP Status">
+          👑
+        </button>
+      </div>
+
+      <div class="top-right">
+        <!-- 3 Xətt Menyu (Reytinqlər, Butulka seçimi, Profil) -->
+        <button id="btn-menu" class="icon-circle-btn" title="Menyu">
+          ☰
+        </button>
+
+        <!-- Oyundan çıxış (profil.html-ə qaytarır) -->
+        <button id="btn-exit-game" class="icon-circle-btn" title="Profilə qayıt">
+          🚪
+        </button>
+
+        <!-- Masa nömrəsi və 9 saniyəlik masa dəyişmə oxları -->
+        <div class="table-switcher-box">
+          <div class="table-label">
+            <span>Masa</span>
+            <strong id="ui-table-number">1</strong>
+          </div>
+          <button id="btn-change-table" class="table-refresh-btn disabled" disabled title="Masanı dəyiş">
+            <span id="ui-table-cooldown">9</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 12 NƏFƏRLİK TAXTA OYUN MASASI -->
+    <main class="table-arena" id="table-arena">
+      <!-- 12 Oturacaq Slotu -->
+      <div id="seats-layer" class="seats-layer"></div>
+
+      <!-- MƏRKƏZİ ŞÜŞƏ VƏ SEÇİM ARENASI -->
+      <div class="center-stage" id="center-stage">
+        <div class="wood-emblem">
+          <img id="bottle-img" src="https://cdn-icons-png.flaticon.com/512/920/920582.png" alt="Şüşə" class="bottle-sprite" />
+          <div id="bottle-status-text" class="bottle-status-text">
+            Oyuna başlamaq üçün qızları gözləyirik
+          </div>
+          <button id="btn-spin-bottle" class="spin-call-btn hidden">
+            Butulkanı fırlat!
+          </button>
+        </div>
+
+        <!-- Şüşə dayandıqdan sonra ortaya çıxan qız-oğlan və 9 saniyəlik Öp/İmtina et -->
+        <div id="spin-match-overlay" class="spin-match-overlay hidden">
+          <div class="match-cards-row">
+            <div class="match-player-card" id="match-player-1">
+              <img src="" alt="" />
+              <span class="match-name"></span>
+            </div>
+            <div class="match-countdown" id="match-countdown">9</div>
+            <div class="match-player-card" id="match-player-2">
+              <img src="" alt="" />
+              <span class="match-name"></span>
+            </div>
+          </div>
+
+          <div id="match-arrows-status" class="match-arrows-status"></div>
+
+          <div id="match-action-buttons" class="match-action-buttons hidden">
+            <button id="btn-refuse-kiss" class="btn-refuse">İmtina et</button>
+            <button id="btn-accept-kiss" class="btn-kiss">Öp</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Uçan hədiyyələr və ürək bonus animasiyası üçün qat -->
+      <div id="fx-layer" class="fx-layer"></div>
+    </main>
+
+    <!-- ONLAYN CHAT VƏ YOUTUBE KLİP PLEYERİ -->
+    <section class="chat-section">
+      <!-- Chat üstü alətlər (Alov stikeri / YouTube klip qoş) -->
+      <div class="chat-toolbar">
+        <button id="btn-open-music" class="music-fire-btn" title="YouTube Klip Qoş (9 ❤️)">
+          🔥 🎵 Klip qoş
+        </button>
+        <span id="online-count-badge" class="online-badge">Masada: 1/12</span>
+      </div>
+
+      <!-- Sinxron YouTube Video Pleyeri (Mahnı qoşulanda görünür) -->
+      <div id="active-clip-widget" class="active-clip-widget hidden">
+        <div class="clip-sender-info">
+          <img id="clip-sender-avatar" src="" alt="" />
+          <div class="clip-meta">
+            <strong id="clip-title">Mahnı adı</strong>
+            <small id="clip-sender-name">Qoşan: ...</small>
+          </div>
+        </div>
+        <div class="clip-video-box">
+          <div id="yt-player-frame"></div>
+          <div class="clip-controls">
+            <button id="btn-toggle-clip-mute" type="button">🔊</button>
+            <input type="range" id="clip-volume-slider" min="0" max="100" value="70" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Mesajları Axını -->
+      <div id="chat-messages" class="chat-messages"></div>
+
+      <!-- Chat içi sürətli emoji seçicisi -->
+      <div id="chat-emoji-drawer" class="chat-emoji-drawer hidden"></div>
+
+      <!-- Mesaj Yazma Paneli -->
+      <form id="chat-form" class="chat-input-bar">
+        <input
+          type="text"
+          id="chat-input"
+          placeholder="Mesajı bura yaz"
+          maxlength="220"
+          autocomplete="off"
+        />
+        <button type="button" id="btn-chat-emoji" class="chat-emoji-btn">😊</button>
+        <button type="submit" id="btn-send-chat" class="chat-send-btn">➤</button>
+      </form>
+    </section>
+  </div>
+
+  <!-- MODALLAR (Profil kartı, Mağaza, VIP, Reytinqlər, Masa dəyiş) -->
+  <div id="modal-backdrop" class="modal-backdrop hidden">
+    <div id="modal-container" class="modal-container"></div>
+  </div>
+
+  <!-- TƏPİK XƏBƏRDARLIQ MODALI (30 saniyə) -->
+  <div id="kick-alert-overlay" class="kick-alert-overlay hidden">
+    <div class="kick-alert-card">
+      <div class="kick-boot-circle">👢</div>
+      <h2>Masadan qovulursan!</h2>
+      <p id="kick-alert-desc">Kimsə səni masadan qovmaq istəyir. Ürək ödəyib qala bilərsən!</p>
+      <div class="kick-timer-box">
+        <span id="kick-seconds-left">30</span>
+        <small>SANİYƏ QALIB</small>
+      </div>
+      <button id="btn-defend-kick" class="btn-defend-kick">❤️ 15 ürək ödə, masada qal</button>
+      <button id="btn-accept-kick" class="btn-accept-kick">Bilirəm, çıxıram</button>
+    </div>
+  </div>
+
+  <!-- MASA DOLUDURSA NÖVBƏ BİLDİRİŞİ -->
+  <div id="queue-overlay" class="queue-overlay hidden">
+    <div class="queue-card">
+      <h3>Masada boş yer yoxdur</h3>
+      <p id="queue-position-text">Sən növbədə 1-cisən</p>
+      <button id="btn-leave-queue" class="btn-secondary">Başqa masaya keç</button>
+    </div>
+  </div>
+
+  <!-- ƏSAS OYUN MOTORU -->
+  <script type="module" src="js/oyun-motoru.js"></script>
+</body>
+</html>
