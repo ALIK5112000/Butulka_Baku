@@ -440,8 +440,8 @@
         </div>
     </div>
 
-    <!-- OYUNA KEÇİD (BUTULKA) - game.html EDİLDİ -->
-    <div class="play-card" onclick="window.location.href='game.html'">
+    <!-- OYUNA KEÇİD (BUTULKA) - oyun.html EDİLDİ -->
+    <div class="play-card" onclick="enterGamePage()">
         <div>
             <div style="font-size:18px; font-weight:800; color:#fff;" data-i18n="enterGameTitle">🍾 Butulka Oyunu</div>
             <div style="font-size:12px; color:#cbd5e1; margin-top:4px;" data-i18n="enterGameDesc">Masaya əyləş, şüşəni fırlat və tanış ol!</div>
@@ -449,13 +449,13 @@
         <div style="background:#ec4899; padding:10px 18px; border-radius:14px; font-weight:700; font-size:14px;" data-i18n="playBtn">Oyna ▶</div>
     </div>
 
-    <!-- ALT NAVİQASİYA - game.html EDİLDİ -->
+    <!-- ALT NAVİQASİYA - oyun.html EDİLDİ -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="closeAllSheets()">
             <span style="font-size:20px;">🏠</span>
             <span data-i18n="home">Ana səhifə</span>
         </div>
-        <div class="nav-bottle-btn" onclick="window.location.href='game.html'" title="Oyuna gir">🍾</div>
+        <div class="nav-bottle-btn" onclick="enterGamePage()" title="Oyuna gir">🍾</div>
         <div class="nav-item" onclick="openMessagesSheet()">
             <span style="font-size:20px;">💬</span>
             <span data-i18n="messages">Mesajlar</span>
@@ -490,7 +490,7 @@
             </div>
             <div style="font-size:13px; color:#cbd5e1; display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
                 <div>✨ Dəhlizdə və profildə hərəkətli VIP ad çərçivəsi</div>
-                <div>🎨 Oyunda xüsusi ad rəngi: oğlanlar mavi, qızlar qırmızı</div>
+                <div>🎨 Oyunda xüsusi ad rəngi: oğlanlar göy, qızlar qırmızı</div>
                 <div>👆 Oyunda hədiyyəni basılı saxla - davamlı getsin</div>
             </div>
             <button id="buyVipBtn" class="primary-btn gold-btn" onclick="purchaseVip()">Aylıq VIP • 1200 🪙</button>
@@ -559,7 +559,8 @@
             </div>
             <div style="font-size:48px; margin:10px 0;">🎧</div>
             <h3 style="font-size:20px; color:#fbbf24;">Admin Alik</h3>
-            <p style="font-size:13px; color:#94a3b8; margin-top:8px;">Jeton sifarişi və dəstək üçün müraciət edə bilərsiniz.</p>
+            <p style="font-size:13px; color:#94a3b8; margin-top:8px; margin-bottom:18px;">Jeton sifarişi və dəstək üçün müraciət edə bilərsiniz.</p>
+            <button class="settings-btn" style="margin:0 auto; padding:10px 18px;" onclick="window.location.href='admin.html'">🛡️ Admin Panel</button>
         </div>
     </div>
 
@@ -717,7 +718,7 @@
 
         const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
-        // Ölkələr siyahısı (Ermənistan istisna olmaqla, birinci Azərbaycan)
+        // Ölkələr siyahısı
         const countries = [
             { value: "", label: "— seçilməyib —" },
             { value: "🇦🇿 Azərbaycan", label: "🇦🇿 Azərbaycan" },
@@ -754,7 +755,14 @@
             countrySelect.appendChild(opt);
         });
 
-        // İstifadəçi sənədini real vaxtda dinlə
+        // Oyuna keçid funksiyası (blok yoxlaması ilə birlikdə oyun.html-ə aparır)
+        window.enterGamePage = function() {
+            if (myData && myData.blockedUntil && myData.blockedUntil > Date.now()) {
+                return alert("Hesabınız admin tərəfindən müvəqqəti bloklanıb!");
+            }
+            window.location.href = "oyun.html";
+        };
+
         async function initRealtimeProfile() {
             if (!myDocId) {
                 const q = query(collection(db, "users"), where("id", "==", sessionUser.id));
@@ -776,7 +784,6 @@
                 }
                 myData = docSnap.data();
 
-                // Başqa cihazdan çıxış basılıbsa bu cihazı çıxar
                 if ((myData.sessionVersion || 1) > (sessionUser.sessionVersion || 1)) {
                     alert("Hesabınızdan bütün cihazlardan çıxış edildi.");
                     logoutAccount();
@@ -798,7 +805,6 @@
             document.getElementById("myAvatar").src = myData.avatar || DEFAULT_AVATAR;
             document.getElementById("editAvatarPreview").src = myData.avatar || DEFAULT_AVATAR;
 
-            // VIP yoxlanışı
             const isVip = myData.vip && (!myData.vipUntil || myData.vipUntil > Date.now());
             const nameBox = document.getElementById("myNameBox");
             const crown = document.getElementById("myVipCrown");
@@ -812,19 +818,16 @@
                 document.getElementById("vipStatusTag").textContent = "";
             }
 
-            // Yaş, Cinsiyyət, Ölkə/Şəhər
             const loc = [myData.country, myData.city].filter(Boolean).join(", ");
             document.getElementById("myMetaLine").textContent = `${myData.age || 18} yaş • ${myData.gender || "Kişi"}${loc ? " • " + loc : ""}`;
             document.getElementById("myStatusText").textContent = myData.status || "Status yaz...";
 
-            // 4 Real-vaxt Sayğac
             document.getElementById("statViews").textContent = myData.views || 0;
             document.getElementById("statHearts").textContent = myData.hearts || 0;
             document.getElementById("statJetons").textContent = myData.jetons || 0;
             document.getElementById("statFriends").textContent = (myData.friends || []).length;
             document.getElementById("shopBalance").textContent = myData.jetons || 0;
 
-            // Bildirişlər (Dostluq sorğuları)
             const reqs = myData.friendRequests || [];
             const notifBadge = document.getElementById("notifBadge");
             if (reqs.length > 0) {
@@ -835,7 +838,6 @@
             }
             renderFriendRequests(reqs);
 
-            // Ayarlar formunu doldur
             document.getElementById("editName").value = myData.username || "";
             document.getElementById("editStatus").value = myData.status || "";
             document.getElementById("editCountry").value = myData.country || "";
@@ -844,7 +846,6 @@
             selectGender(myData.gender || "Kişi");
         }
 
-        // Şəkil sıxışdırma və profil şəkli yükləmə
         function compressImage(file, maxW = 300) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -928,7 +929,6 @@
             window.location.href = "index.html";
         };
 
-        // VIP Alışı
         window.selectVipPlan = function(type, price) {
             selectedVipPlan = { type, price, days: type === "weekly" ? 7 : 30 };
             document.getElementById("planWeekly").classList.toggle("selected", type === "weekly");
@@ -953,7 +953,6 @@
             closeSheet("vipSheet");
         };
 
-        // Real-Vaxt Oyunçu Axtarışı
         window.searchPlayers = async function() {
             const term = document.getElementById("searchInput").value.trim().toLowerCase();
             const box = document.getElementById("searchResults");
@@ -982,7 +981,6 @@
             box.innerHTML = html || `<p style="color:#94a3b8; font-size:13px;">Oyunçu tapılmadı.</p>`;
         };
 
-        // Başqa oyunçunun profilinə baxmaq (Baxış sayını real vaxtda artırır!)
         window.viewOtherUser = async function(targetDocId) {
             const targetRef = doc(db, "users", targetDocId);
             const snap = await getDoc(targetRef);
@@ -991,7 +989,6 @@
             const u = snap.data();
             viewedUserTarget = { docId: targetDocId, ...u };
 
-            // Baxanlar sayını artır və baxanlar siyahısına əlavə et
             await updateDoc(targetRef, {
                 views: increment(1),
                 viewers: arrayUnion({
@@ -1076,7 +1073,6 @@
             await updateDoc(doc(db, "users", myDocId), { friendRequests: arrayRemove(reqObj) });
         };
 
-        // Baxanlar və Dostlar siyahıları
         window.openViewersList = function() {
             document.getElementById("listSheetTitle").textContent = "Profilə baxanlar";
             const viewers = (myData.viewers || []).slice().reverse();
@@ -1114,7 +1110,6 @@
             openSheet("listSheet");
         };
 
-        // WhatsApp Stili Status Yükləmə (Yalnız dostlar görür)
         window.uploadStory = async function(input) {
             if (!input.files || !input.files[0]) return;
             const file = input.files[0];
@@ -1173,7 +1168,6 @@
             openSheet("storyViewerModal");
         };
 
-        // REAL-VAXT MESAJLAŞMA SİSTEMİ
         function listenIncomingMessages() {
             const q = query(collection(db, "messages"), where("participants", "array-contains", sessionUser.id));
             onSnapshot(q, (snap) => {
@@ -1297,7 +1291,6 @@
             });
         };
 
-        // Çoxdilli sistem
         const uiDict = {
             az: { settings: "Ayarlar", views: "Baxanlar", hearts: "Ürək", jetons: "Jeton", friends: "Dostlar", home: "Ana səhifə", messages: "Mesajlar", yourStory: "Sənin", playBtn: "Oyna ▶" },
             tr: { settings: "Ayarlar", views: "Bakanlar", hearts: "Kalp", jetons: "Jeton", friends: "Arkadaşlar", home: "Ana sayfa", messages: "Mesajlar", yourStory: "Senin", playBtn: "Oyna ▶" },
