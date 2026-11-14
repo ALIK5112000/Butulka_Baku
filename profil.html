@@ -440,7 +440,7 @@
         </div>
     </div>
 
-    <!-- OYUNA KEÇİD (BUTULKA) - oyun.html EDİLDİ -->
+    <!-- OYUNA KEÇİD (BUTULKA) - oyun.html -->
     <div class="play-card" onclick="enterGamePage()">
         <div>
             <div style="font-size:18px; font-weight:800; color:#fff;" data-i18n="enterGameTitle">🍾 Butulka Oyunu</div>
@@ -449,7 +449,7 @@
         <div style="background:#ec4899; padding:10px 18px; border-radius:14px; font-weight:700; font-size:14px;" data-i18n="playBtn">Oyna ▶</div>
     </div>
 
-    <!-- ALT NAVİQASİYA - oyun.html EDİLDİ -->
+    <!-- ALT NAVİQASİYA - oyun.html -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="closeAllSheets()">
             <span style="font-size:20px;">🏠</span>
@@ -560,7 +560,8 @@
             <div style="font-size:48px; margin:10px 0;">🎧</div>
             <h3 style="font-size:20px; color:#fbbf24;">Admin Alik</h3>
             <p style="font-size:13px; color:#94a3b8; margin-top:8px; margin-bottom:18px;">Jeton sifarişi və dəstək üçün müraciət edə bilərsiniz.</p>
-            <button class="settings-btn" style="margin:0 auto; padding:10px 18px;" onclick="window.location.href='admin.html'">🛡️ Admin Panel</button>
+            <!-- YALNIZ ID 96446 ÜÇÜN GÖRÜNÜR -->
+            <button id="openAdminPanelBtn" class="settings-btn" style="display:none; margin:0 auto; padding:10px 18px; border-color:#fbbf24; color:#fbbf24;" onclick="window.location.href='admin.html'">🛡️ Admin Panel</button>
         </div>
     </div>
 
@@ -757,7 +758,7 @@
 
         // Oyuna keçid funksiyası (blok yoxlaması ilə birlikdə oyun.html-ə aparır)
         window.enterGamePage = function() {
-            if (myData && myData.blockedUntil && myData.blockedUntil > Date.now()) {
+            if (myData && myData.blockedUntil && Number(myData.blockedUntil) > Date.now()) {
                 return alert("Hesabınız admin tərəfindən müvəqqəti bloklanıb!");
             }
             window.location.href = "oyun.html";
@@ -805,7 +806,7 @@
             document.getElementById("myAvatar").src = myData.avatar || DEFAULT_AVATAR;
             document.getElementById("editAvatarPreview").src = myData.avatar || DEFAULT_AVATAR;
 
-            const isVip = myData.vip && (!myData.vipUntil || myData.vipUntil > Date.now());
+            const isVip = myData.vip && (!myData.vipUntil || Number(myData.vipUntil) > Date.now());
             const nameBox = document.getElementById("myNameBox");
             const crown = document.getElementById("myVipCrown");
             if (isVip) {
@@ -844,6 +845,12 @@
             document.getElementById("editCity").value = myData.city || "";
             document.getElementById("editAge").value = myData.age || 18;
             selectGender(myData.gender || "Kişi");
+
+            // Yalnız ID 96446 üçün Admin Panel düyməsini göstər
+            const adminBtn = document.getElementById("openAdminPanelBtn");
+            if (adminBtn) {
+                adminBtn.style.display = Number(myData.id) === 96446 ? "inline-flex" : "none";
+            }
         }
 
         function compressImage(file, maxW = 300) {
@@ -941,7 +948,7 @@
             if (currentJetons < selectedVipPlan.price) {
                 return alert("Balansınızda kifayət qədər jeton yoxdur!");
             }
-            const baseTime = (myData.vipUntil && myData.vipUntil > Date.now()) ? myData.vipUntil : Date.now();
+            const baseTime = (myData.vipUntil && Number(myData.vipUntil) > Date.now()) ? Number(myData.vipUntil) : Date.now();
             const newExpiry = baseTime + selectedVipPlan.days * 24 * 60 * 60 * 1000;
 
             await updateDoc(doc(db, "users", myDocId), {
