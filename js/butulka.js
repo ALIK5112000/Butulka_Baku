@@ -1,12 +1,10 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
     getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc,
-    query, where, orderBy, limit, onSnapshot, arrayUnion, increment, serverTimestamp
+    query, where, orderBy, limit, onSnapshot, arrayUnion, increment
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import * as fbConfig from "./firebase-config.js";
-import * as oyunMotoru from "./oyun-motoru.js";
 
-const DEFAULT_CONFIG = {
+const firebaseConfig = {
     apiKey: "AIzaSyAANVVrJKhZyaCErn8YFNVTUPF70A9xlmQ",
     authDomain: "butulka-baku-istifadeci-bazasi.firebaseapp.com",
     projectId: "butulka-baku-istifadeci-bazasi",
@@ -15,13 +13,12 @@ const DEFAULT_CONFIG = {
     appId: "1:52438073026:web:1c4a0a8d1fc1ce5f78455b"
 };
 
-const app = fbConfig.app || (getApps().length ? getApps()[0] : initializeApp(fbConfig.firebaseConfig || DEFAULT_CONFIG));
-const db = fbConfig.db || getFirestore(app);
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 const TOTAL_SEATS = 12;
 
-// Hədiyyələr kataloqu
 const GIFTS = [
     { id: "rose", icon: "🌹", name: "Qızılgül", price: 10, hearts: 1 },
     { id: "kiss", icon: "💋", name: "Ehtiraslı Öpüş", price: 25, hearts: 3 },
@@ -32,7 +29,6 @@ const GIFTS = [
     { id: "car", icon: "🏎️", name: "Sport Avto", price: 1000, hearts: 200 }
 ];
 
-// Sessiya yoxlanışı
 const sessionRaw = localStorage.getItem("currentUser");
 if (!sessionRaw) {
     window.location.href = "index.html";
@@ -54,47 +50,50 @@ let vipHoldInterval = null;
 // 1. BAŞLANĞIC VƏ İSTİFADƏÇİ SİNXRONİZASİYASI
 // ==========================================
 async function initGame() {
-    if (!myDocId) {
-        const q = query(collection(db, "users"), where("id", "==", sessionUser.id));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-            myDocId = snap.docs[0].id;
-            sessionUser.docId = myDocId;
-            localStorage.setItem("currentUser", JSON.stringify(sessionUser));
-        } else {
-            window.location.href = "index.html";
-            return;
+    try {
+        if (!myDocId) {
+            const q = query(collection(db, "users"), where("id", "==", sessionUser.id));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+                myDocId = snap.docs[0].id;
+                sessionUser.docId = myDocId;
+                localStorage.setItem("currentUser", JSON.stringify(sessionUser));
+            } else {
+                window.location.href = "index.html";
+                return;
+            }
         }
+
+        onSnapshot(doc(db, "users", myDocId), (snap) => {
+            if (!snap.exists()) {
+                localStorage.removeItem("currentUser");
+                window.location.href = "index.html";
+                return;
+            }
+            myData = snap.data();
+
+            if (myData.blockedUntil && Number(myData.blockedUntil) > Date.now()) {
+                alert("Hesabınız admin tərəfindən müvəqqəti bloklanıb!");
+                window.location.href = "profil.html";
+                return;
+            }
+
+            if ((myData.sessionVersion || 1) > (sessionUser.sessionVersion || 1)) {
+                localStorage.removeItem("currentUser");
+                window.location.href = "index.html";
+                return;
+            }
+
+            updateTopHud();
+        });
+
+        renderGiftsGrid();
+        await joinRoom(currentRoomId);
+        startHeartbeat();
+    } catch (err) {
+        console.error("Oyun xətası:", err);
+        alert("Bağlantı xətası: " + err.message);
     }
-
-    onSnapshot(doc(db, "users", myDocId), (snap) => {
-        if (!snap.exists()) {
-            localStorage.removeItem("currentUser");
-            window.location.href = "index.html";
-            return;
-        }
-        myData = snap.data();
-
-        // Blok yoxlanışı
-        if (myData.blockedUntil && Number(myData.blockedUntil) > Date.now()) {
-            alert("Hesabınız admin tərəfindən müvəqqəti bloklanıb!");
-            window.location.href = "profil.html";
-            return;
-        }
-
-        // Digər cihazlardan çıxış yoxlanışı
-        if ((myData.sessionVersion || 1) > (sessionUser.sessionVersion || 1)) {
-            localStorage.removeItem("currentUser");
-            window.location.href = "index.html";
-            return;
-        }
-
-        updateTopHud();
-    });
-
-    renderGiftsGrid();
-    await joinRoom(currentRoomId);
-    startHeartbeat();
 }
 
 function isUserVip(userObj) {
@@ -169,7 +168,6 @@ window.switchRoom = async function(newRoomId) {
     await joinRoom(newRoomId);
 };
 
-// 90 saniyədən çox hərəkətsiz qalanları masadan avtomatik qaldır
 async function cleanInactiveSeats(roomRef, data) {
     if (!data || !data.seats) return;
     const now = Date.now();
@@ -180,6 +178,9 @@ async function cleanInactiveSeats(roomRef, data) {
         const seat = data.seats[`seat_${i}`];
         if (seat && seat.lastActive && now - seat.lastActive > 90000) {
             updates[`seats.seat_${i}`] = null;
+            if (data.currentTurnId === seat.id) {
+                updates.currentTurnId = null;
+            }
             hasChanges = true;
         }
     }
@@ -214,11 +215,14 @@ function renderTableSeats(data) {
     const seats = data.seats || {};
     let mySeatIndex = -1;
     let occupiedCount = 0;
+    const seatedIds = [];
 
     for (let i = 0; i < TOTAL_SEATS; i++) {
-        if (seats[`seat_${i}`]) {
+        const p = seats[`seat_${i}`];
+        if (p) {
             occupiedCount++;
-            if (myData && seats[`seat_${i}`].id === myData.id) {
+            seatedIds.push(p.id);
+            if (myData && p.id === myData.id) {
                 mySeatIndex = i;
             }
         }
@@ -230,11 +234,14 @@ function renderTableSeats(data) {
     const leaveBtn = document.getElementById("leaveSeatBtn");
     if (leaveBtn) leaveBtn.style.display = mySeatIndex !== -1 ? "inline-flex" : "none";
 
+    // Növbə masada olmayan birində qalıbsa sıfırla
+    const activeTurnId = seatedIds.includes(data.currentTurnId) ? data.currentTurnId : null;
+
     let html = "";
     for (let i = 0; i < TOTAL_SEATS; i++) {
         const angleDeg = (i * (360 / TOTAL_SEATS)) - 90;
         const angleRad = (angleDeg * Math.PI) / 180;
-        const radiusPercent = 42; // Dairə üzrə yerləşmə radiusu
+        const radiusPercent = 42;
         const leftPct = 50 + radiusPercent * Math.cos(angleRad);
         const topPct = 50 + radiusPercent * Math.sin(angleRad);
 
@@ -242,7 +249,7 @@ function renderTableSeats(data) {
         if (player) {
             const vipActive = Boolean(player.vip);
             const nameColor = vipActive ? (player.gender === "Qadın" ? "#ff4d6d" : "#38bdf8") : "#f8fafc";
-            const isTurn = data.currentTurnId === player.id;
+            const isTurn = activeTurnId === player.id;
             html += `
                 <div class="seat-node occupied ${vipActive ? "vip-seat" : ""} ${isTurn ? "active-turn" : ""}"
                      style="left:${leftPct}%; top:${topPct}%;"
@@ -267,7 +274,6 @@ function renderTableSeats(data) {
     }
     ring.innerHTML = html;
 
-    // Fırlatma düyməsini yenilə
     const spinBtn = document.getElementById("spinBottleBtn");
     if (spinBtn) {
         const isSpinning = data.spinState && data.spinState.status === "spinning";
@@ -280,7 +286,7 @@ function renderTableSeats(data) {
         } else if (isSpinning) {
             spinBtn.disabled = true;
             spinBtn.textContent = "Fırlanır...";
-        } else if (data.currentTurnId && data.currentTurnId !== myData.id) {
+        } else if (activeTurnId && activeTurnId !== myData.id) {
             spinBtn.disabled = true;
             spinBtn.textContent = "Növbə gözlənilir";
         } else {
@@ -299,7 +305,6 @@ window.sitAtSeat = async function(seatIndex) {
     }
 
     const updates = {};
-    // Əgər başqa yerdə oturubsa, əvvəlki yerini boşalt
     for (let i = 0; i < TOTAL_SEATS; i++) {
         if (seats[`seat_${i}`] && seats[`seat_${i}`].id === myData.id) {
             updates[`seats.seat_${i}`] = null;
@@ -374,13 +379,12 @@ window.spinBottle = async function() {
     const candidates = occupied.filter(p => p.id !== myData.id);
     if (candidates.length === 0) return alert("Masada ən azı 2 nəfər olmalıdır!");
 
-    // Əks cinsə üstünlük ver, yoxdursa istənilən oyunçunu seç
     const oppositeGender = candidates.filter(p => p.gender !== myData.gender);
     const pool = oppositeGender.length > 0 ? oppositeGender : candidates;
     const target = pool[Math.floor(Math.random() * pool.length)];
 
     const targetAngle = (target.seatIndex * (360 / TOTAL_SEATS));
-    const totalRotation = 1800 + targetAngle; // 5 tam dövrə + hədəf bucaq
+    const totalRotation = 1800 + targetAngle;
     const spinId = `${Date.now()}_${myData.id}`;
 
     await updateDoc(doc(db, "rooms", currentRoomId), {
@@ -388,6 +392,7 @@ window.spinBottle = async function() {
             spinId: spinId,
             status: "spinning",
             spinnerId: myData.id,
+            spinnerDocId: myDocId,
             spinnerName: myData.username,
             spinnerAvatar: myData.avatar || DEFAULT_AVATAR,
             targetId: target.id,
@@ -411,7 +416,6 @@ function handleSpinSync(data) {
         bottle.style.transform = `rotate(${spin.angle}deg)`;
     }
 
-    // Eyni fırlanmanı iki dəfə emal etmə
     if (spin.spinId !== lastHandledSpinId) {
         lastHandledSpinId = spin.spinId;
 
@@ -425,7 +429,6 @@ function handleSpinSync(data) {
         }, 3700);
     }
 
-    // Əgər öpüş qərarı verilibsə effekt göstər
     if (spin.kissDecision && spin.kissDecision.done && !spin.kissDecision.rendered) {
         spin.kissDecision.rendered = true;
         if (spin.kissDecision.accepted) {
@@ -488,7 +491,6 @@ window.sendKissChoice = async function(isAccepted) {
     });
 
     if (isAccepted) {
-        // Qarşı tərəfə +1 Ürək əlavə et
         const receiverDocId = spin.spinnerId === myData.id ? spin.targetDocId : spin.spinnerDocId;
         if (receiverDocId) {
             await updateDoc(doc(db, "users", receiverDocId), {
@@ -502,16 +504,12 @@ window.sendKissChoice = async function(isAccepted) {
 };
 
 // ==========================================
-// 4. OYUNÇU PROFİL MENYUSU VƏ HƏDİYYƏLƏR (VIP BASILI SAXLAMA İLƏ)
+// 4. OYUNÇU PROFİL MENYUSU VƏ HƏDİYYƏLƏR
 // ==========================================
 window.openSeatPlayerMenu = function(seatIndex) {
     if (!currentRoomData || !currentRoomData.seats) return;
     const target = currentRoomData.seats[`seat_${seatIndex}`];
-    if (!target) return;
-
-    if (target.id === myData.id) {
-        return;
-    }
+    if (!target || target.id === myData.id) return;
 
     selectedTargetUser = target;
     const modal = document.getElementById("playerActionModal");
@@ -554,7 +552,6 @@ function renderGiftsGrid() {
 
 window.startGiftHold = function(giftId) {
     sendGift(giftId);
-    // VIP istifadəçilər düyməni basılı saxladıqda hədiyyə davamlı göndərilir
     if (isUserVip(myData)) {
         stopGiftHold();
         vipHoldInterval = setInterval(() => {
