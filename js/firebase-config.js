@@ -24,24 +24,6 @@ export {
   runTransaction, increment, serverTimestamp, arrayUnion, arrayRemove, getDocs
 };
 
-// Ölkə bayraqları
-export const COUNTRY_FLAGS = {
-  "Azərbaycan": "🇦🇿",
-  "Azerbaijan": "🇦🇿",
-  "Türkiyə": "🇹🇷",
-  "Turkey": "🇹🇷",
-  "Rusiya": "🇷🇺",
-  "Russia": "🇷🇺",
-  "Gürcüstan": "🇬🇪",
-  "Georgia": "🇬🇪",
-  "Almaniya": "🇩🇪",
-  "Ukrayna": "🇺🇦",
-  "İran": "🇮🇷",
-  "ABŞ": "🇺🇸",
-  "İngiltərə": "🇬🇧"
-};
-
-// Giriş etmiş istifadəçinin sessiyasını oxuyur
 export function getLocalSession() {
   try {
     const raw = localStorage.getItem("currentUser");
@@ -52,7 +34,6 @@ export function getLocalSession() {
   }
 }
 
-// Mövcud istifadəçinin oyun sahələrini yoxlayır (yeni profillərdə hamısı 0 olur)
 export async function ensureGameProfile(docId) {
   const userRef = doc(db, "users", docId);
   const snap = await getDoc(userRef);
@@ -86,23 +67,24 @@ export async function ensureGameProfile(docId) {
   return { docId, ...data };
 }
 
-// Oyunçunun VIP olub-olmadığını yoxlayır
 export function isUserVip(user) {
   if (!user) return false;
+  if (user.vip && (!user.vipUntil || Number(user.vipUntil) > Date.now())) return true;
   if (user.vipUntil && Number(user.vipUntil) > Date.now()) return true;
   return false;
 }
 
-// Yaşayış yeri və ölkə bayrağını göstərir
 export function formatUserLocation(user) {
   if (!user) return "";
   const country = (user.country || "").trim();
   const city = String(user.city || "").trim();
-  const flag = COUNTRY_FLAGS[country] || "";
 
-  if (flag && city) return `${flag} ${city}`;
-  if (flag) return `${flag} ${country}`;
+  if (country && city) {
+    const flagMatch = country.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})+/u);
+    const flag = flagMatch ? flagMatch[0] : "";
+    return flag ? `${flag} ${city}` : `${country}, ${city}`;
+  }
+  if (country) return country;
   if (city) return city;
   return "";
 }
-
