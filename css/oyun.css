@@ -1,1 +1,694 @@
+/* css/oyun.css */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: #1a120b;
+  display: flex;
+  justify-content: center;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.game-container {
+  width: 100%;
+  max-width: 480px;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #f3f4f6;
+  position: relative;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+}
+
+/* YUXARI PANEL */
+.top-bar {
+  height: 52px;
+  background: linear-gradient(180deg, #b87a3d 0%, #c88949 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  z-index: 20;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.top-left, .top-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-pill {
+  border: none;
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.heart-pill {
+  background: linear-gradient(135deg, #ff6b35, #e63946);
+}
+
+.timer-pill {
+  background: #22c55e;
+  transition: background 0.3s;
+}
+
+.timer-pill.ready {
+  background: #2563eb;
+  animation: pulseBtn 1.2s infinite;
+}
+
+@keyframes pulseBtn {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+.icon-circle-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.vip-crown-btn {
+  background: linear-gradient(135deg, #facc15, #ca8a04);
+}
+
+.table-switcher-box {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.18);
+  padding: 3px 6px 3px 9px;
+  border-radius: 18px;
+  color: #fff;
+}
+
+.table-label {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+  font-size: 10px;
+  text-align: right;
+}
+
+.table-label strong {
+  font-size: 12px;
+}
+
+.table-refresh-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #22c55e;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.table-refresh-btn.disabled {
+  background: rgba(255, 255, 255, 0.25);
+  cursor: not-allowed;
+}
+
+/* TAXTA MASA SAHƏSİ */
+.table-arena {
+  flex: 0 0 54%;
+  position: relative;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(139, 84, 34, 0.08) 0px,
+      rgba(139, 84, 34, 0.08) 2px,
+      transparent 2px,
+      transparent 9px
+    ),
+    radial-gradient(circle at center, #d99b5b 0%, #bd7c3e 100%);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* 12 OTURACAQ SLOTU */
+.seats-layer {
+  position: absolute;
+  inset: 6px;
+  z-index: 5;
+}
+
+.seat-slot {
+  position: absolute;
+  width: 66px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.seat-slot:active {
+  transform: scale(0.95);
+}
+
+/* 12 yerin masa ətrafında dəqiq koordinatları */
+.seat-slot[data-seat="0"]  { top: 2%;  left: 4%; }
+.seat-slot[data-seat="1"]  { top: 2%;  left: 28%; }
+.seat-slot[data-seat="2"]  { top: 2%;  left: 53%; }
+.seat-slot[data-seat="3"]  { top: 2%;  right: 4%; }
+.seat-slot[data-seat="4"]  { top: 27%; left: 3%; }
+.seat-slot[data-seat="5"]  { top: 27%; right: 3%; }
+.seat-slot[data-seat="6"]  { top: 53%; left: 3%; }
+.seat-slot[data-seat="7"]  { top: 53%; right: 3%; }
+.seat-slot[data-seat="8"]  { bottom: 2%; left: 4%; }
+.seat-slot[data-seat="9"]  { bottom: 2%; left: 28%; }
+.seat-slot[data-seat="10"] { bottom: 2%; left: 53%; }
+.seat-slot[data-seat="11"] { bottom: 2%; right: 4%; }
+
+.seat-avatar-wrap {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.45);
+}
+
+.seat-avatar-wrap img.player-pic {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Boş oturacaq */
+.seat-empty-box {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 18px;
+}
+
+/* Sağ üstdə masadakı öpüş sayğacı */
+.seat-kiss-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 10px;
+  border: 1.5px solid #fff;
+  z-index: 4;
+}
+
+/* Hədiyyə yerləşmə nöqtələri */
+.gift-dock-drink {
+  position: absolute;
+  bottom: -4px;
+  right: -6px;
+  font-size: 20px;
+  z-index: 3;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+
+.gift-dock-hat {
+  position: absolute;
+  top: -10px;
+  left: -6px;
+  font-size: 21px;
+  z-index: 3;
+  transform: rotate(-15deg);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+
+.gift-dock-random {
+  position: absolute;
+  font-size: 18px;
+  z-index: 3;
+}
+
+/* Aktiv smaylik animasiyası avatar üzərində */
+.active-smaylik-pop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  animation: bounceSmaylik 0.6s infinite alternate;
+  z-index: 6;
+}
+
+@keyframes bounceSmaylik {
+  from { transform: scale(0.85) rotate(-6deg); }
+  to { transform: scale(1.15) rotate(6deg); }
+}
+
+.seat-name-tag {
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-weight: 700;
+  max-width: 68px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+}
+
+/* AD RƏNGLƏRİ */
+.name-top10      { color: #fde047 !important; } /* Top 10: Sarı */
+.name-vip-male   { color: #38bdf8 !important; } /* VIP Kişi: Göy */
+.name-vip-female { color: #f87171 !important; } /* VIP Qadın: Qırmızı */
+.name-male       { color: #93c5fd; }            /* Adi Kişi: Mavi */
+.name-female     { color: #f9a8d4; }            /* Adi Qadın: Rozuvu */
+
+/* MƏRKƏZİ ŞÜŞƏ */
+.center-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 210px;
+  height: 210px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.wood-emblem {
+  width: 145px;
+  height: 145px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 220, 170, 0.25) 0%, rgba(160, 100, 40, 0.2) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  pointer-events: auto;
+}
+
+.bottle-sprite {
+  width: 78px;
+  height: 78px;
+  object-fit: contain;
+  transition: transform 3.2s cubic-bezier(0.15, 0.85, 0.25, 1);
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
+}
+
+.bottle-status-text {
+  position: absolute;
+  text-align: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12.5px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  width: 175px;
+  pointer-events: none;
+}
+
+.spin-call-btn {
+  margin-top: 6px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  border: 2px solid #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* ÖPÜŞ / İMTİNA SEÇİM OVERLAY */
+.spin-match-overlay {
+  position: absolute;
+  inset: -20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 12;
+  pointer-events: auto;
+}
+
+.match-cards-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.match-player-card {
+  width: 74px;
+  text-align: center;
+}
+
+.match-player-card img {
+  width: 68px;
+  height: 68px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2.5px solid #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.match-player-card .match-name {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 3px #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.match-countdown {
+  font-size: 26px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+  min-width: 28px;
+  text-align: center;
+}
+
+.match-arrows-status {
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-top: 4px;
+}
+
+.match-action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.btn-refuse, .btn-kiss {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.btn-refuse { background: #ef4444; }
+.btn-kiss   { background: #84cc16; }
+
+/* UÇAN HƏDİYYƏ VƏ ÜRƏK ANİMASİYASI */
+.fx-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.flying-gift {
+  position: absolute;
+  font-size: 32px;
+  transition: all 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 16;
+}
+
+.flying-heart-bonus {
+  position: fixed;
+  font-size: 30px;
+  z-index: 300;
+  pointer-events: none;
+  animation: flyHeartUp 0.95s ease-out forwards;
+}
+
+@keyframes flyHeartUp {
+  0%   { transform: translate(-50%, 0) scale(0.7); opacity: 1; }
+  70%  { transform: translate(-110px, -210px) scale(1.25); opacity: 1; }
+  100% { transform: translate(-140px, -260px) scale(0.5); opacity: 0; }
+}
+
+/* ONLAYN CHAT VƏ KLİP BÖLMƏSİ */
+.chat-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+  border-top: 2px solid #e2e8f0;
+  overflow: hidden;
+  position: relative;
+}
+
+.chat-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.music-fire-btn {
+  background: linear-gradient(135deg, #f97316, #ef4444);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 4px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.online-badge {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* SİNXRON YOUTUBE KLİP VİDCETİ */
+.active-clip-widget {
+  position: absolute;
+  top: 38px;
+  right: 8px;
+  width: 195px;
+  background: #111827;
+  color: #fff;
+  border-radius: 12px;
+  padding: 6px;
+  z-index: 14;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.clip-sender-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.clip-sender-info img {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid #facc15;
+}
+
+.clip-meta {
+  overflow: hidden;
+  line-height: 1.15;
+}
+
+.clip-meta strong {
+  display: block;
+  font-size: 10.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clip-meta small {
+  font-size: 9.5px;
+  color: #9ca3af;
+}
+
+.clip-video-box iframe {
+  width: 100%;
+  height: 92px;
+  border-radius: 8px;
+  border: none;
+}
+
+.clip-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.clip-controls button {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.clip-controls input[type="range"] {
+  flex: 1;
+  height: 4px;
+}
+
+/* CHAT MESAJLARI */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fff;
+  padding: 6px 9px;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.chat-row.system-event {
+  background: #fefce8;
+  border: 1px solid #fef08a;
+  align-items: center;
+}
+
+.chat-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  object-fit: cover;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.chat-body {
+  flex: 1;
+  word-break: break-word;
+}
+
+.chat-sender-link {
+  font-weight: 800;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+.chat-target-mention {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* CHAT EMOJİ ÇƏKMƏCƏSİ */
+.chat-emoji-drawer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+  background: #fff;
+  border-top: 1px solid #e2e8f0;
+  max-height: 110px;
+  overflow-y: auto;
+}
+
+.chat-emoji-drawer button {
+  font-size: 20px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  padding: 4px 7px;
+  cursor: pointer;
+}
+
+/* MESAJ YAZMA YERİ */
+.chat-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: #fff;
+  border-top: 1px solid #e2e8f0;
+}
+
+.chat-input-bar input {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 20px;
+  padding: 8px 13px;
+  font-size: 13.5px;
+  outline: none;
+}
+
+.chat-emoji-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.chat-send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
+}
 
