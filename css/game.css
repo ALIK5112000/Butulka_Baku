@@ -54,7 +54,7 @@ body{font-family:system-ui,"Segoe UI",sans-serif;background:var(--paper);color:v
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .seat-name:empty{display:none}
-.seat.empty .seat-photo{background:rgba(255,255,255,.12);border:2px dashed rgba(255,255,255,.45);box-shadow:none}
+.seat.empty .seat-photo{visibility:hidden}  /* boş yer tam görünməz */
 .seat.empty img{display:none}
 .seat.vip .seat-photo{border-color:#f5b942}
 .seat.me .seat-photo{border-color:#ffd573;box-shadow:0 0 0 3px rgba(255,213,115,.55),0 3px 8px rgba(0,0,0,.3)}
