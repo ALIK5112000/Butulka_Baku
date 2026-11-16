@@ -1,25 +1,48 @@
 // Masa məntiqi: oyunçuların real vaxtda oturması, çıxması və yenilənməsi
 import { db } from "./firebase-init.js";
 import {
-  collection, doc, getDoc, getDocs, query, where, onSnapshot, runTransaction, deleteDoc
+  collection, doc, setDoc, getDoc, getDocFromServer, getDocs, query, where, onSnapshot,
+  runTransaction, deleteDoc, serverTimestamp, Timestamp
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { CONFIG } from "./game-config.js";
 
 const seatsCol = collection(db, "seats");
 const handlers = {};
 const avatarCache = new Map();
-let me = null, current = null, unsub = null, beat = null, lastSeats = [];
+let me = null, current = null, unsub = null, beat = null, tick = null, lastSeats = [];
+
+// Telefonların saatları fərqli ola bilər. Ona görə hər kəs SERVER vaxtına görə hesablanır.
+let offset = 0; // server vaxtı - bu telefonun vaxtı
+const nowServer = () => Date.now() + offset;
+const toMs = v => (v == null ? null : (typeof v.toMillis === "function" ? v.toMillis() : Number(v)));
+const isFresh = d => {
+  if (!d) return false;
+  const t = toMs(d.lastSeen);
+  if (t === null) return true; // hələ serverə yazılır, deməli təzədir
+  return nowServer() - t < CONFIG.staleMs;
+};
+
+async function syncClock() {
+  try {
+    const ref = doc(db, "clocks", String(me.id));
+    const t0 = Date.now();
+    await setDoc(ref, { t: serverTimestamp() });
+    const s = await getDocFromServer(ref);
+    const t1 = Date.now();
+    const server = toMs(s.data().t);
+    if (server) offset = server - (t0 + t1) / 2;
+  } catch (e) { console.warn("Saat sinxronu alınmadı", e); }
+}
 
 export function on(evt, fn) { handlers[evt] = fn; }
 const emit = (evt, data) => handlers[evt] && handlers[evt](data);
 const seatKey = (t, s) => `t${t}_s${s}`;
-const isFresh = d => d && Date.now() - (d.lastSeen || 0) < CONFIG.staleMs;
 
 export function setMe(info) { me = info; }
 export function getCurrent() { return current; }
 
 function payload(table, seat) {
-  return { table, seat, uid: me.id, docId: me.docId, name: me.name, gender: me.gender, vip: me.vip, lastSeen: Date.now() };
+  return { table, seat, uid: me.id, docId: me.docId, name: me.name, gender: me.gender, vip: me.vip, lastSeen: serverTimestamp() };
 }
 
 export async function getAvatar(docId) {
@@ -40,7 +63,8 @@ async function cleanMine() {
 
 // Ən çox oyunçusu olan, dolu olmayan masanı seç; yoxdursa yeni masa aç
 async function pickTable(exclude) {
-  const snap = await getDocs(query(seatsCol, where("lastSeen", ">", Date.now() - CONFIG.staleMs)));
+  const cutoff = Timestamp.fromMillis(nowServer() - CONFIG.staleMs);
+  const snap = await getDocs(query(seatsCol, where("lastSeen", ">", cutoff)));
   const counts = {};
   snap.forEach(d => { const t = d.data().table; counts[t] = (counts[t] || 0) + 1; });
 
@@ -85,6 +109,7 @@ async function claimSeat(table) {
 function stopListening() {
   if (unsub) { unsub(); unsub = null; }
   if (beat) { clearInterval(beat); beat = null; }
+  if (tick) { clearInterval(tick); tick = null; }
 }
 
 function publish() { emit("seats", lastSeats.filter(isFresh)); }
@@ -95,17 +120,19 @@ function listen(table) {
     snap.forEach(d => lastSeats.push(d.data()));
     publish();
   });
+  tick = setInterval(publish, 10000);
 }
 
 export async function enter(exclude = new Set()) {
   stopListening();
+  await syncClock();
   await cleanMine();
   for (let i = 0; i < 6; i++) {
     const table = await pickTable(exclude);
     if (table === null) break;
     const seat = await claimSeat(table);
     if (seat !== null) {
-      current = { table, seat, joinedAt: Date.now() };
+      current = { table, seat, joinedAt: nowServer() };
       listen(table);
       beat = setInterval(touch, CONFIG.heartbeatMs);
       emit("joined", current);
@@ -132,6 +159,8 @@ export async function touch() {
   } catch (e) { console.warn(e); }
   publish();
 }
+
+export async function resync() { await syncClock(); await touch(); }
 
 export async function leave() {
   const c = current;
