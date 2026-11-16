@@ -115,9 +115,9 @@ function start() {
 
   $("exitBtn").addEventListener("click", async () => {
     await Table.leave();
-    location.href = CONFIG.profilePage;
+    location.href = CONFIG.exitPage;
   });
 
   window.addEventListener("pagehide", () => { Table.leave(); });
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) Table.touch(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) Table.resync(); });
 }
