@@ -4,13 +4,14 @@ export const CONFIG = {
   firstTableNumber: 1,      // ilk masanın nömrəsi
   maxTables: 200,           // maksimum masa sayı
   heartbeatMs: 20000,       // oyunçu "buradayam" siqnalını neçə saniyədən bir göndərir
-  staleMs: 60000,           // bu qədər siqnal gəlməsə, yer boş sayılır
+  staleMs: 100000,           // bu qədər siqnal gəlməsə, yer boş sayılır
 
   chatMaxLen: 200,          // mesajın maksimum uzunluğu
   chatCooldownMs: 1000,     // iki mesaj arası minimum gözləmə
   chatKeep: 60,             // çatda ən çox neçə mesaj göstərilsin
 
   profilePage: "profile.html",
+  exitPage: "profile.html",   // Çıxış düyməsinə basanda açılacaq səhifə (istəsən "index.html" yaz)
   loginPage: "index.html",
 
   // Şəkillər: boş buraxsan hazır dizayn görünür.
