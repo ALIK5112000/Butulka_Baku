@@ -1,14 +1,17 @@
+/* Giriş ekranının məntiqi: fon → yüklənmə → brend → oyun */
 (function () {
   const C = window.SPLASH_CONFIG;
   const $ = id => document.getElementById(id);
   const stageLoading = $("stageLoading"), stageBrand = $("stageBrand");
   let leaving = false;
 
-  if (C.requireLogin && !localStorage.getItem("userId")) {
+  // --- Giriş yoxlaması (istəsən config-də aktiv et) ---
+  if (C.requireLogin && !localStorage.getItem("currentUser")) {
     location.replace(C.loginPage);
     return;
   }
 
+  // --- Arxa fon şəkilləri (varsa) ---
   function mountBackground(el, list) {
     if (!list || !list.length) return;
     const slides = list.map(src => {
@@ -28,11 +31,12 @@
   mountBackground($("bgLoading"), C.loadingBackgrounds);
   mountBackground($("bgBrand"), C.brandBackgrounds);
 
+  // --- Yüklənmə ---
   const toLoad = [...(C.preload || []), ...(C.loadingBackgrounds || []), ...(C.brandBackgrounds || [])];
   let loaded = 0;
   toLoad.forEach(src => {
     const img = new Image();
-    img.onload = img.onerror = () => { loaded++; };
+    img.onload = img.onerror = () => { loaded++; };  // xəta olsa da gözləməsin
     img.src = src;
   });
 
@@ -49,6 +53,7 @@
   }
   requestAnimationFrame(frame);
 
+  // --- Brend ---
   function showBrand() {
     setTimeout(() => {
       stageLoading.classList.remove("is-active");
@@ -62,5 +67,5 @@
     leaving = true;
     location.href = C.nextPage;
   }
-  stageBrand.addEventListener("click", goNext);
+  stageBrand.addEventListener("click", goNext); // toxunsa keçsin
 })();
