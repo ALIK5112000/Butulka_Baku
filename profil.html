@@ -440,7 +440,7 @@
         </div>
     </div>
 
-    <!-- OYUNA KEÇİD (BUTULKA) - oyun.html -->
+    <!-- OYUNA KEÇİD (BUTULKA) - splash.html (giriş ekranı) → oyun.html -->
     <div class="play-card" onclick="enterGamePage()">
         <div>
             <div style="font-size:18px; font-weight:800; color:#fff;" data-i18n="enterGameTitle">🍾 Butulka Oyunu</div>
@@ -449,7 +449,7 @@
         <div style="background:#ec4899; padding:10px 18px; border-radius:14px; font-weight:700; font-size:14px;" data-i18n="playBtn">Oyna ▶</div>
     </div>
 
-    <!-- ALT NAVİQASİYA - oyun.html -->
+    <!-- ALT NAVİQASİYA - oyuna keçid splash.html üzərindən -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="closeAllSheets()">
             <span style="font-size:20px;">🏠</span>
@@ -756,12 +756,12 @@
             countrySelect.appendChild(opt);
         });
 
-        // Oyuna keçid funksiyası (blok yoxlaması ilə birlikdə oyun.html-ə aparır)
+        // Oyuna keçid funksiyası: blok yoxlaması + giriş ekranı (splash.html) → oyun.html
         window.enterGamePage = function() {
             if (myData && myData.blockedUntil && Number(myData.blockedUntil) > Date.now()) {
                 return alert("Hesabınız admin tərəfindən müvəqqəti bloklanıb!");
             }
-            window.location.href = "oyun.html";
+            window.location.href = "splash.html";
         };
 
         async function initRealtimeProfile() {
