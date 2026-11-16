@@ -1,600 +1,789 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Butulka Baku - Canlı Masa</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        body {
-            background: radial-gradient(circle at 50% 25%, #1c163d 0%, #0b0c18 70%, #070811 100%);
-            color: #fff;
-            height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Butulka Baku — Masa #511</title>
+  <style>
+    :root {
+      --bg-dark: #12040c;
+      --bg-crimson: #2b081b;
+      --table-border: #d49b4b;
+      --accent-pink: #ff2e7e;
+      --accent-gold: #ffd166;
+      --glass-panel: rgba(20, 6, 15, 0.9);
+      --border-subtle: rgba(255, 180, 210, 0.18);
+    }
 
-        /* YUXARI HUD PANELİ */
-        .game-top-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 12px;
-            background: rgba(16, 18, 34, 0.9);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(99, 102, 241, 0.25);
-            z-index: 30;
-            gap: 8px;
-        }
-        .left-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .back-btn {
-            background: #1e223d;
-            border: 1px solid rgba(255,255,255,0.12);
-            color: #e2e8f0;
-            padding: 7px 11px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .room-pill {
-            background: linear-gradient(135deg, rgba(99,102,241,0.22), rgba(236,72,153,0.22));
-            border: 1px solid rgba(236, 72, 153, 0.5);
-            padding: 6px 11px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-        }
-        .hud-user {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .hud-stats {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            font-size: 11px;
-            line-height: 1.3;
-        }
-        .hud-badges {
-            display: flex;
-            gap: 8px;
-            font-weight: 700;
-        }
-        .hud-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #818cf8;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
 
-        /* MƏRKƏZİ MASA SAHƏSİ */
-        .arena-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            padding: 6px;
-            min-height: 0;
-        }
-        .table-stage {
-            position: relative;
-            width: min(86vw, 345px);
-            height: min(86vw, 345px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        /* Dairəvi Neon Masa */
-        .neon-table-disc {
-            position: absolute;
-            width: 68%;
-            height: 68%;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 30%, #262254 0%, #13152b 75%, #0c0d1c 100%);
-            border: 2.5px solid rgba(129, 140, 248, 0.55);
-            box-shadow:
-                0 0 28px rgba(99, 102, 241, 0.35),
-                inset 0 0 24px rgba(236, 72, 153, 0.25);
-        }
-        .neon-table-inner-ring {
-            position: absolute;
-            inset: 12px;
-            border-radius: 50%;
-            border: 1px dashed rgba(245, 185, 66, 0.3);
-        }
+    body {
+      background: radial-gradient(circle at 50% 42%, var(--bg-crimson) 0%, var(--bg-dark) 78%);
+      color: #fff;
+      height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
 
-        /* 12 Oturacaq Konteyneri */
-        #seatsContainer {
-            position: absolute;
-            inset: 0;
-            z-index: 10;
-        }
-        .seat-node {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 56px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .seat-node:active {
-            transform: translate(-50%, -50%) scale(0.92);
-        }
-        .seat-empty-circle {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: rgba(26, 29, 51, 0.85);
-            border: 1.5px dashed rgba(148, 163, 184, 0.45);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #94a3b8;
-            font-size: 18px;
-            font-weight: 700;
-        }
-        .seat-avatar-wrap {
-            position: relative;
-            width: 46px;
-            height: 46px;
-        }
-        .seat-avatar-wrap img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2.5px solid #6366f1;
-            background: #1a1d33;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-        }
-        .seat-node.vip-seat .seat-avatar-wrap img {
-            border-color: #f5b942;
-            box-shadow: 0 0 14px rgba(245, 185, 66, 0.75);
-        }
-        .seat-node.active-turn .seat-avatar-wrap img {
-            border-color: #ec4899;
-            box-shadow: 0 0 16px rgba(236, 72, 153, 0.9);
-        }
-        .seat-crown {
-            position: absolute;
-            top: -9px;
-            right: -4px;
-            font-size: 13px;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
-        }
-        .seat-name {
-            margin-top: 2px;
-            font-size: 10px;
-            font-weight: 700;
-            max-width: 58px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            background: rgba(11, 12, 24, 0.78);
-            padding: 1px 5px;
-            border-radius: 6px;
-            text-align: center;
-        }
+    /* ÜST PANEL */
+    .topbar {
+      position: relative;
+      z-index: 20;
+      height: 54px;
+      padding: 0 14px;
+      background: linear-gradient(180deg, rgba(15, 3, 10, 0.98), rgba(28, 7, 19, 0.9));
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-        /* ORTADAKI ŞÜŞƏ (0 dərəcədə düz yuxarı baxır) */
-        #bottleImg {
-            position: relative;
-            z-index: 15;
-            width: 34px;
-            height: 106px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.85));
-            pointer-events: none;
-        }
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-        /* FIRLATMA VƏ QALXMA DÜYMƏLƏRİ */
-        .table-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 8px;
-            z-index: 20;
-        }
-        .spin-btn {
-            background: linear-gradient(135deg, #ec4899, #8b5cf6);
-            border: none;
-            color: #fff;
-            padding: 10px 22px;
-            border-radius: 16px;
-            font-size: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: 0 0 18px rgba(236, 72, 153, 0.45);
-            transition: 0.2s;
-        }
-        .spin-btn:disabled {
-            background: #232742;
-            color: #64748b;
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-        .leave-btn {
-            background: rgba(239, 68, 68, 0.16);
-            border: 1px solid rgba(239, 68, 68, 0.45);
-            color: #fca5a5;
-            padding: 10px 14px;
-            border-radius: 14px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-        }
+    .logo {
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: 0.8px;
+      background: linear-gradient(90deg, #ff4d94, var(--accent-gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-        /* AŞAĞI CANLI MASA ÇATI */
-        .table-chat-panel {
-            height: 29vh;
-            min-height: 165px;
-            max-height: 230px;
-            background: rgba(15, 17, 32, 0.94);
-            border-top: 1px solid rgba(255, 255, 255, 0.09);
-            display: flex;
-            flex-direction: column;
-            padding: 8px 12px 10px;
-            z-index: 25;
-        }
-        #tableChatBox {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            padding-right: 4px;
-            margin-bottom: 8px;
-            font-size: 13px;
-        }
-        .chat-line {
-            background: rgba(30, 34, 61, 0.72);
-            padding: 5px 10px;
-            border-radius: 10px;
-            line-height: 1.35;
-            word-break: break-word;
-            user-select: text;
-        }
-        .chat-sys {
-            font-size: 11px;
-            color: #fbbf24;
-            text-align: center;
-            padding: 3px 8px;
-            background: rgba(245, 185, 66, 0.08);
-            border-radius: 8px;
-        }
-        .chat-input-row {
-            display: flex;
-            gap: 8px;
-        }
-        .chat-input {
-            flex: 1;
-            background: #1e223b;
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 12px;
-            padding: 10px 12px;
-            color: #fff;
-            font-size: 14px;
-            outline: none;
-            user-select: text;
-        }
-        .chat-input:focus {
-            border-color: #818cf8;
-        }
-        .chat-send-btn {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            border: none;
-            color: #fff;
-            padding: 0 16px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 15px;
-            cursor: pointer;
-        }
+    .room-badge {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 209, 102, 0.35);
+      color: var(--accent-gold);
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
 
-        /* ANİMASİYA EFFEKT QATI (Öpüş və Hədiyyələr) */
-        #effectsLayer {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 120;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .floating-effect {
-            position: absolute;
-            text-align: center;
-            background: rgba(15, 17, 32, 0.85);
-            border: 1px solid rgba(245, 185, 66, 0.5);
-            padding: 12px 20px;
-            border-radius: 20px;
-            box-shadow: 0 0 25px rgba(236, 72, 153, 0.5);
-            animation: floatPop 2.5s ease forwards;
-        }
-        @keyframes floatPop {
-            0% { opacity: 0; transform: scale(0.6) translateY(20px); }
-            20% { opacity: 1; transform: scale(1.08) translateY(0); }
-            80% { opacity: 1; transform: scale(1) translateY(-18px); }
-            100% { opacity: 0; transform: scale(0.9) translateY(-45px); }
-        }
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        /* MODALLAR */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.78);
-            backdrop-filter: blur(5px);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-        }
-        .modal-overlay.open {
-            display: flex;
-        }
-        .modal-card {
-            width: 100%;
-            max-width: 400px;
-            background: #16192e;
-            border: 1px solid rgba(129, 140, 248, 0.35);
-            border-radius: 24px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.65);
-            max-height: 86vh;
-            overflow-y: auto;
-        }
-        .modal-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-        .close-x {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: #232742;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            font-size: 15px;
-        }
-        .kiss-btns {
-            display: flex;
-            gap: 10px;
-            margin-top: 16px;
-        }
-        .btn-kiss-yes {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #ec4899, #f43f5e);
-            color: #fff;
-            font-weight: 800;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .btn-kiss-no {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 14px;
-            background: #232742;
-            color: #cbd5e1;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .gifts-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-top: 14px;
-        }
-        .gift-card {
-            background: #1e223d;
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px;
-            padding: 10px 6px;
-            cursor: pointer;
-            transition: 0.15s;
-        }
-        .gift-card:active {
-            transform: scale(0.94);
-            border-color: #f5b942;
-            background: rgba(245, 185, 66, 0.15);
-        }
-        .room-option {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #1e223d;
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 13px 15px;
-            border-radius: 14px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            font-weight: 700;
-        }
-        .room-option:hover {
-            border-color: #ec4899;
-        }
-    </style>
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--border-subtle);
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .btn-top {
+      background: linear-gradient(135deg, var(--accent-pink), #c9184a);
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(255, 46, 126, 0.4);
+    }
+
+    /* OVAL MASA ARENASI */
+    .arena {
+      position: relative;
+      z-index: 10;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+
+    .table-wrapper {
+      position: relative;
+      width: min(94vw, 780px);
+      height: min(58dvh, 440px);
+    }
+
+    .oval-table {
+      position: absolute;
+      inset: 12% 10%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at 50% 45%, #591338 0%, #34081f 68%, #1d0411 100%);
+      border: 6px solid var(--table-border);
+      box-shadow:
+        0 0 0 4px rgba(85, 20, 50, 0.8),
+        0 20px 50px rgba(0, 0, 0, 0.9),
+        inset 0 0 45px rgba(255, 46, 126, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .table-watermark {
+      text-align: center;
+      opacity: 0.2;
+      pointer-events: none;
+    }
+
+    .table-watermark h2 {
+      font-size: clamp(18px, 3vw, 26px);
+      letter-spacing: 3px;
+      color: var(--accent-gold);
+    }
+
+    .table-watermark span {
+      font-size: 11px;
+      letter-spacing: 2px;
+    }
+
+    /* ORTADAKI ŞÜŞƏ */
+    .bottle-container {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 15;
+    }
+
+    .bottle {
+      width: 34px;
+      height: 118px;
+      cursor: pointer;
+      transform-origin: 50% 54%;
+      transition: transform 3.6s cubic-bezier(0.14, 0.86, 0.22, 1);
+      filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.8));
+    }
+
+    .spin-prompt {
+      position: absolute;
+      bottom: -26px;
+      background: linear-gradient(90deg, var(--accent-pink), #ff6b6b);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 14px;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(255, 46, 126, 0.6);
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      animation: pulseBtn 1.4s infinite;
+    }
+
+    @keyframes pulseBtn {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.07); }
+    }
+
+    /* 12 OYUNÇU YERİ */
+    .seat {
+      position: absolute;
+      width: 70px;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 16;
+      cursor: pointer;
+    }
+
+    .avatar-ring {
+      position: relative;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      padding: 2px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.08));
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+    }
+
+    .seat.active-turn .avatar-ring {
+      background: linear-gradient(135deg, var(--accent-gold), #ff9f1c);
+      box-shadow: 0 0 20px rgba(255, 209, 102, 0.95);
+    }
+
+    .seat.target-selected .avatar-ring {
+      background: linear-gradient(135deg, var(--accent-pink), #ff758f);
+      box-shadow: 0 0 22px rgba(255, 46, 126, 1);
+      transform: scale(1.1);
+    }
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #240918;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .empty-slot {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px dashed rgba(255, 209, 102, 0.4);
+      background: rgba(15, 4, 10, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 209, 102, 0.8);
+      font-size: 18px;
+    }
+
+    .kiss-badge {
+      position: absolute;
+      top: -4px;
+      right: -6px;
+      background: var(--accent-pink);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 10px;
+      border: 1px solid #fff;
+    }
+
+    .vip-crown {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 13px;
+    }
+
+    .player-name {
+      margin-top: 4px;
+      background: rgba(10, 2, 7, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      max-width: 78px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-name.me {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+
+    /* ALT ÇAT PANELİ */
+    .bottom-dock {
+      position: relative;
+      z-index: 20;
+      background: var(--glass-panel);
+      border-top: 1px solid var(--border-subtle);
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .chat-messages {
+      height: 82px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12.5px;
+    }
+
+    .msg-line {
+      line-height: 1.35;
+      color: #f3dce6;
+    }
+
+    .msg-line.system {
+      color: var(--accent-gold);
+      font-style: italic;
+    }
+
+    .msg-author {
+      font-weight: 700;
+      color: #ff758f;
+      margin-right: 5px;
+    }
+
+    .chat-controls {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 8px 14px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .quick-emoji {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
+      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ÖPÜŞ / HƏDİYYƏ MODALLARI */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 1, 4, 0.8);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .action-card {
+      width: 100%;
+      max-width: 360px;
+      background: linear-gradient(160deg, #2b091c, #14040d);
+      border: 2px solid var(--accent-gold);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+    }
+
+    .duel-avatars {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 16px 0;
+    }
+
+    .duel-pic {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      border: 3px solid var(--accent-pink);
+      background: #330c22;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 6px;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .btn-kiss {
+      background: linear-gradient(90deg, var(--accent-pink), #ff5d8f);
+      border: none;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 12px;
+      border-radius: 14px;
+      cursor: pointer;
+    }
+
+    .btn-gift-alt {
+      background: linear-gradient(90deg, #f7b801, #f18701);
+      border: none;
+      color: #1a060f;
+      font-size: 14px;
+      font-weight: 800;
+      padding: 10px;
+      border-radius: 14px;
+      cursor: pointer;
+    }
+
+    .btn-refuse {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ccc;
+      padding: 9px;
+      border-radius: 14px;
+      cursor: pointer;
+    }
+
+    .gift-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .gift-item {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 10px 6px;
+      cursor: pointer;
+    }
+
+    .gift-item:hover {
+      border-color: var(--accent-gold);
+    }
+
+    .floating-heart {
+      position: fixed;
+      font-size: 26px;
+      pointer-events: none;
+      z-index: 99;
+      animation: floatUp 1.8s ease-out forwards;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(0.7); opacity: 1; }
+      100% { transform: translateY(-160px) scale(1.4); opacity: 0; }
+    }
+  </style>
 </head>
 <body>
 
-    <!-- YUXARI HUD -->
-    <div class="game-top-bar">
-        <div class="left-controls">
-            <button class="back-btn" onclick="window.location.href='profil.html'">← Profil</button>
-            <div class="room-pill" onclick="document.getElementById('roomSwitcherModal').classList.add('open')">
-                <span>🍾</span>
-                <span id="currentRoomName">Masa #1</span>
-                <span style="color:#fbbf24;">(<span id="tableOnlineCount">0 / 12</span>)</span>
-                <span>▾</span>
-            </div>
-        </div>
-
-        <div class="hud-user">
-            <div class="hud-stats">
-                <div id="hudUsername" style="font-weight:800;">Oyunçu</div>
-                <div class="hud-badges">
-                    <span style="color:#fbbf24;">🪙 <span id="hudJetons">0</span></span>
-                    <span style="color:#f43f5e;">❤️ <span id="hudHearts">0</span></span>
-                </div>
-            </div>
-            <img id="hudAvatar" class="hud-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Avatar">
-        </div>
+  <!-- ÜST MENYU -->
+  <header class="topbar">
+    <div class="brand-box">
+      <div class="logo">BUTULKA BAKU</div>
+      <div class="room-badge">Masa #511</div>
     </div>
-
-    <!-- MƏRKƏZİ 12 NƏFƏRLİK MASA -->
-    <div class="arena-wrapper">
-        <div class="table-stage">
-            <div class="neon-table-disc">
-                <div class="neon-table-inner-ring"></div>
-            </div>
-
-            <!-- 12 Oturacaq -->
-            <div id="seatsContainer"></div>
-
-            <!-- Ortadakı Şüşə -->
-            <div id="bottleImg">
-                <svg width="34" height="106" viewBox="0 0 40 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="bottleBody" x1="0" y1="0" x2="40" y2="120" gradientUnits="userSpaceOnUse">
-                            <stop offset="0%" stop-color="#38bdf8"/>
-                            <stop offset="50%" stop-color="#6366f1"/>
-                            <stop offset="100%" stop-color="#ec4899"/>
-                        </linearGradient>
-                    </defs>
-                    <!-- Qapaq / Başlıq -->
-                    <rect x="15" y="2" width="10" height="10" rx="3" fill="#fbbf24"/>
-                    <!-- Boğaz -->
-                    <path d="M15 12H25L27 38H13L15 12Z" fill="url(#bottleBody)"/>
-                    <!-- Gövdə -->
-                    <rect x="8" y="36" width="24" height="76" rx="10" fill="url(#bottleBody)" stroke="#ffffff" stroke-opacity="0.35" stroke-width="1.5"/>
-                    <!-- Etiket -->
-                    <rect x="11" y="58" width="18" height="28" rx="4" fill="#0f1120" fill-opacity="0.75"/>
-                    <circle cx="20" cy="72" r="5" fill="#fbbf24"/>
-                </svg>
-            </div>
-        </div>
-
-        <!-- Fırlatma və Masadan Qalxma Düymələri -->
-        <div class="table-controls">
-            <button id="spinBottleBtn" class="spin-btn" onclick="spinBottle()">Oturacaq seçin</button>
-            <button id="leaveSeatBtn" class="leave-btn" style="display:none;" onclick="leaveSeat()">Qalx</button>
-        </div>
+    <div class="stats-bar">
+      <div class="stat-pill">💋 <span id="myKisses">48</span></div>
+      <div class="stat-pill">❤️ <span id="myCoins">1250</span></div>
+      <button class="btn-top" onclick="openGiftModal()">🎁 Mağaza</button>
     </div>
+  </header>
 
-    <!-- AŞAĞI CANLI MASA ÇATI -->
-    <div class="table-chat-panel">
-        <div id="tableChatBox"></div>
-        <div class="chat-input-row">
-            <input type="text" id="tableChatInput" class="chat-input" placeholder="Masaya mesaj yaz..." onkeypress="if(event.key==='Enter') sendTableChat()">
-            <button class="chat-send-btn" onclick="sendTableChat()">➤</button>
+  <!-- OYUN ARENASI -->
+  <main class="arena">
+    <div class="table-wrapper" id="tableWrapper">
+      <div class="oval-table">
+        <div class="table-watermark">
+          <h2>BUTULKA BAKU</h2>
+          <span>ÖPÜŞ VƏ TANIŞLIQ KLUBU</span>
         </div>
-    </div>
 
-    <!-- ÜZƏN EFFEKTLƏR QATI -->
-    <div id="effectsLayer"></div>
-
-    <!-- 1. ÖPÜŞ VƏ YA İMTİNA MODALI -->
-    <div id="kissDecisionModal" class="modal-overlay">
-        <div class="modal-card">
-            <div style="font-size:18px; font-weight:800; color:#fbbf24;">🍾 Şüşə dayandı!</div>
-            <div id="kissPairInfo"></div>
-            <div id="kissActionButtons" class="kiss-btns" style="display:none;">
-                <button class="btn-kiss-yes" onclick="sendKissChoice(true)">💋 Öp (+1 ❤️)</button>
-                <button class="btn-kiss-no" onclick="sendKissChoice(false)">❌ İmtina et</button>
-            </div>
+        <!-- ŞÜŞƏ -->
+        <div class="bottle-container">
+          <svg class="bottle" id="bottleEl" onclick="spinBottle()" viewBox="0 0 64 220" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#0b3d24"/>
+                <stop offset="35%" stop-color="#1f8a52"/>
+                <stop offset="65%" stop-color="#135c36"/>
+                <stop offset="100%" stop-color="#072918"/>
+              </linearGradient>
+              <linearGradient id="goldFoil" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#b8860b"/>
+                <stop offset="50%" stop-color="#ffd166"/>
+                <stop offset="100%" stop-color="#996515"/>
+              </linearGradient>
+            </defs>
+            <rect x="24" y="4" width="16" height="14" rx="3" fill="url(#goldFoil)"/>
+            <path d="M25 18 L39 18 L42 68 L22 68 Z" fill="url(#glassGrad)"/>
+            <rect x="23" y="44" width="18" height="8" fill="url(#goldFoil)"/>
+            <path d="M22 68 C12 82, 10 95, 10 112 L10 202 C10 211, 16 216, 24 216 L40 216 C48 216, 54 211, 54 202 L54 112 C54 95, 52 82, 42 68 Z" fill="url(#glassGrad)" stroke="#2ec474" stroke-width="1.2"/>
+            <rect x="15" y="118" width="34" height="54" rx="4" fill="#1a0510" stroke="#ffd166" stroke-width="1.5"/>
+            <text x="32" y="142" fill="#ffd166" font-size="8" font-weight="bold" text-anchor="middle">BAKU</text>
+            <text x="32" y="155" fill="#ff2e7e" font-size="11" text-anchor="middle">💋</text>
+            <rect x="16" y="88" width="4" height="110" rx="2" fill="rgba(255,255,255,0.28)"/>
+          </svg>
+          <div class="spin-prompt" id="spinBtn" onclick="spinBottle()">Şüşəni Fırlat</div>
         </div>
+      </div>
     </div>
+  </main>
 
-    <!-- 2. OYUNÇU MENYUSU VƏ HƏDİYYƏLƏR MODALI -->
-    <div id="playerActionModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('open')">
-        <div class="modal-card">
-            <div class="modal-top">
-                <span style="font-weight:800; font-size:16px;">Oyunçu</span>
-                <button class="close-x" onclick="document.getElementById('playerActionModal').classList.remove('open')">✕</button>
-            </div>
-            <img id="targetPlayerAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width:68px; height:68px; border-radius:50%; object-fit:cover; border:2.5px solid #818cf8;">
-            <div id="targetPlayerName" style="font-size:18px; font-weight:800; margin-top:8px;">-</div>
-            <div id="targetPlayerId" style="font-size:12px; color:#fbbf24; margin-bottom:12px;">ID -</div>
+  <!-- ALT ÇAT -->
+  <footer class="bottom-dock">
+    <div class="chat-messages" id="chatBox">
+      <div class="msg-line system">Masa #511 otağına xoş gəldin, | A | L | İ | K | (ID: 1836)!</div>
+    </div>
+    <div class="chat-controls">
+      <input type="text" id="chatInput" class="chat-input" placeholder="Otağa mesaj yaz..." onkeypress="if(event.key==='Enter') sendChat()" />
+      <button class="quick-emoji" onclick="quickReaction('💋')">💋</button>
+      <button class="quick-emoji" onclick="quickReaction('❤️')">❤️</button>
+      <button class="btn-top" onclick="sendChat()">Göndər</button>
+    </div>
+  </footer>
 
-            <button onclick="sendFriendFromTable()" style="width:100%; padding:10px; border-radius:12px; border:none; background:#6366f1; color:#fff; font-weight:700; cursor:pointer;">
-                ➕ Dostluq sorğusu göndər
-            </button>
-
-            <div style="font-size:12px; color:#94a3b8; font-weight:700; margin-top:14px; text-align:left;">
-                🎁 HƏDİYYƏ GÖNDƏR <span style="color:#fbbf24;">(VIP: basılı saxla)</span>
-            </div>
-            <div id="giftsGrid" class="gifts-grid"></div>
+  <!-- ÖPÜŞ MODALI -->
+  <div class="modal-backdrop" id="kissModal">
+    <div class="action-card">
+      <h3 style="color: var(--accent-gold); font-size: 16px;">Şüşə Dayandı!</h3>
+      <div class="duel-avatars">
+        <div>
+          <div class="duel-pic" id="spinnerAvatar">😎</div>
+          <span id="spinnerName" style="font-size:12px;font-weight:700;">| A | L | İ | K |</span>
         </div>
-    </div>
-
-    <!-- 3. MASA (OTAQ) SEÇİMİ MODALI -->
-    <div id="roomSwitcherModal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('open')">
-        <div class="modal-card">
-            <div class="modal-top">
-                <span style="font-weight:800; font-size:17px;">Masalar</span>
-                <button class="close-x" onclick="document.getElementById('roomSwitcherModal').classList.remove('open')">✕</button>
-            </div>
-            <div class="room-option" onclick="selectRoomFromModal('masa_1')">
-                <span>🍾 Masa #1 (Ümumi)</span>
-                <span style="color:#818cf8;">Keç ›</span>
-            </div>
-            <div class="room-option" onclick="selectRoomFromModal('masa_2')">
-                <span>🔥 Masa #2 (Bakı Gecələri)</span>
-                <span style="color:#818cf8;">Keç ›</span>
-            </div>
-            <div class="room-option" onclick="selectRoomFromModal('masa_3')">
-                <span>💎 Masa #3 (Tanışlıq)</span>
-                <span style="color:#818cf8;">Keç ›</span>
-            </div>
-            <div class="room-option" style="border-color:rgba(245,185,66,0.45);" onclick="selectRoomFromModal('masa_511')">
-                <span style="color:#fbbf24;">👑 Masa #511 (Xüsusi Masa)</span>
-                <span style="color:#fbbf24;">Keç ›</span>
-            </div>
+        <div style="font-size:28px;">💋</div>
+        <div>
+          <div class="duel-pic" id="targetAvatar">💃</div>
+          <span id="targetName" style="font-size:12px;font-weight:700;">Aysel</span>
         </div>
+      </div>
+      <p style="font-size: 13px; color: #f1c6d9;" id="duelText">Öpüş göndərmək istəyirsən?</p>
+      <div class="action-buttons">
+        <button class="btn-kiss" onclick="confirmKiss()">💋 Öpüş göndər</button>
+        <button class="btn-gift-alt" onclick="closeKissModal(); openGiftModal();">🎁 Hədiyyə göndər</button>
+        <button class="btn-refuse" onclick="refuseKiss()">❌ İmtina et</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        function selectRoomFromModal(roomId) {
-            document.getElementById('roomSwitcherModal').classList.remove('open');
-            if (window.switchRoom) {
-                window.switchRoom(roomId);
+  <!-- HƏDİYYƏ MAĞAZASI -->
+  <div class="modal-backdrop" id="giftModal">
+    <div class="action-card">
+      <h3 style="color: var(--accent-gold); font-size: 16px;">🎁 Hədiyyə Mağazası</h3>
+      <div class="gift-grid">
+        <div class="gift-item" onclick="sendGift('Qızılgül', '🌹', 25)">
+          <div style="font-size:26px;">🌹</div>
+          <div style="font-size:11px;font-weight:700;margin-top:3px;">Qızılgül</div>
+          <div style="font-size:11px;color:var(--accent-gold);">25 ❤️</div>
+        </div>
+        <div class="gift-item" onclick="sendGift('Öpüş Yağışı', '💋', 50)">
+          <div style="font-size:26px;">💋</div>
+          <div style="font-size:11px;font-weight:700;margin-top:3px;">Öpüş</div>
+          <div style="font-size:11px;color:var(--accent-gold);">50 ❤️</div>
+        </div>
+        <div class="gift-item" onclick="sendGift('Şampan', '🍾', 100)">
+          <div style="font-size:26px;">🍾</div>
+          <div style="font-size:11px;font-weight:700;margin-top:3px;">Şampan</div>
+          <div style="font-size:11px;color:var(--accent-gold);">100 ❤️</div>
+        </div>
+        <div class="gift-item" onclick="sendGift('Brilyant', '💍', 250)">
+          <div style="font-size:26px;">💍</div>
+          <div style="font-size:11px;font-weight:700;margin-top:3px;">Brilyant</div>
+          <div style="font-size:11px;color:var(--accent-gold);">250 ❤️</div>
+        </div>
+        <div class="gift-item" onclick="sendGift('Qızıl Tac', '👑', 500)">
+          <div style="font-size:26px;">👑</div>
+          <div style="font-size:11px;font-weight:700;margin-top:3px;">Tac</div>
+          <div style="font-size:11px;color:var(--accent-gold);">500 ❤️</div>
+        </div>
+        <div class="gift-item" onclick="sendGift('BMW E39', '🚘', 750)">
+          <div style="font-size:26px;">🚘</div>
+          <div style="font-size:11px;font-weight:700;margin-top:3px;">BMW E39</div>
+          <div style="font-size:11px;color:var(--accent-gold);">750 ❤️</div>
+        </div>
+      </div>
+      <button class="btn-refuse" style="width:100%;" onclick="closeGiftModal()">Bağla</button>
+    </div>
+  </div>
+
+  <script>
+    const SEAT_COORDS = [
+      { top: 10, left: 50 }, { top: 15, left: 72 }, { top: 30, left: 90 },
+      { top: 50, left: 95 }, { top: 70, left: 90 }, { top: 85, left: 72 },
+      { top: 90, left: 50 }, { top: 85, left: 28 }, { top: 70, left: 10 },
+      { top: 50, left: 5  }, { top: 30, left: 10 }, { top: 15, left: 28 }
+    ];
+
+    const ME = { id: 1836, name: "| A | L | İ | K |", avatar: "😎", kisses: 48, coins: 1250, vip: true };
+
+    let seats = [
+      { id: 101, name: "Nərgiz", avatar: "💃", kisses: 64, vip: true },
+      { id: 102, name: "Tural_07", avatar: "🦁", kisses: 29, vip: false },
+      { id: 103, name: "Ləman", avatar: "🌸", kisses: 81, vip: true },
+      null,
+      { id: 104, name: "Kamran", avatar: "🔥", kisses: 19, vip: false },
+      { id: 105, name: "Aylin", avatar: "🦋", kisses: 53, vip: true },
+      ME,
+      { id: 106, name: "Rəşad", avatar: "🐺", kisses: 37, vip: false },
+      { id: 107, name: "Səbinə", avatar: "✨", kisses: 72, vip: true },
+      null,
+      { id: 108, name: "Elvin", avatar: "⚡", kisses: 41, vip: false },
+      { id: 109, name: "Mədinə", avatar: "💎", kisses: 95, vip: true }
+    ];
+
+    let activeTurnIndex = 6;
+    let selectedTargetIndex = null;
+    let currentAngle = 0;
+    let isSpinning = false;
+
+    function renderTable() {
+      const wrapper = document.getElementById("tableWrapper");
+      wrapper.querySelectorAll(".seat").forEach(el => el.remove());
+
+      SEAT_COORDS.forEach((pos, idx) => {
+        const player = seats[idx];
+        const seatEl = document.createElement("div");
+        seatEl.className = "seat";
+        if (idx === activeTurnIndex) seatEl.classList.add("active-turn");
+        if (idx === selectedTargetIndex) seatEl.classList.add("target-selected");
+        seatEl.style.top = pos.top + "%";
+        seatEl.style.left = pos.left + "%";
+
+        if (player) {
+          const isMe = player.id === ME.id;
+          seatEl.innerHTML = `
+            <div class="avatar-ring">
+              ${player.vip ? '<span class="vip-crown">👑</span>' : ''}
+              <div class="avatar-img">${player.avatar}</div>
+              <span class="kiss-badge">💋${player.kisses}</span>
+            </div>
+            <div class="player-name ${isMe ? 'me' : ''}">${player.name}</div>
+          `;
+          seatEl.onclick = () => {
+            if (!isMe) {
+              selectedTargetIndex = idx;
+              renderTable();
+              addChatMessage("Sistem", `${player.name} seçildi.`, true);
             }
+          };
+        } else {
+          seatEl.innerHTML = `
+            <div class="empty-slot">+</div>
+            <div class="player-name" style="color:#aaa;">Boş yer</div>
+          `;
+          seatEl.onclick = () => {
+            const oldIdx = seats.findIndex(p => p && p.id === ME.id);
+            if (oldIdx !== -1) seats[oldIdx] = null;
+            seats[idx] = ME;
+            renderTable();
+          };
         }
-    </script>
-    <script type="module" src="./js/butulka.js"></script>
+        wrapper.appendChild(seatEl);
+      });
+    }
+
+    function spinBottle() {
+      if (isSpinning) return;
+      const candidates = seats.map((p, idx) => ({ p, idx })).filter(item => item.p && item.idx !== activeTurnIndex);
+      if (candidates.length === 0) return;
+
+      isSpinning = true;
+      selectedTargetIndex = null;
+      renderTable();
+
+      const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+      const targetPos = SEAT_COORDS[chosen.idx];
+      const dx = targetPos.left - 50;
+      const dy = targetPos.top - 50;
+      let targetDeg = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+      if (targetDeg < 0) targetDeg += 360;
+
+      currentAngle += 360 * 5 + (targetDeg - (currentAngle % 360) + 360) % 360;
+      document.getElementById("bottleEl").style.transform = `rotate(${currentAngle}deg)`;
+
+      setTimeout(() => {
+        isSpinning = false;
+        selectedTargetIndex = chosen.idx;
+        renderTable();
+        openKissModal(seats[activeTurnIndex], chosen.p);
+      }, 3700);
+    }
+
+    function openKissModal(spinner, target) {
+      document.getElementById("spinnerAvatar").textContent = spinner.avatar;
+      document.getElementById("spinnerName").textContent = spinner.name;
+      document.getElementById("targetAvatar").textContent = target.avatar;
+      document.getElementById("targetName").textContent = target.name;
+      document.getElementById("kissModal").classList.add("open");
+    }
+
+    function closeKissModal() { document.getElementById("kissModal").classList.remove("open"); }
+
+    function confirmKiss() {
+      ME.kisses += 1;
+      document.getElementById("myKisses").textContent = ME.kisses;
+      closeKissModal();
+      spawnHearts("💋", 10);
+      addChatMessage("Sistem", `💋 Öpüş uğurla baş tutdu!`, true);
+      renderTable();
+    }
+
+    function refuseKiss() {
+      closeKissModal();
+      addChatMessage("Sistem", `Öpüşdən imtina edildi.`, true);
+    }
+
+    function openGiftModal() { document.getElementById("giftModal").classList.add("open"); }
+    function closeGiftModal() { document.getElementById("giftModal").classList.remove("open"); }
+
+    function sendGift(name, emoji, cost) {
+      if (ME.coins < cost) { alert("Balansda ürək kifayət etmir!"); return; }
+      ME.coins -= cost;
+      document.getElementById("myCoins").textContent = ME.coins;
+      closeGiftModal();
+      spawnHearts(emoji, 12);
+      addChatMessage("Sistem", `🎁 "${name}" ${emoji} hədiyyə göndərildi!`, true);
+    }
+
+    function sendChat() {
+      const input = document.getElementById("chatInput");
+      if (!input.value.trim()) return;
+      addChatMessage(ME.name, input.value, false);
+      input.value = "";
+    }
+
+    function quickReaction(emoji) {
+      spawnHearts(emoji, 6);
+      addChatMessage(ME.name, emoji, false);
+    }
+
+    function addChatMessage(author, text, isSys) {
+      const box = document.getElementById("chatBox");
+      const div = document.createElement("div");
+      div.className = "msg-line" + (isSys ? " system" : "");
+      div.innerHTML = isSys ? text : `<span class="msg-author">${author}:</span>${text}`;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function spawnHearts(sym, count) {
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          const el = document.createElement("div");
+          el.className = "floating-heart";
+          el.textContent = sym;
+          el.style.left = (30 + Math.random() * 40) + "vw";
+          el.style.top = (45 + Math.random() * 20) + "vh";
+          document.body.appendChild(el);
+          setTimeout(() => el.remove(), 1800);
+        }, i * 100);
+      }
+    }
+
+    renderTable();
+  </script>
 </body>
 </html>
