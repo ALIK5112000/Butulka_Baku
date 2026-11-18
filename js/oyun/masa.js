@@ -1,7 +1,7 @@
-import { db, auth } from "../core/firebase.js";
-import { MASA_NOMRESI, OTURACAQ_SAYI, ISTIFADECI_YOLU, AD_SAHELERI, SEKIL_SAHELERI } from "../core/config.js";
+import { rtdb, fsdb } from "../core/firebase.js";
+import { MASA_NOMRESI, OTURACAQ_SAYI } from "../core/config.js";
 import { ref, get, onValue, onDisconnect, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const yol = `masalar/${MASA_NOMRESI}/oturacaqlar`;
 const masa = document.getElementById("masa");
@@ -15,21 +15,16 @@ for (let i = 0; i < OTURACAQ_SAYI; i++) {
   yerler.push(d);
 }
 
-function sahe(obj, adlar, def) {
-  for (const a of adlar) if (obj && obj[a]) return obj[a];
-  return def;
-}
-
 async function oturacaqTap(oyuncu) {
-  const hamisi = (await get(ref(db, yol))).val() || {};
+  const hamisi = (await get(ref(rtdb, yol))).val() || {};
   for (const k in hamisi) {
     if (hamisi[k] && hamisi[k].uid === oyuncu.uid) {
-      onDisconnect(ref(db, `${yol}/${k}`)).remove();
+      onDisconnect(ref(rtdb, `${yol}/${k}`)).remove();
       return;
     }
   }
   for (let i = 0; i < OTURACAQ_SAYI; i++) {
-    const r = ref(db, `${yol}/${i}`);
+    const r = ref(rtdb, `${yol}/${i}`);
     const netice = await runTransaction(r, (cur) => (cur ? undefined : oyuncu));
     if (netice.committed) {
       onDisconnect(r).remove(); // çıxanda yer avtomatik boşalır
@@ -51,16 +46,25 @@ function cizdir(data) {
   });
 }
 
-export function masaniBasla() {
-  onValue(ref(db, yol), (s) => cizdir(s.val() || {}));
+export async function masaniBasla() {
+  let cari = null;
+  try { cari = JSON.parse(localStorage.getItem("currentUser")); } catch (e) {}
+  if (!cari || !cari.docId) { location.href = "index.html"; return; }
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) { location.href = "index.html"; return; }
-    const profil = (await get(ref(db, `${ISTIFADECI_YOLU}/${user.uid}`))).val() || {};
+  try {
+    onValue(ref(rtdb, yol), (s) => cizdir(s.val() || {}));
+
+    const snap = await getDoc(doc(fsdb, "users", cari.docId));
+    if (!snap.exists()) { location.href = "index.html"; return; }
+    const p = snap.data();
+
     await oturacaqTap({
-      uid: user.uid,
-      ad: sahe(profil, AD_SAHELERI, user.displayName || "Oyunçu"),
-      sekil: sahe(profil, SEKIL_SAHELERI, user.photoURL || "")
+      uid: cari.docId,
+      ad: p.username || "Oyunçu",
+      sekil: p.avatar || "",
+      vip: !!p.vip
     });
-  });
+  } catch (e) {
+    alert("Masa xətası: " + e.message);
+  }
 }
