@@ -20,9 +20,27 @@ if (cari && cari.docId) {
   onValue(ref(rtdb, B + "/opus"), (s) => { opus = s.val() || {}; });
   onDisconnect(ref(rtdb, B + "/opus/" + cari.docId)).remove();
 
+  // Oxlar (üst ox: soldakının seçimi, alt ox: sağdakının seçimi)
+  masa.insertAdjacentHTML("beforeend",
+    '<div id="oxlar"><svg viewBox="0 0 44 42"><defs>' +
+    '<marker id="mK" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="2" markerHeight="2" orient="auto"><path d="M0 0L10 5L0 10z" fill="#e03d1c"/></marker>' +
+    '<marker id="mY" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="2" markerHeight="2" orient="auto"><path d="M0 0L10 5L0 10z" fill="#9bcc34"/></marker>' +
+    '</defs><path id="oxU" class="xett" d="M9.6 11 Q22 -3 34.4 11"/><path id="oxA" class="xett" d="M34.4 31 Q22 40 9.6 31"/></svg>' +
+    '<div id="bdU" class="bd"></div><div id="bdA" class="bd"></div></div>');
+
+  function ox(pid, bid, v) {
+    const p = $(pid), b = $(bid);
+    if (!v) { p.style.display = "none"; b.style.display = "none"; return; }
+    p.style.display = "";
+    p.setAttribute("stroke", v === "op" ? "#9bcc34" : "#e03d1c");
+    p.setAttribute("marker-end", v === "op" ? "url(#mY)" : "url(#mK)");
+    b.style.display = "flex"; b.className = "bd " + v;
+    b.textContent = v === "op" ? "💋" : "✖";
+  }
+
   function yarat() {
     const d = document.createElement("div"); d.className = "orta";
-    d.innerHTML = '<div class="foto"></div><div class="ad"></div><div class="durum"></div>';
+    d.innerHTML = '<div class="foto"></div><div class="ad"></div>';
     masa.appendChild(d); return d;
   }
   const oQ = yarat(), oO = yarat();
@@ -41,11 +59,6 @@ if (cari && cari.docId) {
   function geri(d, i) {
     const [x, z] = YER_XY[i]; d.style.left = x + "vw"; d.style.top = z + "vw";
     setTimeout(() => d.classList.remove("goster"), 700);
-  }
-  function durum(d, v) {
-    const x = d.querySelector(".durum");
-    x.className = "durum" + (v ? " " + v : "");
-    x.textContent = v === "op" ? "💋" : v === "yox" ? "✖" : "";
   }
 
   function kadr() {
@@ -96,7 +109,9 @@ if (cari && cari.docId) {
     const sec = aktiv && raund.sec ? raund.sec : {};
     const goster = cut && men && !sec[cari.docId] && secildi !== raund.bas;
     $("dugmeler").style.display = $("sizinSecim").style.display = goster ? "block" : "none";
-    if (aktiv) { durum(oQ, sec[raund.qu]); durum(oO, sec[raund.ou]); }
+
+    $("oxlar").style.display = cut ? "block" : "none";
+    if (cut) { ox("oxU", "bdU", sec[raund.qu]); ox("oxA", "bdA", sec[raund.ou]); }
 
     for (let i = 0; i < 12; i++) {
       const e = document.querySelector(".yer-" + i + " .foto"); if (!e) continue;
@@ -118,7 +133,7 @@ if (cari && cari.docId) {
   $("btnOp").onclick = () => sec("op");
   $("btnImtina").onclick = () => sec("yox");
 
-  // Raundu yalnız masadakı ən kiçik nömrəli oyunçu idarə edir (təkrar olmasın deyə)
+  // Raundu yalnız masadakı ən kiçik nömrəli oyunçu idarə edir
   const rnd = (a) => a[Math.floor(Math.random() * a.length)];
   setInterval(() => {
     if (hazir < 3) return;
@@ -141,4 +156,4 @@ if (cari && cari.docId) {
       });
     }
   }, 1000);
-        }
+}
