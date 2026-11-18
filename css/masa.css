@@ -12,8 +12,10 @@
 
 #butulka {
   position: absolute; left: 50%; top: 49%;
-  transform: translate(-50%, -50%);
-  font-size: 22vw; line-height: 1;
+  height: 30vw; width: auto;
+  transform: translate(-50%, -50%) rotate(25deg);
+  filter: drop-shadow(0 1.5vw 1.5vw rgba(0,0,0,.35));
+  transition: transform 3s cubic-bezier(.15, .8, .2, 1);
 }
 
 .yer {
