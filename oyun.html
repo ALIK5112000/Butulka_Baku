@@ -1,37 +1,303 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Butulka Baku</title>
-  <!-- Açılış və yükləmə ekranının dizayn faylı -->
-  <link rel="stylesheet" href="css/acilis.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Butulka Baku - Oyun Masası</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a0f00;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: white;
+        }
+
+        .game-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid #ffcc00;
+        }
+
+        .play-area {
+            flex: 2;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Masa (images/masa/taxta.png) */
+        .table-bg {
+            width: 500px;
+            height: 500px;
+            background-image: url('images/masa/taxta.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: relative;
+            border-radius: 50%;
+        }
+
+        /* Butulka (images/masa/butulka.jpg) */
+        .bottle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 55px;
+            height: 130px;
+            background-image: url('images/masa/butulka.jpg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transform: translate(-50%, -50%) rotate(0deg);
+            transform-origin: center center;
+            transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
+            z-index: 10;
+            mix-blend-mode: multiply;
+        }
+
+        .player {
+            position: absolute;
+            width: 70px;
+            height: 95px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            transition: transform 0.3s;
+        }
+        .player img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #ffcc00;
+            object-fit: cover;
+            background-color: #444;
+        }
+        .player .name {
+            font-size: 11px;
+            background: rgba(0,0,0,0.8);
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-top: 4px;
+            white-space: nowrap;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .p1 { top: 5%; left: 50%; transform: translateX(-50%); }
+        .p2 { top: 12%; left: 73%; }
+        .p3 { top: 28%; left: 88%; }
+        .p4 { top: 50%; left: 91%; transform: translateY(-50%); }
+        .p5 { bottom: 28%; left: 88%; }
+        .p6 { bottom: 12%; left: 73%; }
+        .p7 { bottom: 5%; left: 50%; transform: translateX(-50%); }
+        .p8 { bottom: 12%; left: 16%; }
+        .p9 { bottom: 28%; left: 3%; }
+        .p10 { top: 50%; left: 0%; transform: translateY(-50%); }
+        .p11 { top: 28%; left: 3%; }
+        .p12 { top: 12%; left: 16%; }
+
+        .player.active img {
+            border-color: #00ff00;
+            box-shadow: 0 0 15px #00ff00;
+            transform: scale(1.1);
+        }
+
+        .spin-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #ffcc00, #ff9900);
+            color: #000;
+            border: none;
+            padding: 12px 35px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 12;
+        }
+
+        .chat-area {
+            flex: 1;
+            background: rgba(15, 10, 5, 0.9);
+            border-left: 2px solid #ffcc00;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .chat-header {
+            padding: 15px;
+            background: rgba(255, 204, 0, 0.1);
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid #ffcc00;
+            color: #ffcc00;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .msg { font-size: 14px; line-height: 1.4; word-break: break-word; }
+        .name-oglan { color: #3399ff; font-weight: bold; }
+        .name-qiz { color: #ff66cc; font-weight: bold; }
+        .name-vip-oglan { color: #1a53ff; font-weight: bold; }
+        .name-vip-qiz { color: #ff1a1a; font-weight: bold; }
+
+        .chat-input-area {
+            padding: 10px;
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid rgba(255, 204, 0, 0.3);
+        }
+        .chat-input {
+            flex: 1;
+            background: #222;
+            border: 1px solid #ffcc00;
+            border-radius: 20px;
+            padding: 10px 15px;
+            color: white;
+            outline: none;
+        }
+        .send-btn {
+            background: #ffcc00;
+            border: none;
+            color: black;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .game-container { flex-direction: column; height: 100vh; border-radius: 0; border: none; }
+            .play-area { flex: 1.5; }
+            .table-bg { width: 320px; height: 320px; }
+            .chat-area { flex: 1; border-left: none; border-top: 2px solid #ffcc00; }
+            .player { width: 50px; height: 70px; }
+            .player img { width: 45px; height: 45px; }
+            .player .name { font-size: 9px; max-width: 50px; }
+        }
+    </style>
 </head>
 <body>
 
-  <!-- AÇILIŞ VƏ YÜKLƏMƏ EKRANI (1-ci və 2-ci şəkil bir yerdə) -->
-  <div id="splashScreen" class="splash-screen">
-    <!-- Arxa fondakı naxışlar (tac, ürək, not, öpüş, hədiyyə, şüşə) -->
-    <div class="pattern-overlay"></div>
+    <div class="game-container">
+        <div class="play-area">
+            <div class="table-bg" id="table">
+                <div class="bottle" id="bottle"></div>
 
-    <!-- 1-ci mərhələ: Yükləmə çubuğu -->
-    <div id="loadingStage" class="loading-stage">
-      <div class="progress-bar-outer">
-        <div id="progressFill" class="progress-bar-inner"></div>
-      </div>
+                <div class="player p1 active"><img src="https://via.placeholder.com/60" alt=""><span class="name name-vip-oglan">ALIK</span></div>
+                <div class="player p2"><img src="https://via.placeholder.com/60" alt=""><span class="name name-qiz">Nura</span></div>
+                <div class="player p3"><img src="https://via.placeholder.com/60" alt=""><span class="name name-oglan">Elnur</span></div>
+                <div class="player p4"><img src="https://via.placeholder.com/60" alt=""><span class="name name-vip-qiz">Ayan (VIP)</span></div>
+                <div class="player p5"><img src="https://via.placeholder.com/60" alt=""><span class="name name-oglan">Ramil</span></div>
+                <div class="player p6"><img src="https://via.placeholder.com/60" alt=""><span class="name name-qiz">Ləman</span></div>
+                <div class="player p7"><img src="https://via.placeholder.com/60" alt=""><span class="name name-oglan">Murad</span></div>
+                <div class="player p8"><img src="https://via.placeholder.com/60" alt=""><span class="name name-qiz">Fidan</span></div>
+                <div class="player p9"><img src="https://via.placeholder.com/60" alt=""><span class="name name-vip-oglan">Seymur</span></div>
+                <div class="player p10"><img src="https://via.placeholder.com/60" alt=""><span class="name name-oglan">Vasif</span></div>
+                <div class="player p11"><img src="https://via.placeholder.com/60" alt=""><span class="name name-qiz">Günel</span></div>
+                <div class="player p12"><img src="https://via.placeholder.com/60" alt=""><span class="name name-qiz">Aysel</span></div>
+            </div>
+
+            <button class="spin-btn" onclick="spinBottle()">Fırlat</button>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-header">Masa Çatı - Masa 511</div>
+            <div class="chat-messages" id="chatBox">
+                <div class="msg"><span class="name-vip-oglan">ALIK:</span> Salam uşaqlar, xoş gəldiniz! 🚀</div>
+                <div class="msg"><span class="name-qiz">Nura:</span> Salam hər kəsə, uğurlu oyunlar 😊</div>
+                <div class="msg"><span class="name-vip-qiz">Ayan (VIP):</span> Kim fırladır?</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="msgInput" placeholder="Mesaj yazın...">
+                <button class="send-btn" onclick="sendMessage()">></button>
+            </div>
+        </div>
     </div>
 
-    <!-- 2-ci mərhələ: BUTULKA BAKU loqo yazısı -->
-    <div id="titleStage" class="title-stage hidden">
-      <div class="game-logo-top">BUTULKA</div>
-      <div class="game-logo-bottom">BAKU</div>
-    </div>
-  </div>
+    <script>
+        let currentRotation = 0;
+        let isSpinning = false;
 
-  <!-- Növbəti addımda bura 12 nəfərlik masa gələcək -->
-  <div id="gameContainer" class="game-container hidden"></div>
+        function spinBottle() {
+            if (isSpinning) return;
+            isSpinning = true;
 
-  <!-- Açılış ekranının işləmə kodu -->
-  <script src="js/acilis.js"></script>
+            const bottle = document.getElementById('bottle');
+            const randomPlayerIndex = Math.floor(Math.random() * 12) + 1;
+            const targetDegrees = (randomPlayerIndex - 1) * 30;
+            const extraSpins = 1800; 
+            currentRotation += extraSpins + targetDegrees - (currentRotation % 360);
+
+            bottle.style.transform = `translate(-50%, -50%) rotate(${currentRotation}deg)`;
+            document.querySelectorAll('.player').forEach(p => p.classList.remove('active'));
+
+            setTimeout(() => {
+                isSpinning = false;
+                const luckyPlayer = document.querySelector(`.p${randomPlayerIndex}`);
+                if (luckyPlayer) {
+                    luckyPlayer.classList.add('active');
+                    const playerName = luckyPlayer.querySelector('.name').innerText;
+                    addSystemMessage(`Butulka ${playerName} üzərində dayandı! 🎯`);
+                }
+            }, 4000);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('msgInput');
+            const chatBox = document.getElementById('chatBox');
+            if (input.value.trim() === "") return;
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'msg';
+            msgDiv.innerHTML = `<span class="name-vip-oglan">ALIK:</span> ${input.value}`;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            input.value = "";
+        }
+
+        function addSystemMessage(text) {
+            const chatBox = document.getElementById('chatBox');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'msg';
+            msgDiv.style.fontStyle = 'italic';
+            msgDiv.style.color = '#ffcc00';
+            msgDiv.innerHTML = `<strong>Sistem:</strong> ${text}`;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        document.getElementById('msgInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
 </body>
 </html>
