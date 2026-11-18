@@ -2,63 +2,63 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Butulka Baku - Oyun Masası</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body {
-            font-family: Arial, sans-serif;
-            background-color: #1a0f00;
+            background: #120c06;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            color: white;
+            color: #fff;
         }
-
         .game-container {
             display: flex;
             width: 100%;
             max-width: 1200px;
-            height: 90vh;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 20px;
-            overflow: hidden;
-            border: 2px solid #ffcc00;
+            height: 100vh;
+            background: #1a1108;
         }
-
         .play-area {
-            flex: 2;
+            flex: 1.6;
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
+            background: radial-gradient(circle, #2e1d0e 0%, #120c06 100%);
         }
-
-        /* Masa (images/masa/taxta.png) */
+        .back-btn {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #ffcc00;
+            color: #ffcc00;
+            padding: 7px 14px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            z-index: 20;
+        }
         .table-bg {
-            width: 500px;
-            height: 500px;
+            width: 440px;
+            height: 440px;
             background-image: url('images/masa/taxta.png');
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             position: relative;
-            border-radius: 50%;
         }
-
-        /* Butulka (images/masa/butulka.jpg) */
         .bottle {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 55px;
-            height: 130px;
+            width: 50px;
+            height: 125px;
             background-image: url('images/masa/butulka.jpg');
             background-size: contain;
             background-repeat: no-repeat;
@@ -69,181 +69,187 @@
             z-index: 10;
             mix-blend-mode: multiply;
         }
-
         .player {
             position: absolute;
-            width: 70px;
-            height: 95px;
+            width: 68px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             z-index: 5;
-            transition: transform 0.3s;
+            transition: 0.3s;
         }
         .player img {
-            width: 60px;
-            height: 60px;
+            width: 54px;
+            height: 54px;
             border-radius: 50%;
-            border: 3px solid #ffcc00;
+            border: 2.5px solid #ffcc00;
             object-fit: cover;
-            background-color: #444;
+            background: #333;
         }
         .player .name {
             font-size: 11px;
-            background: rgba(0,0,0,0.8);
-            padding: 2px 6px;
+            background: rgba(0,0,0,0.85);
+            padding: 2px 7px;
             border-radius: 10px;
-            margin-top: 4px;
-            white-space: nowrap;
-            max-width: 80px;
+            margin-top: 3px;
+            max-width: 75px;
             overflow: hidden;
             text-overflow: ellipsis;
-            border: 1px solid rgba(255,255,255,0.2);
+            white-space: nowrap;
         }
-
-        .p1 { top: 5%; left: 50%; transform: translateX(-50%); }
-        .p2 { top: 12%; left: 73%; }
-        .p3 { top: 28%; left: 88%; }
+        .p1 { top: 2%; left: 50%; transform: translateX(-50%); }
+        .p2 { top: 10%; left: 74%; }
+        .p3 { top: 27%; left: 88%; }
         .p4 { top: 50%; left: 91%; transform: translateY(-50%); }
-        .p5 { bottom: 28%; left: 88%; }
-        .p6 { bottom: 12%; left: 73%; }
-        .p7 { bottom: 5%; left: 50%; transform: translateX(-50%); }
-        .p8 { bottom: 12%; left: 16%; }
-        .p9 { bottom: 28%; left: 3%; }
-        .p10 { top: 50%; left: 0%; transform: translateY(-50%); }
-        .p11 { top: 28%; left: 3%; }
-        .p12 { top: 12%; left: 16%; }
+        .p5 { bottom: 27%; left: 88%; }
+        .p6 { bottom: 10%; left: 74%; }
+        .p7 { bottom: 2%; left: 50%; transform: translateX(-50%); }
+        .p8 { bottom: 10%; left: 14%; }
+        .p9 { bottom: 27%; left: 1%; }
+        .p10 { top: 50%; left: -2%; transform: translateY(-50%); }
+        .p11 { top: 27%; left: 1%; }
+        .p12 { top: 10%; left: 14%; }
 
         .player.active img {
-            border-color: #00ff00;
-            box-shadow: 0 0 15px #00ff00;
-            transform: scale(1.1);
+            border-color: #22c55e;
+            box-shadow: 0 0 18px #22c55e;
+            transform: scale(1.12);
         }
-
         .spin-btn {
             position: absolute;
-            bottom: 30px;
+            bottom: 16px;
             left: 50%;
             transform: translateX(-50%);
-            background: linear-gradient(135deg, #ffcc00, #ff9900);
+            background: linear-gradient(135deg, #ffcc00, #f97316);
             color: #000;
             border: none;
-            padding: 12px 35px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 30px;
+            padding: 11px 34px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 25px;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            z-index: 12;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.45);
+            z-index: 15;
         }
-
         .chat-area {
             flex: 1;
-            background: rgba(15, 10, 5, 0.9);
-            border-left: 2px solid #ffcc00;
+            background: #110c07;
+            border-left: 1px solid rgba(255, 204, 0, 0.25);
             display: flex;
             flex-direction: column;
-            height: 100%;
         }
         .chat-header {
-            padding: 15px;
-            background: rgba(255, 204, 0, 0.1);
-            font-weight: bold;
+            padding: 12px;
+            background: rgba(255, 204, 0, 0.08);
+            font-weight: 700;
             text-align: center;
-            border-bottom: 1px solid #ffcc00;
+            border-bottom: 1px solid rgba(255, 204, 0, 0.2);
             color: #ffcc00;
+            font-size: 14px;
         }
         .chat-messages {
             flex: 1;
-            padding: 15px;
+            padding: 12px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
-        .msg { font-size: 14px; line-height: 1.4; word-break: break-word; }
-        .name-oglan { color: #3399ff; font-weight: bold; }
-        .name-qiz { color: #ff66cc; font-weight: bold; }
-        .name-vip-oglan { color: #1a53ff; font-weight: bold; }
-        .name-vip-qiz { color: #ff1a1a; font-weight: bold; }
+        .msg { font-size: 13px; line-height: 1.4; word-break: break-word; }
+        .name-oglan { color: #38bdf8; font-weight: 700; }
+        .name-qiz { color: #f472b6; font-weight: 700; }
+        .name-vip-oglan { color: #2563eb; font-weight: 800; }
+        .name-vip-qiz { color: #ef4444; font-weight: 800; }
 
         .chat-input-area {
-            padding: 10px;
+            padding: 8px;
             display: flex;
-            gap: 8px;
-            border-top: 1px solid rgba(255, 204, 0, 0.3);
+            gap: 6px;
+            border-top: 1px solid rgba(255, 204, 0, 0.2);
         }
         .chat-input {
             flex: 1;
-            background: #222;
-            border: 1px solid #ffcc00;
+            background: #221910;
+            border: 1px solid rgba(255, 204, 0, 0.4);
             border-radius: 20px;
-            padding: 10px 15px;
-            color: white;
+            padding: 9px 14px;
+            color: #fff;
             outline: none;
+            font-size: 14px;
         }
         .send-btn {
             background: #ffcc00;
             border: none;
-            color: black;
-            width: 40px;
-            height: 40px;
+            color: #000;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 800;
         }
-
         @media (max-width: 768px) {
-            .game-container { flex-direction: column; height: 100vh; border-radius: 0; border: none; }
-            .play-area { flex: 1.5; }
-            .table-bg { width: 320px; height: 320px; }
-            .chat-area { flex: 1; border-left: none; border-top: 2px solid #ffcc00; }
-            .player { width: 50px; height: 70px; }
-            .player img { width: 45px; height: 45px; }
-            .player .name { font-size: 9px; max-width: 50px; }
+            .game-container { flex-direction: column; }
+            .play-area { flex: 1.45; }
+            .table-bg { width: 310px; height: 310px; }
+            .chat-area { flex: 1; border-left: none; border-top: 1px solid rgba(255, 204, 0, 0.25); }
+            .player { width: 52px; }
+            .player img { width: 42px; height: 42px; }
+            .player .name { font-size: 9px; max-width: 52px; }
         }
     </style>
 </head>
 <body>
-
     <div class="game-container">
         <div class="play-area">
-            <div class="table-bg" id="table">
+            <button class="back-btn" onclick="window.location.href='profil.html'">← Profil</button>
+            <div class="table-bg">
                 <div class="bottle" id="bottle"></div>
 
-                <div class="player p1 active"><img src="https://via.placeholder.com/60" alt=""><span class="name name-vip-oglan">ALIK</span></div>
-                <div class="player p2"><img src="https://via.placeholder.com/60" alt=""><span class="name name-qiz">Nura</span></div>
-                <div class="player p3"><img src="https://via.placeholder.com/60" alt=""><span class="name name-oglan">Elnur</span></div>
-                <div class="player p4"><img src="https://via.placeholder.com/60" alt=""><span class="name name-vip-qiz">Ayan (VIP)</span></div>
-                <div class="player p5"><img src="https://via.placeholder.com/60" alt=""><span class="name name-oglan">Ramil</span></div>
-                <div class="player p6"><img src="https://via.placeholder.com/60" alt=""><span class="name name-qiz">Ləman</span></div>
-                <div class="player p7"><img src="https://via.placeholder.com/60" alt=""><span class="name name-oglan">Murad</span></div>
-                <div class="player p8"><img src="https://via.placeholder.com/60" alt=""><span class="name name-qiz">Fidan</span></div>
-                <div class="player p9"><img src="https://via.placeholder.com/60" alt=""><span class="name name-vip-oglan">Seymur</span></div>
-                <div class="player p10"><img src="https://via.placeholder.com/60" alt=""><span class="name name-oglan">Vasif</span></div>
-                <div class="player p11"><img src="https://via.placeholder.com/60" alt=""><span class="name name-qiz">Günel</span></div>
-                <div class="player p12"><img src="https://via.placeholder.com/60" alt=""><span class="name name-qiz">Aysel</span></div>
+                <div class="player p1 active" id="seat1">
+                    <img id="mySeatAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="">
+                    <span class="name name-vip-oglan" id="mySeatName">Oyunçu</span>
+                </div>
+                <div class="player p2"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-qiz">Nura</span></div>
+                <div class="player p3"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-oglan">Elnur</span></div>
+                <div class="player p4"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-vip-qiz">Ayan 👑</span></div>
+                <div class="player p5"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-oglan">Ramil</span></div>
+                <div class="player p6"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-qiz">Ləman</span></div>
+                <div class="player p7"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-oglan">Murad</span></div>
+                <div class="player p8"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-qiz">Fidan</span></div>
+                <div class="player p9"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-vip-oglan">Seymur 👑</span></div>
+                <div class="player p10"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-oglan">Vasif</span></div>
+                <div class="player p11"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-qiz">Günel</span></div>
+                <div class="player p12"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-qiz">Aysel</span></div>
             </div>
-
             <button class="spin-btn" onclick="spinBottle()">Fırlat</button>
         </div>
 
         <div class="chat-area">
             <div class="chat-header">Masa Çatı - Masa 511</div>
-            <div class="chat-messages" id="chatBox">
-                <div class="msg"><span class="name-vip-oglan">ALIK:</span> Salam uşaqlar, xoş gəldiniz! 🚀</div>
-                <div class="msg"><span class="name-qiz">Nura:</span> Salam hər kəsə, uğurlu oyunlar 😊</div>
-                <div class="msg"><span class="name-vip-qiz">Ayan (VIP):</span> Kim fırladır?</div>
-            </div>
+            <div class="chat-messages" id="chatBox"></div>
             <div class="chat-input-area">
                 <input type="text" class="chat-input" id="msgInput" placeholder="Mesaj yazın...">
-                <button class="send-btn" onclick="sendMessage()">></button>
+                <button class="send-btn" onclick="sendMessage()">➤</button>
             </div>
         </div>
     </div>
 
     <script>
+        const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        const rawUser = localStorage.getItem("currentUser");
+        const me = rawUser ? JSON.parse(rawUser) : { username: "Qonaq", gender: "Kişi", vip: false };
+
+        const isVip = me.vip && (!me.vipUntil || Number(me.vipUntil) > Date.now());
+        const isFemale = me.gender === "Qadın";
+        const myColorClass = isVip
+            ? (isFemale ? "name-vip-qiz" : "name-vip-oglan")
+            : (isFemale ? "name-qiz" : "name-oglan");
+
+        document.getElementById("mySeatAvatar").src = me.avatar || DEFAULT_AVATAR;
+        const myNameEl = document.getElementById("mySeatName");
+        myNameEl.textContent = (isVip ? "👑 " : "") + me.username;
+        myNameEl.className = "name " + myColorClass;
+
         let currentRotation = 0;
         let isSpinning = false;
 
@@ -254,8 +260,7 @@
             const bottle = document.getElementById('bottle');
             const randomPlayerIndex = Math.floor(Math.random() * 12) + 1;
             const targetDegrees = (randomPlayerIndex - 1) * 30;
-            const extraSpins = 1800; 
-            currentRotation += extraSpins + targetDegrees - (currentRotation % 360);
+            currentRotation += 1800 + targetDegrees - (currentRotation % 360);
 
             bottle.style.transform = `translate(-50%, -50%) rotate(${currentRotation}deg)`;
             document.querySelectorAll('.player').forEach(p => p.classList.remove('active'));
@@ -278,7 +283,7 @@
 
             const msgDiv = document.createElement('div');
             msgDiv.className = 'msg';
-            msgDiv.innerHTML = `<span class="name-vip-oglan">ALIK:</span> ${input.value}`;
+            msgDiv.innerHTML = `<span class="${myColorClass}">${me.username}:</span> ${input.value}`;
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
             input.value = "";
@@ -288,16 +293,17 @@
             const chatBox = document.getElementById('chatBox');
             const msgDiv = document.createElement('div');
             msgDiv.className = 'msg';
-            msgDiv.style.fontStyle = 'italic';
             msgDiv.style.color = '#ffcc00';
             msgDiv.innerHTML = `<strong>Sistem:</strong> ${text}`;
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        document.getElementById('msgInput').addEventListener('keypress', function (e) {
+        document.getElementById('msgInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
+
+        addSystemMessage(`${me.username} masaya qoşuldu!`);
     </script>
 </body>
 </html>
