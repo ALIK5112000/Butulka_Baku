@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Butulka Baku</title>
+  <!-- Açılış və yükləmə ekranının dizayn faylı -->
+  <link rel="stylesheet" href="css/acilis.css" />
+</head>
+<body>
+
+  <!-- AÇILIŞ VƏ YÜKLƏMƏ EKRANI (1-ci və 2-ci şəkil bir yerdə) -->
+  <div id="splashScreen" class="splash-screen">
+    <!-- Arxa fondakı naxışlar (tac, ürək, not, öpüş, hədiyyə, şüşə) -->
+    <div class="pattern-overlay"></div>
+
+    <!-- 1-ci mərhələ: Yükləmə çubuğu -->
+    <div id="loadingStage" class="loading-stage">
+      <div class="progress-bar-outer">
+        <div id="progressFill" class="progress-bar-inner"></div>
+      </div>
+    </div>
+
+    <!-- 2-ci mərhələ: BUTULKA BAKU loqo yazısı -->
+    <div id="titleStage" class="title-stage hidden">
+      <div class="game-logo-top">BUTULKA</div>
+      <div class="game-logo-bottom">BAKU</div>
+    </div>
+  </div>
+
+  <!-- Növbəti addımda bura 12 nəfərlik masa gələcək -->
+  <div id="gameContainer" class="game-container hidden"></div>
+
+  <!-- Açılış ekranının işləmə kodu -->
+  <script src="js/acilis.js"></script>
+</body>
+</html>
