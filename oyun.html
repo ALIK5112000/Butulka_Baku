@@ -318,7 +318,7 @@
                     <button class="btn-green-pill" onclick="buyHeartsPackage(250, 270, this)">250</button>
                 </div>
 
-                <!-- 8-Cİ SAATLIK BONUS KARTI (TAYMER VƏ GÖTÜR DÜYMƏSİ İLƏ) -->
+                <!-- SAATLIK BONUS KARTI -->
                 <div class="h-card">
                     <div class="ribbon-tag" id="hourlyBonusSub">⏱ 60:00</div>
                     <div class="h-card-amount" id="hourlyBonusTitle">❤️ 100</div>
@@ -339,10 +339,11 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import {
-            getFirestore, doc, setDoc, getDoc, getDocs, updateDoc,
-            collection, addDoc, onSnapshot, query, where, orderBy, limit, increment
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        
+        // Modulları ayrıca fayllardan çağırırıq ki, heç vaxt qarışmasın!
+        import { initMasaOyun } from "./js/masa_oyun.js?v=1";
+        import { initHeartsShop } from "./js/urek_magaza.js?v=1";
         import { initHourlyBonus } from "./js/saatliq_bonus.js?v=1";
 
         const firebaseConfig = {
@@ -357,7 +358,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
         const rawUser = localStorage.getItem("currentUser");
         if (!rawUser) {
             window.location.href = "index.html";
@@ -382,15 +382,17 @@
             }, 2400);
         };
 
-        // Ürək mağazasını aç / bağla
-        window.openHeartsShop = function() {
-            document.getElementById("heartsShopOverlay").classList.add("open");
-        };
-        window.closeHeartsShop = function() {
-            document.getElementById("heartsShopOverlay").classList.remove("open");
-        };
+        // 1. Ürək Mağazası və Uçuş Modulu
+        initHeartsShop({
+            db,
+            getMyDocId: () => myDocId,
+            getLiveUserData: () => liveUserData,
+            showPlainToast: window.showPlainToast,
+            setAnimatingHearts: (val) => { isAnimatingHearts = val; },
+            setDisplayedHearts: (val) => { displayedHearts = val; }
+        });
 
-        // Saatlıq bonus modulunu işə salırıq
+        // 2. Saatlıq Bonus Modulu
         initHourlyBonus({
             db,
             getMyDocId: () => myDocId,
@@ -400,87 +402,13 @@
             setDisplayedHearts: (val) => { displayedHearts = val; }
         });
 
-        // Jeton paketləri alınması
-        let isBuying = false;
-        window.buyHeartsPackage = async function(jetonCost, heartsReward, btnEl) {
-            if (isBuying) return;
-            const currentJetons = Number(liveUserData.jetons || 0);
-            const oldHearts = Number(liveUserData.hearts || 0);
-
-            if (currentJetons < jetonCost) {
-                showPlainToast("Kifayət qədər jetonunuz yoxdur");
-                return;
-            }
-            if (!myDocId) {
-                showPlainToast("Hesab məlumatı tapılmadı");
-                return;
-            }
-
-            const targetIcon = document.getElementById("hudHeartIcon");
-            const numEl = document.getElementById("hudHearts");
-            const rect = btnEl ? btnEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 };
-            const startX = rect.left + rect.width / 2 - 11;
-            const startY = rect.top + rect.height / 2 - 11;
-
-            isBuying = true;
-            try {
-                window.closeHeartsShop();
-                isAnimatingHearts = true;
-
-                const targetRect = targetIcon.getBoundingClientRect();
-                const destX = targetRect.left + targetRect.width / 2 - 11;
-                const destY = targetRect.top + targetRect.height / 2 - 11;
-
-                const heart = document.createElement("div");
-                heart.className = "flying-heart";
-                heart.style.width = "22px";
-                heart.style.height = "22px";
-                heart.style.left = `${startX}px`;
-                heart.style.top = `${startY}px`;
-                heart.innerHTML = `<svg viewBox="0 0 36 36" width="22" height="22"><path d="M18 32.5C18 32.5 3 22.8 3 11.8C3 6.9 6.8 3 11.6 3C14.5 3 17 4.4 18 6.6C19 4.4 21.5 3 24.4 3C29.2 3 33 6.9 33 11.8C33 22.8 18 32.5 18 32.5Z" fill="#f96316"/></svg>`;
-                document.body.appendChild(heart);
-
-                const dx = destX - startX;
-                const dy = destY - startY;
-
-                const anim = heart.animate([
-                    { transform: "translate(0px, 0px) scale(1.05)", opacity: 1 },
-                    { transform: `translate(${dx * 0.55}px, ${dy * 0.55}px) scale(0.95)`, opacity: 1, offset: 0.55 },
-                    { transform: `translate(${dx}px, ${dy}px) scale(0.75)`, opacity: 0.9 }
-                ], {
-                    duration: 1050,
-                    easing: "cubic-bezier(0.25, 0.75, 0.35, 1)",
-                    fill: "forwards"
-                });
-
-                anim.onfinish = () => {
-                    heart.remove();
-                    targetIcon.animate([
-                        { transform: "scale(1)" },
-                        { transform: "scale(0.80)", offset: 0.16 },
-                        { transform: "scale(1.52)", offset: 0.48 },
-                        { transform: "scale(0.94)", offset: 0.78 },
-                        { transform: "scale(1)" }
-                    ], { duration: 480, easing: "ease-out" });
-
-                    setTimeout(() => {
-                        displayedHearts = oldHearts + heartsReward;
-                        numEl.textContent = displayedHearts;
-                        isAnimatingHearts = false;
-                    }, 200);
-                };
-
-                await updateDoc(doc(db, "users", myDocId), {
-                    jetons: increment(-jetonCost),
-                    hearts: increment(heartsReward)
-                });
-            } catch (e) {
-                isAnimatingHearts = false;
-                showPlainToast("Xəta baş verdi, yenidən yoxlayın");
-            } finally {
-                isBuying = false;
-            }
-        };
+        // 3. Masa və Butulka Fırlanma Modulu
+        initMasaOyun({
+            db,
+            me,
+            isVip: () => isVip,
+            showPlainToast: window.showPlainToast
+        });
 
         async function syncMyUserRealtime() {
             if (!myDocId) {
@@ -493,6 +421,7 @@
                 }
             }
             if (myDocId) {
+                const { onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
                 onSnapshot(doc(db, "users", myDocId), (snap) => {
                     if (!snap.exists()) return;
                     liveUserData = snap.data();
@@ -501,276 +430,13 @@
                         displayedHearts = Number(liveUserData.hearts || 0);
                         document.getElementById("hudHearts").textContent = displayedHearts;
                     }
-                    document.getElementById("shopVipSub").textContent = isVip ? "✅ VIP Aktivdir" : "VIP deaktivdir";
+                    const vipSub = document.getElementById("shopVipSub");
+                    if (vipSub) vipSub.textContent = isVip ? "✅ VIP Aktivdir" : "VIP deaktivdir";
                     localStorage.setItem("currentUser", JSON.stringify({ ...me, ...liveUserData, docId: myDocId }));
                 });
             }
         }
         syncMyUserRealtime();
-
-        const emojiRegex = /[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\u{1F9B0}-\u{1F9B3}]/gu;
-        window.filterEmojiForNonVip = function(inputEl) {
-            if (!isVip && emojiRegex.test(inputEl.value)) {
-                inputEl.value = inputEl.value.replace(emojiRegex, "");
-                showPlainToast("Smaylik yalnız VIP istifadəçilər üçündür");
-            }
-        };
-
-        function loadTransparentBottle() {
-            const canvas = document.getElementById("bottleCanvas");
-            const ctx = canvas.getContext("2d");
-            const img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.src = "images/masa/butulka.jpg";
-            img.onload = () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                const scale = Math.min(canvas.width / img.width, canvas.height / img.height) * 0.92;
-                const w = img.width * scale;
-                const h = img.height * scale;
-                const x = (canvas.width - w) / 2;
-                const y = (canvas.height - h) / 2;
-                ctx.drawImage(img, x, y, w, h);
-
-                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const d = imgData.data;
-                for (let i = 0; i < d.length; i += 4) {
-                    if (d[i] > 225 && d[i + 1] > 225 && d[i + 2] > 225) {
-                        d[i + 3] = 0;
-                    }
-                }
-                ctx.putImageData(imgData, 0, 0);
-            };
-        }
-        loadTransparentBottle();
-
-        const ROOM_ID = "masa_511";
-        let mySeatNumber = null;
-        let currentSeatsMap = {};
-        let lastSpinId = null;
-        let isSpinning = false;
-        let hasFemalePlayer = false;
-
-        const seatAngles = {
-            1: 322, 2: 344, 3: 16, 4: 38,
-            5: 72,  6: 108,
-            7: 142, 8: 164, 9: 196, 10: 218,
-            11: 252, 12: 288
-        };
-
-        async function joinTable() {
-            const roomRef = doc(db, "rooms", ROOM_ID);
-            const snap = await getDoc(roomRef);
-            const data = snap.exists() ? snap.data() : { seats: {} };
-            const seats = data.seats || {};
-            const now = Date.now();
-
-            let freeSeat = null;
-            for (let i = 1; i <= 12; i++) {
-                const s = seats[i];
-                if (s && s.id === me.id) { freeSeat = i; break; }
-            }
-            if (!freeSeat) {
-                for (let i = 1; i <= 12; i++) {
-                    const s = seats[i];
-                    if (!s || (now - (s.lastSeen || 0) > 90000)) { freeSeat = i; break; }
-                }
-            }
-            if (!freeSeat) { showPlainToast("Masa 511 doludur (12/12)"); return; }
-
-            mySeatNumber = freeSeat;
-            await setDoc(roomRef, {
-                seats: {
-                    ...seats,
-                    [mySeatNumber]: {
-                        id: me.id,
-                        username: me.username,
-                        avatar: me.avatar || DEFAULT_AVATAR,
-                        gender: me.gender || "Kişi",
-                        vip: isVip,
-                        lastSeen: Date.now()
-                    }
-                }
-            }, { merge: true });
-
-            setInterval(() => {
-                if (mySeatNumber) {
-                    updateDoc(roomRef, { [`seats.${mySeatNumber}.lastSeen`]: Date.now() }).catch(() => {});
-                }
-            }, 25000);
-        }
-
-        onSnapshot(doc(db, "rooms", ROOM_ID), (docSnap) => {
-            if (!docSnap.exists()) return;
-            const data = docSnap.data();
-            const seats = data.seats || {};
-            currentSeatsMap = seats;
-            const now = Date.now();
-            let femaleCount = 0;
-
-            for (let i = 1; i <= 12; i++) {
-                const seatEl = document.getElementById(`seat-${i}`);
-                const imgEl = seatEl.querySelector("img");
-                const nickEl = seatEl.querySelector(".nick");
-                const p = seats[i];
-
-                if (p && (now - (p.lastSeen || 0) <= 95000)) {
-                    seatEl.classList.add("occupied");
-                    imgEl.src = p.avatar || DEFAULT_AVATAR;
-                    nickEl.textContent = (p.vip ? "👑 " : "") + p.username;
-                    const pFem = p.gender === "Qadın";
-                    if (pFem) femaleCount++;
-                    nickEl.className = "nick " + (p.vip ? (pFem ? "nick-vip-qiz" : "nick-vip-oglan") : (pFem ? "nick-qiz" : "nick-oglan"));
-                } else {
-                    seatEl.classList.remove("occupied", "active");
-                    imgEl.src = "";
-                    nickEl.textContent = "";
-                }
-            }
-
-            hasFemalePlayer = femaleCount > 0;
-            const canvas = document.getElementById("bottleCanvas");
-            const hint = document.getElementById("turnHint");
-
-            if (!hasFemalePlayer) {
-                isSpinning = false;
-                canvas.style.transition = "none";
-                canvas.style.transform = "rotate(0deg)";
-                hint.innerHTML = "Oyuna başlamaq üçün<br>qızları gözləyirik";
-                document.querySelectorAll(".seat").forEach(s => s.classList.remove("active"));
-                return;
-            } else if (!isSpinning && hint.textContent.includes("qızları gözləyirik")) {
-                hint.textContent = "Butulkanı fırlat";
-            }
-
-            if (data.spin && data.spin.spinId && data.spin.spinId !== lastSpinId) {
-                lastSpinId = data.spin.spinId;
-                if (now - (data.spin.createdAt || 0) < 8000) {
-                    animateBottleTo(data.spin.angle, data.spin.targetSeat, data.spin.spinnerName);
-                }
-            }
-        });
-
-        window.triggerSpin = async function() {
-            if (!hasFemalePlayer) {
-                document.getElementById("turnHint").innerHTML = "Oyuna başlamaq üçün<br>qızları gözləyirik";
-                return;
-            }
-            if (isSpinning) return;
-
-            const now = Date.now();
-            const activePlayers = [];
-            for (let i = 1; i <= 12; i++) {
-                const p = currentSeatsMap[i];
-                if (p && (now - (p.lastSeen || 0) <= 95000)) activePlayers.push({ seat: i, ...p });
-            }
-            if (activePlayers.length < 2) return;
-
-            const myIsFemale = me.gender === "Qadın";
-            const oppositeGender = activePlayers.filter(p => p.seat !== mySeatNumber && (p.gender === "Qadın") !== myIsFemale);
-            const others = activePlayers.filter(p => p.seat !== mySeatNumber);
-            const pool = oppositeGender.length > 0 ? oppositeGender : others;
-            if (pool.length === 0) return;
-
-            const chosen = pool[Math.floor(Math.random() * pool.length)];
-            const baseAngle = seatAngles[chosen.seat] || 0;
-            const finalAngle = 1800 + baseAngle + Math.floor(Math.random() * 5) * 360;
-
-            await setDoc(doc(db, "rooms", ROOM_ID), {
-                spin: {
-                    spinId: Date.now() + "_" + Math.random(),
-                    angle: finalAngle,
-                    targetSeat: chosen.seat,
-                    spinnerName: me.username,
-                    createdAt: Date.now()
-                }
-            }, { merge: true });
-        };
-
-        function animateBottleTo(angle, targetSeat, spinnerName) {
-            isSpinning = true;
-            const canvas = document.getElementById("bottleCanvas");
-            const hint = document.getElementById("turnHint");
-            hint.textContent = `${spinnerName} fırladır...`;
-
-            document.querySelectorAll(".seat").forEach(s => s.classList.remove("active"));
-            canvas.style.transition = "transform 4s cubic-bezier(0.12, 0.85, 0.15, 1)";
-            canvas.style.transform = `rotate(${angle}deg)`;
-
-            setTimeout(() => {
-                isSpinning = false;
-                if (!hasFemalePlayer) return;
-                const targetEl = document.getElementById(`seat-${targetSeat}`);
-                const targetPlayer = currentSeatsMap[targetSeat];
-                if (targetEl && targetPlayer) {
-                    targetEl.classList.add("active");
-                    hint.textContent = `Seçildi: ${targetPlayer.username}`;
-                } else {
-                    hint.textContent = "Butulkanı fırlat";
-                }
-            }, 4000);
-        }
-
-        const chatQuery = query(collection(db, "rooms", ROOM_ID, "messages"), orderBy("createdAt", "desc"), limit(30));
-        onSnapshot(chatQuery, (snap) => {
-            const feed = document.getElementById("chatFeed");
-            const list = [];
-            snap.forEach(d => list.push(d.data()));
-            list.reverse();
-
-            feed.innerHTML = list.map(m => {
-                if (m.system) return `<div class="sys-row">${m.text}</div>`;
-                const sFem = m.gender === "Qadın";
-                const cls = m.vip ? (sFem ? "sender-vip-qiz" : "sender-vip-oglan") : (sFem ? "sender-qiz" : "sender-oglan");
-                return `
-                    <div class="chat-row">
-                        <img src="${m.avatar || DEFAULT_AVATAR}" alt="">
-                        <div class="chat-body">
-                            <span class="chat-sender ${cls}">${m.vip ? "👑 " : ""}${m.username}:</span>
-                            <span>${m.text}</span>
-                        </div>
-                    </div>
-                `;
-            }).join("");
-            feed.scrollTop = feed.scrollHeight;
-        });
-
-        window.sendRoomMessage = async function() {
-            const input = document.getElementById("msgInput");
-            let text = input.value.trim();
-            if (!text) return;
-
-            if (!isVip && emojiRegex.test(text)) {
-                text = text.replace(emojiRegex, "").trim();
-                input.value = text;
-                showPlainToast("Smaylik yalnız VIP istifadəçilər üçündür");
-                if (!text) return;
-            }
-            input.value = "";
-
-            await addDoc(collection(db, "rooms", ROOM_ID, "messages"), {
-                username: me.username,
-                avatar: me.avatar || DEFAULT_AVATAR,
-                gender: me.gender || "Kişi",
-                vip: isVip,
-                text: text,
-                createdAt: Date.now()
-            });
-        };
-
-        window.leaveAndGoProfile = async function() {
-            if (mySeatNumber) {
-                await updateDoc(doc(db, "rooms", ROOM_ID), { [`seats.${mySeatNumber}`]: null }).catch(() => {});
-            }
-            window.location.href = "profil.html";
-        };
-
-        window.addEventListener("beforeunload", () => {
-            if (mySeatNumber) {
-                updateDoc(doc(db, "rooms", ROOM_ID), { [`seats.${mySeatNumber}`]: null }).catch(() => {});
-            }
-        });
-
-        joinTable();
     </script>
 </body>
 </html>
