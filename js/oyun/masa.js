@@ -1,6 +1,7 @@
 import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI, OTURACAQ_SAYI } from "../core/config.js";
-import { ref, get, onValue, onDisconnect, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { cinsTap, vipMi } from "./yardimci.js";
+import { ref, get, set, onValue, onDisconnect, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const yol = `masalar/${MASA_NOMRESI}/oturacaqlar`;
@@ -19,7 +20,9 @@ async function oturacaqTap(oyuncu) {
   const hamisi = (await get(ref(rtdb, yol))).val() || {};
   for (const k in hamisi) {
     if (hamisi[k] && hamisi[k].uid === oyuncu.uid) {
-      onDisconnect(ref(rtdb, `${yol}/${k}`)).remove();
+      const r = ref(rtdb, `${yol}/${k}`);
+      await set(r, oyuncu); // məlumatı yenilə
+      onDisconnect(r).remove();
       return;
     }
   }
@@ -62,7 +65,8 @@ export async function masaniBasla() {
       uid: cari.docId,
       ad: p.username || "Oyunçu",
       sekil: p.avatar || "",
-      vip: !!p.vip
+      vip: vipMi(p),
+      cins: cinsTap(p.gender)
     });
   } catch (e) {
     alert("Masa xətası: " + e.message);
