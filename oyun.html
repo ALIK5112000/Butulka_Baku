@@ -83,7 +83,6 @@
             pointer-events: auto;
             cursor: pointer;
         }
-        /* Boş yerlərdə heç bir kölgə və çərçivə yoxdur */
         .seat-box {
             width: 62px;
             height: 62px;
@@ -149,15 +148,16 @@
         .s9  { bottom: 0%; left: 27.5%; }
         .s8  { bottom: 0%; right: 27.5%; }
 
-        /* MƏRKƏZDƏ FIRLANAN BUTULKA */
+        /* MƏRKƏZDƏ BUTULKA */
         .center-hub {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 165px;
-            height: 165px;
+            width: 190px;
+            height: 170px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 15;
@@ -171,16 +171,17 @@
             filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45));
         }
         .turn-hint {
-            position: absolute;
-            bottom: -14px;
-            background: rgba(0, 0, 0, 0.55);
+            margin-top: 4px;
+            background: rgba(0, 0, 0, 0.65);
             color: #fff;
             font-size: 11px;
             font-weight: 700;
-            padding: 3px 10px;
-            border-radius: 12px;
+            padding: 4px 12px;
+            border-radius: 14px;
+            text-align: center;
             white-space: nowrap;
             pointer-events: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
         /* AŞAĞI CANLI ÇAT */
@@ -280,7 +281,7 @@
         <div class="seats-wrapper">
             <div class="center-hub" onclick="triggerSpin()">
                 <canvas id="bottleCanvas" width="200" height="200"></canvas>
-                <div class="turn-hint" id="turnHint">Butulkanı fırlat</div>
+                <div class="turn-hint" id="turnHint">Oyuna başlamaq üçün qızları gözləyirik...</div>
             </div>
 
             <div class="seat s1" id="seat-1"><div class="seat-box"><img src=""></div><span class="nick"></span></div>
@@ -366,6 +367,8 @@
         let mySeatNumber = null;
         let currentSeatsMap = {};
         let lastSpinId = null;
+        let isSpinning = false;
+        let hasFemalePlayer = false;
 
         const seatAngles = {
             1: 322, 2: 344, 3: 16, 4: 38,
@@ -435,6 +438,8 @@
             currentSeatsMap = seats;
             const now = Date.now();
 
+            let femaleCount = 0;
+
             for (let i = 1; i <= 12; i++) {
                 const seatEl = document.getElementById(`seat-${i}`);
                 const imgEl = seatEl.querySelector("img");
@@ -446,6 +451,7 @@
                     imgEl.src = p.avatar || DEFAULT_AVATAR;
                     nickEl.textContent = (p.vip ? "👑 " : "") + p.username;
                     const pFem = p.gender === "Qadın";
+                    if (pFem) femaleCount++;
                     nickEl.className = "nick " + (p.vip ? (pFem ? "nick-vip-qiz" : "nick-vip-oglan") : (pFem ? "nick-qiz" : "nick-oglan"));
                 } else {
                     seatEl.classList.remove("occupied", "active");
@@ -454,40 +460,67 @@
                 }
             }
 
+            hasFemalePlayer = femaleCount > 0;
+            const canvas = document.getElementById("bottleCanvas");
+            const hint = document.getElementById("turnHint");
+
+            if (!hasFemalePlayer) {
+                isSpinning = false;
+                canvas.style.transition = "none";
+                canvas.style.transform = "rotate(0deg)";
+                hint.textContent = "Oyuna başlamaq üçün qızları gözləyirik...";
+                document.querySelectorAll(".seat").forEach(s => s.classList.remove("active"));
+                return;
+            } else if (!isSpinning && hint.textContent === "Oyuna başlamaq üçün qızları gözləyirik...") {
+                hint.textContent = "Butulkanı fırlat";
+            }
+
             if (data.spin && data.spin.spinId && data.spin.spinId !== lastSpinId) {
                 lastSpinId = data.spin.spinId;
-                animateBottleTo(data.spin.angle, data.spin.targetSeat, data.spin.spinnerName);
+                // Yalnız son 8 saniyə ərzində edilmiş fırlatmanı oynat
+                if (now - (data.spin.createdAt || 0) < 8000) {
+                    animateBottleTo(data.spin.angle, data.spin.targetSeat, data.spin.spinnerName);
+                }
             }
         });
 
-        let isSpinning = false;
         window.triggerSpin = async function() {
+            if (!hasFemalePlayer) {
+                document.getElementById("turnHint").textContent = "Oyuna başlamaq üçün qızları gözləyirik...";
+                return;
+            }
             if (isSpinning) return;
 
             const now = Date.now();
-            const activeSeatNumbers = [];
+            const activePlayers = [];
             for (let i = 1; i <= 12; i++) {
                 const p = currentSeatsMap[i];
                 if (p && (now - (p.lastSeen || 0) <= 95000)) {
-                    activeSeatNumbers.push(i);
+                    activePlayers.push({ seat: i, ...p });
                 }
             }
 
-            if (activeSeatNumbers.length === 0) return;
+            if (activePlayers.length < 2) return;
 
-            const others = activeSeatNumbers.filter(n => n !== mySeatNumber);
-            const pool = others.length > 0 ? others : activeSeatNumbers;
-            const chosenSeat = pool[Math.floor(Math.random() * pool.length)];
+            // Oğlan fırladırsa qızlara, qız fırladırsa oğlanlara düşsün (əgər qarşı cins varsa)
+            const myIsFemale = me.gender === "Qadın";
+            const oppositeGender = activePlayers.filter(p => p.seat !== mySeatNumber && (p.gender === "Qadın") !== myIsFemale);
+            const others = activePlayers.filter(p => p.seat !== mySeatNumber);
+            const pool = oppositeGender.length > 0 ? oppositeGender : others;
 
-            const baseAngle = seatAngles[chosenSeat] || 0;
+            if (pool.length === 0) return;
+
+            const chosen = pool[Math.floor(Math.random() * pool.length)];
+            const baseAngle = seatAngles[chosen.seat] || 0;
             const finalAngle = 1800 + baseAngle + Math.floor(Math.random() * 5) * 360;
 
             await setDoc(doc(db, "rooms", ROOM_ID), {
                 spin: {
                     spinId: Date.now() + "_" + Math.random(),
                     angle: finalAngle,
-                    targetSeat: chosenSeat,
-                    spinnerName: me.username
+                    targetSeat: chosen.seat,
+                    spinnerName: me.username,
+                    createdAt: Date.now()
                 }
             }, { merge: true });
         };
@@ -499,10 +532,12 @@
             hint.textContent = `${spinnerName} fırladır...`;
 
             document.querySelectorAll(".seat").forEach(s => s.classList.remove("active"));
+            canvas.style.transition = "transform 4s cubic-bezier(0.12, 0.85, 0.15, 1)";
             canvas.style.transform = `rotate(${angle}deg)`;
 
             setTimeout(() => {
                 isSpinning = false;
+                if (!hasFemalePlayer) return;
                 const targetEl = document.getElementById(`seat-${targetSeat}`);
                 const targetPlayer = currentSeatsMap[targetSeat];
                 if (targetEl && targetPlayer) {
