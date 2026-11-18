@@ -1,0 +1,53 @@
+.yer .foto { position: relative; }
+.yer.gizli { opacity: 0 !important; }
+.opus {
+  position: absolute; top: -2vw; right: -1.5vw; width: 7vw; height: 6vw;
+  align-items: center; justify-content: center; display: none;
+}
+.opus i { position: absolute; font-style: normal; font-size: 7vw; line-height: 6vw; }
+.opus b { position: relative; color: #fff; font-size: 2.8vw; text-shadow: 0 0 .6vw #000; }
+
+#gozleYazi {
+  display: none; position: absolute; left: 0; width: 100%; top: 59vw; z-index: 3;
+  text-align: center; color: #fff; font-size: 3.6vw; font-weight: 700; line-height: 1.3;
+  padding: 0 24vw; text-shadow: 0 .3vw 1.2vw rgba(0,0,0,.6); pointer-events: none;
+}
+#sayac {
+  display: none; position: absolute; left: 50%; top: 61vw; z-index: 4;
+  transform: translate(-50%, -50%); font-size: 11vw; font-weight: 800;
+  color: rgba(255,255,255,.88); text-shadow: 0 .4vw 1.4vw rgba(0,0,0,.4);
+}
+#sizinSecim {
+  display: none; position: absolute; left: 0; width: 100%; top: 40vw; z-index: 4;
+  text-align: center; color: #fff; font-size: 5.4vw; font-weight: 700;
+  text-shadow: 0 .3vw 1.2vw rgba(0,0,0,.5);
+}
+
+.orta {
+  position: absolute; width: 18.5vw; height: 18.5vw; transform: translate(-50%, -50%);
+  opacity: 0; z-index: 4; transition: left .7s ease, top .7s ease, opacity .3s;
+}
+.orta.goster { opacity: 1; }
+.orta .foto {
+  width: 100%; height: 100%; border-radius: 2.4vw; background: #777 center/cover no-repeat;
+  box-shadow: 0 .6vw 1.6vw rgba(0,0,0,.3);
+}
+.orta .ad {
+  position: absolute; left: -3vw; right: -3vw; top: 19.6vw; text-align: center;
+  font-size: 2.7vw; color: #fff; text-shadow: 0 .2vw .6vw rgba(0,0,0,.55); white-space: nowrap;
+}
+.orta .durum {
+  display: none; position: absolute; right: -2vw; bottom: -2vw; width: 8vw; height: 8vw;
+  border-radius: 50%; align-items: center; justify-content: center; font-size: 4.4vw;
+  color: #fff; border: .5vw solid #fff;
+}
+.orta .durum.op { display: flex; background: #9bcc34; }
+.orta .durum.yox { display: flex; background: #e03d1c; }
+
+#dugmeler { display: none; position: absolute; left: 0; top: 75.5vw; width: 100%; z-index: 5; }
+#dugmeler button {
+  position: absolute; top: 0; width: 20.4vw; height: 9.5vw; border: 0; border-radius: 2vw;
+  color: #fff; font: 700 3.9vw Roboto, Arial, sans-serif; box-shadow: 0 .5vw 1vw rgba(0,0,0,.25);
+}
+#btnImtina { left: 28vw; background: #e03d1c; }
+#btnOp { left: 51.4vw; background: #9bcc34; }
