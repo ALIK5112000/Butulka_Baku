@@ -1,3 +1,5 @@
+import { masaniBasla } from "./masa.js";
+
 // Fon naxışı
 const emojiler = ["🍾", "💋", "🎁", "👑", "🎵", "❤️"];
 const naxis = document.getElementById("naxis");
@@ -6,6 +8,9 @@ for (let i = 0; i < 120; i++) {
   s.textContent = emojiler[i % emojiler.length];
   naxis.appendChild(s);
 }
+
+// Masa yüklənmə zamanı arxada qoşulur
+masaniBasla();
 
 // Yükləmə barı (təxminən 3 saniyə)
 const bar = document.getElementById("barDolu");
