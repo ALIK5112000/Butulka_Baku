@@ -1,0 +1,4 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; font-family: Roboto, Arial, sans-serif; overflow: hidden; }
+.ekran { display: none; position: fixed; inset: 0; }
+.ekran.aktiv { display: block; }
