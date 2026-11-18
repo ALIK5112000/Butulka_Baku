@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="css/oyun.css">
 <link rel="stylesheet" href="css/yukleme.css">
 <link rel="stylesheet" href="css/masa.css">
+<link rel="stylesheet" href="css/panel.css">
 </head>
 <body>
 
@@ -21,14 +22,53 @@
 
 <div id="oyunEkrani" class="ekran">
   <div id="taxta">
-    <div id="ustPanel"></div>
+
     <div id="masa">
-    <img id="butulka" src="images/butulka/butulka.png" alt="">
+      <img id="butulka" src="images/butulka/butulka.png" alt="">
     </div>
+
+    <div id="ustPanel">
+      <svg class="urek" id="urekBtn" viewBox="0 0 24 24">
+        <path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="#ff6a10" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+      <div id="urekSayi">0</div>
+
+      <button class="ub" style="left:25.7vw">
+        <svg viewBox="0 0 24 24"><path d="M12 2l10 10-10 10L2 12z"/><path d="M12 8v8M8 12h8"/></svg>
+      </button>
+      <div class="pill" id="vipPill" style="left:25.7vw;display:none">0 gün</div>
+
+      <button class="ub" style="left:35.4vw">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v7M12 15v7M2 12h7M15 12h7M5 5l5 5M14 14l5 5M19 5l-5 5M10 14l-5 5"/></svg>
+      </button>
+
+      <button class="ub" style="left:45.2vw">#-</button>
+
+      <button class="ub" style="left:54.9vw">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h12M4 17h8"/></svg>
+        <span class="nuqte"></span>
+      </button>
+
+      <button class="ub" style="left:64.5vw">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+      </button>
+
+      <button class="ub" id="cixisBtn" style="left:74.2vw">
+        <svg viewBox="0 0 24 24"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/></svg>
+      </button>
+
+      <div id="masaYazi">Masa<br><span id="masaNo">511</span></div>
+
+      <button class="ub" style="left:93.7vw">
+        <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>
+      </button>
+    </div>
+
   </div>
   <div id="chatYeri"></div>
 </div>
 
 <script type="module" src="js/oyun/yukleme.js"></script>
+<script type="module" src="js/oyun/panel.js"></script>
 </body>
 </html>
