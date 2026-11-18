@@ -182,6 +182,7 @@
         .h-card-sub { font-size: 9px; color: #6b7280; font-weight: 700; margin-bottom: 3px; }
         .btn-blue-pill { width: 92%; padding: 6px 0; border: none; border-radius: 9px; background: linear-gradient(180deg, #3b82f6, #1d4ed8); color: #fff; font-size: 11px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 0 #1e3a8a; }
         .btn-green-pill { width: 92%; padding: 6px 0; border: none; border-radius: 9px; background: linear-gradient(180deg, #9be12c, #65a30d); color: #fff; font-size: 13px; font-weight: 900; cursor: pointer; box-shadow: 0 2px 0 #4d7c0f; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
+        .btn-cyan-pill { width: 92%; padding: 6px 0; border: none; border-radius: 9px; background: linear-gradient(180deg, #0ea5e9, #0284c7); color: #fff; font-size: 13px; font-weight: 900; cursor: pointer; box-shadow: 0 2px 0 #0369a1; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
         .sellers-bar { margin: 6px 10px 12px; background: #ffffff; border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #1f2937; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
     </style>
 </head>
@@ -216,7 +217,7 @@
                 </div>
 
                 <button class="hud-btn" onclick="leaveAndGoProfile()" title="Ayarlar">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
 
                 <button class="hud-btn" onclick="leaveAndGoProfile()" title="Masadan çıx">
@@ -317,12 +318,13 @@
                     <button class="btn-green-pill" onclick="buyHeartsPackage(250, 270, this)">250</button>
                 </div>
 
+                <!-- 8-Cİ SAATLIK BONUS KARTI (TAYMER VƏ GÖTÜR DÜYMƏSİ İLƏ) -->
                 <div class="h-card">
-                    <div class="ribbon-tag">⏱ 53:58</div>
-                    <div class="h-card-amount">❤️ 105</div>
-                    <div class="h-card-bonus">🎁 +250 ürək</div>
-                    <div class="h-card-art">❤️❤️</div>
-                    <button class="btn-green-pill" onclick="buyHeartsPackage(100, 105, this)">100</button>
+                    <div class="ribbon-tag" id="hourlyBonusSub">⏱ 60:00</div>
+                    <div class="h-card-amount" id="hourlyBonusTitle">❤️ 100</div>
+                    <div class="h-card-bonus">SAATLIK BONUS</div>
+                    <div class="h-card-art">🎁</div>
+                    <button class="btn-green-pill" id="hourlyBonusBtn">60:00</button>
                 </div>
             </div>
 
@@ -341,6 +343,7 @@
             getFirestore, doc, setDoc, getDoc, getDocs, updateDoc,
             collection, addDoc, onSnapshot, query, where, orderBy, limit, increment
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { initHourlyBonus } from "./js/saatliq_bonus.js?v=1";
 
         const firebaseConfig = {
           apiKey: "AIzaSyAANVVrJKhZyaCErn8YFNVTUPF70A9xlmQ",
@@ -379,7 +382,7 @@
             }, 2400);
         };
 
-        // ÜRƏK ALMA VƏ UÇUŞ ANİMASİYASI (SƏSSİZ VƏ VİDEODAKI KİMİ)
+        // Ürək mağazasını aç / bağla
         window.openHeartsShop = function() {
             document.getElementById("heartsShopOverlay").classList.add("open");
         };
@@ -387,59 +390,17 @@
             document.getElementById("heartsShopOverlay").classList.remove("open");
         };
 
-        function flySingleHeartToBalance(startX, startY, endVal) {
-            isAnimatingHearts = true;
-            const targetIcon = document.getElementById("hudHeartIcon");
-            const numEl = document.getElementById("hudHearts");
-            const targetRect = targetIcon.getBoundingClientRect();
+        // Saatlıq bonus modulunu işə salırıq
+        initHourlyBonus({
+            db,
+            getMyDocId: () => myDocId,
+            getLiveUserData: () => liveUserData,
+            showPlainToast: window.showPlainToast,
+            setAnimatingHearts: (val) => { isAnimatingHearts = val; },
+            setDisplayedHearts: (val) => { displayedHearts = val; }
+        });
 
-            const destX = targetRect.left + targetRect.width / 2 - 11;
-            const destY = targetRect.top + targetRect.height / 2 - 11;
-
-            const heart = document.createElement("div");
-            heart.className = "flying-heart";
-            heart.style.width = "22px";
-            heart.style.height = "22px";
-            heart.style.left = `${startX}px`;
-            heart.style.top = `${startY}px`;
-            heart.innerHTML = `<svg viewBox="0 0 36 36" width="22" height="22"><path d="M18 32.5C18 32.5 3 22.8 3 11.8C3 6.9 6.8 3 11.6 3C14.5 3 17 4.4 18 6.6C19 4.4 21.5 3 24.4 3C29.2 3 33 6.9 33 11.8C33 22.8 18 32.5 18 32.5Z" fill="#f96316"/></svg>`;
-            document.body.appendChild(heart);
-
-            const dx = destX - startX;
-            const dy = destY - startY;
-
-            const anim = heart.animate([
-                { transform: "translate(0px, 0px) scale(1.05)", opacity: 1 },
-                { transform: `translate(${dx * 0.55}px, ${dy * 0.55}px) scale(0.95)`, opacity: 1, offset: 0.55 },
-                { transform: `translate(${dx}px, ${dy}px) scale(0.75)`, opacity: 0.9 }
-            ], {
-                duration: 1050,
-                easing: "cubic-bezier(0.25, 0.75, 0.35, 1)",
-                fill: "forwards"
-            });
-
-            anim.onfinish = () => {
-                heart.remove();
-
-                targetIcon.animate([
-                    { transform: "scale(1)" },
-                    { transform: "scale(0.80)", offset: 0.16 },
-                    { transform: "scale(1.52)", offset: 0.48 },
-                    { transform: "scale(0.94)", offset: 0.78 },
-                    { transform: "scale(1)" }
-                ], {
-                    duration: 480,
-                    easing: "ease-out"
-                });
-
-                setTimeout(() => {
-                    displayedHearts = endVal;
-                    numEl.textContent = endVal;
-                    isAnimatingHearts = false;
-                }, 200);
-            };
-        }
-
+        // Jeton paketləri alınması
         let isBuying = false;
         window.buyHeartsPackage = async function(jetonCost, heartsReward, btnEl) {
             if (isBuying) return;
@@ -455,20 +416,60 @@
                 return;
             }
 
-            const rect = btnEl
-                ? btnEl.getBoundingClientRect()
-                : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 };
+            const targetIcon = document.getElementById("hudHeartIcon");
+            const numEl = document.getElementById("hudHearts");
+            const rect = btnEl ? btnEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 };
             const startX = rect.left + rect.width / 2 - 11;
             const startY = rect.top + rect.height / 2 - 11;
 
             isBuying = true;
             try {
-                // Mağaza dərhal bağlanır
                 window.closeHeartsShop();
-                // Səssiz uçuş animasiyası başlayır
-                flySingleHeartToBalance(startX, startY, oldHearts + heartsReward);
+                isAnimatingHearts = true;
 
-                // Firebase balans yenilənməsi
+                const targetRect = targetIcon.getBoundingClientRect();
+                const destX = targetRect.left + targetRect.width / 2 - 11;
+                const destY = targetRect.top + targetRect.height / 2 - 11;
+
+                const heart = document.createElement("div");
+                heart.className = "flying-heart";
+                heart.style.width = "22px";
+                heart.style.height = "22px";
+                heart.style.left = `${startX}px`;
+                heart.style.top = `${startY}px`;
+                heart.innerHTML = `<svg viewBox="0 0 36 36" width="22" height="22"><path d="M18 32.5C18 32.5 3 22.8 3 11.8C3 6.9 6.8 3 11.6 3C14.5 3 17 4.4 18 6.6C19 4.4 21.5 3 24.4 3C29.2 3 33 6.9 33 11.8C33 22.8 18 32.5 18 32.5Z" fill="#f96316"/></svg>`;
+                document.body.appendChild(heart);
+
+                const dx = destX - startX;
+                const dy = destY - startY;
+
+                const anim = heart.animate([
+                    { transform: "translate(0px, 0px) scale(1.05)", opacity: 1 },
+                    { transform: `translate(${dx * 0.55}px, ${dy * 0.55}px) scale(0.95)`, opacity: 1, offset: 0.55 },
+                    { transform: `translate(${dx}px, ${dy}px) scale(0.75)`, opacity: 0.9 }
+                ], {
+                    duration: 1050,
+                    easing: "cubic-bezier(0.25, 0.75, 0.35, 1)",
+                    fill: "forwards"
+                });
+
+                anim.onfinish = () => {
+                    heart.remove();
+                    targetIcon.animate([
+                        { transform: "scale(1)" },
+                        { transform: "scale(0.80)", offset: 0.16 },
+                        { transform: "scale(1.52)", offset: 0.48 },
+                        { transform: "scale(0.94)", offset: 0.78 },
+                        { transform: "scale(1)" }
+                    ], { duration: 480, easing: "ease-out" });
+
+                    setTimeout(() => {
+                        displayedHearts = oldHearts + heartsReward;
+                        numEl.textContent = displayedHearts;
+                        isAnimatingHearts = false;
+                    }, 200);
+                };
+
                 await updateDoc(doc(db, "users", myDocId), {
                     jetons: increment(-jetonCost),
                     hearts: increment(heartsReward)
