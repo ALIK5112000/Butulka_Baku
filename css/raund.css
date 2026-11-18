@@ -1,11 +1,13 @@
 .yer .foto { position: relative; }
 .yer.gizli { opacity: 0 !important; }
+
+/* Öpüş stikeri (orijinal ölçüdə) */
 .opus {
-  position: absolute; top: -2vw; right: -1.5vw; width: 7vw; height: 6vw;
+  position: absolute; top: -1.6vw; right: -1.6vw; width: 5vw; height: 4.4vw;
   align-items: center; justify-content: center; display: none;
 }
-.opus i { position: absolute; font-style: normal; font-size: 7vw; line-height: 6vw; }
-.opus b { position: relative; color: #fff; font-size: 2.8vw; text-shadow: 0 0 .6vw #000; }
+.opus i { position: absolute; font-style: normal; font-size: 3.6vw; line-height: 4.4vw; }
+.opus b { position: relative; color: #fff; font-size: 2.3vw; text-shadow: 0 0 .5vw #000; }
 
 #gozleYazi {
   display: none; position: absolute; left: 0; width: 100%; top: 59vw; z-index: 3;
@@ -36,13 +38,23 @@
   position: absolute; left: -3vw; right: -3vw; top: 19.6vw; text-align: center;
   font-size: 2.7vw; color: #fff; text-shadow: 0 .2vw .6vw rgba(0,0,0,.55); white-space: nowrap;
 }
-.orta .durum {
-  display: none; position: absolute; right: -2vw; bottom: -2vw; width: 8vw; height: 8vw;
-  border-radius: 50%; align-items: center; justify-content: center; font-size: 4.4vw;
-  color: #fff; border: .5vw solid #fff;
+
+/* Oxlar: kimin kimə nə verdiyi */
+#oxlar {
+  display: none; position: absolute; left: 28vw; top: 40vw; width: 44vw; height: 42vw;
+  z-index: 3; pointer-events: none;
 }
-.orta .durum.op { display: flex; background: #9bcc34; }
-.orta .durum.yox { display: flex; background: #e03d1c; }
+#oxlar svg { width: 100%; height: 100%; fill: none; }
+#oxlar path.xett { stroke-width: 2; stroke-linecap: round; }
+.bd {
+  position: absolute; width: 7.4vw; height: 7.4vw; transform: translate(-50%, -50%);
+  display: none; align-items: center; justify-content: center; border-radius: 50%;
+  border: .5vw solid #fff; color: #fff; font-size: 3.8vw; box-shadow: 0 .4vw 1vw rgba(0,0,0,.3);
+}
+.bd.op { background: #9bcc34; }
+.bd.yox { background: #e03d1c; }
+#bdU { left: 22vw; top: 4vw; }
+#bdA { left: 22vw; top: 35.2vw; }
 
 #dugmeler { display: none; position: absolute; left: 0; top: 75.5vw; width: 100%; z-index: 5; }
 #dugmeler button {
