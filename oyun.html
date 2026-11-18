@@ -34,13 +34,13 @@
             z-index: 2;
         }
 
-        /* ORİJİNAL YUXARI PANEL */
+        /* YUXARI PANEL */
         .top-hud {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 2px 2px 4px;
-            z-index: 20;
+            z-index: 300;
         }
         .heart-group {
             display: flex;
@@ -49,498 +49,148 @@
             cursor: pointer;
             padding: 2px 4px;
             border-radius: 14px;
+            position: relative;
         }
         .heart-group:active { transform: scale(0.94); }
         .heart-svg {
             width: 32px;
             height: 32px;
             filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+            transition: transform 0.14s cubic-bezier(0.2, 1.6, 0.4, 1);
         }
+        .heart-svg.pulse { transform: scale(1.32); }
         .heart-num {
             color: #fff;
             font-weight: 800;
             font-size: 15px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+            transition: transform 0.14s ease, color 0.14s ease;
         }
+        .heart-num.glow { color: #fde047; transform: scale(1.12); }
 
-        .hud-icons {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-        .hud-btn-wrap {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        .hud-icons { display: flex; align-items: center; gap: 7px; }
+        .hud-btn-wrap { position: relative; display: flex; flex-direction: column; align-items: center; }
         .hud-btn {
-            width: 33px;
-            height: 33px;
-            border-radius: 50%;
-            background: rgba(255, 232, 198, 0.28);
-            border: none;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
+            width: 33px; height: 33px; border-radius: 50%;
+            background: rgba(255, 232, 198, 0.28); border: none; color: #fff;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
         .hud-btn:active { transform: scale(0.92); }
-        .hud-btn svg {
-            width: 18px;
-            height: 18px;
-            stroke: #fff;
-            fill: none;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
+        .hud-btn svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         .sub-pill {
-            position: absolute;
-            bottom: -10px;
-            background: #fff;
-            color: #9a5b13;
-            font-size: 9px;
-            font-weight: 800;
-            padding: 1px 6px;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.25);
-            white-space: nowrap;
+            position: absolute; bottom: -10px; background: #fff; color: #9a5b13;
+            font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.25); white-space: nowrap;
         }
         .red-dot {
-            position: absolute;
-            top: -1px;
-            right: -1px;
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background: #ea580c;
-            border: 1.5px solid #fff;
+            position: absolute; top: -1px; right: -1px; width: 9px; height: 9px;
+            border-radius: 50%; background: #ea580c; border: 1.5px solid #fff;
         }
-
-        .masa-right {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .masa-label {
-            color: #fff;
-            font-size: 11px;
-            font-weight: 700;
-            text-align: right;
-            line-height: 1.15;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.45);
-        }
+        .masa-right { display: flex; align-items: center; gap: 6px; }
+        .masa-label { color: #fff; font-size: 11px; font-weight: 700; text-align: right; line-height: 1.15; text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
         .masa-circle {
-            width: 33px;
-            height: 33px;
-            border-radius: 50%;
-            background: rgba(255, 232, 198, 0.28);
-            border: none;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
+            width: 33px; height: 33px; border-radius: 50%;
+            background: rgba(255, 232, 198, 0.28); border: none; color: #fff;
+            font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
 
         /* 12 OYUNÇU MEYDANÇASI */
-        .seats-wrapper {
-            position: relative;
-            flex: 1;
-            width: 100%;
-            max-width: 440px;
-            margin: 6px auto 0;
-        }
-        .seat {
-            position: absolute;
-            width: 72px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: transform 0.25s;
-            pointer-events: none;
-        }
-        .seat.occupied {
-            pointer-events: auto;
-            cursor: pointer;
-        }
-        .seat-box {
-            width: 68px;
-            height: 68px;
-            border-radius: 12px;
-            background: transparent;
-            border: none;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .seat.occupied .seat-box {
-            border: none;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.42);
-            background: #1f1710;
-        }
-        .seat.active .seat-box {
-            box-shadow: 0 0 0 3px #22c55e, 0 0 18px #22c55e;
-            transform: scale(1.06);
-        }
-        .seat-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
-            border: none;
-        }
-        .seat.occupied .seat-box img {
-            display: block;
-        }
+        .seats-wrapper { position: relative; flex: 1; width: 100%; max-width: 440px; margin: 6px auto 0; }
+        .seat { position: absolute; width: 72px; display: flex; flex-direction: column; align-items: center; transition: transform 0.25s; pointer-events: none; }
+        .seat.occupied { pointer-events: auto; cursor: pointer; }
+        .seat-box { width: 68px; height: 68px; border-radius: 12px; background: transparent; border: none; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
+        .seat.occupied .seat-box { border: none; box-shadow: 0 3px 8px rgba(0,0,0,0.42); background: #1f1710; }
+        .seat.active .seat-box { box-shadow: 0 0 0 3px #22c55e, 0 0 18px #22c55e; transform: scale(1.06); }
+        .seat-box img { width: 100%; height: 100%; object-fit: cover; display: none; border: none; }
+        .seat.occupied .seat-box img { display: block; }
         .seat .nick {
-            margin-top: 2px;
-            font-size: 10.5px;
-            font-weight: 700;
-            color: #fff;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.95);
-            max-width: 74px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            min-height: 14px;
+            margin-top: 2px; font-size: 10.5px; font-weight: 700; color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.95); max-width: 74px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-height: 14px;
         }
-
         .nick-oglan { color: #e0f2fe; }
         .nick-qiz { color: #fce7f3; }
         .nick-vip-oglan { color: #60a5fa; }
         .nick-vip-qiz { color: #f87171; }
 
-        /* ORİJİNAL PİLLƏLİ DÜZÜLÜŞ */
         .s2 { top: 0%; left: 26.5%; }
         .s3 { top: 0%; right: 26.5%; }
         .s1 { top: 5.5%; left: 1%; }
         .s4 { top: 5.5%; right: 1%; }
-
         .s12 { top: 30%; left: 1%; }
         .s11 { top: 54.5%; left: 1%; }
         .s5  { top: 30%; right: 1%; }
         .s6  { top: 54.5%; right: 1%; }
-
         .s10 { bottom: 5.5%; left: 1%; }
         .s7  { bottom: 5.5%; right: 1%; }
         .s9  { bottom: 0%; left: 26.5%; }
         .s8  { bottom: 0%; right: 26.5%; }
 
-        /* MƏRKƏZDƏ BUTULKA */
-        .center-hub {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 185px;
-            height: 165px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 15;
-            cursor: pointer;
-        }
-        #bottleCanvas {
-            width: 140px;
-            height: 140px;
-            transform: rotate(0deg);
-            transition: transform 4s cubic-bezier(0.12, 0.85, 0.15, 1);
-            filter: drop-shadow(0 5px 9px rgba(0,0,0,0.42));
-        }
+        /* MƏRKƏZ BUTULKA */
+        .center-hub { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 185px; height: 165px; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 15; cursor: pointer; }
+        #bottleCanvas { width: 140px; height: 140px; transform: rotate(0deg); transition: transform 4s cubic-bezier(0.12, 0.85, 0.15, 1); filter: drop-shadow(0 5px 9px rgba(0,0,0,0.42)); }
         .turn-hint {
-            position: absolute;
-            text-align: center;
-            color: #fff;
-            font-size: 13px;
-            font-weight: 800;
+            position: absolute; text-align: center; color: #fff; font-size: 13px; font-weight: 800;
             text-shadow: 0 2px 5px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.8);
-            line-height: 1.25;
-            max-width: 185px;
-            pointer-events: none;
+            line-height: 1.25; max-width: 185px; pointer-events: none;
         }
 
         /* AŞAĞI REAL-VAXT ÇAT */
-        .chat-zone {
-            flex: 1;
-            min-height: 0;
-            background: #f5f3ef;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .chat-feed {
-            flex: 1;
-            min-height: 0;
-            padding: 8px 10px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .chat-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            background: #fff;
-            padding: 7px 10px;
-            border-radius: 12px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-        }
-        .chat-row img {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
+        .chat-zone { flex: 1; min-height: 0; background: #f5f3ef; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-feed { flex: 1; min-height: 0; padding: 8px 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+        .chat-row { display: flex; align-items: flex-start; gap: 8px; background: #fff; padding: 7px 10px; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+        .chat-row img { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
         .chat-body { flex: 1; font-size: 13.5px; color: #1f2937; line-height: 1.35; word-break: break-word; }
         .chat-sender { font-weight: 800; margin-right: 4px; }
         .sender-oglan { color: #0284c7; }
         .sender-qiz { color: #db2777; }
         .sender-vip-oglan { color: #1d4ed8; }
         .sender-vip-qiz { color: #dc2626; }
-        .sys-row {
-            text-align: center;
-            font-size: 12px;
-            font-weight: 700;
-            color: #92400e;
-            background: #fef3c7;
-            padding: 5px 10px;
-            border-radius: 10px;
-        }
+        .sys-row { text-align: center; font-size: 12px; font-weight: 700; color: #92400e; background: #fef3c7; padding: 5px 10px; border-radius: 10px; }
 
-        .chat-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 7px 10px;
-            background: #fff;
-            border-top: 1px solid #e5e7eb;
-            flex-shrink: 0;
-        }
-        .chat-bar input {
-            flex: 1;
-            border: none;
-            outline: none;
-            font-size: 14px;
-            color: #111827;
-            background: transparent;
-            padding: 6px;
-        }
+        .chat-bar { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: #fff; border-top: 1px solid #e5e7eb; flex-shrink: 0; }
+        .chat-bar input { flex: 1; border: none; outline: none; font-size: 14px; color: #111827; background: transparent; padding: 6px; }
         .send-circle {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            background: #f59e0b;
-            border: none;
-            color: #fff;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
+            width: 36px; height: 36px; border-radius: 50%; background: #f59e0b; border: none;
+            color: #fff; font-size: 16px; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
 
-        /* PƏNCƏRƏSİZ SADƏ SÖZ BİLDİRİŞİ (TOAST) */
+        /* TOAST & UÇAN ÜRƏKLƏR */
         .toast-word {
-            position: fixed;
-            top: 48%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.95);
-            color: #ffffff;
-            font-size: 17px;
-            font-weight: 900;
-            text-align: center;
+            position: fixed; top: 48%; left: 50%; transform: translate(-50%, -50%) scale(0.95);
+            color: #ffffff; font-size: 17px; font-weight: 900; text-align: center;
             text-shadow: 0 2px 6px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.85);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s, transform 0.2s;
-            z-index: 9999;
-            width: 90%;
+            pointer-events: none; opacity: 0; transition: opacity 0.2s, transform 0.2s; z-index: 9999; width: 90%;
         }
-        .toast-word.show {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
+        .toast-word.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .flying-heart { position: fixed; width: 24px; height: 24px; pointer-events: none; z-index: 9998; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35)); will-change: transform, opacity; }
 
-        /* ÜRƏKLƏR SATIN AL PƏNCƏRƏSİ (ORİJİNAL ŞƏKİLƏ UYĞUN) */
-        .shop-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.45);
-            z-index: 200;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-        }
+        /* ÜRƏKLƏR SATIN AL PƏNCƏRƏSİ */
+        .shop-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
         .shop-overlay.open { display: flex; }
-
-        .hearts-modal {
-            width: 100%;
-            max-width: 360px;
-            background: #fce8ee;
-            border-radius: 22px;
-            position: relative;
-            box-shadow: 0 14px 36px rgba(0,0,0,0.4);
-            overflow: visible;
-        }
-        .hearts-modal-header {
-            background: linear-gradient(180deg, #f47292 0%, #f792aa 100%);
-            padding: 13px 16px;
-            border-top-left-radius: 22px;
-            border-top-right-radius: 22px;
-            text-align: center;
-            color: #fff;
-            font-size: 17px;
-            font-weight: 800;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            position: relative;
-        }
-        .modal-close-circle {
-            position: absolute;
-            top: -12px;
-            right: -10px;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            background: #fff;
-            border: none;
-            color: #b4533c;
-            font-size: 18px;
-            font-weight: 900;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.25);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-
-        .hearts-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            padding: 12px 10px 8px;
-        }
-        .h-card {
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 9px 5px 7px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            text-align: center;
-            position: relative;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.06);
-            min-height: 138px;
-        }
-        .ribbon-tag {
-            position: absolute;
-            top: -7px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #9333ea;
-            color: #fff;
-            font-size: 9px;
-            font-weight: 800;
-            padding: 2px 7px;
-            border-radius: 8px;
-            white-space: nowrap;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        .h-card-title {
-            font-size: 10px;
-            font-weight: 800;
-            color: #d97706;
-            line-height: 1.15;
-            margin-top: 2px;
-        }
-        .h-card-amount {
-            font-size: 15px;
-            font-weight: 900;
-            color: #ea580c;
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            margin-top: 2px;
-        }
-        .h-card-bonus {
-            font-size: 9.5px;
-            font-weight: 800;
-            color: #f59e0b;
-        }
-        .h-card-art {
-            font-size: 32px;
-            margin: 4px 0;
-            line-height: 1;
-        }
-        .h-card-sub {
-            font-size: 9px;
-            color: #6b7280;
-            font-weight: 700;
-            margin-bottom: 3px;
-        }
-        .btn-blue-pill {
-            width: 92%;
-            padding: 6px 0;
-            border: none;
-            border-radius: 9px;
-            background: linear-gradient(180deg, #3b82f6, #1d4ed8);
-            color: #fff;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: 0 2px 0 #1e3a8a;
-        }
-        .btn-green-pill {
-            width: 92%;
-            padding: 6px 0;
-            border: none;
-            border-radius: 9px;
-            background: linear-gradient(180deg, #9be12c, #65a30d);
-            color: #fff;
-            font-size: 13px;
-            font-weight: 900;
-            cursor: pointer;
-            box-shadow: 0 2px 0 #4d7c0f;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
-        }
-        .btn-green-pill:active, .btn-blue-pill:active {
-            transform: translateY(1px);
-        }
-
-        .sellers-bar {
-            margin: 6px 10px 12px;
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #1f2937;
-            cursor: pointer;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-        }
+        .hearts-modal { width: 100%; max-width: 360px; background: #fce8ee; border-radius: 22px; position: relative; box-shadow: 0 14px 36px rgba(0,0,0,0.4); overflow: visible; }
+        .hearts-modal-header { background: linear-gradient(180deg, #f47292 0%, #f792aa 100%); padding: 13px 16px; border-top-left-radius: 22px; border-top-right-radius: 22px; text-align: center; color: #fff; font-size: 17px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,0.2); position: relative; }
+        .modal-close-circle { position: absolute; top: -12px; right: -10px; width: 34px; height: 34px; border-radius: 50%; background: #fff; border: none; color: #b4533c; font-size: 18px; font-weight: 900; box-shadow: 0 3px 8px rgba(0,0,0,0.25); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .hearts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px 10px 8px; }
+        .h-card { background: #ffffff; border-radius: 14px; padding: 9px 5px 7px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.06); min-height: 138px; }
+        .ribbon-tag { position: absolute; top: -7px; left: 50%; transform: translateX(-50%); background: #9333ea; color: #fff; font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 8px; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .h-card-title { font-size: 10px; font-weight: 800; color: #d97706; line-height: 1.15; margin-top: 2px; }
+        .h-card-amount { font-size: 15px; font-weight: 900; color: #ea580c; display: flex; align-items: center; gap: 2px; margin-top: 2px; }
+        .h-card-bonus { font-size: 9.5px; font-weight: 800; color: #f59e0b; }
+        .h-card-art { font-size: 32px; margin: 4px 0; line-height: 1; }
+        .h-card-sub { font-size: 9px; color: #6b7280; font-weight: 700; margin-bottom: 3px; }
+        .btn-blue-pill { width: 92%; padding: 6px 0; border: none; border-radius: 9px; background: linear-gradient(180deg, #3b82f6, #1d4ed8); color: #fff; font-size: 11px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 0 #1e3a8a; }
+        .btn-green-pill { width: 92%; padding: 6px 0; border: none; border-radius: 9px; background: linear-gradient(180deg, #9be12c, #65a30d); color: #fff; font-size: 13px; font-weight: 900; cursor: pointer; box-shadow: 0 2px 0 #4d7c0f; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
+        .sellers-bar { margin: 6px 10px 12px; background: #ffffff; border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #1f2937; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
     </style>
 </head>
 <body>
 
     <div class="table-zone">
-        <!-- ORİJİNAL YUXARI PANEL -->
         <div class="top-hud">
-            <div class="heart-group" onclick="openHeartsShop()" title="Ürəklər satın al">
-                <svg class="heart-svg" viewBox="0 0 36 36">
+            <div class="heart-group" id="hudHeartTarget" onclick="openHeartsShop()" title="Ürəklər satın al">
+                <svg class="heart-svg" id="hudHeartIcon" viewBox="0 0 36 36">
                     <path d="M18 32.5C18 32.5 3 22.8 3 11.8C3 6.9 6.8 3 11.6 3C14.5 3 17 4.4 18 6.6C19 4.4 21.5 3 24.4 3C29.2 3 33 6.9 33 11.8C33 22.8 18 32.5 18 32.5Z" fill="#f96316" stroke="#ffffff" stroke-width="2.4"/>
                 </svg>
                 <span class="heart-num" id="hudHearts">0</span>
@@ -580,7 +230,6 @@
             </div>
         </div>
 
-        <!-- 12 OYUNÇU VƏ BUTULKA -->
         <div class="seats-wrapper">
             <div class="center-hub" onclick="triggerSpin()">
                 <canvas id="bottleCanvas" width="200" height="200"></canvas>
@@ -602,7 +251,6 @@
         </div>
     </div>
 
-    <!-- AŞAĞI REAL-VAXT MASA ÇATI -->
     <div class="chat-zone">
         <div class="chat-feed" id="chatFeed"></div>
         <div class="chat-bar">
@@ -618,7 +266,6 @@
             <div class="hearts-modal-header">Ürəklər satın al</div>
 
             <div class="hearts-grid">
-                <!-- 1. PREMIUM İCAZƏNAMƏ -->
                 <div class="h-card">
                     <div class="h-card-title">PREMIUM<br>İCAZƏNAMƏ</div>
                     <div class="h-card-art">🎟️</div>
@@ -626,7 +273,6 @@
                     <button class="btn-blue-pill" onclick="showPlainToast('Premium icazənamə aktivdir')">Təfərrüatlar</button>
                 </div>
 
-                <!-- 2. VIP STATUS -->
                 <div class="h-card">
                     <div class="h-card-title">VIP<br>STATUS</div>
                     <div class="h-card-art">👑</div>
@@ -634,55 +280,49 @@
                     <button class="btn-blue-pill" onclick="showPlainToast('VIP statusu profil ayarlarından aktivləşdirə bilərsiniz')">Təfərrüatlar</button>
                 </div>
 
-                <!-- 3. 14000 ÜRƏK (10000 JETON) -->
                 <div class="h-card">
                     <div class="ribbon-tag">Ən yaxşı təklif</div>
                     <div class="h-card-amount">❤️ 14000</div>
                     <div class="h-card-bonus">40% BONUS</div>
                     <div class="h-card-art">🧰</div>
-                    <button class="btn-green-pill" onclick="buyHeartsPackage(10000, 14000)">10000</button>
+                    <button class="btn-green-pill" onclick="buyHeartsPackage(10000, 14000, this)">10000</button>
                 </div>
 
-                <!-- 4. 6500 ÜRƏK (5000 JETON) -->
                 <div class="h-card">
                     <div class="h-card-amount">❤️ 6500</div>
                     <div class="h-card-bonus">30% BONUS</div>
                     <div class="h-card-art">🛢️</div>
-                    <button class="btn-green-pill" onclick="buyHeartsPackage(5000, 6500)">5000</button>
+                    <button class="btn-green-pill" onclick="buyHeartsPackage(5000, 6500, this)">5000</button>
                 </div>
 
-                <!-- 5. 1200 ÜRƏK (1000 JETON) -->
                 <div class="h-card">
                     <div class="ribbon-tag">Ən yaxşı</div>
                     <div class="h-card-amount">❤️ 1200</div>
                     <div class="h-card-bonus">20% BONUS</div>
                     <div class="h-card-art">🍯</div>
-                    <button class="btn-green-pill" onclick="buyHeartsPackage(1000, 1200)">1000</button>
+                    <button class="btn-green-pill" onclick="buyHeartsPackage(1000, 1200, this)">1000</button>
                 </div>
 
-                <!-- 6. 575 ÜRƏK (500 JETON) -->
                 <div class="h-card">
                     <div class="h-card-amount">❤️ 575</div>
                     <div class="h-card-bonus">15% BONUS</div>
                     <div class="h-card-art">🎒</div>
-                    <button class="btn-green-pill" onclick="buyHeartsPackage(500, 575)">500</button>
+                    <button class="btn-green-pill" onclick="buyHeartsPackage(500, 575, this)">500</button>
                 </div>
 
-                <!-- 7. 270 ÜRƏK (250 JETON) -->
                 <div class="h-card">
                     <div class="h-card-amount">❤️ 270</div>
                     <div class="h-card-bonus">8% BONUS</div>
                     <div class="h-card-art">📦</div>
-                    <button class="btn-green-pill" onclick="buyHeartsPackage(250, 270)">250</button>
+                    <button class="btn-green-pill" onclick="buyHeartsPackage(250, 270, this)">250</button>
                 </div>
 
-                <!-- 8. 105 ÜRƏK (100 JETON) -->
                 <div class="h-card">
                     <div class="ribbon-tag">⏱ 53:58</div>
                     <div class="h-card-amount">❤️ 105</div>
                     <div class="h-card-bonus">🎁 +250 ürək</div>
                     <div class="h-card-art">❤️❤️</div>
-                    <button class="btn-green-pill" onclick="buyHeartsPackage(100, 105)">100</button>
+                    <button class="btn-green-pill" onclick="buyHeartsPackage(100, 105, this)">100</button>
                 </div>
             </div>
 
@@ -693,15 +333,15 @@
         </div>
     </div>
 
-    <!-- PƏNCƏRƏSİZ SADƏ SÖZ BİLDİRİŞİ -->
     <div id="plainToast" class="toast-word"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import {
             getFirestore, doc, setDoc, getDoc, getDocs, updateDoc,
-            collection, addDoc, onSnapshot, query, where, orderBy, limit, increment
+            collection, addDoc, onSnapshot, query, where, orderBy, limit
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { initHeartsShop } from "./js/urek_magaza.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyAANVVrJKhZyaCErn8YFNVTUPF70A9xlmQ",
@@ -723,11 +363,12 @@
         const me = JSON.parse(rawUser);
         let myDocId = me.docId || null;
         let liveUserData = { ...me };
+        let displayedHearts = Number(me.hearts || 0);
+        let isAnimatingHearts = false;
         let isVip = Boolean(me.vip && (!me.vipUntil || Number(me.vipUntil) > Date.now()));
 
-        document.getElementById("hudHearts").textContent = me.hearts || 0;
+        document.getElementById("hudHearts").textContent = displayedHearts;
 
-        // Pəncərəsiz sadə söz bildirişi
         let toastTimer = null;
         window.showPlainToast = function(msg) {
             const el = document.getElementById("plainToast");
@@ -739,7 +380,16 @@
             }, 2400);
         };
 
-        // İstifadəçinin profil balansını (jeton və ürəkləri) real vaxtda sinxronlaşdır
+        // Modulyar Ürək Mağazası və Səs sistemini işə sal
+        initHeartsShop({
+            db,
+            getMyDocId: () => myDocId,
+            getLiveUserData: () => liveUserData,
+            showPlainToast: window.showPlainToast,
+            setAnimatingHearts: (val) => { isAnimatingHearts = val; },
+            setDisplayedHearts: (val) => { displayedHearts = val; }
+        });
+
         async function syncMyUserRealtime() {
             if (!myDocId) {
                 const q = query(collection(db, "users"), where("id", "==", me.id));
@@ -755,7 +405,10 @@
                     if (!snap.exists()) return;
                     liveUserData = snap.data();
                     isVip = Boolean(liveUserData.vip && (!liveUserData.vipUntil || Number(liveUserData.vipUntil) > Date.now()));
-                    document.getElementById("hudHearts").textContent = liveUserData.hearts || 0;
+                    if (!isAnimatingHearts) {
+                        displayedHearts = Number(liveUserData.hearts || 0);
+                        document.getElementById("hudHearts").textContent = displayedHearts;
+                    }
                     document.getElementById("shopVipSub").textContent = isVip ? "✅ VIP Aktivdir" : "VIP deaktivdir";
                     localStorage.setItem("currentUser", JSON.stringify({ ...me, ...liveUserData, docId: myDocId }));
                 });
@@ -763,47 +416,7 @@
         }
         syncMyUserRealtime();
 
-        // Ürəklər mağazasını aç / bağla
-        window.openHeartsShop = function() {
-            document.getElementById("heartsShopOverlay").classList.add("open");
-        };
-        window.closeHeartsShop = function() {
-            document.getElementById("heartsShopOverlay").classList.remove("open");
-        };
-
-        // Yaşıl düyməyə basanda real-vaxt jeton silinməsi və ürək bonusu alınması
-        let isBuying = false;
-        window.buyHeartsPackage = async function(jetonCost, heartsReward) {
-            if (isBuying) return;
-            const currentJetons = Number(liveUserData.jetons || 0);
-
-            if (currentJetons < jetonCost) {
-                showPlainToast("Kifayət qədər jetonunuz yoxdur");
-                return;
-            }
-
-            if (!myDocId) {
-                showPlainToast("Hesab məlumatı tapılmadı");
-                return;
-            }
-
-            isBuying = true;
-            try {
-                await updateDoc(doc(db, "users", myDocId), {
-                    jetons: increment(-jetonCost),
-                    hearts: increment(heartsReward)
-                });
-                showPlainToast(`+${heartsReward} ❤️ bonus əlavə edildi!`);
-            } catch (e) {
-                showPlainToast("Xəta baş verdi, yenidən yoxlayın");
-            } finally {
-                isBuying = false;
-            }
-        };
-
-        // Klaviaturadakı smaylikləri aşkarlayan regex
         const emojiRegex = /[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\u{1F9B0}-\u{1F9B3}]/gu;
-
         window.filterEmojiForNonVip = function(inputEl) {
             if (!isVip && emojiRegex.test(inputEl.value)) {
                 inputEl.value = inputEl.value.replace(emojiRegex, "");
@@ -862,25 +475,15 @@
             let freeSeat = null;
             for (let i = 1; i <= 12; i++) {
                 const s = seats[i];
-                if (s && s.id === me.id) {
-                    freeSeat = i;
-                    break;
-                }
+                if (s && s.id === me.id) { freeSeat = i; break; }
             }
             if (!freeSeat) {
                 for (let i = 1; i <= 12; i++) {
                     const s = seats[i];
-                    if (!s || (now - (s.lastSeen || 0) > 90000)) {
-                        freeSeat = i;
-                        break;
-                    }
+                    if (!s || (now - (s.lastSeen || 0) > 90000)) { freeSeat = i; break; }
                 }
             }
-
-            if (!freeSeat) {
-                showPlainToast("Masa 511 doludur (12/12)");
-                return;
-            }
+            if (!freeSeat) { showPlainToast("Masa 511 doludur (12/12)"); return; }
 
             mySeatNumber = freeSeat;
             await setDoc(roomRef, {
@@ -899,9 +502,7 @@
 
             setInterval(() => {
                 if (mySeatNumber) {
-                    updateDoc(roomRef, {
-                        [`seats.${mySeatNumber}.lastSeen`]: Date.now()
-                    }).catch(() => {});
+                    updateDoc(roomRef, { [`seats.${mySeatNumber}.lastSeen`]: Date.now() }).catch(() => {});
                 }
             }, 25000);
         }
@@ -912,7 +513,6 @@
             const seats = data.seats || {};
             currentSeatsMap = seats;
             const now = Date.now();
-
             let femaleCount = 0;
 
             for (let i = 1; i <= 12; i++) {
@@ -969,18 +569,14 @@
             const activePlayers = [];
             for (let i = 1; i <= 12; i++) {
                 const p = currentSeatsMap[i];
-                if (p && (now - (p.lastSeen || 0) <= 95000)) {
-                    activePlayers.push({ seat: i, ...p });
-                }
+                if (p && (now - (p.lastSeen || 0) <= 95000)) activePlayers.push({ seat: i, ...p });
             }
-
             if (activePlayers.length < 2) return;
 
             const myIsFemale = me.gender === "Qadın";
             const oppositeGender = activePlayers.filter(p => p.seat !== mySeatNumber && (p.gender === "Qadın") !== myIsFemale);
             const others = activePlayers.filter(p => p.seat !== mySeatNumber);
             const pool = oppositeGender.length > 0 ? oppositeGender : others;
-
             if (pool.length === 0) return;
 
             const chosen = pool[Math.floor(Math.random() * pool.length)];
@@ -1030,9 +626,7 @@
             list.reverse();
 
             feed.innerHTML = list.map(m => {
-                if (m.system) {
-                    return `<div class="sys-row">${m.text}</div>`;
-                }
+                if (m.system) return `<div class="sys-row">${m.text}</div>`;
                 const sFem = m.gender === "Qadın";
                 const cls = m.vip ? (sFem ? "sender-vip-qiz" : "sender-vip-oglan") : (sFem ? "sender-qiz" : "sender-oglan");
                 return `
@@ -1059,7 +653,6 @@
                 showPlainToast("Smaylik yalnız VIP istifadəçilər üçündür");
                 if (!text) return;
             }
-
             input.value = "";
 
             await addDoc(collection(db, "rooms", ROOM_ID, "messages"), {
@@ -1074,9 +667,7 @@
 
         window.leaveAndGoProfile = async function() {
             if (mySeatNumber) {
-                await updateDoc(doc(db, "rooms", ROOM_ID), {
-                    [`seats.${mySeatNumber}`]: null
-                }).catch(() => {});
+                await updateDoc(doc(db, "rooms", ROOM_ID), { [`seats.${mySeatNumber}`]: null }).catch(() => {});
             }
             window.location.href = "profil.html";
         };
