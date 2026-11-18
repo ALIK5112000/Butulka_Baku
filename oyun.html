@@ -62,7 +62,7 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
 
-        /* 12 OYUNÇU MEYDANÇASI (ORİJİNAL PİLLƏLİ DÜZÜLÜŞ) */
+        /* 12 OYUNÇU MEYDANÇASI */
         .seats-wrapper {
             position: relative;
             flex: 1;
@@ -77,13 +77,19 @@
             flex-direction: column;
             align-items: center;
             transition: transform 0.25s;
+            pointer-events: none;
         }
+        .seat.occupied {
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        /* Boş yerlərdə heç bir kölgə və çərçivə yoxdur */
         .seat-box {
             width: 62px;
             height: 62px;
             border-radius: 12px;
-            background: rgba(0, 0, 0, 0.22);
-            border: 1.5px dashed rgba(255, 255, 255, 0.35);
+            background: transparent;
+            border: none;
             overflow: hidden;
             display: flex;
             align-items: center;
@@ -91,7 +97,7 @@
             position: relative;
         }
         .seat.occupied .seat-box {
-            border: 2px solid rgba(255,255,255,0.6);
+            border: 2px solid rgba(255,255,255,0.65);
             box-shadow: 0 3px 8px rgba(0,0,0,0.4);
             background: #231911;
         }
@@ -127,26 +133,23 @@
         .nick-vip-oglan { color: #60a5fa; }
         .nick-vip-qiz { color: #f87171; }
 
-        /* ORİJİNAL ŞƏKİLDƏKİ DƏQİQ KOORDİNATLAR */
-        /* Üst cərgə: ortadakılar (s2, s3) yuxarıda, künclər (s1, s4) bir az aşağıda */
+        /* PİLLƏLİ DÜZÜLÜŞ KOORDİNATLARI */
         .s2 { top: 0%; left: 27.5%; }
         .s3 { top: 0%; right: 27.5%; }
         .s1 { top: 5.5%; left: 1%; }
         .s4 { top: 5.5%; right: 1%; }
 
-        /* Yan cərgələr: 2 sol (s12, s11), 2 sağ (s5, s6) */
         .s12 { top: 30%; left: 1%; }
         .s11 { top: 54.5%; left: 1%; }
         .s5  { top: 30%; right: 1%; }
         .s6  { top: 54.5%; right: 1%; }
 
-        /* Alt cərgə: künclər (s10, s7) bir az yuxarıda, ortadakılar (s9, s8) ən aşağıda */
         .s10 { bottom: 5.5%; left: 1%; }
         .s7  { bottom: 5.5%; right: 1%; }
         .s9  { bottom: 0%; left: 27.5%; }
         .s8  { bottom: 0%; right: 27.5%; }
 
-        /* MƏRKƏZDƏ İRİ, ŞƏFFAF BUTULKA */
+        /* MƏRKƏZDƏ FIRLANAN BUTULKA */
         .center-hub {
             position: absolute;
             top: 50%;
@@ -275,13 +278,11 @@
         </div>
 
         <div class="seats-wrapper">
-            <!-- MƏRKƏZ BUTULKA -->
             <div class="center-hub" onclick="triggerSpin()">
                 <canvas id="bottleCanvas" width="200" height="200"></canvas>
                 <div class="turn-hint" id="turnHint">Butulkanı fırlat</div>
             </div>
 
-            <!-- 12 BOŞ / REAL OYUNÇU YERİ (Heç bir saxta bot yoxdur) -->
             <div class="seat s1" id="seat-1"><div class="seat-box"><img src=""></div><span class="nick"></span></div>
             <div class="seat s2" id="seat-2"><div class="seat-box"><img src=""></div><span class="nick"></span></div>
             <div class="seat s3" id="seat-3"><div class="seat-box"><img src=""></div><span class="nick"></span></div>
@@ -308,8 +309,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import {
-            getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc,
-            collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp
+            getFirestore, doc, setDoc, getDoc, updateDoc,
+            collection, addDoc, onSnapshot, query, orderBy, limit
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -331,11 +332,9 @@
         }
         const me = JSON.parse(rawUser);
         const isVip = Boolean(me.vip && (!me.vipUntil || Number(me.vipUntil) > Date.now()));
-        const isFemale = me.gender === "Qadın";
 
         document.getElementById("hudHearts").textContent = me.hearts || 0;
 
-        // 1. BUTULKANIN AĞ FONUNU TƏMİZLƏYİB ŞƏFFAF EDƏN FUNKSİYA
         function loadTransparentBottle() {
             const canvas = document.getElementById("bottleCanvas");
             const ctx = canvas.getContext("2d");
@@ -355,7 +354,7 @@
                 const d = imgData.data;
                 for (let i = 0; i < d.length; i += 4) {
                     if (d[i] > 225 && d[i + 1] > 225 && d[i + 2] > 225) {
-                        d[i + 3] = 0; // Ağ pikselləri tam şəffaf et
+                        d[i + 3] = 0;
                     }
                 }
                 ctx.putImageData(imgData, 0, 0);
@@ -363,7 +362,6 @@
         }
         loadTransparentBottle();
 
-        // 2. REAL-VAXT MASA 511 OTURACAQLARINI SİNXRONLAŞDIRMA
         const ROOM_ID = "masa_511";
         let mySeatNumber = null;
         let currentSeatsMap = {};
@@ -383,7 +381,6 @@
             const seats = data.seats || {};
             const now = Date.now();
 
-            // 90 saniyədən çox aktiv olmayan köhnə oturacaqları təmizlə və öz yerimizi tap
             let freeSeat = null;
             for (let i = 1; i <= 12; i++) {
                 const s = seats[i];
@@ -422,7 +419,6 @@
                 }
             }, { merge: true });
 
-            // Hər 25 saniyədən bir onlayn olduğumuzu yenilə
             setInterval(() => {
                 if (mySeatNumber) {
                     updateDoc(roomRef, {
@@ -432,7 +428,6 @@
             }, 25000);
         }
 
-        // Otağı real vaxtda dinlə
         onSnapshot(doc(db, "rooms", ROOM_ID), (docSnap) => {
             if (!docSnap.exists()) return;
             const data = docSnap.data();
@@ -459,7 +454,6 @@
                 }
             }
 
-            // Canlı fırlanma hadisəsini bütün oyunçularda eyni anda göstər
             if (data.spin && data.spin.spinId && data.spin.spinId !== lastSpinId) {
                 lastSpinId = data.spin.spinId;
                 animateBottleTo(data.spin.angle, data.spin.targetSeat, data.spin.spinnerName);
@@ -481,7 +475,6 @@
 
             if (activeSeatNumbers.length === 0) return;
 
-            // Əgər təkdirsə özünə, başqaları varsa digər oyunçulardan birinə düşsün
             const others = activeSeatNumbers.filter(n => n !== mySeatNumber);
             const pool = others.length > 0 ? others : activeSeatNumbers;
             const chosenSeat = pool[Math.floor(Math.random() * pool.length)];
@@ -521,7 +514,6 @@
             }, 4000);
         }
 
-        // 3. REAL-VAXT MASA ÇATI (FIREBASE)
         const chatQuery = query(collection(db, "rooms", ROOM_ID, "messages"), orderBy("createdAt", "desc"), limit(30));
         onSnapshot(chatQuery, (snap) => {
             const feed = document.getElementById("chatFeed");
