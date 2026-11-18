@@ -18,7 +18,7 @@
         .table-zone {
             position: relative;
             width: 100%;
-            height: 58vh;
+            height: 62vh;
             background-color: #c88a4b;
             background-image: url('images/masa/taxta.png');
             background-size: cover;
@@ -26,53 +26,133 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 8px 10px 10px;
+            padding: 8px 8px 6px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.25);
             z-index: 2;
         }
 
-        /* Üst İkon Barı */
+        /* ORİJİNAL YUXARI PANEL */
         .top-hud {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding: 2px 2px 4px;
             z-index: 20;
         }
-        .heart-counter {
-            display: flex; align-items: center; gap: 5px;
-            background: rgba(0,0,0,0.22);
-            padding: 4px 11px;
-            border-radius: 20px;
-            color: #fff; font-weight: 800; font-size: 14px;
+        .heart-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .hud-icons { display: flex; align-items: center; gap: 7px; }
-        .hud-btn {
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.25);
-            border: 1px solid rgba(255,255,255,0.35);
+        .heart-svg {
+            width: 34px;
+            height: 34px;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.35));
+        }
+        .heart-num {
             color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 15px; cursor: pointer;
+            font-weight: 800;
+            font-size: 16px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
         }
-        .masa-info {
-            display: flex; align-items: center; gap: 5px;
-            color: #fff; font-size: 11px; font-weight: 700;
-            text-align: right; line-height: 1.1;
+
+        .hud-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .hud-btn-wrap {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .hud-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.24);
+            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .hud-btn:active { transform: scale(0.92); }
+        .hud-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: #fff;
+            fill: none;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .sub-pill {
+            position: absolute;
+            bottom: -10px;
+            background: #fff;
+            color: #9a5b13;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+        .red-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #f97316;
+            border: 2px solid #fff;
+        }
+
+        .masa-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .masa-label {
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            text-align: right;
+            line-height: 1.15;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
+        .masa-circle {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.24);
+            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
 
-        /* 12 OYUNÇU MEYDANÇASI */
+        /* 12 OYUNÇU MEYDANÇASI (BÖYÜK ŞƏKİLLƏRLƏ) */
         .seats-wrapper {
             position: relative;
             flex: 1;
             width: 100%;
             max-width: 460px;
-            margin: 2px auto 0;
+            margin: 6px auto 0;
         }
         .seat {
             position: absolute;
-            width: 68px;
+            width: 82px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -84,9 +164,9 @@
             cursor: pointer;
         }
         .seat-box {
-            width: 62px;
-            height: 62px;
-            border-radius: 12px;
+            width: 78px;
+            height: 78px;
+            border-radius: 13px;
             background: transparent;
             border: none;
             overflow: hidden;
@@ -97,13 +177,13 @@
         }
         .seat.occupied .seat-box {
             border: 2px solid rgba(255,255,255,0.65);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.45);
             background: #231911;
         }
         .seat.active .seat-box {
             border: 3px solid #22c55e;
-            box-shadow: 0 0 18px #22c55e;
-            transform: scale(1.08);
+            box-shadow: 0 0 20px #22c55e;
+            transform: scale(1.06);
         }
         .seat-box img {
             width: 100%;
@@ -116,11 +196,11 @@
         }
         .seat .nick {
             margin-top: 2px;
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: 700;
             color: #fff;
             text-shadow: 0 1px 3px rgba(0,0,0,0.95);
-            max-width: 72px;
+            max-width: 82px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -132,21 +212,21 @@
         .nick-vip-oglan { color: #60a5fa; }
         .nick-vip-qiz { color: #f87171; }
 
-        /* PİLLƏLİ DÜZÜLÜŞ KOORDİNATLARI */
-        .s2 { top: 0%; left: 27.5%; }
-        .s3 { top: 0%; right: 27.5%; }
-        .s1 { top: 5.5%; left: 1%; }
-        .s4 { top: 5.5%; right: 1%; }
+        /* ORİJİNAL PİLLƏLİ DÜZÜLÜŞ (78px ŞƏKİLLƏR ÜÇÜN DƏQİQ YERLƏŞİM) */
+        .s2 { top: 0%; left: 26%; }
+        .s3 { top: 0%; right: 26%; }
+        .s1 { top: 5.5%; left: 0.5%; }
+        .s4 { top: 5.5%; right: 0.5%; }
 
-        .s12 { top: 30%; left: 1%; }
-        .s11 { top: 54.5%; left: 1%; }
-        .s5  { top: 30%; right: 1%; }
-        .s6  { top: 54.5%; right: 1%; }
+        .s12 { top: 30%; left: 0.5%; }
+        .s11 { top: 54.5%; left: 0.5%; }
+        .s5  { top: 30%; right: 0.5%; }
+        .s6  { top: 54.5%; right: 0.5%; }
 
-        .s10 { bottom: 5.5%; left: 1%; }
-        .s7  { bottom: 5.5%; right: 1%; }
-        .s9  { bottom: 0%; left: 27.5%; }
-        .s8  { bottom: 0%; right: 27.5%; }
+        .s10 { bottom: 5.5%; left: 0.5%; }
+        .s7  { bottom: 5.5%; right: 0.5%; }
+        .s9  { bottom: 0%; left: 26%; }
+        .s8  { bottom: 0%; right: 26%; }
 
         /* MƏRKƏZDƏ BUTULKA */
         .center-hub {
@@ -154,8 +234,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 190px;
-            height: 170px;
+            width: 195px;
+            height: 175px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -164,24 +244,22 @@
             cursor: pointer;
         }
         #bottleCanvas {
-            width: 145px;
-            height: 145px;
+            width: 150px;
+            height: 150px;
             transform: rotate(0deg);
             transition: transform 4s cubic-bezier(0.12, 0.85, 0.15, 1);
             filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45));
         }
         .turn-hint {
-            margin-top: 4px;
-            background: rgba(0, 0, 0, 0.65);
-            color: #fff;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 4px 12px;
-            border-radius: 14px;
+            position: absolute;
             text-align: center;
-            white-space: nowrap;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 800;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.8);
+            line-height: 1.25;
+            max-width: 185px;
             pointer-events: none;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
         /* AŞAĞI CANLI ÇAT */
@@ -210,8 +288,8 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.06);
         }
         .chat-row img {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border-radius: 6px;
             object-fit: cover;
             flex-shrink: 0;
@@ -265,23 +343,57 @@
 <body>
 
     <div class="table-zone">
+        <!-- ORİJİNAL YUXARI PANEL -->
         <div class="top-hud">
-            <div class="heart-counter">❤️ <span id="hudHearts">0</span></div>
-            <div class="hud-icons">
-                <button class="hud-btn" onclick="triggerSpin()" title="Fırlat">🎡</button>
-                <button class="hud-btn" onclick="leaveAndGoProfile()" title="Profil">☰</button>
-                <button class="hud-btn" onclick="leaveAndGoProfile()" title="Masadan çıx">🚪</button>
+            <!-- Sol Ürək və Sayğac -->
+            <div class="heart-group">
+                <svg class="heart-svg" viewBox="0 0 36 36">
+                    <path d="M18 32.5C18 32.5 3 22.8 3 11.8C3 6.9 6.8 3 11.6 3C14.5 3 17 4.4 18 6.6C19 4.4 21.5 3 24.4 3C29.2 3 33 6.9 33 11.8C33 22.8 18 32.5 18 32.5Z" fill="#f96316" stroke="#ffffff" stroke-width="2.6"/>
+                </svg>
+                <span class="heart-num" id="hudHearts">0</span>
             </div>
-            <div class="masa-info">
-                <div>Masa<br>511</div>
-                <span style="font-size:18px;">🔄</span>
+
+            <!-- Ortadakı 5 Dairəvi Buton -->
+            <div class="hud-icons">
+                <div class="hud-btn-wrap">
+                    <button class="hud-btn" onclick="alert('Gündəlik VIP hədiyyə bonusu aktivdir!')">
+                        <svg viewBox="0 0 24 24"><polygon points="12 2 22 12 12 22 2 12 12 2"></polygon><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                    </button>
+                    <span class="sub-pill">1 gün</span>
+                </div>
+
+                <button class="hud-btn" onclick="triggerSpin()" title="Fırlat">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="3" x2="12" y2="21"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"></line><line x1="18.4" y1="5.6" x2="5.6" y2="18.4"></line></svg>
+                </button>
+
+                <div class="hud-btn-wrap">
+                    <button class="hud-btn" onclick="leaveAndGoProfile()" title="Menyu">
+                        <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="15" y2="17"></line></svg>
+                    </button>
+                    <span class="red-dot"></span>
+                </div>
+
+                <button class="hud-btn" onclick="leaveAndGoProfile()" title="Ayarlar">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+
+                <button class="hud-btn" onclick="leaveAndGoProfile()" title="Masadan çıx">
+                    <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+
+            <!-- Sağ Masa Nömrəsi -->
+            <div class="masa-right">
+                <div class="masa-label">Masa<br>511</div>
+                <div class="masa-circle" onclick="location.reload()" title="Masanı yenilə">511</div>
             </div>
         </div>
 
+        <!-- 12 OYUNÇU VƏ BUTULKA -->
         <div class="seats-wrapper">
             <div class="center-hub" onclick="triggerSpin()">
                 <canvas id="bottleCanvas" width="200" height="200"></canvas>
-                <div class="turn-hint" id="turnHint">Oyuna başlamaq üçün qızları gözləyirik...</div>
+                <div class="turn-hint" id="turnHint">Oyuna başlamaq üçün<br>qızları gözləyirik</div>
             </div>
 
             <div class="seat s1" id="seat-1"><div class="seat-box"><img src=""></div><span class="nick"></span></div>
@@ -468,16 +580,15 @@
                 isSpinning = false;
                 canvas.style.transition = "none";
                 canvas.style.transform = "rotate(0deg)";
-                hint.textContent = "Oyuna başlamaq üçün qızları gözləyirik...";
+                hint.innerHTML = "Oyuna başlamaq üçün<br>qızları gözləyirik";
                 document.querySelectorAll(".seat").forEach(s => s.classList.remove("active"));
                 return;
-            } else if (!isSpinning && hint.textContent === "Oyuna başlamaq üçün qızları gözləyirik...") {
+            } else if (!isSpinning && hint.textContent.includes("qızları gözləyirik")) {
                 hint.textContent = "Butulkanı fırlat";
             }
 
             if (data.spin && data.spin.spinId && data.spin.spinId !== lastSpinId) {
                 lastSpinId = data.spin.spinId;
-                // Yalnız son 8 saniyə ərzində edilmiş fırlatmanı oynat
                 if (now - (data.spin.createdAt || 0) < 8000) {
                     animateBottleTo(data.spin.angle, data.spin.targetSeat, data.spin.spinnerName);
                 }
@@ -486,7 +597,7 @@
 
         window.triggerSpin = async function() {
             if (!hasFemalePlayer) {
-                document.getElementById("turnHint").textContent = "Oyuna başlamaq üçün qızları gözləyirik...";
+                document.getElementById("turnHint").innerHTML = "Oyuna başlamaq üçün<br>qızları gözləyirik";
                 return;
             }
             if (isSpinning) return;
@@ -502,7 +613,6 @@
 
             if (activePlayers.length < 2) return;
 
-            // Oğlan fırladırsa qızlara, qız fırladırsa oğlanlara düşsün (əgər qarşı cins varsa)
             const myIsFemale = me.gender === "Qadın";
             const oppositeGender = activePlayers.filter(p => p.seat !== mySeatNumber && (p.gender === "Qadın") !== myIsFemale);
             const others = activePlayers.filter(p => p.seat !== mySeatNumber);
