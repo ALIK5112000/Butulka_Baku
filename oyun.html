@@ -28,70 +28,85 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 8px 8px 6px;
+            padding: 6px 6px 4px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.22);
             flex-shrink: 0;
             z-index: 2;
         }
 
-        /* YUXARI PANEL */
+        /* YUXARI PANEL - ORİJİNAL DİZAYN */
         .top-hud {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 2px 2px 4px;
+            padding: 2px 4px;
             z-index: 300;
+            gap: 4px;
         }
+
+        /* ÜRƏK BALANSI */
         .heart-group {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             cursor: pointer;
-            padding: 2px 4px;
-            border-radius: 14px;
+            padding: 3px 6px;
+            background: rgba(180, 95, 30, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
             position: relative;
+            backdrop-filter: blur(4px);
         }
         .heart-group:active { transform: scale(0.94); }
         .heart-svg {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
-            transition: transform 0.14s cubic-bezier(0.2, 1.6, 0.4, 1);
         }
-        .heart-svg.pulse { transform: scale(1.32); }
         .heart-num {
             color: #fff;
             font-weight: 800;
-            font-size: 15px;
+            font-size: 14px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.45);
-            transition: transform 0.14s ease, color 0.14s ease;
         }
-        .heart-num.glow { color: #fde047; transform: scale(1.12); }
 
-        .hud-icons { display: flex; align-items: center; gap: 7px; }
+        /* ORİJİNAL İSTİ NARINCI DÜYMƏLƏR QURUBU */
+        .hud-icons { display: flex; align-items: center; gap: 5px; }
         .hud-btn-wrap { position: relative; display: flex; flex-direction: column; align-items: center; }
         .hud-btn {
             width: 33px; height: 33px; border-radius: 50%;
-            background: rgba(255, 232, 198, 0.28); border: none; color: #fff;
+            background: rgba(205, 115, 45, 0.52);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            color: #fff;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+            backdrop-filter: blur(4px);
+            transition: transform 0.12s ease, background 0.12s ease;
         }
-        .hud-btn:active { transform: scale(0.92); }
-        .hud-btn svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .hud-btn:active { transform: scale(0.92); background: rgba(180, 95, 30, 0.75); }
+        .hud-btn svg { width: 17px; height: 17px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+        
         .sub-pill {
-            position: absolute; bottom: -10px; background: #fff; color: #9a5b13;
-            font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 8px;
+            position: absolute; bottom: -11px; background: #ffffff; color: #b45309;
+            font-size: 8.5px; font-weight: 800; padding: 1px 5px; border-radius: 8px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.25); white-space: nowrap;
         }
         .red-dot {
-            position: absolute; top: -1px; right: -1px; width: 9px; height: 9px;
-            border-radius: 50%; background: #ea580c; border: 1.5px solid #fff;
+            position: absolute; top: -1px; right: -1px; width: 8px; height: 8px;
+            border-radius: 50%; background: #ef4444; border: 1.5px solid #fff;
         }
-        .masa-right { display: flex; align-items: center; gap: 6px; }
-        .masa-label { color: #fff; font-size: 11px; font-weight: 700; text-align: right; line-height: 1.15; text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
+
+        /* SAĞ MASA HİSSƏSİ */
+        .masa-right { display: flex; align-items: center; gap: 5px; }
+        .masa-label { color: #fff; font-size: 10.5px; font-weight: 700; text-align: right; line-height: 1.15; text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
         .masa-circle {
             width: 33px; height: 33px; border-radius: 50%;
-            background: rgba(255, 232, 198, 0.28); border: none; color: #fff;
-            font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; cursor: pointer;
+            background: rgba(205, 115, 45, 0.52);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            color: #fff; font-size: 11px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+            backdrop-filter: blur(4px);
         }
 
         /* 12 OYUNÇU MEYDANÇASI */
@@ -190,41 +205,53 @@
 
     <div class="table-zone">
         <div class="top-hud">
+            <!-- 1. Ürək balansı -->
             <div class="heart-group" id="hudHeartTarget" onclick="openHeartsShop()" title="Ürəklər satın al">
                 <svg class="heart-svg" id="hudHeartIcon" viewBox="0 0 36 36">
-                    <path d="M18 32.5C18 32.5 3 22.8 3 11.8C3 6.9 6.8 3 11.6 3C14.5 3 17 4.4 18 6.6C19 4.4 21.5 3 24.4 3C29.2 3 33 6.9 33 11.8C33 22.8 18 32.5 18 32.5Z" fill="#f96316" stroke="#ffffff" stroke-width="2.4"/>
+                    <path d="M18 32.5C18 32.5 3 22.8 3 11.8C3 6.9 6.8 3 11.6 3C14.5 3 17 4.4 18 6.6C19 4.4 21.5 3 24.4 3C29.2 3 33 6.9 33 11.8C33 22.8 18 32.5 18 32.5Z" fill="#f96316" stroke="#ffffff" stroke-width="2.2"/>
                 </svg>
                 <span class="heart-num" id="hudHearts">0</span>
             </div>
 
             <div class="hud-icons">
+                <!-- 2. Bilet / İcazənamə -->
                 <div class="hud-btn-wrap">
-                    <button class="hud-btn" onclick="openHeartsShop()">
-                        <svg viewBox="0 0 24 24"><polygon points="12 2 22 12 12 22 2 12 12 2"></polygon><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                    <button class="hud-btn" onclick="openHeartsShop()" title="İcazənamə">
+                        <svg viewBox="0 0 24 24"><path d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><line x1="9" y1="3" x2="9" y2="21"></line><path d="M13 10l2 2-2 2"></path></svg>
                     </button>
                     <span class="sub-pill">1 gün</span>
                 </div>
 
+                <!-- 3. Çarx (Fırlat) -->
                 <button class="hud-btn" onclick="triggerSpin()" title="Fırlat">
                     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="3" x2="12" y2="21"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"></line><line x1="18.4" y1="5.6" x2="5.6" y2="18.4"></line></svg>
                 </button>
 
+                <!-- 4. Kubok (Liderlər) -->
+                <button class="hud-btn" onclick="showPlainToast('Liderlər lövhəsi tezliklə aktiv olacaq')" title="Liderlər">
+                    <svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17h4v-2.34A6 6 0 0 0 16 9V3H8v6a6 6 0 0 0 2 5.66z"></path></svg>
+                </button>
+
+                <!-- 5. Menyu xətləri (Bildiriş nöqtəsi ilə) -->
                 <div class="hud-btn-wrap">
                     <button class="hud-btn" onclick="leaveAndGoProfile()" title="Menyu">
-                        <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="15" y2="17"></line></svg>
+                        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                     </button>
                     <span class="red-dot"></span>
                 </div>
 
+                <!-- 6. Ayarlar (Dişli çarx) -->
                 <button class="hud-btn" onclick="leaveAndGoProfile()" title="Ayarlar">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </button>
 
+                <!-- 7. Çıxış / Masadan get -->
                 <button class="hud-btn" onclick="leaveAndGoProfile()" title="Masadan çıx">
-                    <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
                 </button>
             </div>
 
+            <!-- 8. Masa nömrəsi və Yenilə -->
             <div class="masa-right">
                 <div class="masa-label">Masa<br>511</div>
                 <div class="masa-circle" onclick="location.reload()" title="Masanı yenilə">511</div>
@@ -341,10 +368,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, getDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         
-        // Modulları ayrıca fayllardan çağırırıq ki, heç vaxt qarışmasın!
-        import { initMasaOyun } from "./js/masa_oyun.js?v=1";
-        import { initHeartsShop } from "./js/urek_magaza.js?v=1";
-        import { initHourlyBonus } from "./js/saatliq_bonus.js?v=1";
+        import { initMasaOyun } from "./js/masa_oyun.js?v=2";
+        import { initHeartsShop } from "./js/urek_magaza.js?v=2";
+        import { initHourlyBonus } from "./js/saatliq_bonus.js?v=2";
 
         const firebaseConfig = {
           apiKey: "AIzaSyAANVVrJKhZyaCErn8YFNVTUPF70A9xlmQ",
@@ -382,7 +408,6 @@
             }, 2400);
         };
 
-        // 1. Ürək Mağazası və Uçuş Modulu
         initHeartsShop({
             db,
             getMyDocId: () => myDocId,
@@ -392,7 +417,6 @@
             setDisplayedHearts: (val) => { displayedHearts = val; }
         });
 
-        // 2. Saatlıq Bonus Modulu
         initHourlyBonus({
             db,
             getMyDocId: () => myDocId,
@@ -402,7 +426,6 @@
             setDisplayedHearts: (val) => { displayedHearts = val; }
         });
 
-        // 3. Masa və Butulka Fırlanma Modulu
         initMasaOyun({
             db,
             me,
