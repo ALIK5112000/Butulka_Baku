@@ -1,7 +1,7 @@
 #ustPanel {
   position: absolute; top: 0; left: 0; width: 100%; height: 13vw;
   z-index: 5; color: #fff;
-  --dairə: rgba(190, 95, 10, .42); /* düymə dairələrinin rəngi */
+  --dairə: #d4853a;
 }
 #ustPanel .urek {
   position: absolute; left: 2.4vw; top: 2vw; width: 8.6vw; height: 8.6vw;
@@ -27,7 +27,7 @@
 }
 .pill {
   position: absolute; top: 9vw; transform: translateX(-50%);
-  background: #fff; color: #7a4a1a; font-size: 1.9vw; font-weight: 700;
+  background: #f4f1ee; color: #858585; font-size: 1.9vw; font-weight: 700;
   padding: .5vw 1.6vw; border-radius: 2vw; white-space: nowrap;
   box-shadow: 0 .3vw .8vw rgba(0,0,0,.25);
 }
