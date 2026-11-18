@@ -1,49 +1,50 @@
 #taxta {
   position: absolute; top: 0; left: 0; width: 100%; height: 114vw;
-  /* Fon şəkli: images/masa/fon.jpg qoysan avtomatik dəyişir */
+  /* Fon şəkli: images/masa/fon.jpg ilə eyni adla əvəz etsən dəyişir */
   background: url("../images/masa/fon.jpg") center/cover no-repeat, #d9964a;
 }
-#ustPanel { height: 14vw; }
-#masa { position: absolute; top: 14vw; left: 0; width: 100%; height: 100vw; }
+#masa { position: absolute; top: 0; left: 0; width: 100%; height: 114vw; }
 #chatYeri {
   position: absolute; top: 114vw; bottom: 0; left: 0; right: 0;
   background: #f3f2f0;
 }
 
+/* Şüşə: ölçü üçün height, bucaq üçün rotate */
 #butulka {
-  position: absolute; left: 50%; top: 49%;
-  height: 30vw; width: auto;
-  transform: translate(-50%, -50%) rotate(25deg);
+  position: absolute; left: 50%; top: 61.6vw;
+  height: 40vw; width: auto;
+  transform: translate(-50%, -50%) rotate(20deg);
   filter: drop-shadow(0 1.5vw 1.5vw rgba(0,0,0,.35));
   transition: transform 3s cubic-bezier(.15, .8, .2, 1);
 }
 
+/* Oyunçu kartı: left/top kartın MƏRKƏZİDİR */
 .yer {
-  position: absolute; width: 17vw; text-align: center;
-  transform: translate(-50%, -50%);
+  position: absolute; width: 20vw; text-align: center;
+  transform: translate(-50%, -8.5vw);
   opacity: 0; transition: opacity .3s;
 }
 .yer.dolu { opacity: 1; }
 .yer .foto {
-  width: 17vw; height: 17vw; border-radius: 3vw;
+  width: 17vw; height: 17vw; margin: 0 auto; border-radius: 2vw;
   background: #777 center/cover no-repeat;
-  box-shadow: 0 2px 6px rgba(0,0,0,.35);
+  box-shadow: 0 .6vw 1.6vw rgba(0,0,0,.3);
 }
 .yer .ad {
-  margin-top: 1vw; font-size: 3.4vw; color: #fff;
-  text-shadow: 0 1px 3px rgba(0,0,0,.6);
+  margin-top: .8vw; font-size: 2.7vw; color: #fff;
+  text-shadow: 0 .2vw .6vw rgba(0,0,0,.55);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-.yer-0  { left: 17%; top: 18%; }
-.yer-1  { left: 39%; top: 12.5%; }
-.yer-2  { left: 61%; top: 12.5%; }
-.yer-3  { left: 83%; top: 17%; }
-.yer-4  { left: 87%; top: 40%; }
-.yer-5  { left: 87%; top: 61%; }
-.yer-6  { left: 83%; top: 83%; }
-.yer-7  { left: 61%; top: 88%; }
-.yer-8  { left: 39%; top: 88%; }
-.yer-9  { left: 17%; top: 83%; }
-.yer-10 { left: 13%; top: 61%; }
-.yer-11 { left: 13%; top: 40%; }
+.yer-0  { left: 17.3vw; top: 30.8vw; }
+.yer-1  { left: 39.2vw; top: 25.5vw; }
+.yer-2  { left: 61vw;   top: 25.5vw; }
+.yer-3  { left: 83.1vw; top: 30vw; }
+.yer-4  { left: 86.9vw; top: 52.7vw; }
+.yer-5  { left: 86.9vw; top: 74.4vw; }
+.yer-6  { left: 83vw;   top: 96.3vw; }
+.yer-7  { left: 61vw;   top: 101.3vw; }
+.yer-8  { left: 39.2vw; top: 101.3vw; }
+.yer-9  { left: 17.3vw; top: 96vw; }
+.yer-10 { left: 13.3vw; top: 74.4vw; }
+.yer-11 { left: 13.3vw; top: 52.7vw; }
