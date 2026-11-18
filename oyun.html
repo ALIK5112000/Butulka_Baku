@@ -3,252 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Butulka Baku - Oyun Masası</title>
+    <title>Butulka Baku</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
-            background: #120c06;
+            background: #f3f1ed;
             height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
             overflow: hidden;
-            color: #fff;
         }
-        .game-container {
-            display: flex;
+
+        /* YUXARI OYUN SAHƏSİ (TAM EKRAN TAXTA MASA) */
+        .table-zone {
+            position: relative;
             width: 100%;
-            max-width: 1200px;
-            height: 100vh;
-            background: #1a1108;
-        }
-        .play-area {
-            flex: 1.6;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: radial-gradient(circle, #2e1d0e 0%, #120c06 100%);
-        }
-        .back-btn {
-            position: absolute;
-            top: 14px;
-            left: 14px;
-            background: rgba(0,0,0,0.6);
-            border: 1px solid #ffcc00;
-            color: #ffcc00;
-            padding: 7px 14px;
-            border-radius: 14px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            z-index: 20;
-        }
-        .table-bg {
-            width: 440px;
-            height: 440px;
+            height: 56vh;
+            background-color: #c88a4b;
             background-image: url('images/masa/taxta.png');
-            background-size: contain;
-            background-repeat: no-repeat;
+            background-size: cover;
             background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 8px 10px 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            z-index: 2;
+        }
+
+        /* Üst İkon Barı */
+        .top-hud {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 15;
+        }
+        .hud-left { display: flex; align-items: center; gap: 6px; }
+        .heart-counter {
+            display: flex; align-items: center; gap: 5px;
+            background: rgba(0,0,0,0.22);
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: #fff; font-weight: 800; font-size: 14px;
+        }
+        .hud-icons { display: flex; align-items: center; gap: 6px; }
+        .hud-btn {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            border: 1px solid rgba(255,255,255,0.35);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; cursor: pointer;
+        }
+        .masa-info {
+            display: flex; align-items: center; gap: 5px;
+            color: #fff; font-size: 11px; font-weight: 700;
+            text-align: right; line-height: 1.1;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* 12 OYUNÇU DÜZÜLÜŞÜ (4 ÜST, 2 SOL, 2 SAĞ, 4 ALT) */
+        .seats-wrapper {
             position: relative;
+            flex: 1;
+            width: 100%;
+            max-width: 460px;
+            margin: 4px auto 0;
         }
-        .bottle {
+        .seat {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 50px;
-            height: 125px;
-            background-image: url('images/masa/butulka.jpg');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            transform: translate(-50%, -50%) rotate(0deg);
-            transform-origin: center center;
-            transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
-            z-index: 10;
-            mix-blend-mode: multiply;
-        }
-        .player {
-            position: absolute;
-            width: 68px;
+            width: 66px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            z-index: 5;
-            transition: 0.3s;
+            cursor: pointer;
+            transition: transform 0.25s;
         }
-        .player img {
-            width: 54px;
-            height: 54px;
-            border-radius: 50%;
-            border: 2.5px solid #ffcc00;
+        .seat img {
+            width: 58px;
+            height: 58px;
+            border-radius: 12px;
             object-fit: cover;
-            background: #333;
+            background: #2b2118;
+            border: 2px solid rgba(255,255,255,0.45);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.35);
         }
-        .player .name {
-            font-size: 11px;
-            background: rgba(0,0,0,0.85);
-            padding: 2px 7px;
-            border-radius: 10px;
-            margin-top: 3px;
-            max-width: 75px;
+        .seat .nick {
+            margin-top: 2px;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+            max-width: 68px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .p1 { top: 2%; left: 50%; transform: translateX(-50%); }
-        .p2 { top: 10%; left: 74%; }
-        .p3 { top: 27%; left: 88%; }
-        .p4 { top: 50%; left: 91%; transform: translateY(-50%); }
-        .p5 { bottom: 27%; left: 88%; }
-        .p6 { bottom: 10%; left: 74%; }
-        .p7 { bottom: 2%; left: 50%; transform: translateX(-50%); }
-        .p8 { bottom: 10%; left: 14%; }
-        .p9 { bottom: 27%; left: 1%; }
-        .p10 { top: 50%; left: -2%; transform: translateY(-50%); }
-        .p11 { top: 27%; left: 1%; }
-        .p12 { top: 10%; left: 14%; }
 
-        .player.active img {
-            border-color: #22c55e;
-            box-shadow: 0 0 18px #22c55e;
-            transform: scale(1.12);
+        /* Ad rəngləri */
+        .nick-oglan { color: #e0f2fe; }
+        .nick-qiz { color: #fce7f3; }
+        .nick-vip-oglan { color: #60a5fa; }
+        .nick-vip-qiz { color: #f87171; }
+
+        /* Seçilmiş / Butulka dayanan oyunçu işığı */
+        .seat.active img {
+            border: 3px solid #22c55e;
+            box-shadow: 0 0 16px #22c55e;
+            transform: scale(1.08);
         }
-        .spin-btn {
+
+        /* Üst cərgə (4 nəfər) */
+        .s1 { top: 0%; left: 1%; }
+        .s2 { top: 0%; left: 27.5%; }
+        .s3 { top: 0%; right: 27.5%; }
+        .s4 { top: 0%; right: 1%; }
+
+        /* Orta Sol və Sağ (2 sol, 2 sağ) */
+        .s5 { top: 27%; right: 1%; }
+        .s6 { top: 53%; right: 1%; }
+        .s11 { top: 53%; left: 1%; }
+        .s12 { top: 27%; left: 1%; }
+
+        /* Alt cərgə (4 nəfər) */
+        .s7 { bottom: 0%; right: 1%; }
+        .s8 { bottom: 0%; right: 27.5%; }
+        .s9 { bottom: 0%; left: 27.5%; }
+        .s10 { bottom: 0%; left: 1%; }
+
+        /* MƏRKƏZDƏ FIRLANAN BUTULKA VƏ STATUS YAZISI */
+        .center-hub {
             position: absolute;
-            bottom: 16px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #ffcc00, #f97316);
-            color: #000;
-            border: none;
-            padding: 11px 34px;
-            font-size: 16px;
-            font-weight: 800;
-            border-radius: 25px;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.45);
-            z-index: 15;
         }
-        .chat-area {
+        .bottle-img {
+            width: 44px;
+            height: 112px;
+            background-image: url('images/masa/butulka.jpg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transform: rotate(0deg);
+            transition: transform 4s cubic-bezier(0.12, 0.85, 0.15, 1);
+            mix-blend-mode: multiply;
+        }
+        .center-status {
+            position: absolute;
+            text-align: center;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.2;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.85);
+            pointer-events: none;
+            width: 145px;
+        }
+
+        /* AŞAĞI HİSSƏ: ORİJİNAL KİMİ AÇIQ RƏNGLİ CANLI ÇAT */
+        .chat-zone {
             flex: 1;
-            background: #110c07;
-            border-left: 1px solid rgba(255, 204, 0, 0.25);
+            background: #f5f3ef;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
-        .chat-header {
-            padding: 12px;
-            background: rgba(255, 204, 0, 0.08);
-            font-weight: 700;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 204, 0, 0.2);
-            color: #ffcc00;
-            font-size: 14px;
-        }
-        .chat-messages {
+        .chat-feed {
             flex: 1;
-            padding: 12px;
+            padding: 10px 12px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
-        .msg { font-size: 13px; line-height: 1.4; word-break: break-word; }
-        .name-oglan { color: #38bdf8; font-weight: 700; }
-        .name-qiz { color: #f472b6; font-weight: 700; }
-        .name-vip-oglan { color: #2563eb; font-weight: 800; }
-        .name-vip-qiz { color: #ef4444; font-weight: 800; }
-
-        .chat-input-area {
-            padding: 8px;
+        .chat-row {
             display: flex;
-            gap: 6px;
-            border-top: 1px solid rgba(255, 204, 0, 0.2);
+            align-items: flex-start;
+            gap: 8px;
+            background: #fff;
+            padding: 7px 10px;
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
         }
-        .chat-input {
+        .chat-row img {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .chat-body { flex: 1; font-size: 13.5px; color: #1f2937; line-height: 1.35; }
+        .chat-sender { font-weight: 800; margin-right: 4px; }
+        .sender-oglan { color: #0284c7; }
+        .sender-qiz { color: #db2777; }
+        .sender-vip-oglan { color: #1d4ed8; }
+        .sender-vip-qiz { color: #dc2626; }
+        .sys-row {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #92400e;
+            background: #fef3c7;
+            padding: 5px 10px;
+            border-radius: 10px;
+        }
+
+        /* Alt Mesaj Yazma Paneli */
+        .chat-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: #fff;
+            border-top: 1px solid #e5e7eb;
+        }
+        .chat-bar input {
             flex: 1;
-            background: #221910;
-            border: 1px solid rgba(255, 204, 0, 0.4);
-            border-radius: 20px;
-            padding: 9px 14px;
-            color: #fff;
+            border: none;
             outline: none;
             font-size: 14px;
+            color: #111827;
+            background: transparent;
+            padding: 6px;
         }
-        .send-btn {
-            background: #ffcc00;
-            border: none;
-            color: #000;
-            width: 38px;
-            height: 38px;
+        .send-circle {
+            width: 36px; height: 36px;
             border-radius: 50%;
+            background: #f59e0b;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
-            font-weight: 800;
-        }
-        @media (max-width: 768px) {
-            .game-container { flex-direction: column; }
-            .play-area { flex: 1.45; }
-            .table-bg { width: 310px; height: 310px; }
-            .chat-area { flex: 1; border-left: none; border-top: 1px solid rgba(255, 204, 0, 0.25); }
-            .player { width: 52px; }
-            .player img { width: 42px; height: 42px; }
-            .player .name { font-size: 9px; max-width: 52px; }
+            display: flex; align-items: center; justify-content: center;
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="play-area">
-            <button class="back-btn" onclick="window.location.href='profil.html'">← Profil</button>
-            <div class="table-bg">
-                <div class="bottle" id="bottle"></div>
 
-                <div class="player p1 active" id="seat1">
-                    <img id="mySeatAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="">
-                    <span class="name name-vip-oglan" id="mySeatName">Oyunçu</span>
-                </div>
-                <div class="player p2"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-qiz">Nura</span></div>
-                <div class="player p3"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-oglan">Elnur</span></div>
-                <div class="player p4"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-vip-qiz">Ayan 👑</span></div>
-                <div class="player p5"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-oglan">Ramil</span></div>
-                <div class="player p6"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-qiz">Ləman</span></div>
-                <div class="player p7"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-oglan">Murad</span></div>
-                <div class="player p8"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-qiz">Fidan</span></div>
-                <div class="player p9"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-vip-oglan">Seymur 👑</span></div>
-                <div class="player p10"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-oglan">Vasif</span></div>
-                <div class="player p11"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-qiz">Günel</span></div>
-                <div class="player p12"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="name name-qiz">Aysel</span></div>
+    <!-- YUXARI TAXTA MASA VƏ 12 OYUNÇU -->
+    <div class="table-zone">
+        <div class="top-hud">
+            <div class="hud-left">
+                <div class="heart-counter">❤️ <span id="hudHearts">0</span></div>
             </div>
-            <button class="spin-btn" onclick="spinBottle()">Fırlat</button>
+            <div class="hud-icons">
+                <button class="hud-btn" onclick="spinBottle()" title="Fırlat">🎡</button>
+                <button class="hud-btn" onclick="window.location.href='profil.html'" title="Profil">☰</button>
+                <button class="hud-btn" onclick="window.location.href='profil.html'" title="Çıxış">🚪</button>
+            </div>
+            <div class="masa-info">
+                <div>Masa<br>511</div>
+                <span style="font-size:18px;">🔄</span>
+            </div>
         </div>
 
-        <div class="chat-area">
-            <div class="chat-header">Masa Çatı - Masa 511</div>
-            <div class="chat-messages" id="chatBox"></div>
-            <div class="chat-input-area">
-                <input type="text" class="chat-input" id="msgInput" placeholder="Mesaj yazın...">
-                <button class="send-btn" onclick="sendMessage()">➤</button>
+        <div class="seats-wrapper">
+            <!-- Mərkəz Butulka -->
+            <div class="center-hub" onclick="spinBottle()">
+                <div class="bottle-img" id="bottle"></div>
+                <div class="center-status" id="centerStatus">Fırlatmaq üçün<br>butulkaya bas</div>
             </div>
+
+            <!-- 12 Oyunçu Yeri -->
+            <div class="seat s1 active" id="seat1">
+                <img id="myAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="">
+                <span class="nick" id="myNick">Oyunçu</span>
+            </div>
+            <div class="seat s2"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="nick nick-qiz">Nura</span></div>
+            <div class="seat s3"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="nick nick-oglan">Elnur</span></div>
+            <div class="seat s4"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="nick nick-vip-qiz">👑 Ayan</span></div>
+
+            <div class="seat s5"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="nick nick-oglan">Ramil</span></div>
+            <div class="seat s6"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="nick nick-qiz">Ləman</span></div>
+
+            <div class="seat s7"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="nick nick-oglan">Murad</span></div>
+            <div class="seat s8"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="nick nick-qiz">Fidan</span></div>
+            <div class="seat s9"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="nick nick-vip-oglan">👑 Seymur</span></div>
+            <div class="seat s10"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="nick nick-oglan">Vasif</span></div>
+
+            <div class="seat s11"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="nick nick-qiz">Günel</span></div>
+            <div class="seat s12"><img src="https://cdn-icons-png.flaticon.com/512/149/149071.png"><span class="nick nick-qiz">Aysel</span></div>
+        </div>
+    </div>
+
+    <!-- AŞAĞI CANLI ÇAT -->
+    <div class="chat-zone">
+        <div class="chat-feed" id="chatFeed"></div>
+        <div class="chat-bar">
+            <input type="text" id="msgInput" placeholder="Mesajı bura yaz..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="send-circle" onclick="sendMessage()">➤</button>
         </div>
     </div>
 
     <script>
         const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
         const rawUser = localStorage.getItem("currentUser");
-        const me = rawUser ? JSON.parse(rawUser) : { username: "Qonaq", gender: "Kişi", vip: false };
+        const me = rawUser ? JSON.parse(rawUser) : { username: "Alik", gender: "Kişi", vip: true, hearts: 0 };
 
         const isVip = me.vip && (!me.vipUntil || Number(me.vipUntil) > Date.now());
         const isFemale = me.gender === "Qadın";
-        const myColorClass = isVip
-            ? (isFemale ? "name-vip-qiz" : "name-vip-oglan")
-            : (isFemale ? "name-qiz" : "name-oglan");
 
-        document.getElementById("mySeatAvatar").src = me.avatar || DEFAULT_AVATAR;
-        const myNameEl = document.getElementById("mySeatName");
-        myNameEl.textContent = (isVip ? "👑 " : "") + me.username;
-        myNameEl.className = "name " + myColorClass;
+        document.getElementById("hudHearts").textContent = me.hearts || 0;
+        document.getElementById("myAvatar").src = me.avatar || DEFAULT_AVATAR;
+
+        const nickEl = document.getElementById("myNick");
+        nickEl.textContent = (isVip ? "👑 " : "") + me.username;
+        nickEl.className = "nick " + (isVip ? (isFemale ? "nick-vip-qiz" : "nick-vip-oglan") : (isFemale ? "nick-qiz" : "nick-oglan"));
+
+        const senderClass = isVip ? (isFemale ? "sender-vip-qiz" : "sender-vip-oglan") : (isFemale ? "sender-qiz" : "sender-oglan");
+
+        // Hər 12 yerin dəqiq bucaqları (butulkanın ucu düz həmin avatarı göstərsin)
+        const seatAngles = {
+            1: 325, 2: 345, 3: 15, 4: 35,
+            5: 70,  6: 110,
+            7: 145, 8: 165, 9: 195, 10: 215,
+            11: 250, 12: 290
+        };
 
         let currentRotation = 0;
         let isSpinning = false;
@@ -257,53 +337,59 @@
             if (isSpinning) return;
             isSpinning = true;
 
-            const bottle = document.getElementById('bottle');
-            const randomPlayerIndex = Math.floor(Math.random() * 12) + 1;
-            const targetDegrees = (randomPlayerIndex - 1) * 30;
-            currentRotation += 1800 + targetDegrees - (currentRotation % 360);
+            const bottle = document.getElementById("bottle");
+            const statusEl = document.getElementById("centerStatus");
+            statusEl.innerHTML = "Fırlanır...";
 
-            bottle.style.transform = `translate(-50%, -50%) rotate(${currentRotation}deg)`;
-            document.querySelectorAll('.player').forEach(p => p.classList.remove('active'));
+            const chosenSeat = Math.floor(Math.random() * 12) + 1;
+            const targetAngle = seatAngles[chosenSeat];
+            currentRotation += 1800 + targetAngle - (currentRotation % 360);
+
+            bottle.style.transform = `rotate(${currentRotation}deg)`;
+            document.querySelectorAll(".seat").forEach(s => s.classList.remove("active"));
 
             setTimeout(() => {
                 isSpinning = false;
-                const luckyPlayer = document.querySelector(`.p${randomPlayerIndex}`);
-                if (luckyPlayer) {
-                    luckyPlayer.classList.add('active');
-                    const playerName = luckyPlayer.querySelector('.name').innerText;
-                    addSystemMessage(`Butulka ${playerName} üzərində dayandı! 🎯`);
+                const targetEl = document.querySelector(`.s${chosenSeat}`);
+                if (targetEl) {
+                    targetEl.classList.add("active");
+                    const name = targetEl.querySelector(".nick").textContent;
+                    statusEl.innerHTML = `Seçildi:<br>${name}`;
+                    addSystemMsg(`🍾 Butulka ${name} üzərində dayandı!`);
                 }
             }, 4000);
         }
 
         function sendMessage() {
-            const input = document.getElementById('msgInput');
-            const chatBox = document.getElementById('chatBox');
-            if (input.value.trim() === "") return;
+            const input = document.getElementById("msgInput");
+            const text = input.value.trim();
+            if (!text) return;
 
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'msg';
-            msgDiv.innerHTML = `<span class="${myColorClass}">${me.username}:</span> ${input.value}`;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            const feed = document.getElementById("chatFeed");
+            const row = document.createElement("div");
+            row.className = "chat-row";
+            row.innerHTML = `
+                <img src="${me.avatar || DEFAULT_AVATAR}" alt="">
+                <div class="chat-body">
+                    <span class="chat-sender ${senderClass}">${isVip ? "👑 " : ""}${me.username}:</span>
+                    <span>${text}</span>
+                </div>
+            `;
+            feed.appendChild(row);
+            feed.scrollTop = feed.scrollHeight;
             input.value = "";
         }
 
-        function addSystemMessage(text) {
-            const chatBox = document.getElementById('chatBox');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'msg';
-            msgDiv.style.color = '#ffcc00';
-            msgDiv.innerHTML = `<strong>Sistem:</strong> ${text}`;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+        function addSystemMsg(text) {
+            const feed = document.getElementById("chatFeed");
+            const div = document.createElement("div");
+            div.className = "sys-row";
+            div.textContent = text;
+            feed.appendChild(div);
+            feed.scrollTop = feed.scrollHeight;
         }
 
-        document.getElementById('msgInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-
-        addSystemMessage(`${me.username} masaya qoşuldu!`);
+        addSystemMsg(`${me.username} masaya qoşuldu!`);
     </script>
 </body>
 </html>
