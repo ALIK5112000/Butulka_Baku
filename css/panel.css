@@ -1,0 +1,38 @@
+#ustPanel {
+  position: absolute; top: 0; left: 0; width: 100%; height: 13vw;
+  z-index: 5; color: #fff;
+  --dairə: rgba(190, 95, 10, .42); /* düymə dairələrinin rəngi */
+}
+#ustPanel .urek {
+  position: absolute; left: 2.4vw; top: 2vw; width: 8.6vw; height: 8.6vw;
+  filter: drop-shadow(0 .4vw .6vw rgba(0,0,0,.25)); cursor: pointer;
+}
+#urekSayi {
+  position: absolute; left: 12.4vw; top: 2.4vw; line-height: 7.8vw;
+  font-size: 3.4vw; font-weight: 700; text-shadow: 0 .2vw .6vw rgba(0,0,0,.4);
+}
+.ub {
+  position: absolute; top: 2.5vw; width: 7.6vw; height: 7.6vw; margin-left: -3.8vw;
+  border: 0; padding: 0; border-radius: 50%; background: var(--dairə);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font: 700 2.9vw Roboto, Arial, sans-serif; cursor: pointer;
+}
+.ub svg {
+  width: 4.6vw; height: 4.6vw; fill: none; stroke: #fff;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.ub .nuqte {
+  position: absolute; top: .1vw; right: .3vw; width: 2.2vw; height: 2.2vw;
+  background: #ff4d00; border: .3vw solid #fff; border-radius: 50%;
+}
+.pill {
+  position: absolute; top: 9vw; transform: translateX(-50%);
+  background: #fff; color: #7a4a1a; font-size: 1.9vw; font-weight: 700;
+  padding: .5vw 1.6vw; border-radius: 2vw; white-space: nowrap;
+  box-shadow: 0 .3vw .8vw rgba(0,0,0,.25);
+}
+#masaYazi {
+  position: absolute; left: 85.4vw; top: 3.4vw; transform: translateX(-50%);
+  text-align: center; font-size: 2.9vw; line-height: 3vw; font-weight: 700;
+  text-shadow: 0 .2vw .6vw rgba(0,0,0,.4);
+}
