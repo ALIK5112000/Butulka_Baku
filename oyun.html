@@ -46,7 +46,11 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 14px;
         }
+        .heart-group:active { transform: scale(0.94); }
         .heart-svg {
             width: 32px;
             height: 32px;
@@ -143,7 +147,7 @@
             cursor: pointer;
         }
 
-        /* 12 OYUNÇU MEYDANÇASI (ORİJİNAL ÖLÇÜ VƏ CİZGİSİZ ŞƏKİL) */
+        /* 12 OYUNÇU MEYDANÇASI */
         .seats-wrapper {
             position: relative;
             flex: 1;
@@ -176,7 +180,6 @@
             justify-content: center;
             position: relative;
         }
-        /* Ağ cizgi yoxdur, yalnız təmiz yumşaq kölgə */
         .seat.occupied .seat-box {
             border: none;
             box-shadow: 0 3px 8px rgba(0,0,0,0.42);
@@ -264,7 +267,7 @@
             pointer-events: none;
         }
 
-        /* AŞAĞI REAL-VAXT ÇAT (HƏMİŞƏ GÖRÜNƏN) */
+        /* AŞAĞI REAL-VAXT ÇAT */
         .chat-zone {
             flex: 1;
             min-height: 0;
@@ -344,6 +347,191 @@
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
         }
+
+        /* PƏNCƏRƏSİZ SADƏ SÖZ BİLDİRİŞİ (TOAST) */
+        .toast-word {
+            position: fixed;
+            top: 48%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            color: #ffffff;
+            font-size: 17px;
+            font-weight: 900;
+            text-align: center;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.85);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            z-index: 9999;
+            width: 90%;
+        }
+        .toast-word.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* ÜRƏKLƏR SATIN AL PƏNCƏRƏSİ (ORİJİNAL ŞƏKİLƏ UYĞUN) */
+        .shop-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .shop-overlay.open { display: flex; }
+
+        .hearts-modal {
+            width: 100%;
+            max-width: 360px;
+            background: #fce8ee;
+            border-radius: 22px;
+            position: relative;
+            box-shadow: 0 14px 36px rgba(0,0,0,0.4);
+            overflow: visible;
+        }
+        .hearts-modal-header {
+            background: linear-gradient(180deg, #f47292 0%, #f792aa 100%);
+            padding: 13px 16px;
+            border-top-left-radius: 22px;
+            border-top-right-radius: 22px;
+            text-align: center;
+            color: #fff;
+            font-size: 17px;
+            font-weight: 800;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .modal-close-circle {
+            position: absolute;
+            top: -12px;
+            right: -10px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #fff;
+            border: none;
+            color: #b4533c;
+            font-size: 18px;
+            font-weight: 900;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .hearts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 12px 10px 8px;
+        }
+        .h-card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 9px 5px 7px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+            min-height: 138px;
+        }
+        .ribbon-tag {
+            position: absolute;
+            top: -7px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #9333ea;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 8px;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .h-card-title {
+            font-size: 10px;
+            font-weight: 800;
+            color: #d97706;
+            line-height: 1.15;
+            margin-top: 2px;
+        }
+        .h-card-amount {
+            font-size: 15px;
+            font-weight: 900;
+            color: #ea580c;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            margin-top: 2px;
+        }
+        .h-card-bonus {
+            font-size: 9.5px;
+            font-weight: 800;
+            color: #f59e0b;
+        }
+        .h-card-art {
+            font-size: 32px;
+            margin: 4px 0;
+            line-height: 1;
+        }
+        .h-card-sub {
+            font-size: 9px;
+            color: #6b7280;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .btn-blue-pill {
+            width: 92%;
+            padding: 6px 0;
+            border: none;
+            border-radius: 9px;
+            background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #1e3a8a;
+        }
+        .btn-green-pill {
+            width: 92%;
+            padding: 6px 0;
+            border: none;
+            border-radius: 9px;
+            background: linear-gradient(180deg, #9be12c, #65a30d);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #4d7c0f;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+        .btn-green-pill:active, .btn-blue-pill:active {
+            transform: translateY(1px);
+        }
+
+        .sellers-bar {
+            margin: 6px 10px 12px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1f2937;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
     </style>
 </head>
 <body>
@@ -351,7 +539,7 @@
     <div class="table-zone">
         <!-- ORİJİNAL YUXARI PANEL -->
         <div class="top-hud">
-            <div class="heart-group">
+            <div class="heart-group" onclick="openHeartsShop()" title="Ürəklər satın al">
                 <svg class="heart-svg" viewBox="0 0 36 36">
                     <path d="M18 32.5C18 32.5 3 22.8 3 11.8C3 6.9 6.8 3 11.6 3C14.5 3 17 4.4 18 6.6C19 4.4 21.5 3 24.4 3C29.2 3 33 6.9 33 11.8C33 22.8 18 32.5 18 32.5Z" fill="#f96316" stroke="#ffffff" stroke-width="2.4"/>
                 </svg>
@@ -360,7 +548,7 @@
 
             <div class="hud-icons">
                 <div class="hud-btn-wrap">
-                    <button class="hud-btn" onclick="alert('Gündəlik VIP hədiyyə bonusu aktivdir!')">
+                    <button class="hud-btn" onclick="openHeartsShop()">
                         <svg viewBox="0 0 24 24"><polygon points="12 2 22 12 12 22 2 12 12 2"></polygon><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
                     </button>
                     <span class="sub-pill">1 gün</span>
@@ -423,11 +611,96 @@
         </div>
     </div>
 
+    <!-- ÜRƏKLƏR SATIN AL PƏNCƏRƏSİ -->
+    <div id="heartsShopOverlay" class="shop-overlay" onclick="if(event.target===this) closeHeartsShop()">
+        <div class="hearts-modal">
+            <button class="modal-close-circle" onclick="closeHeartsShop()">✕</button>
+            <div class="hearts-modal-header">Ürəklər satın al</div>
+
+            <div class="hearts-grid">
+                <!-- 1. PREMIUM İCAZƏNAMƏ -->
+                <div class="h-card">
+                    <div class="h-card-title">PREMIUM<br>İCAZƏNAMƏ</div>
+                    <div class="h-card-art">🎟️</div>
+                    <div class="h-card-sub">⏱ 13 saat 51 dəq.</div>
+                    <button class="btn-blue-pill" onclick="showPlainToast('Premium icazənamə aktivdir')">Təfərrüatlar</button>
+                </div>
+
+                <!-- 2. VIP STATUS -->
+                <div class="h-card">
+                    <div class="h-card-title">VIP<br>STATUS</div>
+                    <div class="h-card-art">👑</div>
+                    <div class="h-card-sub" id="shopVipSub">Profil bölməsində</div>
+                    <button class="btn-blue-pill" onclick="showPlainToast('VIP statusu profil ayarlarından aktivləşdirə bilərsiniz')">Təfərrüatlar</button>
+                </div>
+
+                <!-- 3. 14000 ÜRƏK (10000 JETON) -->
+                <div class="h-card">
+                    <div class="ribbon-tag">Ən yaxşı təklif</div>
+                    <div class="h-card-amount">❤️ 14000</div>
+                    <div class="h-card-bonus">40% BONUS</div>
+                    <div class="h-card-art">🧰</div>
+                    <button class="btn-green-pill" onclick="buyHeartsPackage(10000, 14000)">10000</button>
+                </div>
+
+                <!-- 4. 6500 ÜRƏK (5000 JETON) -->
+                <div class="h-card">
+                    <div class="h-card-amount">❤️ 6500</div>
+                    <div class="h-card-bonus">30% BONUS</div>
+                    <div class="h-card-art">🛢️</div>
+                    <button class="btn-green-pill" onclick="buyHeartsPackage(5000, 6500)">5000</button>
+                </div>
+
+                <!-- 5. 1200 ÜRƏK (1000 JETON) -->
+                <div class="h-card">
+                    <div class="ribbon-tag">Ən yaxşı</div>
+                    <div class="h-card-amount">❤️ 1200</div>
+                    <div class="h-card-bonus">20% BONUS</div>
+                    <div class="h-card-art">🍯</div>
+                    <button class="btn-green-pill" onclick="buyHeartsPackage(1000, 1200)">1000</button>
+                </div>
+
+                <!-- 6. 575 ÜRƏK (500 JETON) -->
+                <div class="h-card">
+                    <div class="h-card-amount">❤️ 575</div>
+                    <div class="h-card-bonus">15% BONUS</div>
+                    <div class="h-card-art">🎒</div>
+                    <button class="btn-green-pill" onclick="buyHeartsPackage(500, 575)">500</button>
+                </div>
+
+                <!-- 7. 270 ÜRƏK (250 JETON) -->
+                <div class="h-card">
+                    <div class="h-card-amount">❤️ 270</div>
+                    <div class="h-card-bonus">8% BONUS</div>
+                    <div class="h-card-art">📦</div>
+                    <button class="btn-green-pill" onclick="buyHeartsPackage(250, 270)">250</button>
+                </div>
+
+                <!-- 8. 105 ÜRƏK (100 JETON) -->
+                <div class="h-card">
+                    <div class="ribbon-tag">⏱ 53:58</div>
+                    <div class="h-card-amount">❤️ 105</div>
+                    <div class="h-card-bonus">🎁 +250 ürək</div>
+                    <div class="h-card-art">❤️❤️</div>
+                    <button class="btn-green-pill" onclick="buyHeartsPackage(100, 105)">100</button>
+                </div>
+            </div>
+
+            <div class="sellers-bar" onclick="showPlainToast('Jeton almaq üçün profildən Admin Alik ilə əlaqə saxlayın')">
+                <span>▶</span>
+                <span>💬 Satıcılardan al (1)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PƏNCƏRƏSİZ SADƏ SÖZ BİLDİRİŞİ -->
+    <div id="plainToast" class="toast-word"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import {
-            getFirestore, doc, setDoc, getDoc, updateDoc,
-            collection, addDoc, onSnapshot, query, orderBy, limit
+            getFirestore, doc, setDoc, getDoc, getDocs, updateDoc,
+            collection, addDoc, onSnapshot, query, where, orderBy, limit, increment
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -448,9 +721,85 @@
             window.location.href = "index.html";
         }
         const me = JSON.parse(rawUser);
-        const isVip = Boolean(me.vip && (!me.vipUntil || Number(me.vipUntil) > Date.now()));
+        let myDocId = me.docId || null;
+        let liveUserData = { ...me };
+        let isVip = Boolean(me.vip && (!me.vipUntil || Number(me.vipUntil) > Date.now()));
 
         document.getElementById("hudHearts").textContent = me.hearts || 0;
+
+        // Pəncərəsiz sadə söz bildirişi
+        let toastTimer = null;
+        window.showPlainToast = function(msg) {
+            const el = document.getElementById("plainToast");
+            el.textContent = msg;
+            el.classList.add("show");
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                el.classList.remove("show");
+            }, 2400);
+        };
+
+        // İstifadəçinin profil balansını (jeton və ürəkləri) real vaxtda sinxronlaşdır
+        async function syncMyUserRealtime() {
+            if (!myDocId) {
+                const q = query(collection(db, "users"), where("id", "==", me.id));
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    myDocId = snap.docs[0].id;
+                    me.docId = myDocId;
+                    localStorage.setItem("currentUser", JSON.stringify(me));
+                }
+            }
+            if (myDocId) {
+                onSnapshot(doc(db, "users", myDocId), (snap) => {
+                    if (!snap.exists()) return;
+                    liveUserData = snap.data();
+                    isVip = Boolean(liveUserData.vip && (!liveUserData.vipUntil || Number(liveUserData.vipUntil) > Date.now()));
+                    document.getElementById("hudHearts").textContent = liveUserData.hearts || 0;
+                    document.getElementById("shopVipSub").textContent = isVip ? "✅ VIP Aktivdir" : "VIP deaktivdir";
+                    localStorage.setItem("currentUser", JSON.stringify({ ...me, ...liveUserData, docId: myDocId }));
+                });
+            }
+        }
+        syncMyUserRealtime();
+
+        // Ürəklər mağazasını aç / bağla
+        window.openHeartsShop = function() {
+            document.getElementById("heartsShopOverlay").classList.add("open");
+        };
+        window.closeHeartsShop = function() {
+            document.getElementById("heartsShopOverlay").classList.remove("open");
+        };
+
+        // Yaşıl düyməyə basanda real-vaxt jeton silinməsi və ürək bonusu alınması
+        let isBuying = false;
+        window.buyHeartsPackage = async function(jetonCost, heartsReward) {
+            if (isBuying) return;
+            const currentJetons = Number(liveUserData.jetons || 0);
+
+            if (currentJetons < jetonCost) {
+                showPlainToast("Kifayət qədər jetonunuz yoxdur");
+                return;
+            }
+
+            if (!myDocId) {
+                showPlainToast("Hesab məlumatı tapılmadı");
+                return;
+            }
+
+            isBuying = true;
+            try {
+                await updateDoc(doc(db, "users", myDocId), {
+                    jetons: increment(-jetonCost),
+                    hearts: increment(heartsReward)
+                });
+                showPlainToast(`+${heartsReward} ❤️ bonus əlavə edildi!`);
+            } catch (e) {
+                showPlainToast("Xəta baş verdi, yenidən yoxlayın");
+            } finally {
+                isBuying = false;
+            }
+        };
 
         // Klaviaturadakı smaylikləri aşkarlayan regex
         const emojiRegex = /[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\u{1F9B0}-\u{1F9B3}]/gu;
@@ -458,7 +807,7 @@
         window.filterEmojiForNonVip = function(inputEl) {
             if (!isVip && emojiRegex.test(inputEl.value)) {
                 inputEl.value = inputEl.value.replace(emojiRegex, "");
-                alert("Smaylik göndərmək yalnız VIP istifadəçilər üçündür!");
+                showPlainToast("Smaylik yalnız VIP istifadəçilər üçündür");
             }
         };
 
@@ -529,7 +878,7 @@
             }
 
             if (!freeSeat) {
-                alert("Masa 511 doludur (12/12)!");
+                showPlainToast("Masa 511 doludur (12/12)");
                 return;
             }
 
@@ -707,7 +1056,7 @@
             if (!isVip && emojiRegex.test(text)) {
                 text = text.replace(emojiRegex, "").trim();
                 input.value = text;
-                alert("Smaylik göndərmək yalnız VIP istifadəçilər üçündür!");
+                showPlainToast("Smaylik yalnız VIP istifadəçilər üçündür");
                 if (!text) return;
             }
 
