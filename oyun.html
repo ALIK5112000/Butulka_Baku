@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="css/yukleme.css">
 <link rel="stylesheet" href="css/masa.css">
 <link rel="stylesheet" href="css/panel.css">
+<link rel="stylesheet" href="css/raund.css">
+<link rel="stylesheet" href="css/chat.css">
 </head>
 <body>
 
@@ -25,6 +27,10 @@
 
     <div id="masa">
       <img id="butulka" src="images/butulka/butulka.png" alt="">
+      <div id="gozleYazi"></div>
+      <div id="sayac"></div>
+      <div id="sizinSecim">Sənin seçimin</div>
+      <div id="dugmeler"><button id="btnImtina">İmtina et</button><button id="btnOp">Öp</button></div>
     </div>
 
     <div id="ustPanel">
@@ -65,10 +71,21 @@
     </div>
 
   </div>
-  <div id="chatYeri"></div>
+
+  <div id="chatYeri">
+    <div id="mesajlar"></div>
+    <div id="smayPanel"></div>
+    <div id="yazBar">
+      <input id="mesajInput" type="text" placeholder="Mesajı bura yaz" enterkeyhint="send" maxlength="300" autocomplete="off">
+      <button id="smayBtn">☺</button>
+      <button id="gonderBtn"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z" fill="#fff"/></svg></button>
+    </div>
+  </div>
 </div>
 
 <script type="module" src="js/oyun/yukleme.js"></script>
 <script type="module" src="js/oyun/panel.js"></script>
+<script type="module" src="js/oyun/raund.js"></script>
+<script type="module" src="js/oyun/chat.js"></script>
 </body>
 </html>
