@@ -1,0 +1,29 @@
+#yuklemeEkrani {
+  background: #6a4fb3; /* rəngi buradan dəyiş */
+}
+#naxis {
+  position: absolute; inset: 0; overflow: hidden;
+  display: flex; flex-wrap: wrap; align-content: flex-start;
+  opacity: .18; pointer-events: none;
+}
+#naxis span {
+  width: 25%; height: 70px; font-size: 32px;
+  display: flex; align-items: center; justify-content: center;
+  filter: grayscale(1) brightness(2);
+}
+.logo {
+  position: absolute; top: 38%; width: 100%;
+  text-align: center; color: #fff; text-shadow: 0 3px 8px rgba(0,0,0,.3);
+}
+.logo-boyuk { font-size: 54px; font-weight: 800; }
+.logo-kicik { font-size: 32px; font-weight: 600; margin-top: -6px; }
+.bar {
+  position: absolute; top: 52%; left: 50%; transform: translateX(-50%);
+  width: 52%; height: 52px; background: #fff; border-radius: 30px;
+  padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+}
+.bar-dolu {
+  height: 100%; width: 0%; border-radius: 20px;
+  background: linear-gradient(#c9a8ff, #9a6bff);
+  transition: width .15s linear;
+}
