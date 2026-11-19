@@ -22,9 +22,10 @@ async function oturacaqTap(oyuncu) {
   for (const k in hamisi) {
     if (hamisi[k] && hamisi[k].uid === oyuncu.uid) {
       const r = ref(rtdb, `${yol}/${k}`);
-      await set(r, oyuncu); // məlumatı yenilə
-      onDisconnect(r).remove();
-      return;
+      // Yer boşdursa və ya hələ səninkidirsə yenilə; başqası oturubsa onun üstünə yazma
+      const n = await runTransaction(r, (cur) => (!cur || cur.uid === oyuncu.uid ? oyuncu : undefined));
+      if (n.committed) { onDisconnect(r).remove(); return; }
+      break; // yer tutulub — aşağıda yeni boş yer axtarılır
     }
   }
   for (let i = 0; i < OTURACAQ_SAYI; i++) {
@@ -68,6 +69,14 @@ async function katil(cari) {
   }
 }
 
+// Eyni anda iki dəfə oturmasın deyə
+let katilir = false;
+async function katilBir(cari) {
+  if (katilir) return;
+  katilir = true;
+  try { await katil(cari); } finally { katilir = false; }
+}
+
 // İlk masa məlumatı gələn kimi tamamlanır (oyun dərhal açılır)
 export async function masaniBasla() {
   let cari = null;
@@ -82,7 +91,9 @@ export async function masaniBasla() {
       return;
     }
     await new Promise((res) => onValue(ref(rtdb, yol), (s) => { cizdir(s.val() || {}); res(); }));
-    katil(cari);
+    // Telefon başqa proqrama keçəndə server yeri boşaldır; bağlantı hər dəfə (yenidən) qurulanda geri otur
+    onValue(ref(rtdb, ".info/connected"), (s) => { if (s.val() === true) katilBir(cari); });
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") katilBir(cari); });
   } catch (e) {
     alert("Masa xətası: " + e.message);
   }
