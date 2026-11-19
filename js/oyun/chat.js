@@ -62,3 +62,5 @@ inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefau
   panel.appendChild(s);
 });
 document.getElementById("smayBtn").onclick = () => panel.classList.toggle("ac");
+// Chat bazadan silinəndə (masa boşalanda) ekrandan da təmizlə
+onValue(query(ref(rtdb, yol), limitToFirst(1)), (s) => { if (!s.exists()) qutu.innerHTML = ""; });
