@@ -1,6 +1,7 @@
 import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu, cinsTap, vipMi, adRengi, toast } from "./yardimci.js";
+import { tanisYaz } from "./dostlar.js";
 import { ref, push, query, limitToLast, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
@@ -36,7 +37,8 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(50)), (s) => {
 });
 
 function gonder() {
-  const metn = inp.value.trim();
+  const metn =   inp.value = "";
+  tanisYaz(metn, cari.docId);
   if (!metn || !men) return;
   if (!vipMi(men) && /[\p{Extended_Pictographic}\p{Regional_Indicator}]/u.test(metn)) {
     toast("Smaylik göndərmək yalnız VIP üçündür");
