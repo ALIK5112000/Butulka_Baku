@@ -38,3 +38,6 @@
 .sahib { margin-top: 4vw; padding: 3vw; border: .4vw dashed #c9bdf0; border-radius: 3vw; background: #f8f5ff; color: #5a3fb3; font-size: 3.5vw; }
 .sahib button { margin-top: 2vw; height: 9vw; padding: 0 4vw; border: 0; border-radius: 4.5vw; background: #7b5bd6; color: #fff; font-weight: 700; font-size: 3.6vw; }
 .coin { width: 4.6vw; height: 4.6vw; vertical-align: -1vw; }
+.dfoto { flex: none; width: 11vw; height: 11vw; border-radius: 1.2vw; background: #ddd url("../images/avatar/nophoto.svg") center/cover no-repeat; }
+.bos { color: #b0b0b0; font-size: 3.4vw; padding: 1vw 0 2vw; }
+#mDost { max-height: 50vw; }
