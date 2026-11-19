@@ -23,6 +23,7 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(50)), (s) => {
   const m = s.val();
   const d = document.createElement("div"); d.className = "mesaj";
   const f = document.createElement("div"); f.className = "mfoto";
+  f.style.backgroundImage = 'url("images/avatar/nophoto.svg")';
   sekil(m.uid).then((u) => { if (u) f.style.backgroundImage = `url("${u}")`; });
   const g = document.createElement("div"); g.className = "mgovde";
   const a = document.createElement("span"); a.className = "mad";
