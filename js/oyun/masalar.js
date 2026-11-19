@@ -72,7 +72,6 @@ const gozle = setInterval(() => {
   }
 }, 200);
 yBtn.onclick = () => { if (sayac > 0) return; deyisModal(); };
-
 // ---------- Masanı dəyiş ----------
 async function deyisModal() {
   ac(`<div class="mk"><button class="mx" id="mX">✕</button><h2>Masanı dəyiş</h2>
@@ -80,7 +79,8 @@ async function deyisModal() {
     <div class="arama"><input id="mAra" type="text" inputmode="numeric" placeholder="Masa nömrəsi, məs. 666"><button class="btn-get" id="mGet">Get</button></div>
     <button class="btn-tes" id="mTes">Təsadüfi seçilmiş masa!</button>
     <button class="btn-yar" id="mYar">👑 Masa yarat / Mənim masam</button>
-    <div class="bolum">Dostlar və tanışlar</div><div class="siyahi" id="mDost"></div><div class="bolum">Ən son baş çəkmiş olduğun masalar</div>
+    <div class="bolum">Dostlar və tanışlar</div><div class="siyahi" id="mDost"></div>
+    <div class="bolum">Ən son baş çəkmiş olduğun masalar</div><div class="siyahi" id="mSiya"></div></div>`);
   $("mX").onclick = bagla;
   $("mGet").onclick = () => masayaGir($("mAra").value);
   $("mAra").addEventListener("keydown", (e) => { if (e.key === "Enter") masayaGir($("mAra").value); });
@@ -131,7 +131,7 @@ async function tesadufi() {
 // ---------- Parol pəncərəsi ----------
 function parolModal(n, d) {
   ac(`<div class="mk2"><button class="mx2" id="pX">✕</button><div class="ic"><h2>🔒 Masa #${n}</h2>
-    <p>Bu masa parolludur. Girmək üçün parolu yaz.</p><label style="display:none"></label>
+    <p>Bu masa parolludur. Girmək üçün parolu yaz.</p>
     <input id="pInp" type="text" placeholder="Parol" style="margin-top:4vw"></div>
     <div class="alt"><button class="ok" id="pGir">Daxil ol</button><button class="ig" id="pLegv">Ləğv et</button></div></div>`);
   $("pX").onclick = $("pLegv").onclick = bagla; // olduğun masada qalırsan
@@ -159,17 +159,22 @@ async function yaratModal() {
   const m = await melumat(MASA_NOMRESI);
   const menimki = m && m.sahib === cari.docId;
   const gun = menimki ? Math.ceil((m.bitis - Date.now()) / 86400000) : 0;
+  const sahibHTML = menimki
+    ? `<div class="sahib">Sənin masan #${MASA_NOMRESI}: ${gun} gün qalıb<input id="yPar2" type="text" placeholder="Yeni şifrə (boş = sil)" style="margin-top:2vw"><button id="yYenile">Şifrəni yenilə</button></div>`
+    : "";
   ac(`<div class="mk2"><button class="mx2" id="yX">✕</button><div class="ic"><h2>Masa yarat</h2>
     <p>Öz masan: ${QIYMET} ${COIN}, 30 gün sənindir. Şifrə yazsan, masaya yalnız şifrəni bilənlər gir bilər. Sən masadan çıxsan da masa kilidli qalır (müddət bitənə qədər); 30 gün ərzində şifrəni istədiyin vaxt dəyişə və ya silə bilərsən. Müddət bitəndə masa adi masa olur. Jeton yalnız masa yaranında çıxılır.</p>
-    ${menimki ? `<div class="sahib">Sənin masan #${MASA_NOMRESI}: ${gun} gün qalıb<input id="yPar2" type="text" placeholder="Yeni şifrə (boş = sil)" style="margin-top:2vw"><button id="yYenile">Şifrəni yenilə</button></div>` : ""}
+    ${sahibHTML}
     <label>Masa nömrəsi</label><input id="yNo" type="text" inputmode="numeric" placeholder="Masa nömrəsi: 1-999999 (boş - avtomatik)">
     <label>Şifrə</label><input id="yPar" type="text" placeholder="Şifrə (istəyə bağlı)"></div>
     <div class="alt"><button class="ok" id="yYarat">Yarat · ${COIN} ${QIYMET}</button><button class="ig" id="yLegv">Ləğv et</button></div></div>`);
   $("yX").onclick = $("yLegv").onclick = bagla;
-  if (menimki) $("yYenile").onclick = async () => {
-    await updateDoc(doc(fsdb, "masalar", MASA_NOMRESI), { parolHash: await hash($("yPar2").value.trim()) });
-    toast("Şifrə yeniləndi"); bagla();
-  };
+  if (menimki) {
+    $("yYenile").onclick = async () => {
+      await updateDoc(doc(fsdb, "masalar", MASA_NOMRESI), { parolHash: await hash($("yPar2").value.trim()) });
+      toast("Şifrə yeniləndi"); bagla();
+    };
+  }
   let is = false;
   $("yYarat").onclick = async () => {
     if (is) return;
