@@ -90,7 +90,11 @@ export async function masaniBasla() {
       location.replace("oyun.html?masa=" + (g === MASA_NOMRESI ? "511" : g));
       return;
     }
-    await new Promise((res) => onValue(ref(rtdb, yol), (s) => { cizdir(s.val() || {}); res(); }));
+        const ilk = await new Promise((res) => onValue(ref(rtdb, yol), (s) => { const v = s.val() || {}; cizdir(v); res(v); }));
+    // Masada məndən başqa oyunçu yoxdursa (hamı çıxıb) köhnə chat silinir
+    if (!Object.values(ilk).some((o) => o && o.uid !== cari.docId)) {
+      remove(ref(rtdb, `masalar/${MASA_NOMRESI}/chat`)).catch(() => {});
+    }
     // Telefon başqa proqrama keçəndə server yeri boşaldır; bağlantı hər dəfə (yenidən) qurulanda geri otur
     onValue(ref(rtdb, ".info/connected"), (s) => { if (s.val() === true) katilBir(cari); });
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") katilBir(cari); });
