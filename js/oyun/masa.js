@@ -1,6 +1,7 @@
 import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI, OTURACAQ_SAYI } from "../core/config.js";
 import { cinsTap, vipMi } from "./yardimci.js";
+import { girisIcazesi } from "./masalar.js";
 import { ref, get, set, onValue, onDisconnect, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
@@ -55,6 +56,14 @@ export async function masaniBasla() {
   if (!cari || !cari.docId) { location.href = "index.html"; return; }
 
   try {
+    // Şifrəli masaya parolsuz girişə icazə yoxdur
+    if (!(await girisIcazesi(MASA_NOMRESI))) {
+      alert("Bu masa parolludur");
+      const g = sessionStorage.getItem("sonMasa") || "511";
+      location.replace("oyun.html?masa=" + (g === MASA_NOMRESI ? "511" : g));
+      return;
+    }
+
     onValue(ref(rtdb, yol), (s) => cizdir(s.val() || {}));
 
     const snap = await getDoc(doc(fsdb, "users", cari.docId));
