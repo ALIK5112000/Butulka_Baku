@@ -50,26 +50,12 @@ function cizdir(data) {
   });
 }
 
-export async function masaniBasla() {
-  let cari = null;
-  try { cari = JSON.parse(localStorage.getItem("currentUser")); } catch (e) {}
-  if (!cari || !cari.docId) { location.href = "index.html"; return; }
-
+// Oturacağı arxa planda tut (oyun ekranı gözləmir)
+async function katil(cari) {
   try {
-    // Şifrəli masaya parolsuz girişə icazə yoxdur
-    if (!(await girisIcazesi(MASA_NOMRESI))) {
-      alert("Bu masa parolludur");
-      const g = sessionStorage.getItem("sonMasa") || "511";
-      location.replace("oyun.html?masa=" + (g === MASA_NOMRESI ? "511" : g));
-      return;
-    }
-
-    onValue(ref(rtdb, yol), (s) => cizdir(s.val() || {}));
-
     const snap = await getDoc(doc(fsdb, "users", cari.docId));
     if (!snap.exists()) { location.href = "index.html"; return; }
     const p = snap.data();
-
     await oturacaqTap({
       uid: cari.docId,
       ad: p.username || "Oyunçu",
@@ -77,6 +63,26 @@ export async function masaniBasla() {
       vip: vipMi(p),
       cins: cinsTap(p.gender)
     });
+  } catch (e) {
+    alert("Masa xətası: " + e.message);
+  }
+}
+
+// İlk masa məlumatı gələn kimi tamamlanır (oyun dərhal açılır)
+export async function masaniBasla() {
+  let cari = null;
+  try { cari = JSON.parse(localStorage.getItem("currentUser")); } catch (e) {}
+  if (!cari || !cari.docId) { location.href = "index.html"; return; }
+
+  try {
+    if (!(await girisIcazesi(MASA_NOMRESI))) {
+      alert("Bu masa parolludur");
+      const g = sessionStorage.getItem("sonMasa") || "511";
+      location.replace("oyun.html?masa=" + (g === MASA_NOMRESI ? "511" : g));
+      return;
+    }
+    await new Promise((res) => onValue(ref(rtdb, yol), (s) => { cizdir(s.val() || {}); res(); }));
+    katil(cari);
   } catch (e) {
     alert("Masa xətası: " + e.message);
   }
