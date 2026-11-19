@@ -2,7 +2,7 @@ import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI, OTURACAQ_SAYI } from "../core/config.js";
 import { cinsTap, vipMi } from "./yardimci.js";
 import { girisIcazesi } from "./masalar.js";
-import { ref, get, set, onValue, onDisconnect, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, get, set, remove, onValue, onDisconnect, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const yol = `masalar/${MASA_NOMRESI}/oturacaqlar`;
