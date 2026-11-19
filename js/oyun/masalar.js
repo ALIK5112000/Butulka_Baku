@@ -43,8 +43,18 @@ export async function girisIcazesi(n) {
   return ok;
 }
 
-function git(n) {
+async function git(n) {
   sessionStorage.setItem("sonMasa", MASA_NOMRESI);
+  // Köhnə masadakı yerini dərhal boşalt (iki masada eyni anda görünməsin)
+  try {
+    const yolu = `masalar/${MASA_NOMRESI}/oturacaqlar`;
+    const hamisi = (await get(ref(rtdb, yolu))).val() || {};
+    await Promise.all(Object.keys(hamisi)
+      .filter((k) => hamisi[k] && hamisi[k].uid === cari.docId)
+      .map((k) => remove(ref(rtdb, `${yolu}/${k}`))));
+    await remove(ref(rtdb, `masalar/${MASA_NOMRESI}/opus/${cari.docId}`));
+    await remove(ref(rtdb, "prezans/" + cari.docId));
+  } catch (e) {}
   location.href = "oyun.html?masa=" + n;
 }
 
