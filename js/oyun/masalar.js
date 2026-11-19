@@ -2,7 +2,7 @@ import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu, toast } from "./yardimci.js";
 import { dostBolmesi } from "./dostlar.js";
-import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, get, remove, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc, updateDoc, runTransaction, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 document.head.insertAdjacentHTML("beforeend", '<link rel="stylesheet" href="css/masalar.css">');
