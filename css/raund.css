@@ -1,13 +1,14 @@
-.yer .foto { position: relative; }
+.yer .foto { position: relative; font-size: 17vw; }
+.orta .foto { position: relative; font-size: 18.5vw; }
 .yer.gizli { opacity: 0 !important; }
 
-/* Öpüş stikeri (orijinal ölçüdə) */
+/* Öpüş nişanı: şəklə nisbətən (orijinalla eyni yer və ölçü) */
 .opus {
-  position: absolute; top: -1.6vw; right: -1.6vw; width: 5vw; height: 4.4vw;
-  align-items: center; justify-content: center; display: none;
+  position: absolute; left: 85.1%; top: 3.5%; width: .24em; height: .213em;
+  display: none; align-items: center; justify-content: center; pointer-events: none;
 }
-.opus i { position: absolute; font-style: normal; font-size: 3.6vw; line-height: 4.4vw; }
-.opus b { position: relative; color: #fff; font-size: 2.3vw; text-shadow: 0 0 .5vw #000; }
+.opus svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.opus b { position: relative; color: #fff; font-size: .125em; font-weight: 700; line-height: 1; }
 
 #gozleYazi {
   display: none; position: absolute; left: 0; width: 100%; top: 59vw; z-index: 3;
@@ -16,13 +17,35 @@
 }
 #sayac {
   display: none; position: absolute; left: 50%; top: 61vw; z-index: 4;
-  transform: translate(-50%, -50%); font-size: 11vw; font-weight: 800;
-  color: rgba(255,255,255,.88); text-shadow: 0 .4vw 1.4vw rgba(0,0,0,.4);
+  transform: translate(-50%, -50%); font-size: 8vw; font-weight: 700;
+  color: rgba(255,255,255,.92); text-shadow: 0 .3vw 1vw rgba(0,0,0,.35);
 }
 #sizinSecim {
-  display: none; position: absolute; left: 0; width: 100%; top: 40vw; z-index: 4;
-  text-align: center; color: #fff; font-size: 5.4vw; font-weight: 700;
-  text-shadow: 0 .3vw 1.2vw rgba(0,0,0,.5);
+  display: none; position: absolute; left: 50%; top: 38.6vw; width: 34vw; z-index: 4;
+  transform: translateX(-50%); text-align: center; color: #fff;
+  font-size: 3.6vw; line-height: 1.2; font-weight: 700; text-shadow: 0 .3vw 1.2vw rgba(0,0,0,.5);
+}
+
+/* Növbə: başqalarının gördüyü (oyunçunun altında) */
+#novbeYazi {
+  display: none; position: absolute; transform: translateX(-50%); z-index: 3;
+  flex-direction: column; align-items: center; text-align: center; color: #fff;
+  font-size: 2.8vw; line-height: 1.15; text-shadow: 0 .2vw .8vw rgba(0,0,0,.5); pointer-events: none;
+}
+#novbeYazi svg { width: 2.6vw; height: 4.3vw; margin-bottom: .4vw; }
+#novbeYazi.ust { flex-direction: column-reverse; }
+#novbeYazi.ust svg { transform: rotate(180deg); margin: .4vw 0 0; }
+
+/* Növbə: fırladanın gördüyü (şüşənin yanında) */
+#firlatYazi {
+  display: none; position: absolute; left: 18vw; top: 57vw; z-index: 4; align-items: center; gap: 1vw;
+  color: #fff; font-size: 3.4vw; font-weight: 700; line-height: 1.15; text-align: right;
+  text-shadow: 0 .3vw 1vw rgba(0,0,0,.5); pointer-events: none;
+}
+#firlatYazi svg { width: 7vw; height: 4.2vw; }
+#butulkaDokun {
+  display: none; position: absolute; left: 50%; top: 61.6vw; width: 34vw; height: 34vw;
+  transform: translate(-50%, -50%); z-index: 3;
 }
 
 .orta {
@@ -38,6 +61,8 @@
   position: absolute; left: -3vw; right: -3vw; top: 19.6vw; text-align: center;
   font-size: 2.7vw; color: #fff; text-shadow: 0 .2vw .6vw rgba(0,0,0,.55); white-space: nowrap;
 }
+/* Şəkil qoymayanlar üçün standart avatar */
+.yer .foto, .orta .foto { background-image: url("../images/avatar/nophoto.svg"); }
 
 /* Oxlar: kimin kimə nə verdiyi */
 #oxlar {
