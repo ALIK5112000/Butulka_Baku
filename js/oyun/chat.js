@@ -37,7 +37,7 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(50)), (s) => {
 });
 
 function gonder() {
-  const metn =   inp.value = "";
+  const metn = inp.value.trim();
   tanisYaz(metn, cari.docId);
   if (!metn || !men) return;
   if (!vipMi(men) && /[\p{Extended_Pictographic}\p{Regional_Indicator}]/u.test(metn)) {
