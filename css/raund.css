@@ -1,6 +1,6 @@
 .yer .foto { position: relative; font-size: 17vw; }
 .orta .foto { position: relative; font-size: 17vw; }
-.yer.gizli { opacity: 0 !important; }
+.yer.gizli { visibility: hidden !important; }
 
 /* Öpüş nişanı: şəklə nisbətən (orijinalla eyni yer və ölçü) */
 .opus {
