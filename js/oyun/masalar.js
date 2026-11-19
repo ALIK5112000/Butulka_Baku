@@ -1,6 +1,7 @@
 import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu, toast } from "./yardimci.js";
+import { dostBolmesi } from "./dostlar.js";
 import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc, updateDoc, runTransaction, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
@@ -79,12 +80,13 @@ async function deyisModal() {
     <div class="arama"><input id="mAra" type="text" inputmode="numeric" placeholder="Masa nömrəsi, məs. 666"><button class="btn-get" id="mGet">Get</button></div>
     <button class="btn-tes" id="mTes">Təsadüfi seçilmiş masa!</button>
     <button class="btn-yar" id="mYar">👑 Masa yarat / Mənim masam</button>
-    <div class="bolum">Ən son baş çəkmiş olduğun masalar</div><div class="siyahi" id="mSiya"></div></div>`);
+    <div class="bolum">Dostlar və tanışlar</div><div class="siyahi" id="mDost"></div><div class="bolum">Ən son baş çəkmiş olduğun masalar</div>
   $("mX").onclick = bagla;
   $("mGet").onclick = () => masayaGir($("mAra").value);
   $("mAra").addEventListener("keydown", (e) => { if (e.key === "Enter") masayaGir($("mAra").value); });
   $("mTes").onclick = tesadufi;
   $("mYar").onclick = yaratModal;
+  unsubs.push(dostBolmesi($("mDost"), masayaGir, IK_O, IK_Q));
 
   let sahibler = [];
   try {
