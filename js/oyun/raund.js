@@ -6,15 +6,23 @@ import { ref, onValue, set, runTransaction, onDisconnect, serverTimestamp } from
 const cari = cariOyuncu();
 if (cari && cari.docId) {
   const B = `masalar/${MASA_NOMRESI}`;
-  const GOZLE = 8000, SPIN = 3400, CUT = 9000, ARA = 1500; // ms
+  const GOZLE = 8000, SPIN = 5000, UCUS = 900, CUT = 9900, ARA = 1500; // ms (CUT uçuş daxildir)
   const $ = (id) => document.getElementById(id);
   const butulka = $("butulka"), masa = $("masa");
-  const OPAC = ", opacity .3s";
+  const OPAC = ", opacity .9s";
   let yerler = {}, raund = null, opus = {}, offset = 0, hazir = 0;
-  let bucaq = 0, sonSpin = 0, ortada = false, ortaIdx = null, secildi = 0;
+  let bucaq = 0, sonSpin = 0, ortada = false, ortaIdx = null, secildi = 0, sesBas = 0;
   const indi = () => Date.now() + offset;
   const temiz = (v) => { const o = {}; Object.entries(v || {}).forEach(([k, x]) => { if (x) o[k] = x; }); return o; };
   const rnd = (a) => a[Math.floor(Math.random() * a.length)];
+
+  // Növbə səsi (brauzer icazəsi üçün ilk toxunuşda "hazırlanır")
+  const novbeSes = new Audio("sesler/novbe.mp3");
+  novbeSes.preload = "auto";
+  document.addEventListener("pointerdown", () => {
+    novbeSes.muted = true;
+    novbeSes.play().then(() => { novbeSes.pause(); novbeSes.currentTime = 0; novbeSes.muted = false; }).catch(() => { novbeSes.muted = false; });
+  }, { once: true });
 
   onValue(ref(rtdb, ".info/serverTimeOffset"), (s) => { offset = s.val() || 0; });
   onValue(ref(rtdb, B + "/oturacaqlar"), (s) => { yerler = temiz(s.val()); hazir |= 1; });
@@ -70,7 +78,7 @@ if (cari && cari.docId) {
   }
   function geri(d, i) {
     const [x, z] = YER_XY[i]; d.style.left = x + "vw"; d.style.top = z + "vw";
-    setTimeout(() => d.classList.remove("goster"), 700);
+    setTimeout(() => d.classList.remove("goster"), 850);
   }
 
   function kadr() {
@@ -91,13 +99,13 @@ if (cari && cari.docId) {
       : t < SPIN ? "spin" : t < SPIN + CUT ? "cut" : "ara";
     const cut = faza === "cut";
 
-    // Şüşə
+    // Şüşə (5 san yavaşıyaraq fırlanır, uçuş zamanı solur)
     if (faza === "spin" && sp.t !== sonSpin) {
       sonSpin = sp.t;
       const [x, y] = YER_XY[sp.hedef];
       const a = Math.atan2(x - 50, -(y - 61.6)) * 180 / Math.PI;
-      bucaq += 1440 + ((((a - bucaq) % 360) + 360) % 360);
-      butulka.style.transition = "transform 3.4s cubic-bezier(.15,.8,.2,1)" + OPAC;
+      bucaq += 1800 + ((((a - bucaq) % 360) + 360) % 360);
+      butulka.style.transition = "transform 5s cubic-bezier(.12,.55,.12,1)" + OPAC;
       butulka.style.transform = `translate(-50%,-50%) rotate(${bucaq}deg)`;
     } else if ((faza === "gozle" || faza === "yox" || faza === "ara") && bucaq !== 0) {
       bucaq = 0;
@@ -106,23 +114,28 @@ if (cari && cari.docId) {
     }
     butulka.style.opacity = cut ? 0 : 1;
 
-    // Cüt ortaya gəlir / geri qayıdır
+    // Cüt ortaya uçur / geri qayıdır (ölçü dəyişmir)
     if (cut && !ortada) {
       ortada = true; ortaIdx = { q: sp.q, o: sp.o };
       gotur(oQ, sp.q, MQ); gotur(oO, sp.o, MO);
       gizle(sp.q, true); gizle(sp.o, true);
-      setTimeout(() => { // gizli ikən şüşəni düz vəziyyətə qaytar
-        if (bucaq !== 0) { butulka.style.transition = "opacity .3s"; butulka.style.transform = "translate(-50%,-50%) rotate(0deg)"; bucaq = 0; }
-      }, 400);
+      setTimeout(() => { // şüşə tam solandan sonra düz vəziyyətə qaytar
+        if (bucaq !== 0) { butulka.style.transition = "opacity .9s"; butulka.style.transform = "translate(-50%,-50%) rotate(0deg)"; bucaq = 0; }
+      }, 1100);
     }
     if (!cut && ortada) {
       ortada = false; const z = ortaIdx;
       geri(oQ, z.q); geri(oO, z.o);
-      setTimeout(() => { gizle(z.q, false); gizle(z.o, false); }, 700);
+      setTimeout(() => { gizle(z.q, false); gizle(z.o, false); }, 850);
     }
 
-    // Növbə yazıları
+    // Növbə yazıları və səsi
     const menFirlat = faza === "gozle" && raund.spu === ben;
+    if (menFirlat && raund.bas !== sesBas) {
+      sesBas = raund.bas;
+      novbeSes.currentTime = 0;
+      novbeSes.play().catch(() => {});
+    }
     $("firlatYazi").style.display = menFirlat ? "flex" : "none";
     $("butulkaDokun").style.display = menFirlat ? "block" : "none";
     const nv = $("novbeYazi");
@@ -135,14 +148,15 @@ if (cari && cari.docId) {
       nv.style.display = "flex";
     } else nv.style.display = "none";
 
-    // Ortadakı raund
+    // Ortadakı raund (sayğac uçuş bitəndən sonra başlayır: 9 → 0)
     const sec = (cut && raund.sec) || {};
-    $("sayac").style.display = cut ? "block" : "none";
+    const sayDa = cut && t >= SPIN + UCUS;
+    $("sayac").style.display = sayDa ? "block" : "none";
     $("sizinSecim").style.display = cut ? "block" : "none";
-    $("oxlar").style.display = cut ? "block" : "none";
+    $("oxlar").style.display = sayDa ? "block" : "none";
     let goster = false;
     if (cut) {
-      $("sayac").textContent = Math.ceil((SPIN + CUT - t) / 1000);
+      if (sayDa) $("sayac").textContent = Math.ceil((SPIN + CUT - t) / 1000);
       const sq = sec[sp.qu], so = sec[sp.ou];
       const oynayan = ben === sp.qu || ben === sp.ou;
       let metn;
@@ -152,7 +166,7 @@ if (cari && cari.docId) {
       else if (sq === "yox" || so === "yox") metn = "Biri imtina etdi";
       else metn = "Onlar öpəcəklər ya yox?";
       $("sizinSecim").textContent = metn;
-      goster = oynayan && !sec[ben] && secildi !== sp.t;
+      goster = sayDa && oynayan && !sec[ben] && secildi !== sp.t;
       ox("oxU", "bdU", sq); ox("oxA", "bdA", so);
       nishan(oQ.querySelector(".foto"), opus[sp.qu] || 0);
       nishan(oO.querySelector(".foto"), opus[sp.ou] || 0);
