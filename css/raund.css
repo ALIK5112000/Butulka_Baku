@@ -1,5 +1,5 @@
 .yer .foto { position: relative; font-size: 17vw; }
-.orta .foto { position: relative; font-size: 18.5vw; }
+.orta .foto { position: relative; font-size: 17vw; }
 .yer.gizli { opacity: 0 !important; }
 
 /* Öpüş nişanı: şəklə nisbətən (orijinalla eyni yer və ölçü) */
@@ -48,17 +48,19 @@
   transform: translate(-50%, -50%); z-index: 3;
 }
 
+/* Ortaya gələn kart: masadakı ilə EYNİ ölçü (17vw) */
 .orta {
-  position: absolute; width: 18.5vw; height: 18.5vw; transform: translate(-50%, -50%);
-  opacity: 0; z-index: 4; transition: left .7s ease, top .7s ease, opacity .3s;
+  position: absolute; width: 17vw; height: 17vw; transform: translate(-50%, -50%);
+  opacity: 0; z-index: 4;
+  transition: left .85s cubic-bezier(.4, 0, .2, 1), top .85s cubic-bezier(.4, 0, .2, 1), opacity .3s;
 }
 .orta.goster { opacity: 1; }
 .orta .foto {
-  width: 100%; height: 100%; border-radius: 2.4vw; background: #777 center/cover no-repeat;
+  width: 100%; height: 100%; border-radius: 2vw; background: #777 center/cover no-repeat;
   box-shadow: 0 .6vw 1.6vw rgba(0,0,0,.3);
 }
 .orta .ad {
-  position: absolute; left: -3vw; right: -3vw; top: 19.6vw; text-align: center;
+  position: absolute; left: -3vw; right: -3vw; top: 17.8vw; text-align: center;
   font-size: 2.7vw; color: #fff; text-shadow: 0 .2vw .6vw rgba(0,0,0,.55); white-space: nowrap;
 }
 /* Şəkil qoymayanlar üçün standart avatar */
