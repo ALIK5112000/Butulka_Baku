@@ -88,4 +88,10 @@
 <script type="module" src="js/oyun/raund.js"></script>
 <script type="module" src="js/oyun/chat.js"></script>
 </body>
+  <script type="module">
+import("./js/oyun/yukleme.js").catch((e) => {
+  document.body.insertAdjacentHTML("afterbegin",
+    '<div style="position:fixed;z-index:99;top:0;left:0;right:0;background:#fff;color:red;padding:8px;font-size:13px;word-break:break-all">' + e.message + '</div>');
+});
+  </script>
 </html>
