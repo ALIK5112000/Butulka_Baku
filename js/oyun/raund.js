@@ -6,7 +6,12 @@ import { ref, onValue, set, runTransaction, onDisconnect, serverTimestamp } from
 const cari = cariOyuncu();
 if (cari && cari.docId) {
   const B = `masalar/${MASA_NOMRESI}`;
-  const GOZLE = 8000, SPIN = 5000, UCUS = 900, CUT = 9900, ARA = 1500; // ms (CUT uçuş daxildir)
+  // ---- Zamanlar (ms). Sürəti buradan tənzimlə ----
+  const GOZLE = 8000, SPIN = 5000, ARA = 1500;
+  const UCUS = 950;            // cütün ortaya uçma müddəti
+  const QAYIT = 600;           // yerinə qayıtma müddəti
+  const CUT = 9000 + UCUS;     // 9 san sayğac + uçuş
+  const EASE = "cubic-bezier(.25,.46,.45,.94)"; // orijinaldakı kimi: sürətli başlayır, yavaş dayanır
   const $ = (id) => document.getElementById(id);
   const butulka = $("butulka"), masa = $("masa");
   const OPAC = ", opacity .9s";
@@ -64,21 +69,26 @@ if (cari && cari.docId) {
     masa.appendChild(d); return d;
   }
   const oQ = yarat(), oO = yarat();
-  const MQ = [37.6, 61], MO = [62.4, 61];
+  const MQ = [37.6, 61], MO = [62.4, 61]; // sol və sağ mərkəz
   const gizle = (i, b) => { const e = document.querySelector(".yer-" + i); if (e) e.classList.toggle("gizli", b); };
 
+  // Kart masadakı yerindən başlayır, ortaya uçur (ölçü dəyişmir)
   function gotur(d, i, m) {
     const y = yerler[i] || {};
     d.querySelector(".foto").style.backgroundImage = y.sekil ? `url("${y.sekil}")` : "";
     d.querySelector(".ad").textContent = y.ad || "";
     const [x, z] = YER_XY[i];
     d.style.transition = "none"; d.style.left = x + "vw"; d.style.top = z + "vw";
-    d.classList.add("goster"); void d.offsetWidth;
-    d.style.transition = ""; d.style.left = m[0] + "vw"; d.style.top = m[1] + "vw";
+    d.classList.add("goster"); gizle(i, true); void d.offsetWidth;
+    d.style.transition = `left ${UCUS}ms ${EASE}, top ${UCUS}ms ${EASE}`;
+    d.style.left = m[0] + "vw"; d.style.top = m[1] + "vw";
   }
+  // Kart yerinə qayıdır; çatan anda masadakı şəkil və kart eyni anda dəyişir (ikiqat görünmə yoxdur)
   function geri(d, i) {
-    const [x, z] = YER_XY[i]; d.style.left = x + "vw"; d.style.top = z + "vw";
-    setTimeout(() => d.classList.remove("goster"), 850);
+    const [x, z] = YER_XY[i];
+    d.style.transition = `left ${QAYIT}ms ${EASE}, top ${QAYIT}ms ${EASE}`;
+    d.style.left = x + "vw"; d.style.top = z + "vw";
+    setTimeout(() => { gizle(i, false); d.style.transition = "none"; d.classList.remove("goster"); }, QAYIT);
   }
 
   function kadr() {
@@ -114,11 +124,12 @@ if (cari && cari.docId) {
     }
     butulka.style.opacity = cut ? 0 : 1;
 
-    // Cüt ortaya uçur / geri qayıdır (ölçü dəyişmir)
+    // Sol/sağ: masada solda oturan solda, sağda oturan sağda dayanır (kartlar keçmir)
+    const sol = sp && yerler[sp.q] ? YER_XY[sp.q][0] <= YER_XY[sp.o][0] : true;
+
     if (cut && !ortada) {
       ortada = true; ortaIdx = { q: sp.q, o: sp.o };
-      gotur(oQ, sp.q, MQ); gotur(oO, sp.o, MO);
-      gizle(sp.q, true); gizle(sp.o, true);
+      gotur(oQ, sp.q, sol ? MQ : MO); gotur(oO, sp.o, sol ? MO : MQ);
       setTimeout(() => { // şüşə tam solandan sonra düz vəziyyətə qaytar
         if (bucaq !== 0) { butulka.style.transition = "opacity .9s"; butulka.style.transform = "translate(-50%,-50%) rotate(0deg)"; bucaq = 0; }
       }, 1100);
@@ -126,7 +137,6 @@ if (cari && cari.docId) {
     if (!cut && ortada) {
       ortada = false; const z = ortaIdx;
       geri(oQ, z.q); geri(oO, z.o);
-      setTimeout(() => { gizle(z.q, false); gizle(z.o, false); }, 850);
     }
 
     // Növbə yazıları və səsi
@@ -167,7 +177,8 @@ if (cari && cari.docId) {
       else metn = "Onlar öpəcəklər ya yox?";
       $("sizinSecim").textContent = metn;
       goster = sayDa && oynayan && !sec[ben] && secildi !== sp.t;
-      ox("oxU", "bdU", sq); ox("oxA", "bdA", so);
+      ox("oxU", "bdU", sol ? sq : so);   // yuxarı ox: soldakının seçimi
+      ox("oxA", "bdA", sol ? so : sq);   // aşağı ox: sağdakının seçimi
       nishan(oQ.querySelector(".foto"), opus[sp.qu] || 0);
       nishan(oO.querySelector(".foto"), opus[sp.ou] || 0);
     }
