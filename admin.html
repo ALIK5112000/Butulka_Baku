@@ -334,7 +334,7 @@
 
     <script type="module">
         import { rtdb, fsdb } from "./js/core/firebase.js";
-        import { ref, set, push, remove, onValue, get, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+        import { ref, set, push, remove, onValue, get, update, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
         import { collection, doc, getDoc, setDoc, addDoc, updateDoc, onSnapshot, query, orderBy, limit, increment } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
         const MAIN_ADMIN_DOC = "ErC7uig5zDYVzXPQpal2";
@@ -435,6 +435,10 @@
                 allUsers = [];
                 s.forEach(d => allUsers.push({ docId: d.id, ...d.data() }));
                 searchRatingUser();
+                // Əgər ID axtarış xanasında yazı varsa, önizləməni canlı yenilə
+                if (document.getElementById("idFindInp").value.trim()) {
+                    previewTarget("idFindInp", "idFindPreview");
+                }
             });
 
             loadTableSeats();
@@ -469,6 +473,7 @@
             return allUsers.find(u =>
                 String(u.id || "").toLowerCase() === q ||
                 String(u.customId || "").toLowerCase() === q ||
+                String(u.docId || "").toLowerCase() === q ||
                 (u.username || "").toLowerCase() === q
             ) || allUsers.find(u => (u.username || "").toLowerCase().includes(q));
         }
@@ -593,26 +598,62 @@
             alert(shouldFreeze ? "❄️ Reytinq 0-a salındı və 30 günlük donduruldu!" : "✅ 30 günlük dondurma ləğv edildi!");
         };
 
-        // 3. ID DƏYİŞMƏK VƏ YA AD YAZMAQ
+        // 3. ID DƏYİŞMƏK VƏ YA AD YAZMAQ (REAL-VAXT BAZA + MASA YENİLƏNMƏSİ)
         window.updateUserCustomId = async function() {
-            const u = findUser(document.getElementById("idFindInp").value);
-            const newVal = document.getElementById("newIdValueInp").value.trim();
-            if (!u) return alert("İstifadəçi tapılmadı!");
-            if (!newVal) return alert("Yeni ID nömrəsi və ya ad yazın!");
+            try {
+                const u = findUser(document.getElementById("idFindInp").value);
+                const newVal = document.getElementById("newIdValueInp").value.trim();
+                if (!u) return alert("İstifadəçi tapılmadı!");
+                if (!newVal) return alert("Yeni ID nömrəsi və ya ad yazın!");
 
-            const isNum = /^\d+$/.test(newVal);
-            const payload = {
-                id: isNum ? Number(newVal) : newVal,
-                customId: newVal
-            };
-            if (u.docId === sessionUser.docId) {
-                payload.isAdmin = true;
-                payload.role = "admin";
-                sessionUser.id = payload.id;
-                localStorage.setItem("currentUser", JSON.stringify(sessionUser));
+                // Eyni ID və ya customId artıq başqa istifadəçidə varsa xəbərdarlıq et
+                const duplicate = allUsers.find(other =>
+                    other.docId !== u.docId && (
+                        String(other.customId || "").toLowerCase() === newVal.toLowerCase() ||
+                        String(other.id || "").toLowerCase() === newVal.toLowerCase()
+                    )
+                );
+                if (duplicate) {
+                    return alert(`❌ Bu ID ("${newVal}") artıq "${duplicate.username}" adlı oyunçuda mövcuddur!`);
+                }
+
+                const payload = {
+                    customId: newVal
+                };
+
+                if (u.docId === sessionUser.docId || u.docId === MAIN_ADMIN_DOC) {
+                    payload.isAdmin = true;
+                    payload.role = "admin";
+                    sessionUser.customId = newVal;
+                    localStorage.setItem("currentUser", JSON.stringify(sessionUser));
+                }
+
+                // 1) Firestore bazasında yenilə (profil.html onSnapshot ilə dərhal görəcək)
+                await updateDoc(doc(fsdb, "users", u.docId), payload);
+
+                // 2) Əgər oyunçu hazırda oyunda masada oturubsa, masadakı ID-ni də real-vaxt yenilə
+                try {
+                    const mSnap = await get(ref(rtdb, "masalar"));
+                    const masalar = mSnap.val() || {};
+                    for (const [mNo, mData] of Object.entries(masalar)) {
+                        const seats = (mData && mData.oturacaqlar) || {};
+                        for (const [idx, p] of Object.entries(seats)) {
+                            if (p && (p.uid === u.docId || String(p.id) === String(u.id))) {
+                                await update(ref(rtdb, `masalar/${mNo}/oturacaqlar/${idx}`), {
+                                    customId: newVal
+                                });
+                            }
+                        }
+                    }
+                } catch (rtErr) {}
+
+                document.getElementById("idFindInp").value = "";
+                document.getElementById("newIdValueInp").value = "";
+                document.getElementById("idFindPreview").style.display = "none";
+                alert(`✅ ${u.username} üçün yeni ID "${newVal}" olaraq bazada və profildə real-vaxt yeniləndi!`);
+            } catch (err) {
+                alert("❌ Xəta baş verdi: " + err.message);
             }
-            await updateDoc(doc(fsdb, "users", u.docId), payload);
-            alert(`✅ ${u.username} üçün yeni ID "${newVal}" olaraq bazada yeniləndi!`);
         };
 
         // 4. BAN VƏ ÇATDA SUSDURMAQ
