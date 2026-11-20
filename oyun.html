@@ -3,87 +3,149 @@
 <head>
     <script src="js/core/qoruma.js"></script>
     <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Butulka Baku</title>
-<link rel="stylesheet" href="css/oyun.css">
-<link rel="stylesheet" href="css/yukleme.css">
-<link rel="stylesheet" href="css/masa.css">
-<link rel="stylesheet" href="css/panel.css">
-<link rel="stylesheet" href="css/raund.css">
-<link rel="stylesheet" href="css/chat.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Butulka Baku</title>
+    <link rel="stylesheet" href="css/oyun.css">
+    <link rel="stylesheet" href="css/yukleme.css">
+    <link rel="stylesheet" href="css/masa.css">
+    <link rel="stylesheet" href="css/panel.css">
+    <link rel="stylesheet" href="css/raund.css">
+    <link rel="stylesheet" href="css/chat.css">
 </head>
 <body>
 <div id="yuklemeEkrani" class="ekran aktiv">
-<div id="naxis"></div>
-<div class="logo">
-<div class="logo-boyuk">Butulka</div>
-<div class="logo-kicik">Baku</div>
+    <div id="naxis"></div>
+    <div class="logo">
+        <div class="logo-boyuk">Butulka</div>
+        <div class="logo-kicik">Baku</div>
+    </div>
+    <div class="bar"><div id="barDolu" class="bar-dolu"></div></div>
 </div>
-<div class="bar"><div id="barDolu" class="bar-dolu"></div></div>
-</div>
+
 <div id="oyunEkrani" class="ekran">
-<div id="taxta">
-<div id="masa">
-<img id="butulka" src="images/butulka/butulka.png" alt="">
-<div id="gozleYazi"></div>
-<div id="sayac"></div>
-<div id="sizinSecim">Sənin seçimin</div>
-<div id="dugmeler"><button id="btnImtina">İmtina et</button><button id="btnOp">Öp</button></div>
+    <div id="taxta">
+        <div id="masa">
+            <img id="butulka" src="images/butulka/butulka.png" alt="">
+            <div id="gozleYazi"></div>
+            <div id="sayac"></div>
+            <div id="sizinSecim">Sənin seçimin</div>
+            <div id="dugmeler"><button id="btnImtina">İmtina et</button><button id="btnOp">Öp</button></div>
+        </div>
+        <div id="ustPanel">
+            <svg class="urek" id="urekBtn" viewBox="0 0 24 24">
+                <path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="#ff6a10" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
+            </svg>
+            <div id="urekSayi">0</div>
+            <button class="ub" id="sansCarxBtn" style="left:35.4vw">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1.8"/><path d="M12 3v3M12 18v3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/><path d="M5.5 9.6v4.8l3.8-2.4z"/></svg>
+            </button>
+            <div class="pill" id="vipPill" style="left:25.7vw;display:none">0 gün</div>
+            <button class="ub" style="left:45.2vw">#-</button>
+            <button class="ub" style="left:54.9vw">
+                <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h12M4 17h8"/></svg>
+                <span class="nuqte"></span>
+            </button>
+            <button class="ub" style="left:64.5vw">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+            </button>
+            <button class="ub" id="cixisBtn" style="left:74.2vw">
+                <svg viewBox="0 0 24 24"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/></svg>
+            </button>
+            <div id="masaYazi">Masa<br><span id="masaNo">511</span></div>
+            <button class="ub" style="left:93.7vw">
+                <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div id="chatYeri">
+        <div id="musiqiPanel" aria-label="Musiqi">
+            <button type="button" class="musiqi-btn" id="musiqiBtn1" title="Klip qoş (9 bonus)">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="14" height="12" rx="2"/>
+                    <path d="M9 19v-8l7-2v8"/>
+                    <circle cx="7" cy="19" r="2"/>
+                    <circle cx="14" cy="17" r="2"/>
+                </svg>
+            </button>
+            <button type="button" class="musiqi-btn" id="musiqiBtn2" title="Musiqi siyahısı">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="8"/>
+                    <path d="M12 15V8l5-1.5v6.5"/>
+                    <circle cx="10.5" cy="15.5" r="1.5"/>
+                    <circle cx="15.5" cy="13.5" r="1.5"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- CANLI KLİP KARTI (Chat üstündə hamıda eyni anda görünür) -->
+        <div id="bb-live-clip-widget" style="display:none; position:fixed; right:10px; bottom:185px; width:265px; background:#fff; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,0.24); z-index:9500; overflow:hidden; transition:all 0.25s ease; font-family:sans-serif;">
+            <div id="bb-live-top" style="display:flex; align-items:stretch; height:96px; transition:height 0.25s ease;">
+                <!-- Sol: Dairəvi vaxt halqası + Klipi qoşan oyunçunun profil şəkli -->
+                <div style="width:96px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#fafafa; position:relative;">
+                    <svg width="76" height="76" viewBox="0 0 76 76" style="transform:rotate(-90deg);">
+                        <circle cx="38" cy="38" r="33" fill="none" stroke="#e6e6e6" stroke-width="5"></circle>
+                        <circle id="bb-ring-progress" cx="38" cy="38" r="33" fill="none" stroke="#9ccc65" stroke-width="5"
+                            stroke-dasharray="207.35" stroke-dashoffset="207.35" stroke-linecap="round"></circle>
+                    </svg>
+                    <img id="bb-dj-avatar" src="images/default-avatar.png" alt="DJ"
+                        style="position:absolute; width:58px; height:58px; border-radius:50%; object-fit:cover; border:2px solid #fff;" />
+                </div>
+
+                <!-- Sağ: Canlı YouTube Klip -->
+                <div style="flex:1; background:#000; position:relative; overflow:hidden;">
+                    <div id="bb-live-yt-frame" style="width:100%; height:100%; pointer-events:none;"></div>
+                </div>
+            </div>
+
+            <!-- Alt idarəetmə paneli: [ ] 1x/2x böyütmə + Səs ikonu + Slider -->
+            <div style="height:38px; background:#f7f7f7; border-top:1px solid #ececec; display:flex; align-items:center; gap:8px; padding:0 10px;">
+                <button id="bb-zoom-clip-btn" type="button" title="Ölçünü dəyiş"
+                    style="background:none; border:none; padding:2px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#7a828a;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                    </svg>
+                </button>
+                <button id="bb-mute-clip-btn" type="button"
+                    style="background:none; border:none; padding:2px; cursor:pointer; font-size:18px; color:#7a828a; line-height:1;">🔊</button>
+                <input id="bb-volume-slider" type="range" min="0" max="100" value="85"
+                    style="flex:1; accent-color:#9ccc65; cursor:pointer; height:5px;" />
+            </div>
+        </div>
+
+        <div id="mesajlar"></div>
+        <div id="smayPanel"></div>
+        <div id="yazBar">
+            <input id="mesajInput" type="text" placeholder="Mesajı bura yaz" enterkeyhint="send" maxlength="300" autocomplete="off">
+            <button id="smayBtn">☺</button>
+            <button id="gonderBtn"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z" fill="#fff"/></svg></button>
+        </div>
+    </div>
 </div>
-<div id="ustPanel">
-<svg class="urek" id="urekBtn" viewBox="0 0 24 24">
-<path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="#ff6a10" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
-</svg>
-<div id="urekSayi">0</div>
-<button class="ub" id="sansCarxBtn" style="left:35.4vw">
-<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1.8"/><path d="M12 3v3M12 18v3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/><path d="M5.5 9.6v4.8l3.8-2.4z"/></svg>
-</button>
-<div class="pill" id="vipPill" style="left:25.7vw;display:none">0 gün</div>
-<button class="ub" style="left:45.2vw">#-</button>
-<button class="ub" style="left:54.9vw">
-<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h12M4 17h8"/></svg>
-<span class="nuqte"></span>
-</button>
-<button class="ub" style="left:64.5vw">
-<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
-</button>
-<button class="ub" id="cixisBtn" style="left:74.2vw">
-<svg viewBox="0 0 24 24"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/></svg>
-</button>
-<div id="masaYazi">Masa<br><span id="masaNo">511</span></div>
-<button class="ub" style="left:93.7vw">
-<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>
-</button>
+
+<!-- KLİP SEÇİM VƏ AXTARIŞ PƏNCƏRƏSİ (#musiqiBtn1 basılanda açılır) -->
+<div id="bb-clip-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.52); z-index:10000; align-items:center; justify-content:center; padding:14px; font-family:sans-serif;">
+    <div style="width:100%; max-width:390px; height:82vh; background:#fff; border-radius:22px; padding:16px 14px; display:flex; flex-direction:column; gap:12px; box-shadow:0 14px 36px rgba(0,0,0,0.3); position:relative;">
+        <button id="bb-clip-close" type="button" style="position:absolute; top:-10px; right:-8px; width:36px; height:36px; border-radius:50%; border:3px solid #fff; background:#9ccc65; color:#fff; font-size:18px; font-weight:700; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.25);">✕</button>
+
+        <div style="display:flex; justify-content:space-around; align-items:center; padding:4px 12px; border-bottom:1px solid #f0f0f0;">
+            <button class="bb-tab-btn" data-tab="popular" style="background:none; border:none; font-size:22px; cursor:pointer; opacity:1;">🔥</button>
+            <button class="bb-tab-btn" data-tab="favorites" style="background:none; border:none; font-size:22px; cursor:pointer; opacity:0.45;">⭐</button>
+            <button class="bb-tab-btn" data-tab="history" style="background:none; border:none; font-size:22px; cursor:pointer; opacity:0.45;">🕒</button>
+            <button class="bb-tab-btn" data-tab="search" style="background:none; border:none; font-size:22px; cursor:pointer; opacity:0.45;">🔍</button>
+        </div>
+
+        <div id="bb-tab-title" style="font-size:14px; font-weight:700; color:#888; padding:0 4px;">Populyar bölməsindən musiqi seç (9 bonus)</div>
+
+        <div id="bb-search-box" style="display:none;">
+            <input id="bb-yt-query" type="text" placeholder="YouTube-da mahnı adı yaz..."
+                style="width:100%; padding:11px 14px; border-radius:12px; border:none; background:#f2f2f2; font-size:14px; outline:none; box-sizing:border-box;" />
+        </div>
+
+        <div id="bb-clip-grid" style="flex:1; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; gap:10px; align-content:start; padding-right:2px;"></div>
+    </div>
 </div>
-</div>
-<div id="chatYeri">
-<div id="musiqiPanel" aria-label="Musiqi">
-  <button type="button" class="musiqi-btn" id="musiqiBtn1" title="Musiqi qoş">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="4" width="14" height="12" rx="2"/>
-      <path d="M9 19v-8l7-2v8"/>
-      <circle cx="7" cy="19" r="2"/>
-      <circle cx="14" cy="17" r="2"/>
-    </svg>
-  </button>
-  <button type="button" class="musiqi-btn" id="musiqiBtn2" title="Musiqi siyahısı">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="8"/>
-      <path d="M12 15V8l5-1.5v6.5"/>
-      <circle cx="10.5" cy="15.5" r="1.5"/>
-      <circle cx="15.5" cy="13.5" r="1.5"/>
-    </svg>
-  </button>
-</div>
-<div id="mesajlar"></div>
-<div id="smayPanel"></div>
-<div id="yazBar">
-<input id="mesajInput" type="text" placeholder="Mesajı bura yaz" enterkeyhint="send" maxlength="300" autocomplete="off">
-<button id="smayBtn">☺</button>
-<button id="gonderBtn"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z" fill="#fff"/></svg></button>
-</div>
-</div>
-</div>
+
 <script type="module" src="js/oyun/olcu.js"></script>
 <script type="module" src="js/oyun/yukleme.js"></script>
 <script type="module" src="js/oyun/panel.js"></script>
@@ -96,7 +158,7 @@ window.CARX_OPTIONS = {
   addHearts: function (n) { var el = document.getElementById('urekSayi'); el.textContent = (parseInt(el.textContent) || 0) + n; }
 };
 </script>
-<script src="js/musiqi.js"></script>
+<script type="module" src="js/musiqi.js"></script>
 </body>
 <script type="module">
 for (const f of ["core/firebase", "core/config", "oyun/yardimci", "oyun/dostlar", "oyun/masalar", "oyun/masa", "oyun/panel", "oyun/raund", "oyun/chat"]) {
