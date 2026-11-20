@@ -1,29 +1,50 @@
-/* Oyunçu profil kartı (ölçülər vw ilə, ürək mağazası kimi) */
-.pk-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10000}
+/* Oyunçu profil kartı: ölçülər referans şəklə görə (1080px = 100vw) */
+.pk-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10000;font-family:Roboto,Arial,sans-serif}
 .pk-overlay.open{display:flex}
 .pk-card{position:relative;width:80vw;background:#fff;border-radius:4.4vw;box-shadow:0 1vw 4vw rgba(0,0,0,.35);animation:pkin .25s ease}
 @keyframes pkin{from{transform:translateY(5vw);opacity:0}}
+
+/* şəkil */
 .pk-photo{position:relative;width:100%;height:80vw;border-radius:4.4vw 4.4vw 0 0;overflow:hidden;background:#0b1530}
 .pk-photo img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
-.pk-cap{position:absolute;left:0;right:0;bottom:2vw;text-align:center;color:#fff;
-  font:700 4.6vw/1.15 Roboto,Arial,sans-serif;text-shadow:0 .2vw .8vw rgba(0,0,0,.8)}
-.pk-cap small{display:block;font:500 4vw/1.2 Roboto,Arial,sans-serif}
-.pk-close{position:absolute;top:-2.6vw;right:-2.6vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#fff;border:0;padding:0;
-  display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3);z-index:3}
+.pk-cap{position:absolute;left:0;right:0;bottom:2.4vw;text-align:center;color:#fff;font:700 3.8vw/1.25 Roboto,Arial,sans-serif;text-shadow:0 .2vw .8vw rgba(0,0,0,.85)}
+.pk-cap small{display:block;font:500 3.4vw/1.25 Roboto,Arial,sans-serif}
+.pk-zoom{position:absolute;right:4vw;bottom:4vw;width:5.6vw;height:5.6vw;border:0;background:none;padding:0}
+.pk-zoom svg{width:100%;height:100%;filter:drop-shadow(0 0 .4vw rgba(0,0,0,.7))}
+.pk-close{position:absolute;top:-2.6vw;right:-2.6vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#fff;border:0;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3);z-index:3}
 .pk-close svg{width:4.2vw;height:4.2vw}
-.pk-vip{position:absolute;top:5vw;left:-4.5vw;z-index:2;background:#7cc92f;color:#fff;font:900 6.4vw/1 Roboto,Arial,sans-serif;
-  padding:1vw 4vw 1vw 4.5vw;clip-path:polygon(0 0,100% 0,92% 50%,100% 100%,0 100%)}
-.pk-stats{display:flex;justify-content:space-between;align-items:center;padding:3vw 4vw 1vw}
-.pk-row{display:flex;align-items:center;gap:2.2vw;margin:1.2vw 0;font:400 3.4vw/1 Roboto,Arial,sans-serif;color:#8a8a8a}
-.pk-row b{font:700 5.2vw/1 Roboto,Arial,sans-serif;min-width:19vw}
-.pk-row .ic{font-size:6vw;width:8vw;text-align:center}
-.pk-k b{color:#d8381f}.pk-m b{color:#b0508f}.pk-c b{color:#f08a00}
-.pk-trophy{font-size:14vw;padding-right:3vw}
-.pk-user{display:flex;gap:3vw;padding:3vw 4vw;border-top:.3vw solid #eee;margin:0 4vw}
-.pk-ava{width:16.5vw;height:16.5vw;border-radius:3.6vw;object-fit:cover;background:#ddd;flex:none}
-.pk-name{font:400 4.4vw/1.2 Roboto,Arial,sans-serif;color:#444}
-.pk-heart{display:flex;align-items:center;gap:2vw;margin:1vw 0;font:700 4.8vw/1 Roboto,Arial,sans-serif;color:#222}
-.pk-heart span{font:400 3.3vw/1 Roboto,Arial,sans-serif;color:#999}
-.pk-follow{background:#7cc92f;color:#fff;border:0;border-radius:1vw;padding:1.6vw 4.6vw;font:400 4vw/1 Roboto,Arial,sans-serif}
-.pk-actions{display:flex;justify-content:space-between;padding:3vw 4vw 4.5vw;border-top:.3vw solid #eee;margin:0 4vw}
-.pk-btn{width:12vw;height:12vw;border-radius:50%;border:0;color:#fff;font-size:5.4vw;padding:0}
+.pk-vip{position:absolute;top:4.4vw;left:-3.9vw;z-index:2;background:#7cc92f;color:#fff;font:900 5.4vw/1 Roboto,Arial,sans-serif;padding:1.15vw 3.6vw 1.15vw 4.6vw;clip-path:polygon(0 0,100% 0,93% 50%,100% 100%,0 100%)}
+.pk-vipfold{position:absolute;top:12.1vw;left:-3.9vw;width:3.9vw;height:2.8vw;background:#4d8c1c;clip-path:polygon(0 0,100% 0,100% 100%);z-index:1}
+
+/* xal sətirləri */
+.pk-stats{display:flex;justify-content:space-between;align-items:center;padding:1.35vw 4.5vw 0 3.7vw}
+.pk-row{display:flex;align-items:center;gap:2.8vw;height:6.9vw;white-space:nowrap}
+.pk-row .ic{display:flex;align-items:center;justify-content:center;width:6.4vw;margin-right:-1.1vw;font-size:5.4vw;line-height:1}
+.pk-row .ic svg{width:6vw;height:6vw}
+.pk-row b{font:700 3.6vw/1 Roboto,Arial,sans-serif}
+.pk-row .rk{font:400 2.6vw/1 Roboto,Arial,sans-serif;color:#9a9a9a}
+.pk-k b{color:#d2381a}.pk-m b{color:#b0508f}.pk-c b{color:#f08a00}
+.pk-trophy{font-size:15vw;line-height:1}
+.pk-div{height:.3vw;background:#e6e6e6;margin:3.4vw 3.9vw 0}
+
+/* istifadəçi bloku */
+.pk-user{display:flex;gap:3vw;margin:4.7vw 3.9vw 0;height:16.7vw}
+.pk-ava{width:16.7vw;height:16.7vw;border-radius:3.3vw;object-fit:cover;background:#ddd;flex:none}
+.pk-uinfo{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;min-width:0}
+.pk-name{font:400 3.7vw/1.1 Roboto,Arial,sans-serif;color:#555;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pk-heart{display:flex;align-items:center;gap:2vw}
+.pk-heart svg{width:6.5vw;height:6.5vw}
+.pk-heart b{font:700 3.7vw/1 Roboto,Arial,sans-serif;color:#222}
+.pk-heart .rk{font:400 2.8vw/1 Roboto,Arial,sans-serif;color:#9a9a9a}
+.pk-follow{background:#7cc92f;color:#fff;border:0;border-radius:.5vw;width:20.8vw;height:6.3vw;font:400 3.3vw/1 Roboto,Arial,sans-serif;padding:0}
+.pk-div2{height:.3vw;background:#e6e6e6;margin:2.6vw 3.9vw 0}
+
+/* düymələr */
+.pk-actions{display:flex;justify-content:space-between;padding:2.7vw 3.9vw 4.9vw}
+.pk-btn{width:12vw;height:12vw;border-radius:50%;border:0;color:#fff;padding:0;display:flex;align-items:center;justify-content:center}
+.pk-btn svg{width:6.6vw;height:6.6vw;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pk-btn.txt{font:700 3.5vw/1 Roboto,Arial,sans-serif}
+
+/* tam ekran şəkil */
+.pk-full{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:10001;display:flex;align-items:center;justify-content:center}
+.pk-full img{max-width:100%;max-height:100%}
