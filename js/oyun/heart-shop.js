@@ -28,10 +28,11 @@
     grid.appendChild(c);
   });
 
-  const open = () => ov.classList.add('open');
+  let openedAt = 0;
+  const open = () => { openedAt = Date.now(); ov.classList.add('open'); };
   const close = () => ov.classList.remove('open');
   ov.querySelector('.hs-close').onclick = close;
-  ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  ov.addEventListener('click', e => { if (e.target === ov && Date.now() - openedAt > 500) close(); });
   document.body.appendChild(ov);
 
   // Üst panelin üstünü hansısa qat örtsə belə işləsin deyə: toxunuşun koordinatına baxırıq
@@ -45,15 +46,20 @@
   function check(e) {
     if (ov.classList.contains('open')) return;
     if (Date.now() - lastOpen < 400) return;
-    var t = (e.changedTouches && e.changedTouches[0]) || e;
-    var x = t.clientX, y = t.clientY;
+    var x = e.clientX, y = e.clientY;
     if (inside(document.getElementById('urekBtn'), x, y) || inside(document.getElementById('urekSayi'), x, y)) {
       lastOpen = Date.now();
       open();
     }
   }
   window.addEventListener('click', check, true);
-  window.addEventListener('touchend', check, true);
 
   window.HeartShop = { open, close };
+
+  // TEST: fayl yükləndiyini göstərir (təsdiqləndikdən sonra silin)
+  var tt = document.createElement('div');
+  tt.textContent = 'heart-shop v3 yükləndi';
+  tt.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:6px 12px;border-radius:8px;font:13px Arial;z-index:100000';
+  document.body.appendChild(tt);
+  setTimeout(function () { tt.remove(); }, 3000);
 })();
