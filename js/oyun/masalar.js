@@ -10,7 +10,7 @@ document.head.insertAdjacentHTML("beforeend", '<link rel="stylesheet" href="css/
 const cari = cariOyuncu() || {};
 const QIYMET = 5000, GUN30 = 30 * 86400000, ADMIN = "511";
 const $ = (id) => document.getElementById(id);
-const xetaGoster = (e) => toast("Xəta: " + ((e && (e.message || (e.reason && e.reason.message))) || e));
+const xetaGoster = (e) => toast("Xəta: " + ((e && (e.message || (e.reason && e.reason.message))) || e) + (e && e.filename ? " [" + e.filename.split("/").pop() + ":" + e.lineno + "]" : ""));
 window.addEventListener("unhandledrejection", xetaGoster);
 window.addEventListener("error", xetaGoster);
 const COIN = '<svg class="coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#f5b800"/><circle cx="12" cy="12" r="8" fill="#ffd84d" stroke="#d99a00" stroke-width="1.5"/><path d="M12 6l1.8 3.8 4.2.5-3.1 2.9.8 4.1L12 15.2 8.3 17.3l.8-4.1L6 10.3l4.2-.5z" fill="#d99a00"/></svg>';
