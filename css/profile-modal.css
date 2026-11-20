@@ -1,0 +1,29 @@
+/* Oyunçu profil kartı (ölçülər vw ilə, ürək mağazası kimi) */
+.pk-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10000}
+.pk-overlay.open{display:flex}
+.pk-card{position:relative;width:80vw;background:#fff;border-radius:4.4vw;box-shadow:0 1vw 4vw rgba(0,0,0,.35);animation:pkin .25s ease}
+@keyframes pkin{from{transform:translateY(5vw);opacity:0}}
+.pk-photo{position:relative;width:100%;height:80vw;border-radius:4.4vw 4.4vw 0 0;overflow:hidden;background:#0b1530}
+.pk-photo img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.pk-cap{position:absolute;left:0;right:0;bottom:2vw;text-align:center;color:#fff;
+  font:700 4.6vw/1.15 Roboto,Arial,sans-serif;text-shadow:0 .2vw .8vw rgba(0,0,0,.8)}
+.pk-cap small{display:block;font:500 4vw/1.2 Roboto,Arial,sans-serif}
+.pk-close{position:absolute;top:-2.6vw;right:-2.6vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#fff;border:0;padding:0;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3);z-index:3}
+.pk-close svg{width:4.2vw;height:4.2vw}
+.pk-vip{position:absolute;top:5vw;left:-4.5vw;z-index:2;background:#7cc92f;color:#fff;font:900 6.4vw/1 Roboto,Arial,sans-serif;
+  padding:1vw 4vw 1vw 4.5vw;clip-path:polygon(0 0,100% 0,92% 50%,100% 100%,0 100%)}
+.pk-stats{display:flex;justify-content:space-between;align-items:center;padding:3vw 4vw 1vw}
+.pk-row{display:flex;align-items:center;gap:2.2vw;margin:1.2vw 0;font:400 3.4vw/1 Roboto,Arial,sans-serif;color:#8a8a8a}
+.pk-row b{font:700 5.2vw/1 Roboto,Arial,sans-serif;min-width:19vw}
+.pk-row .ic{font-size:6vw;width:8vw;text-align:center}
+.pk-k b{color:#d8381f}.pk-m b{color:#b0508f}.pk-c b{color:#f08a00}
+.pk-trophy{font-size:14vw;padding-right:3vw}
+.pk-user{display:flex;gap:3vw;padding:3vw 4vw;border-top:.3vw solid #eee;margin:0 4vw}
+.pk-ava{width:16.5vw;height:16.5vw;border-radius:3.6vw;object-fit:cover;background:#ddd;flex:none}
+.pk-name{font:400 4.4vw/1.2 Roboto,Arial,sans-serif;color:#444}
+.pk-heart{display:flex;align-items:center;gap:2vw;margin:1vw 0;font:700 4.8vw/1 Roboto,Arial,sans-serif;color:#222}
+.pk-heart span{font:400 3.3vw/1 Roboto,Arial,sans-serif;color:#999}
+.pk-follow{background:#7cc92f;color:#fff;border:0;border-radius:1vw;padding:1.6vw 4.6vw;font:400 4vw/1 Roboto,Arial,sans-serif}
+.pk-actions{display:flex;justify-content:space-between;padding:3vw 4vw 4.5vw;border-top:.3vw solid #eee;margin:0 4vw}
+.pk-btn{width:12vw;height:12vw;border-radius:50%;border:0;color:#fff;font-size:5.4vw;padding:0}
