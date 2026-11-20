@@ -17,7 +17,7 @@ if (cari && cari.docId) {
     men = s.data();
     // Oyunçu oyundaykən ban olunarsa dərhal çıxar
     if (men && men.banned) {
-      alert("Hesabınız admin tərəfindən bloklanıb!");
+      alert("Admin tərəfindən ban olunmusunuz!");
       localStorage.removeItem("currentUser");
       location.href = "index.html";
     }
@@ -57,7 +57,7 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(50)), (s) => {
   const d = document.createElement("div");
   d.className = "mesaj";
 
-  // Əgər bu profilsiz "Admin" elanıdırsa:
+  // Əgər bu profilsiz "Admin" elanı və ya qovulma bildirişidirsə:
   if (m.isAdminBroadcast) {
     d.style.cssText = "background:linear-gradient(90deg, rgba(220,38,38,0.28), rgba(245,158,11,0.22)); border:1px solid #f59e0b; border-radius:10px; padding:6px 10px; margin:4px 0;";
     const g = document.createElement("div");
@@ -105,8 +105,7 @@ function gonder() {
 
   // Çatda susdurulma (Mute) yoxlanışı
   if (men.mutedUntil && Number(men.mutedUntil) > Date.now()) {
-    const qalanDeq = Math.ceil((Number(men.mutedUntil) - Date.now()) / 60000);
-    toast(`Admin tərəfindən susdurulmusunuz (${qalanDeq} dəq qalıb)`);
+    toast("Admin tərəfindən chatda susdurulmusunuz");
     return;
   }
 
