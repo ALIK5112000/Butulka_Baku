@@ -1,54 +1,88 @@
 /* --olcu: masanın kiçilmə əmsalı (1 = tam ölçü). js/oyun/olcu.js hesablayıb yazır */
 #taxta {
-  position: absolute; top: 0; left: 0; width: 100%; height: calc(114vw * var(--olcu, 1));
-  /* Fon şəkli: images/masa/fon.jpg ilə eyni adla əvəz etsən dəyişir */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(118vw * var(--olcu, 1));
   background: url("../images/masa/fon.jpg") center/cover no-repeat, #d9964a;
 }
+
 #masa {
-  position: absolute; top: 0; left: 0; width: 100%; height: 114vw;
-  transform: scale(var(--olcu, 1)); transform-origin: 50% 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 118vw;
+  transform: scale(var(--olcu, 1));
+  transform-origin: 50% 0;
 }
+
 #chatYeri {
-  position: absolute; top: calc(114vw * var(--olcu, 1)); bottom: 0; left: 0; right: 0;
+  position: absolute;
+  top: calc(118vw * var(--olcu, 1));
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: #f3f2f0;
 }
 
 /* Şüşə: ölçü üçün height */
 #butulka {
-  position: absolute; left: 50%; top: 61.6vw;
-  height: 35vw; width: auto;
+  position: absolute;
+  left: 50%;
+  top: 61vw;
+  height: 34vw;
+  width: auto;
   transform: translate(-50%, -50%) rotate(0deg);
-  filter: drop-shadow(0 1.5vw 1.5vw rgba(0,0,0,.35));
-  transition: transform 3s cubic-bezier(.15, .8, .2, 1), opacity .3s;
+  filter: drop-shadow(0 1.5vw 1.5vw rgba(0, 0, 0, 0.35));
+  transition: transform 3s cubic-bezier(0.15, 0.8, 0.2, 1), opacity 0.3s;
 }
 
 /* Oyunçu kartı: left/top şəklin MƏRKƏZİDİR */
 .yer {
-  position: absolute; width: 22vw; text-align: center;
-  transform: translate(-50%, -9.75vw);
-  opacity: 0; transition: opacity .3s;
-}
-.yer.dolu { opacity: 1; }
-.yer .foto {
-  width: 19.5vw; height: 19.5vw; margin: 0 auto; border-radius: 2vw;
-  background: #777 center/cover no-repeat;
-  box-shadow: 0 .6vw 1.6vw rgba(0,0,0,.3);
-}
-.yer .ad {
-  margin-top: .9vw; font-size: 3.2vw; color: #fff;
-  text-shadow: 0 .2vw .6vw rgba(0,0,0,.65);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  position: absolute;
+  width: 21vw;
+  text-align: center;
+  transform: translate(-50%, -9.25vw);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
-.yer-0  { left: 17.3vw; top: 30.8vw; }
-.yer-1  { left: 39.2vw; top: 25.5vw; }
-.yer-2  { left: 61vw;   top: 25.5vw; }
-.yer-3  { left: 83.1vw; top: 30vw; }
-.yer-4  { left: 86.9vw; top: 52.7vw; }
-.yer-5  { left: 86.9vw; top: 74.4vw; }
-.yer-6  { left: 83vw;   top: 96.3vw; }
-.yer-7  { left: 61vw;   top: 101.3vw; }
-.yer-8  { left: 39.2vw; top: 101.3vw; }
-.yer-9  { left: 17.3vw; top: 96vw; }
-.yer-10 { left: 13.3vw; top: 74.4vw; }
-.yer-11 { left: 13.3vw; top: 52.7vw; }
+.yer.dolu {
+  opacity: 1;
+}
+
+.yer .foto {
+  width: 18.5vw;
+  height: 18.5vw;
+  margin: 0 auto;
+  border-radius: 1.8vw;
+  background: #777 center/cover no-repeat;
+  box-shadow: 0 0.6vw 1.6vw rgba(0, 0, 0, 0.32);
+}
+
+.yer .ad {
+  margin-top: 0.7vw;
+  font-size: 3vw;
+  line-height: 1.15;
+  color: #fff;
+  text-shadow: 0 0.2vw 0.6vw rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 12 nəfərlik masa ətrafı düzülüş (şəkildəki ardıcıllıq və məsafələrə uyğun) */
+.yer-0  { left: 14.5vw; top: 27vw; }
+.yer-1  { left: 38.5vw; top: 23.5vw; }
+.yer-2  { left: 61.5vw; top: 23.5vw; }
+.yer-3  { left: 85.5vw; top: 27vw; }
+.yer-4  { left: 86.5vw; top: 53vw; }
+.yer-5  { left: 86.5vw; top: 78vw; }
+.yer-6  { left: 85.5vw; top: 102vw; }
+.yer-7  { left: 62vw;   top: 104.5vw; }
+.yer-8  { left: 38vw;   top: 104.5vw; }
+.yer-9  { left: 14.5vw; top: 102vw; }
+.yer-10 { left: 13.5vw; top: 78vw; }
+.yer-11 { left: 13.5vw; top: 53vw; }
