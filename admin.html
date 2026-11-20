@@ -8,6 +8,25 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: #070811; color: #fff; padding-bottom: 50px; }
 
+        /* Baş Admin Giriş Ekranı */
+        .lock-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .lock-box {
+            width: 100%;
+            max-width: 390px;
+            background: #111426;
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            border-radius: 22px;
+            padding: 26px 20px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        }
+
         .topbar {
             background: #101324;
             border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -95,198 +114,229 @@
 </head>
 <body>
 
-    <div class="topbar">
-        <h1 id="topRoleTitle">🛡️ İdarəetmə Paneli</h1>
-        <button class="btn-back" onclick="location.href='profil.html'">← Profil</button>
+    <!-- YALNIZ BAŞ ADMİN ÜÇÜN GİRİŞ EKRANI -->
+    <div id="adminLockScreen" class="lock-screen" style="display:none;">
+        <div class="lock-box">
+            <div style="font-size:38px; margin-bottom:8px;">🛡️</div>
+            <h2 style="font-size:18px; margin-bottom:4px; color:#60a5fa;">Baş Admin Girişi</h2>
+            <p class="hint" style="margin-bottom:16px;">Davam etmək üçün Admin Login və Parolunu daxil edin</p>
+            <input type="text" id="adminLoginInp" class="inp" placeholder="Login">
+            <input type="password" id="adminPassInp" class="inp" placeholder="Parol" onkeypress="if(event.key==='Enter') verifyAdminLogin()">
+            <button class="btn c-blue w-100" onclick="verifyAdminLogin()">🔓 Panelə Daxil Ol</button>
+            <button class="btn c-gray w-100" style="margin-top:8px;" onclick="location.href='profil.html'">← Profilə Qayıt</button>
+        </div>
     </div>
 
-    <div class="wrap" id="mainWrap" style="display:none;">
-
-        <!-- 1. JETON VƏ BONUS GÖNDƏR + LOGLAR (Admin, Adminka, Satıcı) -->
-        <div class="acc-item open" data-roles="admin,adminka,dealer">
-            <button class="acc-btn" onclick="toggleAcc(this)">
-                <span>🪙 1. Jeton və Bonus Göndər</span>
-                <span class="arrow">▼</span>
-            </button>
-            <div class="acc-body">
-                <!-- Üst: Jeton Göndərmək -->
-                <div class="sub-box">
-                    <div class="sub-title">🪙 Jeton Göndər</div>
-                    <input type="text" id="jetonTargetInp" class="inp" placeholder="İstifadəçinin ID-si və ya adı..." oninput="previewTarget('jetonTargetInp', 'jetonPreview')">
-                    <div id="jetonPreview" class="found-badge" style="display:none;"></div>
-                    <input type="number" id="jetonAmountInp" class="inp" placeholder="Jeton miqdarı (məs: 1000)">
-                    <button class="btn c-green w-100" onclick="sendCurrency('jetons', 'jetonTargetInp', 'jetonAmountInp', 'Jeton')">✅ Jeton Göndər</button>
-                </div>
-
-                <!-- Alt: Bonus (Ürək) Göndərmək -->
-                <div class="sub-box">
-                    <div class="sub-title">🎁 Bonus (Ürək) Göndər</div>
-                    <input type="text" id="bonusTargetInp" class="inp" placeholder="İstifadəçinin ID-si və ya adı..." oninput="previewTarget('bonusTargetInp', 'bonusPreview')">
-                    <div id="bonusPreview" class="found-badge" style="display:none;"></div>
-                    <input type="number" id="bonusAmountInp" class="inp" placeholder="Bonus miqdarı (məs: 100)">
-                    <button class="btn c-blue w-100" onclick="sendCurrency('hearts', 'bonusTargetInp', 'bonusAmountInp', 'Bonus')">🎁 Bonus Göndər</button>
-                </div>
-
-                <!-- Yalnız Baş Admin görür: Kim kimə nə göndərib -->
-                <div class="sub-box" id="transferLogsBox" style="display:none; margin-bottom:0;">
-                    <div class="sub-title">📜 Kim Kimə Nə Qədər Göndərib (Canlı Nəzarət)</div>
-                    <div id="logsContainer" style="max-height:200px; overflow-y:auto;">Yüklənir...</div>
-                </div>
-            </div>
+    <!-- ƏSAS İDARƏETMƏ PANELİ -->
+    <div id="panelRoot" style="display:none;">
+        <div class="topbar">
+            <h1 id="topRoleTitle">🛡️ İdarəetmə Paneli</h1>
+            <button class="btn-back" onclick="location.href='profil.html'">← Profil</button>
         </div>
 
-        <!-- 2. REYTİNQLƏR (ÖPÜŞ, MUSİQİ, SMAYLİK + 30 GÜNLÜK 0-DA DONDURMA) -->
-        <div class="acc-item" data-roles="admin,adminka">
-            <button class="acc-btn" onclick="toggleAcc(this)">
-                <span>🏆 2. Reytinqlər (Öpüş, Musiqi, Smaylik)</span>
-                <span class="arrow">▼</span>
-            </button>
-            <div class="acc-body">
-                <input type="text" id="rateSearchInp" class="inp" placeholder="Oyunçunun adını və ya ID-sini yaz..." oninput="searchRatingUser()">
-                <div id="ratingUserPanel"></div>
-            </div>
-        </div>
+        <div class="wrap" id="mainWrap">
 
-        <!-- 3. ID NÖMRƏSİ DƏYİŞ / ID YERİNƏ AD YAZ -->
-        <div class="acc-item" data-roles="admin">
-            <button class="acc-btn" onclick="toggleAcc(this)">
-                <span>🆔 3. ID Dəyiş / ID Yerinə Ad Yaz</span>
-                <span class="arrow">▼</span>
-            </button>
-            <div class="acc-body">
-                <p class="hint">Özün də daxil olmaqla istənilən oyunçunun hazırkı ID-sini və ya adını yaz, yeni ID rəqəmi və ya söz (məs: <b>Admin</b>, <b>511</b>) təyin et.</p>
-                <input type="text" id="idFindInp" class="inp" placeholder="Hazırkı ID və ya Ad..." oninput="previewTarget('idFindInp', 'idFindPreview')">
-                <div id="idFindPreview" class="found-badge" style="display:none;"></div>
-                <input type="text" id="newIdValueInp" class="inp" placeholder="Yeni ID nömrəsi və ya Ad yaz...">
-                <button class="btn c-blue w-100" onclick="updateUserCustomId()">💾 Bazada ID-ni Dəyiş</button>
-            </div>
-        </div>
-
-        <!-- 4. BAN ETMƏK & ÇATDA SUSDURMAQ -->
-        <div class="acc-item" data-roles="admin,adminka,mod">
-            <button class="acc-btn" onclick="toggleAcc(this)">
-                <span>🚫 4. Ban Etmək & 🔇 Çatda Susdurmaq</span>
-                <span class="arrow">▼</span>
-            </button>
-            <div class="acc-body">
-                <!-- Ban Bölməsi (Admin və Adminka) -->
-                <div class="sub-box" data-subroles="admin,adminka">
-                    <div class="sub-title">🚫 Oyundan Ban Et / Banı Aç</div>
-                    <input type="text" id="banIdInp" class="inp" placeholder="Oyunçunun ID nömrəsi və ya adı..." oninput="previewTarget('banIdInp', 'banPreview')">
-                    <div id="banPreview" class="found-badge" style="display:none;"></div>
-                    <div class="g-2">
-                        <button class="btn c-red" onclick="setBanStatus(true)">🚫 Ban Et</button>
-                        <button class="btn c-green" onclick="setBanStatus(false)">✅ Banı Aç</button>
+            <!-- 1. JETON VƏ BONUS GÖNDƏR + LOGLAR (Admin, Adminka, Satıcı) -->
+            <div class="acc-item open" data-roles="admin,adminka,dealer">
+                <button class="acc-btn" onclick="toggleAcc(this)">
+                    <span>🪙 1. Jeton və Bonus Göndər</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="acc-body">
+                    <!-- Üst: Jeton Göndərmək -->
+                    <div class="sub-box">
+                        <div class="sub-title">🪙 Jeton Göndər</div>
+                        <input type="text" id="jetonTargetInp" class="inp" placeholder="İstifadəçinin ID-si və ya adı..." oninput="previewTarget('jetonTargetInp', 'jetonPreview')">
+                        <div id="jetonPreview" class="found-badge" style="display:none;"></div>
+                        <input type="number" id="jetonAmountInp" class="inp" placeholder="Jeton miqdarı (məs: 1000)">
+                        <button class="btn c-green w-100" onclick="sendCurrency('jetons', 'jetonTargetInp', 'jetonAmountInp', 'Jeton')">✅ Jeton Göndər</button>
                     </div>
-                </div>
 
-                <!-- Çatda Susdurmaq Bölməsi (Admin, Adminka, Mod) -->
-                <div class="sub-box" style="margin-bottom:0;">
-                    <div class="sub-title">🔇 Çatda Susdur (Günlük / Aylıq)</div>
-                    <input type="text" id="muteIdInp" class="inp" placeholder="Oyunçunun ID nömrəsi və ya adı..." oninput="previewTarget('muteIdInp', 'mutePreview')">
-                    <div id="mutePreview" class="found-badge" style="display:none;"></div>
-                    <div class="g-3">
-                        <button class="btn c-yellow" onclick="setChatMute(1)">1 Günlük</button>
-                        <button class="btn c-red" onclick="setChatMute(30)">1 Aylıq</button>
-                        <button class="btn c-green" onclick="setChatMute(0)">Səsi Aç</button>
+                    <!-- Alt: Bonus (Ürək) Göndərmək -->
+                    <div class="sub-box">
+                        <div class="sub-title">🎁 Bonus (Ürək) Göndər</div>
+                        <input type="text" id="bonusTargetInp" class="inp" placeholder="İstifadəçinin ID-si və ya adı..." oninput="previewTarget('bonusTargetInp', 'bonusPreview')">
+                        <div id="bonusPreview" class="found-badge" style="display:none;"></div>
+                        <input type="number" id="bonusAmountInp" class="inp" placeholder="Bonus miqdarı (məs: 100)">
+                        <button class="btn c-blue w-100" onclick="sendCurrency('hearts', 'bonusTargetInp', 'bonusAmountInp', 'Bonus')">🎁 Bonus Göndər</button>
+                    </div>
+
+                    <!-- Yalnız Baş Admin görür: Kim kimə nə göndərib -->
+                    <div class="sub-box" id="transferLogsBox" style="display:none; margin-bottom:0;">
+                        <div class="sub-title">📜 Kim Kimə Nə Qədər Göndərib (Canlı Nəzarət)</div>
+                        <div id="logsContainer" style="max-height:200px; overflow-y:auto;">Yüklənir...</div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 5. MASADAN ATMA VƏ ÇATI SİLMƏ -->
-        <div class="acc-item" data-roles="admin,adminka,mod">
-            <button class="acc-btn" onclick="toggleAcc(this)">
-                <span>🪑 5. Masadan Atma & Çatı Silmə</span>
-                <span class="arrow">▼</span>
-            </button>
-            <div class="acc-body">
-                <div class="sub-box">
-                    <div class="sub-title">🥾 Masadakı Oyunçuları Gör və Masadan At</div>
-                    <div class="g-2">
-                        <input type="text" id="kickTableInp" class="inp" style="margin-bottom:0;" value="511" placeholder="Masa №">
-                        <button class="btn c-blue" onclick="loadTableSeats()">Oyunçuları Göstər</button>
+            <!-- 2. REYTİNQLƏR (ÖPÜŞ, MUSİQİ, SMAYLİK + 30 GÜNLÜK 0-DA DONDURMA) -->
+            <div class="acc-item" data-roles="admin,adminka">
+                <button class="acc-btn" onclick="toggleAcc(this)">
+                    <span>🏆 2. Reytinqlər (Öpüş, Musiqi, Smaylik)</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="acc-body">
+                    <input type="text" id="rateSearchInp" class="inp" placeholder="Oyunçunun adını və ya ID-sini yaz..." oninput="searchRatingUser()">
+                    <div id="ratingUserPanel"></div>
+                </div>
+            </div>
+
+            <!-- 3. ID NÖMRƏSİ DƏYİŞ / ID YERİNƏ AD YAZ -->
+            <div class="acc-item" data-roles="admin">
+                <button class="acc-btn" onclick="toggleAcc(this)">
+                    <span>🆔 3. ID Dəyiş / ID Yerinə Ad Yaz</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="acc-body">
+                    <p class="hint">Özün də daxil olmaqla istənilən oyunçunun hazırkı ID-sini və ya adını yaz, yeni ID rəqəmi və ya söz (məs: <b>Admin</b>, <b>511</b>) təyin et.</p>
+                    <input type="text" id="idFindInp" class="inp" placeholder="Hazırkı ID və ya Ad..." oninput="previewTarget('idFindInp', 'idFindPreview')">
+                    <div id="idFindPreview" class="found-badge" style="display:none;"></div>
+                    <input type="text" id="newIdValueInp" class="inp" placeholder="Yeni ID nömrəsi və ya Ad yaz...">
+                    <button class="btn c-blue w-100" onclick="updateUserCustomId()">💾 Bazada ID-ni Dəyiş</button>
+                </div>
+            </div>
+
+            <!-- 4. BAN ETMƏK & ÇATDA SUSDURMAQ -->
+            <div class="acc-item" data-roles="admin,adminka,mod">
+                <button class="acc-btn" onclick="toggleAcc(this)">
+                    <span>🚫 4. Ban Etmək & 🔇 Çatda Susdurmaq</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="acc-body">
+                    <!-- Ban Bölməsi (Admin və Adminka) -->
+                    <div class="sub-box" data-subroles="admin,adminka">
+                        <div class="sub-title">🚫 Oyundan Ban Et / Banı Aç</div>
+                        <input type="text" id="banIdInp" class="inp" placeholder="Oyunçunun ID nömrəsi və ya adı..." oninput="previewTarget('banIdInp', 'banPreview')">
+                        <div id="banPreview" class="found-badge" style="display:none;"></div>
+                        <div class="g-2">
+                            <button class="btn c-red" onclick="setBanStatus(true)">🚫 Ban Et</button>
+                            <button class="btn c-green" onclick="setBanStatus(false)">✅ Banı Aç</button>
+                        </div>
                     </div>
-                    <div id="kickSeatsContainer" style="margin-top:10px;"></div>
-                </div>
 
-                <div class="sub-box" style="margin-bottom:0;">
-                    <div class="sub-title">🧹 Masanın Çatını Təmizlə</div>
-                    <div class="g-2">
-                        <input type="text" id="clearChatTableInp" class="inp" style="margin-bottom:0;" value="511" placeholder="Masa №">
-                        <button class="btn c-red" onclick="wipeTableChat()">Çatı Təmizlə</button>
+                    <!-- Çatda Susdurmaq Bölməsi (Admin, Adminka, Mod) -->
+                    <div class="sub-box" style="margin-bottom:0;">
+                        <div class="sub-title">🔇 Çatda Susdur (Günlük / Aylıq)</div>
+                        <input type="text" id="muteIdInp" class="inp" placeholder="Oyunçunun ID nömrəsi və ya adı..." oninput="previewTarget('muteIdInp', 'mutePreview')">
+                        <div id="mutePreview" class="found-badge" style="display:none;"></div>
+                        <div class="g-3">
+                            <button class="btn c-yellow" onclick="setChatMute(1)">1 Günlük</button>
+                            <button class="btn c-red" onclick="setChatMute(30)">1 Aylıq</button>
+                            <button class="btn c-green" onclick="setChatMute(0)">Səsi Aç</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 6. GÖRÜNMƏZ (GHOST) REJİM -->
-        <div class="acc-item" data-roles="admin,adminka,mod">
-            <button class="acc-btn" onclick="toggleAcc(this)">
-                <span>👻 6. Görünməz Rejim (Gizli Giriş)</span>
-                <span class="arrow">▼</span>
-            </button>
-            <div class="acc-body">
-                <p class="hint">Masa nömrəsini yaz və gizli gir — masada görünməyəcəksən, amma oyunçulara hədiyyə göndərə biləcəksən.</p>
-                <div class="g-2" style="margin-bottom:8px;">
-                    <input type="text" id="ghostRoomInp" class="inp" style="margin-bottom:0;" value="511" placeholder="Masa №">
-                    <button class="btn c-purple" onclick="goGhostMode()">👻 Gizli Modda Gir</button>
-                </div>
-                <button class="btn c-gray w-100" onclick="leaveGhostMode()">👁️ Görünən Rejimə Qayıt</button>
-            </div>
-        </div>
+            <!-- 5. MASADAN ATMA VƏ ÇATI SİLMƏ -->
+            <div class="acc-item" data-roles="admin,adminka,mod">
+                <button class="acc-btn" onclick="toggleAcc(this)">
+                    <span>🪑 5. Masadan Atma & Çatı Silmə</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="acc-body">
+                    <div class="sub-box">
+                        <div class="sub-title">🥾 Masadakı Oyunçuları Gör və Masadan At</div>
+                        <div class="g-2">
+                            <input type="text" id="kickTableInp" class="inp" style="margin-bottom:0;" value="511" placeholder="Masa №">
+                            <button class="btn c-blue" onclick="loadTableSeats()">Oyunçuları Göstər</button>
+                        </div>
+                        <div id="kickSeatsContainer" style="margin-top:10px;"></div>
+                    </div>
 
-        <!-- 7. SATICI, MOD VƏ ADMİNKA TƏYİN ET / GERİ AL -->
-        <div class="acc-item" data-roles="admin">
-            <button class="acc-btn" onclick="toggleAcc(this)">
-                <span>🎖️ 7. Satıcı / Mod / Adminka Təyin Et & Geri Al</span>
-                <span class="arrow">▼</span>
-            </button>
-            <div class="acc-body">
-                <input type="text" id="roleTargetInp" class="inp" placeholder="İstifadəçinin ID nömrəsi və ya adı..." oninput="previewTarget('roleTargetInp', 'rolePreview')">
-                <div id="rolePreview" class="found-badge" style="display:none;"></div>
-                <div class="g-2" style="margin-bottom:8px;">
-                    <button class="btn c-red" onclick="assignRole('adminka')">🔴 Adminka Ver</button>
-                    <button class="btn c-yellow" onclick="assignRole('mod')">🟡 Mod Ver</button>
-                    <button class="btn c-green" onclick="assignRole('dealer')">🟢 Satıcı Ver</button>
-                    <button class="btn c-gray" onclick="assignRole('user')">❌ Səlahiyyəti Geri Al</button>
+                    <div class="sub-box" style="margin-bottom:0;">
+                        <div class="sub-title">🧹 Masanın Çatını Təmizlə</div>
+                        <div class="g-2">
+                            <input type="text" id="clearChatTableInp" class="inp" style="margin-bottom:0;" value="511" placeholder="Masa №">
+                            <button class="btn c-red" onclick="wipeTableChat()">Çatı Təmizlə</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 8. OYUNA YENİLƏMƏ VER (BÜTÜN OYUNÇULARI ÇIXARIB YENİDƏN SAL) -->
-        <div class="acc-item" data-roles="admin">
-            <button class="acc-btn" onclick="toggleAcc(this)">
-                <span>🔄 8. Oyuna Yeniləmə Ver</span>
-                <span class="arrow">▼</span>
-            </button>
-            <div class="acc-body">
-                <p class="hint">Bu düyməyə basanda oyunda olan bütün oyunçular oyundan çıxarılacaq və yeni versiya ilə avtomatik yenidən oyuna girəcəklər.</p>
-                <button class="btn c-red w-100" onclick="triggerGlobalReload()">🔄 Bütün Oyuna Yeniləmə Ver</button>
+            <!-- 6. GÖRÜNMƏZ (GHOST) REJİM -->
+            <div class="acc-item" data-roles="admin,adminka,mod">
+                <button class="acc-btn" onclick="toggleAcc(this)">
+                    <span>👻 6. Görünməz Rejim (Gizli Giriş)</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="acc-body">
+                    <p class="hint">Masa nömrəsini yaz və gizli gir — masada görünməyəcəksən, amma oyunçulara hədiyyə göndərə biləcəksən.</p>
+                    <div class="g-2" style="margin-bottom:8px;">
+                        <input type="text" id="ghostRoomInp" class="inp" style="margin-bottom:0;" value="511" placeholder="Masa №">
+                        <button class="btn c-purple" onclick="goGhostMode()">👻 Gizli Modda Gir</button>
+                    </div>
+                    <button class="btn c-gray w-100" onclick="leaveGhostMode()">👁️ Görünən Rejimə Qayıt</button>
+                </div>
             </div>
-        </div>
 
-        <!-- 9. PROFİLSİZ "ADMIN" ADIYLA BÜTÜN MASALARA YAZ -->
-        <div class="acc-item" data-roles="admin,adminka">
-            <button class="acc-btn" onclick="toggleAcc(this)">
-                <span>📢 9. "Admin" Adıyla Bütün Masalara Yaz</span>
-                <span class="arrow">▼</span>
-            </button>
-            <div class="acc-body">
-                <p class="hint">Profil görünmədən yalnız <b>🛡️ Admin</b> adıyla oyundakı bütün masaların çatına real vaxtda mesaj göndərir.</p>
-                <input type="text" id="adminGlobalMsgInp" class="inp" placeholder="Bütün masalara gedəcək mesaj...">
-                <button class="btn c-blue w-100" onclick="sendGlobalAdminChat()">📢 Bütün Masalara Göndər</button>
+            <!-- 7. SATICI, MOD VƏ ADMİNKA TƏYİN ET / GERİ AL -->
+            <div class="acc-item" data-roles="admin">
+                <button class="acc-btn" onclick="toggleAcc(this)">
+                    <span>🎖️ 7. Satıcı / Mod / Adminka Təyin Et & Geri Al</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="acc-body">
+                    <input type="text" id="roleTargetInp" class="inp" placeholder="İstifadəçinin ID nömrəsi və ya adı..." oninput="previewTarget('roleTargetInp', 'rolePreview')">
+                    <div id="rolePreview" class="found-badge" style="display:none;"></div>
+                    <div class="g-2" style="margin-bottom:8px;">
+                        <button class="btn c-red" onclick="assignRole('adminka')">🔴 Adminka Ver</button>
+                        <button class="btn c-yellow" onclick="assignRole('mod')">🟡 Mod Ver</button>
+                        <button class="btn c-green" onclick="assignRole('dealer')">🟢 Satıcı Ver</button>
+                        <button class="btn c-gray" onclick="assignRole('user')">❌ Səlahiyyəti Geri Al</button>
+                    </div>
+                </div>
             </div>
-        </div>
 
+            <!-- 8. OYUNA YENİLƏMƏ VER (BÜTÜN OYUNÇULARI ÇIXARIB YENİDƏN SAL) -->
+            <div class="acc-item" data-roles="admin">
+                <button class="acc-btn" onclick="toggleAcc(this)">
+                    <span>🔄 8. Oyuna Yeniləmə Ver</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="acc-body">
+                    <p class="hint">Bu düyməyə basanda oyunda olan bütün oyunçular oyundan çıxarılacaq və yeni versiya ilə avtomatik yenidən oyuna girəcəklər.</p>
+                    <button class="btn c-red w-100" onclick="triggerGlobalReload()">🔄 Bütün Oyuna Yeniləmə Ver</button>
+                </div>
+            </div>
+
+            <!-- 9. PROFİLSİZ "ADMIN" ADIYLA BÜTÜN MASALARA YAZ -->
+            <div class="acc-item" data-roles="admin,adminka">
+                <button class="acc-btn" onclick="toggleAcc(this)">
+                    <span>📢 9. "Admin" Adıyla Bütün Masalara Yaz</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="acc-body">
+                    <p class="hint">Profil görünmədən yalnız <b>🛡️ Admin</b> adıyla oyundakı bütün masaların çatına real vaxtda mesaj göndərir.</p>
+                    <input type="text" id="adminGlobalMsgInp" class="inp" placeholder="Bütün masalara gedəcək mesaj...">
+                    <button class="btn c-blue w-100" onclick="sendGlobalAdminChat()">📢 Bütün Masalara Göndər</button>
+                </div>
+            </div>
+
+            <!-- 10. BAŞ ADMİN LOGİN VƏ PAROLUNU DƏYİŞ -->
+            <div class="acc-item" data-roles="admin">
+                <button class="acc-btn" onclick="toggleAcc(this)">
+                    <span>🔐 10. Admin Giriş Login / Parolunu Dəyiş</span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="acc-body">
+                    <p class="hint">Baş Admin panelinə giriş zamanı istənilən Login və Parolu buradan istədiyin vaxt yeniləyə bilərsən.</p>
+                    <input type="text" id="newAdminLoginInp" class="inp" placeholder="Yeni Admin Login">
+                    <input type="password" id="oldAdminPassInp" class="inp" placeholder="Hazırkı Admin Parolu">
+                    <input type="password" id="newAdminPassInp" class="inp" placeholder="Yeni Admin Parolu">
+                    <button class="btn c-green w-100" onclick="changeAdminCredentials()">💾 Yeni Login və Parolu Yadda Saxla</button>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <script type="module">
         import { rtdb, fsdb } from "./js/core/firebase.js";
         import { ref, set, push, remove, onValue, get, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
-        import { collection, doc, getDoc, addDoc, updateDoc, onSnapshot, query, orderBy, limit, increment } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+        import { collection, doc, getDoc, setDoc, addDoc, updateDoc, onSnapshot, query, orderBy, limit, increment } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-        const MAIN_ADMIN_ID = 96446;
+        const MAIN_ADMIN_DOC = "ErC7uig5zDYVzXPQpal2";
         const sessionRaw = localStorage.getItem("currentUser");
         const sessionUser = sessionRaw ? JSON.parse(sessionRaw) : null;
 
@@ -299,6 +349,10 @@
         let allUsers = [];
         let tableUnsub = null;
 
+        // Baş Admin giriş məlumatları (bazada dəyişdirilə bilir)
+        let savedAdminLogin = "Alik511";
+        let savedAdminPass = "ALIYEV511#";
+
         // Accordion açılıb-bağlanma
         window.toggleAcc = function(btn) {
             const item = btn.parentElement;
@@ -307,33 +361,60 @@
             if (!wasOpen) item.classList.add("open");
         };
 
+        async function loadSavedAdminCreds() {
+            try {
+                const credSnap = await getDoc(doc(fsdb, "sistem_ayarlar", "admin_giris"));
+                if (credSnap.exists()) {
+                    const d = credSnap.data();
+                    if (d.login) savedAdminLogin = d.login;
+                    if (d.password) savedAdminPass = d.password;
+                }
+            } catch (e) {}
+        }
+
         async function init() {
             const snap = await getDoc(doc(fsdb, "users", sessionUser.docId));
             if (!snap.exists()) { location.href = "index.html"; return; }
             me = snap.data();
 
-            if (Number(me.id) === MAIN_ADMIN_ID || me.isAdmin === true || me.role === "admin") {
+            if (sessionUser.docId === MAIN_ADMIN_DOC || me.isAdmin === true || me.role === "admin") {
                 myRole = "admin";
-                document.getElementById("topRoleTitle").textContent = "🔵 Baş Admin Paneli";
-                document.getElementById("topRoleTitle").style.color = "#60a5fa";
-                document.getElementById("transferLogsBox").style.display = "block";
-                listenLogs();
+                await loadSavedAdminCreds();
+                document.getElementById("newAdminLoginInp").value = savedAdminLogin;
+                document.getElementById("adminLockScreen").style.display = "flex";
             } else if (me.role === "adminka") {
                 myRole = "adminka";
-                document.getElementById("topRoleTitle").textContent = "🔴 Adminka Paneli";
-                document.getElementById("topRoleTitle").style.color = "#f87171";
+                openPanelUI("🔴 Adminka Paneli", "#f87171");
             } else if (me.role === "mod") {
                 myRole = "mod";
-                document.getElementById("topRoleTitle").textContent = "🟡 Mod Paneli";
-                document.getElementById("topRoleTitle").style.color = "#fbbf24";
+                openPanelUI("🟡 Mod Paneli", "#fbbf24");
             } else if (me.role === "dealer") {
                 myRole = "dealer";
-                document.getElementById("topRoleTitle").textContent = "🟢 Satıcı Paneli";
-                document.getElementById("topRoleTitle").style.color = "#4ade80";
+                openPanelUI("🟢 Satıcı Paneli", "#4ade80");
             } else {
                 alert("Bu panelə giriş icazəniz yoxdur!");
                 location.href = "profil.html";
-                return;
+            }
+        }
+
+        window.verifyAdminLogin = function() {
+            const l = document.getElementById("adminLoginInp").value.trim();
+            const p = document.getElementById("adminPassInp").value;
+            if (l === savedAdminLogin && p === savedAdminPass) {
+                document.getElementById("adminLockScreen").style.display = "none";
+                openPanelUI("🔵 Baş Admin Paneli", "#60a5fa");
+            } else {
+                alert("❌ Admin Login və ya Parol yanlışdır!");
+            }
+        };
+
+        function openPanelUI(title, color) {
+            document.getElementById("topRoleTitle").textContent = title;
+            document.getElementById("topRoleTitle").style.color = color;
+
+            if (myRole === "admin") {
+                document.getElementById("transferLogsBox").style.display = "block";
+                listenLogs();
             }
 
             // Rütbəyə uyğun bölmələri göstər
@@ -346,7 +427,7 @@
                 if (!allowed.includes(myRole)) el.style.display = "none";
             });
 
-            document.getElementById("mainWrap").style.display = "flex";
+            document.getElementById("panelRoot").style.display = "block";
 
             // Bütün istifadəçiləri real vaxtda dinlə
             onSnapshot(collection(fsdb, "users"), (s) => {
@@ -357,6 +438,29 @@
 
             loadTableSeats();
         }
+
+        // 10. BAŞ ADMİN LOGİN VƏ PAROLUNU DƏYİŞ
+        window.changeAdminCredentials = async function() {
+            const newL = document.getElementById("newAdminLoginInp").value.trim();
+            const oldP = document.getElementById("oldAdminPassInp").value;
+            const newP = document.getElementById("newAdminPassInp").value;
+
+            if (!newL) return alert("Login boş ola bilməz!");
+            if (oldP !== savedAdminPass) return alert("Hazırkı Admin Parolu yanlışdır!");
+            if (newP.length < 4) return alert("Yeni parol ən azı 4 simvol olmalıdır!");
+
+            await setDoc(doc(fsdb, "sistem_ayarlar", "admin_giris"), {
+                login: newL,
+                password: newP,
+                updatedAt: Date.now()
+            });
+
+            savedAdminLogin = newL;
+            savedAdminPass = newP;
+            document.getElementById("oldAdminPassInp").value = "";
+            document.getElementById("newAdminPassInp").value = "";
+            alert(`✅ Baş Admin Login (${newL}) və yeni Parol bazada yadda saxlanıldı!`);
+        };
 
         function findUser(queryStr) {
             const q = String(queryStr || "").trim().toLowerCase();
@@ -583,12 +687,24 @@
 
         // 7. SATICI / MOD / ADMİNKA TƏYİN ET VƏ YA GERİ AL
         window.assignRole = async function(newRole) {
-            const u = findUser(document.getElementById("roleTargetInp").value);
-            if (!u) return alert("İstifadəçi tapılmadı!");
-            if (u.docId === sessionUser.docId) return alert("Öz rütbənizi dəyişə bilməzsiniz!");
-            await updateDoc(doc(fsdb, "users", u.docId), { role: newRole });
-            const names = { adminka: "Adminka (Qırmızı)", mod: "Mod (Sarı)", dealer: "Satıcı (Yaşıl)", user: "Adi oyunçu (Səlahiyyət geri alındı)" };
-            alert(`✅ ${u.username} üçün yeni status: ${names[newRole]}`);
+            try {
+                const u = findUser(document.getElementById("roleTargetInp").value);
+                if (!u) return alert("İstifadəçi tapılmadı!");
+                if (u.docId === sessionUser.docId) return alert("Öz rütbənizi dəyişə bilməzsiniz!");
+                await updateDoc(doc(fsdb, "users", u.docId), {
+                    role: newRole,
+                    isAdmin: false
+                });
+                const names = {
+                    adminka: "Adminka (Qırmızı)",
+                    mod: "Mod (Sarı)",
+                    dealer: "Satıcı (Yaşıl)",
+                    user: "Adi oyunçu (Səlahiyyət geri alındı)"
+                };
+                alert(`✅ ${u.username} üçün yeni status: ${names[newRole]}`);
+            } catch (err) {
+                alert("❌ Baza xətası: " + err.message);
+            }
         };
 
         // 8. BÜTÜN OYUNA YENİLƏMƏ VER
