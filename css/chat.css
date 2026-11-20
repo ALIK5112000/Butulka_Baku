@@ -20,3 +20,36 @@
 }
 #smayPanel.ac { display: flex; }
 #smayPanel span { width: 11vw; text-align: center; }
+
+#musiqiPanel {
+  position: absolute;
+  top: 2.5vw;
+  right: 2.5vw;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  gap: 2.2vw;
+}
+.musiqi-btn {
+  width: 11vw;
+  height: 11vw;
+  max-width: 52px;
+  max-height: 52px;
+  min-width: 40px;
+  min-height: 40px;
+  border: none;
+  border-radius: 3vw;
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 0.6vw 2vw rgba(0, 0, 0, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.musiqi-btn:active {
+  transform: scale(0.93);
+  background: #f3f4f6;
+}
