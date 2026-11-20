@@ -12,33 +12,48 @@
     <link rel="stylesheet" href="css/raund.css">
     <link rel="stylesheet" href="css/chat.css">
     <style>
-/* ===== Ürək mağazası pəncərəsi ===== */
-.hs-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10000}
+/* ===== Ürək mağazası: ölçülər referans oyunun şəklinə görə (vw ilə) ===== */
+.hs-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:10000}
 .hs-overlay.open{display:flex}
-.hs-modal{position:relative;width:min(94vw,420px);border-radius:22px 22px 18px 18px;padding:18px 10px 12px;
-  background:linear-gradient(#f0606a 0,#f58f95 30%,#fde4e4 60%,#fff0f0 100%);animation:hsin .25s ease}
-@keyframes hsin{from{transform:translateY(30px);opacity:0}}
-.hs-scroll{max-height:70vh;overflow-y:auto;padding-top:12px}
-.hs-title{text-align:center;color:#fff;font:700 17px Roboto,Arial,sans-serif;margin:4px 0 4px}
-.hs-close{position:absolute;top:-14px;right:-6px;width:42px;height:42px;border-radius:50%;background:#fff;border:0;
-  color:#f0606a;font-size:26px;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,.3);z-index:2}
-.hs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.hs-card{position:relative;background:#fff;border-radius:14px;padding:10px 6px 8px;text-align:center;
-  box-shadow:0 2px 6px rgba(0,0,0,.15);display:flex;flex-direction:column;align-items:center;min-height:150px}
-.hs-top{font:700 17px Roboto,Arial,sans-serif;color:#ff4a0a;line-height:1.1}
-.hs-top small{display:block;font:500 11px Roboto,Arial,sans-serif;color:#f59a00}
-.hs-top.gold{color:#f59a00;font-size:12px}
-.hs-img{flex:1;display:flex;align-items:center;justify-content:center;width:100%;font-size:46px;
-  background:radial-gradient(circle,#fff6b8 0,#fff 70%);border-radius:50%;margin:4px 0}
-.hs-btn{width:100%;border:0;border-radius:8px;padding:8px 0;color:#fff;font:500 15px Roboto,Arial,sans-serif}
-.hs-btn.blue{background:#2f86e8}.hs-btn.green{background:#8dc63f}.hs-btn.cyan{background:#1ec8f0}
-.hs-tag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);white-space:nowrap;color:#fff;
-  font:700 10px Roboto,Arial,sans-serif;padding:3px 8px;border-radius:3px}
+.hs-modal{position:relative;width:80.7vw;border-radius:4.4vw 4.4vw 4vw 4vw;padding:0 0 1vw;
+  background:linear-gradient(#ef5f60 0,#f38a8e 16%,#fbd3d4 38%,#fdeeed 62%,#fff4f3 100%);
+  box-shadow:0 1vw 4vw rgba(0,0,0,.35);animation:hsin .25s ease}
+.hs-modal::before{content:"";position:absolute;left:0;right:0;top:0;height:22vw;border-radius:4.4vw 4.4vw 0 0;pointer-events:none;opacity:.5;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 80'><g fill='none' stroke='white' stroke-width='2' opacity='.55'><path d='M30 40s-14-9-14-19a8 8 0 0 1 14-5 8 8 0 0 1 14 5c0 10-14 19-14 19z'/><path d='M150 30s-12-8-12-16a7 7 0 0 1 12-4 7 7 0 0 1 12 4c0 8-12 16-12 16z'/><path d='M255 45s-14-9-14-19a8 8 0 0 1 14-5 8 8 0 0 1 14 5c0 10-14 19-14 19z'/><circle cx='80' cy='55' r='5'/><circle cx='210' cy='20' r='4'/></g></svg>") center top/100% auto no-repeat}
+@keyframes hsin{from{transform:translateY(5vw);opacity:0}}
+.hs-title{position:relative;text-align:center;color:#fff;font:500 3.6vw/11.2vw Roboto,Arial,sans-serif;height:11.2vw}
+.hs-close{position:absolute;top:-2.6vw;right:-2.6vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#fff;border:0;padding:0;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3);z-index:3}
+.hs-close svg{width:4.2vw;height:4.2vw}
+.hs-scroll{position:relative;max-height:calc(100vh - 22vw);overflow-y:auto;padding:1vw 2.6vw 0}
+.hs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4vw 2.2vw}
+.hs-card{position:relative;background:#fff;border-radius:2.7vw;text-align:center;overflow:visible;
+  box-shadow:0 .4vw 1.4vw rgba(0,0,0,.15);display:flex;flex-direction:column;align-items:center;height:37.6vw;padding:0 2.1vw 1.9vw}
+.hs-top{padding-top:3.4vw;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;height:12.4vw;
+  font:700 4.1vw/1.1 Roboto,Arial,sans-serif;color:#f0480f}
+.hs-top .row{display:flex;align-items:center;gap:.3vw;justify-content:center}
+.hs-top small{display:block;font:400 2.6vw/1.25 Roboto,Arial,sans-serif;color:#f59a00;margin-top:.4vw}
+.hs-top.gold{color:#f59a00;font:400 2.6vw/1.3 Roboto,Arial,sans-serif;padding-top:3.2vw}
+.hs-top.gold b{display:block;font:700 4.6vw/1 Roboto,Arial,sans-serif;color:#f08a00}
+.hs-top.gold small{margin-top:0}
+.hs-h{width:4.4vw;height:4.4vw;flex:none}
+.hs-img{position:relative;flex:1;width:calc(100% + 4.2vw);margin:0 -2.1vw;display:flex;align-items:center;justify-content:center}
+.hs-img::before{content:"";position:absolute;inset:0;
+  background:repeating-conic-gradient(from 0deg at 50% 62%,rgba(255,232,120,.6) 0 7deg,rgba(255,255,255,0) 7deg 14deg);
+  -webkit-mask-image:radial-gradient(circle at 50% 62%,#000 15%,transparent 72%);mask-image:radial-gradient(circle at 50% 62%,#000 15%,transparent 72%)}
+.hs-img span{position:relative;font-size:11vw;line-height:1}
+.hs-btn{width:100%;height:6.8vw;border:0;border-radius:1.3vw;color:#fff;font:400 3.5vw/1 Roboto,Arial,sans-serif;padding:0}
+.hs-btn.blue{background:#2c8ae6}.hs-btn.green{background:#93c83a}.hs-btn.cyan{background:#1ec3ee}
+.hs-tag{position:absolute;top:-.6vw;left:50%;transform:translateX(-50%);white-space:nowrap;color:#fff;z-index:2;
+  font:700 2.4vw/3.2vw Roboto,Arial,sans-serif;height:3.2vw;padding:0 1.8vw;border-radius:.6vw}
 .hs-tag.pink{background:#e0007a}.hs-tag.purple{background:#9b4fc4}
-.hs-sellers{margin-top:10px;background:#fff;border-radius:12px;padding:12px;font:500 14px Roboto,Arial,sans-serif;color:#555;cursor:pointer}
+.hs-sellers{margin:5.4vw 0 0;background:#fff;border-radius:3vw;height:10.6vw;display:flex;align-items:center;gap:1.6vw;padding:0 3.2vw;
+  font:700 4vw/1 Roboto,Arial,sans-serif;color:#333;cursor:pointer}
+.hs-sellers i{font-style:normal;font-weight:400;color:#888}
+.hs-sellers .tri{font-size:3vw}
 #urekBtn,#urekSayi{cursor:pointer}
 #ustPanel .urek path{fill:#e8590c;stroke:#e9e2dc;stroke-width:1.9}
-#urekSayi{color:#e9e2dc;font-size:3.2vw}
+#urekSayi{color:#e9e2dc}
 
     </style>
 </head>
@@ -189,9 +204,10 @@ window.CARX_OPTIONS = {
 <!-- ÜRƏK MAĞAZASI PƏNCƏRƏSİ -->
 <script>
 (function () {
+  const H = '<svg class="hs-h" viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="#f0541a"/></svg>';
   const PACKS = [
-    { top: 'PREMIUM<br>İCAZƏNAMƏ', icon: '🎟️', btn: 'Təfərrüatlar', color: 'blue' },
-    { top: '<b>VIP</b><small>STATUS</small>', icon: '👑', btn: 'Təfərrüatlar', color: 'blue' },
+    { top: 'PREMIUM<br>İCAZƏNAMƏ', gold: 1, icon: '🎟️', btn: 'Təfərrüatlar', color: 'blue' },
+    { top: '<b>VIP</b><small>STATUS</small>', gold: 1, icon: '👑', btn: 'Təfərrüatlar', color: 'blue' },
     { hearts: 14000, bonus: 40, icon: '🧰', btn: '10000', color: 'green', tag: ['Ən yaxşı təklif', 'pink'] },
     { hearts: 6500, bonus: 30, icon: '🛢️', btn: '5000', color: 'green' },
     { hearts: 1200, bonus: 20, icon: '🏺', btn: '1000', color: 'green', tag: ['Ən yaxşı', 'purple'] },
@@ -202,17 +218,17 @@ window.CARX_OPTIONS = {
 
   const ov = document.createElement('div');
   ov.className = 'hs-overlay';
-  ov.innerHTML = '<div class="hs-modal"><button class="hs-close">×</button><div class="hs-title">Ürəklər satın al</div><div class="hs-scroll"><div class="hs-grid"></div><div class="hs-sellers">▸ 💬 Satıcılardan al (1)</div></div></div>';
+  ov.innerHTML = '<div class="hs-modal"><button class="hs-close"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#ef5f60" stroke-width="3.2" stroke-linecap="round"/></svg></button><div class="hs-title">Ürəklər satın al</div><div class="hs-scroll"><div class="hs-grid"></div><div class="hs-sellers"><span class="tri">▶</span><span>💬</span><span>Satıcılardan al</span><i>(1)</i></div></div></div>';
   const grid = ov.querySelector('.hs-grid');
 
   PACKS.forEach(p => {
     const c = document.createElement('div');
     c.className = 'hs-card';
     const top = p.hearts
-      ? '<div class="hs-top">❤️' + p.hearts + (p.bonus ? '<small>' + p.bonus + '% BONUS</small>' : '') + '</div>'
+      ? '<div class="hs-top"><div class="row">' + H + '<span>' + p.hearts + '</span></div>' + (p.bonus ? '<small>' + p.bonus + '% BONUS</small>' : '') + '</div>'
       : '<div class="hs-top gold">' + p.top + '</div>';
     c.innerHTML = (p.tag ? '<div class="hs-tag ' + p.tag[1] + '">' + p.tag[0] + '</div>' : '') + top +
-      '<div class="hs-img">' + p.icon + '</div><button class="hs-btn ' + p.color + '">' + p.btn + '</button>';
+      '<div class="hs-img"><span>' + p.icon + '</span></div><button class="hs-btn ' + p.color + '">' + p.btn + '</button>';
     // satın alma / pulsuz götürmə məntiqi sonra bu hadisəyə bağlanacaq
     c.querySelector('button').onclick = () => window.dispatchEvent(new CustomEvent('hearts:buy', { detail: p }));
     grid.appendChild(c);
@@ -245,13 +261,6 @@ window.CARX_OPTIONS = {
   window.addEventListener('click', check, true);
 
   window.HeartShop = { open, close };
-
-  // TEST: fayl yükləndiyini göstərir (təsdiqləndikdən sonra silin)
-  var tt = document.createElement('div');
-  tt.textContent = 'heart-shop v3 yükləndi';
-  tt.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:6px 12px;border-radius:8px;font:13px Arial;z-index:100000';
-  document.body.appendChild(tt);
-  setTimeout(function () { tt.remove(); }, 3000);
 })();
 
 </script>
