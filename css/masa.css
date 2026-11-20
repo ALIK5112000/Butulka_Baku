@@ -16,7 +16,7 @@
 /* Şüşə: ölçü üçün height */
 #butulka {
   position: absolute; left: 50%; top: 61.6vw;
-  height: 48vw; width: auto;
+  height: 35vw; width: auto;
   transform: translate(-50%, -50%) rotate(0deg);
   filter: drop-shadow(0 1.5vw 1.5vw rgba(0,0,0,.35));
   transition: transform 3s cubic-bezier(.15, .8, .2, 1), opacity .3s;
@@ -24,19 +24,19 @@
 
 /* Oyunçu kartı: left/top şəklin MƏRKƏZİDİR */
 .yer {
-  position: absolute; width: 20vw; text-align: center;
-  transform: translate(-50%, -8.5vw);
+  position: absolute; width: 22vw; text-align: center;
+  transform: translate(-50%, -9.75vw);
   opacity: 0; transition: opacity .3s;
 }
 .yer.dolu { opacity: 1; }
 .yer .foto {
-  width: 17vw; height: 17vw; margin: 0 auto; border-radius: 2vw;
+  width: 19.5vw; height: 19.5vw; margin: 0 auto; border-radius: 2vw;
   background: #777 center/cover no-repeat;
   box-shadow: 0 .6vw 1.6vw rgba(0,0,0,.3);
 }
 .yer .ad {
-  margin-top: .8vw; font-size: 2.7vw; color: #fff;
-  text-shadow: 0 .2vw .6vw rgba(0,0,0,.55);
+  margin-top: .9vw; font-size: 3.2vw; color: #fff;
+  text-shadow: 0 .2vw .6vw rgba(0,0,0,.65);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
