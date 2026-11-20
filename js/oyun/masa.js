@@ -3,7 +3,7 @@ import { MASA_NOMRESI, OTURACAQ_SAYI } from "../core/config.js";
 import { cinsTap, vipMi } from "./yardimci.js";
 import { girisIcazesi } from "./masalar.js";
 import { novbeBaxis, novbeBaslat } from "./novbe.js";
-import { ref, get, set, onValue, onDisconnect, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, get, set, remove, onValue, onDisconnect, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const yol = `masalar/${MASA_NOMRESI}/oturacaqlar`;
@@ -38,12 +38,29 @@ function cizdir(data) {
   });
 }
 
+// Eyni uid-ə aid bütün köhnə yerləri sil (yalnız saxlaDediyin indeks qalsın)
+async function dublikatlariSil(uid, saxlaIndeks = null) {
+  const snap = await get(ref(rtdb, yol));
+  const hamisi = snap.val() || {};
+  const silinecekler = [];
+  for (const k in hamisi) {
+    if (hamisi[k] && hamisi[k].uid === uid && String(k) !== String(saxlaIndeks)) {
+      silinecekler.push(remove(ref(rtdb, `${yol}/${k}`)));
+    }
+  }
+  if (silinecekler.length) {
+    await Promise.all(silinecekler);
+  }
+}
+
 // Boş yer tapıb oturur. Uğurlu olarsa true qaytarır
 async function yerTut(oyuncu) {
+  await dublikatlariSil(oyuncu.uid, null);
   for (let i = 0; i < OTURACAQ_SAYI; i++) {
     const r = ref(rtdb, `${yol}/${i}`);
     const netice = await runTransaction(r, (cur) => (cur ? undefined : oyuncu));
     if (netice.committed) {
+      await dublikatlariSil(oyuncu.uid, i);
       onDisconnect(r).remove();
       return true;
     }
@@ -53,15 +70,23 @@ async function yerTut(oyuncu) {
 
 async function oturacaqTap(oyuncu) {
   const hamisi = (await get(ref(rtdb, yol))).val() || {};
+  const ozYerleri = [];
   for (const k in hamisi) {
     if (hamisi[k] && hamisi[k].uid === oyuncu.uid) {
-      const r = ref(rtdb, `${yol}/${k}`);
-      await set(r, oyuncu);
-      onDisconnect(r).remove();
-      cizdir({ ...sonData, [k]: oyuncu });
-      return;
+      ozYerleri.push(String(k));
     }
   }
+
+  if (ozYerleri.length > 0) {
+    const esasYer = ozYerleri[0];
+    await dublikatlariSil(oyuncu.uid, esasYer);
+    const r = ref(rtdb, `${yol}/${esasYer}`);
+    await set(r, oyuncu);
+    onDisconnect(r).remove();
+    cizdir({ ...sonData, [esasYer]: oyuncu });
+    return;
+  }
+
   if (!(await novbeBaxis(oyuncu.uid)) && (await yerTut(oyuncu))) {
     const yenilenmis = (await get(ref(rtdb, yol))).val() || {};
     cizdir(yenilenmis);
@@ -94,21 +119,20 @@ async function oturacagiYoxlaVeBerpaEt() {
     if (!aktivOyuncu) return;
 
     const hamisi = (await get(ref(rtdb, yol))).val() || {};
-    cizdir(hamisi);
+    const ozYerleri = Object.keys(hamisi).filter((k) => hamisi[k] && hamisi[k].uid === aktivOyuncu.uid);
 
-    let tapildi = false;
-    for (const k in hamisi) {
-      if (hamisi[k] && hamisi[k].uid === aktivOyuncu.uid) {
-        const r = ref(rtdb, `${yol}/${k}`);
-        await set(r, aktivOyuncu);
-        onDisconnect(r).remove();
-        tapildi = true;
-        break;
-      }
-    }
-    if (!tapildi) {
+    if (ozYerleri.length > 0) {
+      const esasYer = ozYerleri[0];
+      await dublikatlariSil(aktivOyuncu.uid, esasYer);
+      const r = ref(rtdb, `${yol}/${esasYer}`);
+      await set(r, aktivOyuncu);
+      onDisconnect(r).remove();
+    } else {
       await oturacaqTap(aktivOyuncu);
     }
+
+    const son = (await get(ref(rtdb, yol))).val() || {};
+    cizdir(son);
   } catch (e) {
     // qısamüddətli şəbəkə kəsintisində səssiz keç
   } finally {
@@ -129,7 +153,6 @@ document.addEventListener("visibilitychange", geriQayidandaYoxla);
 window.addEventListener("pageshow", geriQayidandaYoxla);
 window.addEventListener("focus", geriQayidandaYoxla);
 
-// Oturacağı arxa planda tut (oyun ekranı gözləmir)
 async function katil(cari) {
   try {
     const snap = await getDoc(doc(fsdb, "users", cari.docId));
