@@ -403,7 +403,7 @@
                     <span id="myUsername" class="user-name-text">Yüklənir...</span>
                 </div>
                 <div class="id-row">
-                    <span class="id-badge">ID <span id="myUserId">-----</span></span>
+                    <span id="myIdBadge" class="id-badge">ID <span id="myUserId">-----</span></span>
                     <button class="settings-btn" onclick="openSheet('settingsSheet')">⚙️ <span data-i18n="settings">Ayarlar</span></button>
                 </div>
                 <div id="myMetaLine" class="meta-line">18 yaş • Kişi</div>
@@ -543,7 +543,7 @@
             </div>
             <img id="otherAvatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width:86px; height:86px; border-radius:50%; object-fit:cover; border:3px solid #6366f1;">
             <h3 id="otherName" style="margin-top:10px; font-size:20px;">-</h3>
-            <div style="margin:6px 0;"><span class="id-badge">ID <span id="otherId">-</span></span></div>
+            <div style="margin:6px 0;"><span id="otherIdBadge" class="id-badge">ID <span id="otherId">-</span></span></div>
             <div id="otherMeta" style="font-size:12px; color:#94a3b8; margin-bottom:10px;">-</div>
             <div id="otherStatus" style="font-size:13px; color:#cbd5e1; margin-bottom:18px;"></div>
             <button id="sendFriendReqBtn" class="primary-btn" onclick="sendFriendRequest()">Dostluq sorğusu göndər</button>
@@ -560,7 +560,7 @@
             <div style="font-size:48px; margin:10px 0;">🎧</div>
             <h3 style="font-size:20px; color:#fbbf24;">Admin Alik</h3>
             <p style="font-size:13px; color:#94a3b8; margin-top:8px; margin-bottom:18px;">Jeton sifarişi və dəstək üçün müraciət edə bilərsiniz.</p>
-            <button id="openAdminPanelBtn" class="settings-btn" style="display:none; margin:0 auto; padding:10px 18px; border-color:#fbbf24; color:#fbbf24;" onclick="window.location.href='admin.html'">🛡️ Admin Panel</button>
+            <button id="openAdminPanelBtn" class="settings-btn" style="display:none; margin:0 auto; padding:10px 18px; border-color:#fbbf24; color:#fbbf24;" onclick="window.location.href='admin.html?v=' + Date.now()">🛡️ Admin Panel</button>
         </div>
     </div>
 
@@ -715,6 +715,18 @@
         let unsubscribeChat = null;
 
         const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        const MAIN_ADMIN_ID = 96446;
+
+        function formatDisplayId(user) {
+            if (!user) return "-----";
+            if (Number(user.id) === MAIN_ADMIN_ID || user.isAdmin === true || user.role === "admin") {
+                return user.customId ? `👑 ${user.customId}` : "👑 Admin";
+            }
+            if (user.customId && String(user.customId).trim() !== "") {
+                return String(user.customId).trim();
+            }
+            return `ID ${user.id}`;
+        }
 
         const countries = [
             { value: "", label: "— seçilməyib —" },
@@ -752,10 +764,9 @@
             countrySelect.appendChild(opt);
         });
 
-        // Oyuna keçid: brauzerin köhnə keşini aşmaq üçün vaxt parametri ilə açır
         window.enterGamePage = function() {
-            if (myData && myData.blockedUntil && Number(myData.blockedUntil) > Date.now()) {
-                return alert("Hesabınız admin tərəfindən müvəqqəti bloklanıb!");
+            if (myData && (myData.banned || (myData.blockedUntil && Number(myData.blockedUntil) > Date.now()))) {
+                return alert("Hesabınız admin tərəfindən bloklanıb!");
             }
             if (myData) {
                 localStorage.setItem("currentUser", JSON.stringify({
@@ -781,12 +792,26 @@
                 }
             }
 
-            onSnapshot(doc(db, "users", myDocId), (docSnap) => {
+            onSnapshot(doc(db, "users", myDocId), async (docSnap) => {
                 if (!docSnap.exists()) {
                     logoutAccount();
                     return;
                 }
                 myData = docSnap.data();
+
+                if (myData.banned) {
+                    alert("Hesabınız admin tərəfindən bloklanıb!");
+                    logoutAccount();
+                    return;
+                }
+
+                if (Number(myData.id) === MAIN_ADMIN_ID && !myData.isAdmin) {
+                    await updateDoc(doc(db, "users", myDocId), {
+                        isAdmin: true,
+                        role: "admin",
+                        customId: myData.customId || "Admin"
+                    });
+                }
 
                 if ((myData.sessionVersion || 1) > (sessionUser.sessionVersion || 1)) {
                     alert("Hesabınızdan bütün cihazlardan çıxış edildi.");
@@ -804,18 +829,34 @@
         function renderMyProfile() {
             if (!myData) return;
 
+            const isAdminUser = Number(myData.id) === MAIN_ADMIN_ID || myData.isAdmin === true || myData.role === "admin";
+            const isDealerUser = myData.role === "dealer";
+            const hasPanelAccess = isAdminUser || isDealerUser;
+
             document.getElementById("myUsername").textContent = myData.username;
-            document.getElementById("myUserId").textContent = myData.id;
+
+            const idBadgeEl = document.getElementById("myIdBadge");
+            idBadgeEl.textContent = formatDisplayId(myData);
+            if (isAdminUser) {
+                idBadgeEl.style.background = "linear-gradient(135deg, rgba(239,68,68,0.28), rgba(245,158,11,0.28))";
+                idBadgeEl.style.borderColor = "#ef4444";
+                idBadgeEl.style.color = "#fca5a5";
+            } else {
+                idBadgeEl.style.background = "rgba(245, 185, 66, 0.15)";
+                idBadgeEl.style.borderColor = "rgba(245, 185, 66, 0.45)";
+                idBadgeEl.style.color = "#fbbf24";
+            }
+
             document.getElementById("myAvatar").src = myData.avatar || DEFAULT_AVATAR;
             document.getElementById("editAvatarPreview").src = myData.avatar || DEFAULT_AVATAR;
 
-            const isVip = myData.vip && (!myData.vipUntil || Number(myData.vipUntil) > Date.now());
+            const isVip = isAdminUser || (myData.vip && (!myData.vipUntil || Number(myData.vipUntil) > Date.now()));
             const nameBox = document.getElementById("myNameBox");
             const crown = document.getElementById("myVipCrown");
             if (isVip) {
                 nameBox.classList.add("vip-active");
                 crown.style.display = "inline";
-                document.getElementById("vipStatusTag").textContent = "✅ VIP Aktivdir";
+                document.getElementById("vipStatusTag").textContent = isAdminUser ? "🛡️ Baş Admin" : "✅ VIP Aktivdir";
             } else {
                 nameBox.classList.remove("vip-active");
                 crown.style.display = "none";
@@ -849,9 +890,31 @@
             document.getElementById("editAge").value = myData.age || 18;
             selectGender(myData.gender || "Kişi");
 
+            // Admin və ya Satıcı Paneli düyməsi (real vaxtda görünür)
             const adminBtn = document.getElementById("openAdminPanelBtn");
             if (adminBtn) {
-                adminBtn.style.display = Number(myData.id) === 96446 ? "inline-flex" : "none";
+                adminBtn.style.display = hasPanelAccess ? "inline-flex" : "none";
+                adminBtn.innerHTML = isAdminUser ? "🛡️ Admin Panel" : "🪙 Satıcı Paneli";
+            }
+
+            let qBtn = document.getElementById("quickAdminCardBtn");
+            if (hasPanelAccess) {
+                if (!qBtn) {
+                    qBtn = document.createElement("button");
+                    qBtn.id = "quickAdminCardBtn";
+                    qBtn.className = "settings-btn";
+                    qBtn.onclick = () => window.location.href = "admin.html?v=" + Date.now();
+                    document.querySelector(".id-row").appendChild(qBtn);
+                }
+                if (isAdminUser) {
+                    qBtn.style.cssText = "background:linear-gradient(135deg,#dc2626,#f59e0b); color:#fff; border:none; font-weight:700;";
+                    qBtn.innerHTML = "🛡️ Admin Panel";
+                } else {
+                    qBtn.style.cssText = "background:linear-gradient(135deg,#0284c7,#10b981); color:#fff; border:none; font-weight:700;";
+                    qBtn.innerHTML = "🪙 Satıcı Paneli";
+                }
+            } else if (qBtn) {
+                qBtn.remove();
             }
         }
 
@@ -972,14 +1035,19 @@
             snap.forEach((docSnap) => {
                 const u = docSnap.data();
                 if (u.id === myData.id) return;
-                if (u.username.toLowerCase().includes(term) || String(u.id).includes(term)) {
+                const dispId = formatDisplayId(u);
+                if (
+                    u.username.toLowerCase().includes(term) ||
+                    String(u.id).includes(term) ||
+                    dispId.toLowerCase().includes(term)
+                ) {
                     html += `
                         <div class="user-row" onclick="viewOtherUser('${docSnap.id}')">
                             <div class="user-row-left">
                                 <img src="${u.avatar || DEFAULT_AVATAR}">
                                 <div>
-                                    <div style="font-weight:700;">${u.vip ? "👑 " : ""}${u.username}</div>
-                                    <div style="font-size:12px; color:#fbbf24;">ID ${u.id}</div>
+                                    <div style="font-weight:700;">${u.vip || u.isAdmin ? "👑 " : ""}${u.username}</div>
+                                    <div style="font-size:12px; color:#fbbf24;">${dispId}</div>
                                 </div>
                             </div>
                             <span style="color:#94a3b8;">›</span>
@@ -1009,8 +1077,8 @@
             });
 
             document.getElementById("otherAvatar").src = u.avatar || DEFAULT_AVATAR;
-            document.getElementById("otherName").textContent = (u.vip ? "👑 " : "") + u.username;
-            document.getElementById("otherId").textContent = u.id;
+            document.getElementById("otherName").textContent = (u.vip || u.isAdmin ? "👑 " : "") + u.username;
+            document.getElementById("otherIdBadge").textContent = formatDisplayId(u);
             const loc = [u.country, u.city].filter(Boolean).join(", ");
             document.getElementById("otherMeta").textContent = `${u.age || 18} yaş • ${u.gender || "Kişi"}${loc ? " • " + loc : ""}`;
             document.getElementById("otherStatus").textContent = u.status || "";
