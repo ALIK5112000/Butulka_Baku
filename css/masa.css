@@ -4,7 +4,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: calc(118vw * var(--olcu, 1));
+  height: calc(114vw * var(--olcu, 1));
   background: url("../images/masa/fon.jpg") center/cover no-repeat, #d9964a;
 }
 
@@ -13,14 +13,14 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 118vw;
+  height: 114vw;
   transform: scale(var(--olcu, 1));
   transform-origin: 50% 0;
 }
 
 #chatYeri {
   position: absolute;
-  top: calc(118vw * var(--olcu, 1));
+  top: calc(114vw * var(--olcu, 1));
   bottom: 0;
   left: 0;
   right: 0;
@@ -31,7 +31,7 @@
 #butulka {
   position: absolute;
   left: 50%;
-  top: 61vw;
+  top: 60.5vw;
   height: 34vw;
   width: auto;
   transform: translate(-50%, -50%) rotate(0deg);
@@ -63,7 +63,7 @@
 }
 
 .yer .ad {
-  margin-top: 0.7vw;
+  margin-top: 0.65vw;
   font-size: 3vw;
   line-height: 1.15;
   color: #fff;
@@ -73,16 +73,16 @@
   text-overflow: ellipsis;
 }
 
-/* 12 nəfərlik masa ətrafı düzülüş (şəkildəki ardıcıllıq və məsafələrə uyğun) */
-.yer-0  { left: 14.5vw; top: 27vw; }
-.yer-1  { left: 38.5vw; top: 23.5vw; }
-.yer-2  { left: 61.5vw; top: 23.5vw; }
-.yer-3  { left: 85.5vw; top: 27vw; }
-.yer-4  { left: 86.5vw; top: 53vw; }
-.yer-5  { left: 86.5vw; top: 78vw; }
-.yer-6  { left: 85.5vw; top: 102vw; }
-.yer-7  { left: 62vw;   top: 104.5vw; }
-.yer-8  { left: 38vw;   top: 104.5vw; }
-.yer-9  { left: 14.5vw; top: 102vw; }
-.yer-10 { left: 13.5vw; top: 78vw; }
-.yer-11 { left: 13.5vw; top: 53vw; }
+/* 12 nəfərlik masa ətrafı düzülüş (114vw daxilində şəkildəki ardıcıllıq) */
+.yer-0  { left: 14.5vw; top: 25.5vw; }
+.yer-1  { left: 38.5vw; top: 22.5vw; }
+.yer-2  { left: 61.5vw; top: 22.5vw; }
+.yer-3  { left: 85.5vw; top: 25.5vw; }
+.yer-4  { left: 86.5vw; top: 50.5vw; }
+.yer-5  { left: 86.5vw; top: 75vw; }
+.yer-6  { left: 85.5vw; top: 99vw; }
+.yer-7  { left: 62vw;   top: 102vw; }
+.yer-8  { left: 38vw;   top: 102vw; }
+.yer-9  { left: 14.5vw; top: 99vw; }
+.yer-10 { left: 13.5vw; top: 75vw; }
+.yer-11 { left: 13.5vw; top: 50.5vw; }
