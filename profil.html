@@ -560,7 +560,7 @@
             <div style="font-size:48px; margin:10px 0;">🎧</div>
             <h3 style="font-size:20px; color:#fbbf24;">Admin Alik</h3>
             <p style="font-size:13px; color:#94a3b8; margin-top:8px; margin-bottom:18px;">Jeton sifarişi və dəstək üçün müraciət edə bilərsiniz.</p>
-            <button id="openAdminPanelBtn" class="settings-btn" style="display:none; margin:0 auto; padding:10px 18px; border-color:#fbbf24; color:#fbbf24;" onclick="window.location.href='admin.html?v=' + Date.now()">🛡️ Admin Panel</button>
+            <button id="openAdminPanelBtn" class="settings-btn" style="display:none; margin:0 auto; padding:10px 18px;" onclick="window.location.href='admin.html?v=' + Date.now()">🔵 Admin Panel</button>
         </div>
     </div>
 
@@ -719,7 +719,7 @@
 
         function formatDisplayId(user) {
             if (!user) return "-----";
-            if (Number(user.id) === MAIN_ADMIN_ID || user.isAdmin === true || user.role === "admin") {
+            if (Number(user.id) === MAIN_ADMIN_ID || user.role === "admin") {
                 return user.customId ? `👑 ${user.customId}` : "👑 Admin";
             }
             if (user.customId && String(user.customId).trim() !== "") {
@@ -766,7 +766,7 @@
 
         window.enterGamePage = function() {
             if (myData && (myData.banned || (myData.blockedUntil && Number(myData.blockedUntil) > Date.now()))) {
-                return alert("Hesabınız admin tərəfindən bloklanıb!");
+                return alert("Admin tərəfindən ban olunmusunuz!");
             }
             if (myData) {
                 localStorage.setItem("currentUser", JSON.stringify({
@@ -800,12 +800,12 @@
                 myData = docSnap.data();
 
                 if (myData.banned) {
-                    alert("Hesabınız admin tərəfindən bloklanıb!");
+                    alert("Admin tərəfindən ban olunmusunuz!");
                     logoutAccount();
                     return;
                 }
 
-                if (Number(myData.id) === MAIN_ADMIN_ID && !myData.isAdmin) {
+                if (Number(myData.id) === MAIN_ADMIN_ID && myData.role !== "admin") {
                     await updateDoc(doc(db, "users", myDocId), {
                         isAdmin: true,
                         role: "admin",
@@ -829,18 +829,18 @@
         function renderMyProfile() {
             if (!myData) return;
 
-            const isAdminUser = Number(myData.id) === MAIN_ADMIN_ID || myData.isAdmin === true || myData.role === "admin";
-            const isDealerUser = myData.role === "dealer";
-            const hasPanelAccess = isAdminUser || isDealerUser;
+            const r = myData.role || "user";
+            const isMainAdmin = Number(myData.id) === MAIN_ADMIN_ID || r === "admin";
+            const activeRole = isMainAdmin ? "admin" : (["adminka", "mod", "dealer"].includes(r) ? r : null);
 
             document.getElementById("myUsername").textContent = myData.username;
 
             const idBadgeEl = document.getElementById("myIdBadge");
             idBadgeEl.textContent = formatDisplayId(myData);
-            if (isAdminUser) {
-                idBadgeEl.style.background = "linear-gradient(135deg, rgba(239,68,68,0.28), rgba(245,158,11,0.28))";
-                idBadgeEl.style.borderColor = "#ef4444";
-                idBadgeEl.style.color = "#fca5a5";
+            if (isMainAdmin) {
+                idBadgeEl.style.background = "rgba(37, 99, 235, 0.25)";
+                idBadgeEl.style.borderColor = "#3b82f6";
+                idBadgeEl.style.color = "#93c5fd";
             } else {
                 idBadgeEl.style.background = "rgba(245, 185, 66, 0.15)";
                 idBadgeEl.style.borderColor = "rgba(245, 185, 66, 0.45)";
@@ -850,13 +850,13 @@
             document.getElementById("myAvatar").src = myData.avatar || DEFAULT_AVATAR;
             document.getElementById("editAvatarPreview").src = myData.avatar || DEFAULT_AVATAR;
 
-            const isVip = isAdminUser || (myData.vip && (!myData.vipUntil || Number(myData.vipUntil) > Date.now()));
+            const isVip = isMainAdmin || (myData.vip && (!myData.vipUntil || Number(myData.vipUntil) > Date.now()));
             const nameBox = document.getElementById("myNameBox");
             const crown = document.getElementById("myVipCrown");
             if (isVip) {
                 nameBox.classList.add("vip-active");
                 crown.style.display = "inline";
-                document.getElementById("vipStatusTag").textContent = isAdminUser ? "🛡️ Baş Admin" : "✅ VIP Aktivdir";
+                document.getElementById("vipStatusTag").textContent = isMainAdmin ? "🔵 Baş Admin" : "✅ VIP Aktivdir";
             } else {
                 nameBox.classList.remove("vip-active");
                 crown.style.display = "none";
@@ -890,15 +890,27 @@
             document.getElementById("editAge").value = myData.age || 18;
             selectGender(myData.gender || "Kişi");
 
-            // Admin və ya Satıcı Paneli düyməsi (real vaxtda görünür)
+            // 4 RƏNGLİ RÜTBƏ DÜYMƏSİ: Admin (Göy), Adminka (Qırmızı), Satıcı (Yaşıl), Mod (Sarı)
+            const roleStyles = {
+                admin:   { text: "🔵 Admin Panel",   bg: "#2563eb", color: "#fff" },
+                adminka: { text: "🔴 Adminka Panel", bg: "#dc2626", color: "#fff" },
+                dealer:  { text: "🟢 Satıcı Panel",  bg: "#16a34a", color: "#fff" },
+                mod:     { text: "🟡 Mod Panel",     bg: "#eab308", color: "#000" }
+            };
+
             const adminBtn = document.getElementById("openAdminPanelBtn");
             if (adminBtn) {
-                adminBtn.style.display = hasPanelAccess ? "inline-flex" : "none";
-                adminBtn.innerHTML = isAdminUser ? "🛡️ Admin Panel" : "🪙 Satıcı Paneli";
+                adminBtn.style.display = activeRole ? "inline-flex" : "none";
+                if (activeRole) {
+                    adminBtn.style.background = roleStyles[activeRole].bg;
+                    adminBtn.style.color = roleStyles[activeRole].color;
+                    adminBtn.style.border = "none";
+                    adminBtn.textContent = roleStyles[activeRole].text;
+                }
             }
 
             let qBtn = document.getElementById("quickAdminCardBtn");
-            if (hasPanelAccess) {
+            if (activeRole) {
                 if (!qBtn) {
                     qBtn = document.createElement("button");
                     qBtn.id = "quickAdminCardBtn";
@@ -906,13 +918,8 @@
                     qBtn.onclick = () => window.location.href = "admin.html?v=" + Date.now();
                     document.querySelector(".id-row").appendChild(qBtn);
                 }
-                if (isAdminUser) {
-                    qBtn.style.cssText = "background:linear-gradient(135deg,#dc2626,#f59e0b); color:#fff; border:none; font-weight:700;";
-                    qBtn.innerHTML = "🛡️ Admin Panel";
-                } else {
-                    qBtn.style.cssText = "background:linear-gradient(135deg,#0284c7,#10b981); color:#fff; border:none; font-weight:700;";
-                    qBtn.innerHTML = "🪙 Satıcı Paneli";
-                }
+                qBtn.style.cssText = `background:${roleStyles[activeRole].bg}; color:${roleStyles[activeRole].color}; border:none; font-weight:800;`;
+                qBtn.textContent = roleStyles[activeRole].text;
             } else if (qBtn) {
                 qBtn.remove();
             }
@@ -1034,11 +1041,11 @@
             let html = "";
             snap.forEach((docSnap) => {
                 const u = docSnap.data();
-                if (u.id === myData.id) return;
+                if (docSnap.id === myDocId) return;
                 const dispId = formatDisplayId(u);
                 if (
                     u.username.toLowerCase().includes(term) ||
-                    String(u.id).includes(term) ||
+                    String(u.id).toLowerCase().includes(term) ||
                     dispId.toLowerCase().includes(term)
                 ) {
                     html += `
@@ -1046,7 +1053,7 @@
                             <div class="user-row-left">
                                 <img src="${u.avatar || DEFAULT_AVATAR}">
                                 <div>
-                                    <div style="font-weight:700;">${u.vip || u.isAdmin ? "👑 " : ""}${u.username}</div>
+                                    <div style="font-weight:700;">${u.vip || u.role === "admin" || u.role === "adminka" ? "👑 " : ""}${u.username}</div>
                                     <div style="font-size:12px; color:#fbbf24;">${dispId}</div>
                                 </div>
                             </div>
@@ -1077,7 +1084,7 @@
             });
 
             document.getElementById("otherAvatar").src = u.avatar || DEFAULT_AVATAR;
-            document.getElementById("otherName").textContent = (u.vip || u.isAdmin ? "👑 " : "") + u.username;
+            document.getElementById("otherName").textContent = (u.vip || u.role === "admin" || u.role === "adminka" ? "👑 " : "") + u.username;
             document.getElementById("otherIdBadge").textContent = formatDisplayId(u);
             const loc = [u.country, u.city].filter(Boolean).join(", ");
             document.getElementById("otherMeta").textContent = `${u.age || 18} yaş • ${u.gender || "Kişi"}${loc ? " • " + loc : ""}`;
