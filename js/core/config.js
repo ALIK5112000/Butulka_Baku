@@ -1,5 +1,5 @@
 export const MASA_NOMRESI = new URLSearchParams(location.search).get("masa") || "511";
-export const OTURACAQ_SAYI = 1;
+export const OTURACAQ_SAYI = 12;
 // Oyunçu şəkillərinin mərkəzi (vw). masa.css-dəki .yer-N ilə eyni olmalıdır
 export const YER_XY = [
   [17.3, 30.8], [39.2, 25.5], [61, 25.5], [83.1, 30], [86.9, 52.7], [86.9, 74.4],
