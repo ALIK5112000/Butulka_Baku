@@ -3,169 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Butulka Baku - Baş Admin Paneli</title>
+    <title>Butulka Baku - İdarəetmə Mərkəzi</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background: #080912; color: #fff; padding-bottom: 60px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: #070811; color: #fff; padding-bottom: 50px; }
 
         .topbar {
-            background: linear-gradient(135deg, #16192e, #2a1025);
-            border-bottom: 1px solid rgba(245, 158, 11, 0.35);
-            padding: 15px 16px;
+            background: #101324;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 14px 16px;
             display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 50;
+            position: sticky; top: 0; z-index: 60;
         }
-        .topbar h1 { font-size: 17px; font-weight: 800; color: #fbbf24; }
+        .topbar h1 { font-size: 16px; font-weight: 800; }
         .btn-back {
-            background: #222640; border: 1px solid rgba(255,255,255,0.12);
-            color: #fff; padding: 7px 14px; border-radius: 10px; font-size: 13px; cursor: pointer;
+            background: #1e223d; border: 1px solid rgba(255,255,255,0.12);
+            color: #fff; padding: 7px 13px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer;
         }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }
+        .wrap { max-width: 580px; margin: 0 auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
 
-        /* Hər funksiya üçün ayrı-ayrı alt-alta bölmə kartları */
-        .section-card {
-            background: #121526;
-            border: 1px solid rgba(255,255,255,0.09);
-            border-radius: 18px;
-            padding: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        /* Açılıb-Bağlanan Yuxarı Menyu Düymələri */
+        .acc-item {
+            background: #111426;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 15px;
+            overflow: hidden;
         }
-        .section-header {
-            display: flex; align-items: center; gap: 8px;
-            font-size: 16px; font-weight: 800; color: #f8fafc;
-            margin-bottom: 6px; padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+        .acc-btn {
+            width: 100%; padding: 15px 16px;
+            background: transparent; border: none; color: #fff;
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 14px; font-weight: 700; cursor: pointer; text-align: left;
         }
-        .section-desc { font-size: 12px; color: #94a3b8; margin-bottom: 12px; line-height: 1.45; }
+        .acc-btn:active { background: rgba(255,255,255,0.03); }
+        .acc-btn .arrow { font-size: 12px; color: #94a3b8; transition: transform 0.2s; }
+        .acc-item.open .acc-btn { background: #181c36; border-bottom: 1px solid rgba(255,255,255,0.07); }
+        .acc-item.open .arrow { transform: rotate(180deg); color: #fff; }
+        .acc-body { display: none; padding: 14px; }
+        .acc-item.open .acc-body { display: block; }
 
-        .inp, .sel {
-            width: 100%; padding: 12px 13px; background: #1b1f38;
-            border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
-            color: #fff; font-size: 14px; outline: none; margin-bottom: 10px;
+        .sub-box {
+            background: #171b33; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; padding: 12px; margin-bottom: 10px;
         }
-        .inp:focus, .sel:focus { border-color: #818cf8; }
+        .sub-title { font-size: 13px; font-weight: 800; color: #cbd5e1; margin-bottom: 8px; }
+        .hint { font-size: 11px; color: #94a3b8; margin-bottom: 8px; line-height: 1.4; }
+
+        .inp {
+            width: 100%; padding: 11px 12px; background: #0e1020;
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
+            color: #fff; font-size: 13px; outline: none; margin-bottom: 8px;
+        }
+        .inp:focus { border-color: #3b82f6; }
 
         .btn {
-            padding: 11px 14px; border-radius: 11px; border: none;
-            font-size: 13px; font-weight: 700; cursor: pointer; color: #fff;
-            transition: 0.15s;
+            padding: 10px 12px; border-radius: 10px; border: none;
+            font-size: 12px; font-weight: 700; cursor: pointer; color: #fff;
         }
         .btn:active { transform: scale(0.97); }
-        .btn-full { width: 100%; padding: 13px; font-size: 14px; }
-        .b-gold { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .b-blue { background: #4f46e5; }
-        .b-green { background: #16a34a; }
-        .b-red { background: #dc2626; }
-        .b-purple { background: linear-gradient(135deg, #7c3aed, #db2777); }
-        .b-gray { background: #2d3354; }
+        .w-100 { width: 100%; padding: 12px; font-size: 13px; }
+        .c-blue { background: #2563eb; }
+        .c-red { background: #dc2626; }
+        .c-green { background: #16a34a; }
+        .c-yellow { background: #d97706; }
+        .c-purple { background: #7c3aed; }
+        .c-gray { background: #334155; }
 
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .g-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+        .g-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
 
-        .mini-row {
+        .found-badge {
+            background: rgba(59, 130, 246, 0.14); border: 1px solid rgba(59, 130, 246, 0.35);
+            padding: 8px 10px; border-radius: 9px; font-size: 12px; margin-bottom: 8px; color: #93c5fd;
+        }
+        .log-row {
+            font-size: 11px; color: #cbd5e1; background: #0e1020;
+            padding: 7px 10px; border-radius: 8px; margin-bottom: 5px;
+            border-left: 3px solid #22c55e;
+        }
+        .seat-row {
             display: flex; align-items: center; justify-content: space-between;
-            background: #191d36; padding: 10px 12px; border-radius: 12px;
-            margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.06);
+            background: #0e1020; padding: 9px 11px; border-radius: 10px; margin-bottom: 6px;
         }
-        .badge-id {
-            display: inline-block; background: rgba(245,158,11,0.18);
-            border: 1px solid rgba(245,158,11,0.4); color: #fbbf24;
-            padding: 2px 8px; border-radius: 7px; font-size: 11px; font-weight: 700;
+        .rate-card {
+            background: #0e1020; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px; padding: 10px; text-align: center;
         }
-        .stat-box {
-            background: #191d36; border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 12px; padding: 10px; text-align: center;
-        }
-        .stat-box span { font-size: 11px; color: #94a3b8; display: block; }
-        .stat-box b { font-size: 16px; color: #818cf8; display: block; margin: 4px 0 6px; }
+        .rate-card b { display: block; font-size: 17px; color: #fbbf24; margin: 4px 0; }
     </style>
 </head>
 <body>
 
     <div class="topbar">
-        <h1 id="panelTitle">🛡️ Baş Admin Paneli</h1>
-        <button class="btn-back" onclick="location.href='profil.html'">← Profilə qayıt</button>
+        <h1 id="topRoleTitle">🛡️ İdarəetmə Paneli</h1>
+        <button class="btn-back" onclick="location.href='profil.html'">← Profil</button>
     </div>
 
-    <!-- YALNIZ SATICI (DEALER) ÜÇÜN MƏHDUD PANEL -->
-    <div id="dealerOnlyView" class="container" style="display:none;">
-        <div class="section-card">
-            <div class="section-header">🪙 Jeton Satış Paneli (Satıcı)</div>
-            <p class="section-desc">Oyunçunun ID nömrəsini və ya xüsusi adını yazıb balansına jeton göndərin.</p>
-            <input type="text" id="dealerTargetId" class="inp" placeholder="Oyunçunun ID nömrəsi və ya adı">
-            <input type="number" id="dealerAmount" class="inp" placeholder="Jeton miqdarı (məs: 1000)">
-            <button class="btn b-gold btn-full" onclick="dealerSendJetons()">Jeton Göndər 🪙</button>
-        </div>
-    </div>
+    <div class="wrap" id="mainWrap" style="display:none;">
 
-    <!-- BAŞ ADMİN ÜÇÜN ALT-ALTA AYRI BÖLMƏLƏR -->
-    <div id="fullAdminView" class="container" style="display:none;">
+        <!-- 1. JETON VƏ BONUS GÖNDƏR + LOGLAR (Admin, Adminka, Satıcı) -->
+        <div class="acc-item open" data-roles="admin,adminka,dealer">
+            <button class="acc-btn" onclick="toggleAcc(this)">
+                <span>🪙 1. Jeton və Bonus Göndər</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="acc-body">
+                <!-- Üst: Jeton Göndərmək -->
+                <div class="sub-box">
+                    <div class="sub-title">🪙 Jeton Göndər</div>
+                    <input type="text" id="jetonTargetInp" class="inp" placeholder="İstifadəçinin ID-si və ya adı..." oninput="previewTarget('jetonTargetInp', 'jetonPreview')">
+                    <div id="jetonPreview" class="found-badge" style="display:none;"></div>
+                    <input type="number" id="jetonAmountInp" class="inp" placeholder="Jeton miqdarı (məs: 1000)">
+                    <button class="btn c-green w-100" onclick="sendCurrency('jetons', 'jetonTargetInp', 'jetonAmountInp', 'Jeton')">✅ Jeton Göndər</button>
+                </div>
 
-        <!-- BÖLMƏ 1: ID NÖMRƏSİ VƏ YA XÜSUSİ AD DƏYİŞDİRMƏ (ÖZÜN DƏ DAXİL) -->
-        <div class="section-card">
-            <div class="section-header">🆔 1. ID Nömrəsini Dəyiş / ID Yerinə Ad Yaz</div>
-            <p class="section-desc">Özün də daxil olmaqla istənilən oyunçunu seç, ID yerinə istədiyin rəqəmi (məs: <b>511</b>, <b>777</b>) və ya adı (məs: <b>Admin</b>, <b>BOSS</b>) yaz — bazada real vaxtda yenilənəcək.</p>
-            <input type="text" id="idSearchInp" class="inp" placeholder="Oyunçu axtar (Ad və ya hazırkı ID)..." oninput="filterUserSelect('idSearchInp', 'idUserSelect')">
-            <select id="idUserSelect" class="sel" onchange="onSelectIdUser()"></select>
-            <input type="text" id="newCustomIdInp" class="inp" placeholder="Yeni ID nömrəsi və ya Ad yaz (məs: Admin, 511, Kral)">
-            <button class="btn b-gold btn-full" onclick="applyNewUserId()">✅ Bazada ID-ni Yenilə</button>
-        </div>
+                <!-- Alt: Bonus (Ürək) Göndərmək -->
+                <div class="sub-box">
+                    <div class="sub-title">🎁 Bonus (Ürək) Göndər</div>
+                    <input type="text" id="bonusTargetInp" class="inp" placeholder="İstifadəçinin ID-si və ya adı..." oninput="previewTarget('bonusTargetInp', 'bonusPreview')">
+                    <div id="bonusPreview" class="found-badge" style="display:none;"></div>
+                    <input type="number" id="bonusAmountInp" class="inp" placeholder="Bonus miqdarı (məs: 100)">
+                    <button class="btn c-blue w-100" onclick="sendCurrency('hearts', 'bonusTargetInp', 'bonusAmountInp', 'Bonus')">🎁 Bonus Göndər</button>
+                </div>
 
-        <!-- BÖLMƏ 2: GÖRÜNMƏZ (GHOST) OYUNA GİRİŞ -->
-        <div class="section-card">
-            <div class="section-header">👻 2. Oyuna Görünməz (Ghost) Giriş</div>
-            <p class="section-desc">Masada heç bir oturacaqda görünmədən oyuna daxil ol, söhbətləri izlə və oyunçulara hədiyyə/öpüş göndər.</p>
-            <div class="grid-2" style="margin-bottom:8px;">
-                <input type="text" id="ghostTableNo" class="inp" style="margin-bottom:0;" value="511" placeholder="Masa №">
-                <button class="btn b-purple" onclick="enterGhost()">👻 Görünməz Gir</button>
+                <!-- Yalnız Baş Admin görür: Kim kimə nə göndərib -->
+                <div class="sub-box" id="transferLogsBox" style="display:none; margin-bottom:0;">
+                    <div class="sub-title">📜 Kim Kimə Nə Qədər Göndərib (Canlı Nəzarət)</div>
+                    <div id="logsContainer" style="max-height:200px; overflow-y:auto;">Yüklənir...</div>
+                </div>
             </div>
-            <button class="btn b-gray btn-full" onclick="exitGhost()">👁️ Görünən Rejimə Qayıt (Oturacaqda görün)</button>
         </div>
 
-        <!-- BÖLMƏ 3: CANLI MASAYA NƏZARƏT VƏ MASADAN ATMA -->
-        <div class="section-card">
-            <div class="section-header">🪑 3. Canlı Masaya Nəzarət & Masadan Atma</div>
-            <p class="section-desc">Masada oturan oyunçuları canlı gör, istədiyini masadan at və ya masanın çatını təmizlə.</p>
-            <div class="grid-2" style="margin-bottom:10px;">
-                <input type="text" id="watchTableNo" class="inp" style="margin-bottom:0;" value="511" placeholder="Masa №">
-                <button class="btn b-blue" onclick="watchTable()">Masanı Göstər</button>
+        <!-- 2. REYTİNQLƏR (ÖPÜŞ, MUSİQİ, SMAYLİK + 30 GÜNLÜK 0-DA DONDURMA) -->
+        <div class="acc-item" data-roles="admin,adminka">
+            <button class="acc-btn" onclick="toggleAcc(this)">
+                <span>🏆 2. Reytinqlər (Öpüş, Musiqi, Smaylik)</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="acc-body">
+                <input type="text" id="rateSearchInp" class="inp" placeholder="Oyunçunun adını və ya ID-sini yaz..." oninput="searchRatingUser()">
+                <div id="ratingUserPanel"></div>
             </div>
-            <div id="tableSeatsList">Yüklənir...</div>
-            <button class="btn b-red btn-full" style="margin-top:8px;" onclick="clearTableChat()">🧹 Bu Masanın Çatını Təmizlə</button>
         </div>
 
-        <!-- BÖLMƏ 4: REYTİNQ, JETON, ÜRƏK, ÖPÜŞ, SMAYLİK VƏ MUSİQİ İDARƏETMƏSİ -->
-        <div class="section-card">
-            <div class="section-header">🏆 4. Jeton, Ürək və Bütün Reytinqləri Artır / Sıfırla</div>
-            <p class="section-desc">Oyunçunu seçib onun Jeton, Ürək, Öpüş, Smaylik və Musiqi xallarını istədiyin qədər artır və ya 0-a sıfırla.</p>
-            <input type="text" id="statSearchInp" class="inp" placeholder="Oyunçu axtar..." oninput="filterUserSelect('statSearchInp', 'statUserSelect')">
-            <select id="statUserSelect" class="sel" onchange="renderSelectedUserStats()"></select>
-            <div id="selectedUserStatsBox"></div>
+        <!-- 3. ID NÖMRƏSİ DƏYİŞ / ID YERİNƏ AD YAZ -->
+        <div class="acc-item" data-roles="admin">
+            <button class="acc-btn" onclick="toggleAcc(this)">
+                <span>🆔 3. ID Dəyiş / ID Yerinə Ad Yaz</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="acc-body">
+                <p class="hint">Özün də daxil olmaqla istənilən oyunçunun hazırkı ID-sini və ya adını yaz, yeni ID rəqəmi və ya söz (məs: <b>Admin</b>, <b>511</b>) təyin et.</p>
+                <input type="text" id="idFindInp" class="inp" placeholder="Hazırkı ID və ya Ad..." oninput="previewTarget('idFindInp', 'idFindPreview')">
+                <div id="idFindPreview" class="found-badge" style="display:none;"></div>
+                <input type="text" id="newIdValueInp" class="inp" placeholder="Yeni ID nömrəsi və ya Ad yaz...">
+                <button class="btn c-blue w-100" onclick="updateUserCustomId()">💾 Bazada ID-ni Dəyiş</button>
+            </div>
         </div>
 
-        <!-- BÖLMƏ 5: BAN, ÇATDA SUSDURMA VƏ SATICI (DEALER) TƏYİNİ -->
-        <div class="section-card">
-            <div class="section-header">🚫 5. Ban Et, Çatda Susdur və Satıcı Təyin Et</div>
-            <p class="section-desc">Oyunçunu oyundan blokla, çatda yazmağını susdur və ya ona yalnız Jeton Satış Paneli ver.</p>
-            <input type="text" id="modSearchInp" class="inp" placeholder="Oyunçu axtar..." oninput="filterUserSelect('modSearchInp', 'modUserSelect')">
-            <select id="modUserSelect" class="sel" onchange="renderModControls()"></select>
-            <div id="modControlsBox"></div>
+        <!-- 4. BAN ETMƏK & ÇATDA SUSDURMAQ -->
+        <div class="acc-item" data-roles="admin,adminka,mod">
+            <button class="acc-btn" onclick="toggleAcc(this)">
+                <span>🚫 4. Ban Etmək & 🔇 Çatda Susdurmaq</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="acc-body">
+                <!-- Ban Bölməsi (Admin və Adminka) -->
+                <div class="sub-box" data-subroles="admin,adminka">
+                    <div class="sub-title">🚫 Oyundan Ban Et / Banı Aç</div>
+                    <input type="text" id="banIdInp" class="inp" placeholder="Oyunçunun ID nömrəsi və ya adı..." oninput="previewTarget('banIdInp', 'banPreview')">
+                    <div id="banPreview" class="found-badge" style="display:none;"></div>
+                    <div class="g-2">
+                        <button class="btn c-red" onclick="setBanStatus(true)">🚫 Ban Et</button>
+                        <button class="btn c-green" onclick="setBanStatus(false)">✅ Banı Aç</button>
+                    </div>
+                </div>
+
+                <!-- Çatda Susdurmaq Bölməsi (Admin, Adminka, Mod) -->
+                <div class="sub-box" style="margin-bottom:0;">
+                    <div class="sub-title">🔇 Çatda Susdur (Günlük / Aylıq)</div>
+                    <input type="text" id="muteIdInp" class="inp" placeholder="Oyunçunun ID nömrəsi və ya adı..." oninput="previewTarget('muteIdInp', 'mutePreview')">
+                    <div id="mutePreview" class="found-badge" style="display:none;"></div>
+                    <div class="g-3">
+                        <button class="btn c-yellow" onclick="setChatMute(1)">1 Günlük</button>
+                        <button class="btn c-red" onclick="setChatMute(30)">1 Aylıq</button>
+                        <button class="btn c-green" onclick="setChatMute(0)">Səsi Aç</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- BÖLMƏ 6: PROFİLSİZ "ADMIN" ADI İLƏ BÜTÜN MASALARA BİLDİRİŞ -->
-        <div class="section-card">
-            <div class="section-header">📢 6. Profilsiz "Admin" Adıyla Bütün Masalara Yaz</div>
-            <p class="section-desc">Heç bir oyunçu profili və şəkli görünmədən bütün masaların çatına <b>🛡️ Admin: ...</b> adıyla elan göndər.</p>
-            <input type="text" id="broadcastInp" class="inp" placeholder="Bütün masalara gedəcək mesajı yaz...">
-            <button class="btn b-gold btn-full" onclick="sendAdminBroadcast()">📢 Bütün Masalara Göndər</button>
+        <!-- 5. MASADAN ATMA VƏ ÇATI SİLMƏ -->
+        <div class="acc-item" data-roles="admin,adminka,mod">
+            <button class="acc-btn" onclick="toggleAcc(this)">
+                <span>🪑 5. Masadan Atma & Çatı Silmə</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="acc-body">
+                <div class="sub-box">
+                    <div class="sub-title">🥾 Masadakı Oyunçuları Gör və Masadan At</div>
+                    <div class="g-2">
+                        <input type="text" id="kickTableInp" class="inp" style="margin-bottom:0;" value="511" placeholder="Masa №">
+                        <button class="btn c-blue" onclick="loadTableSeats()">Oyunçuları Göstər</button>
+                    </div>
+                    <div id="kickSeatsContainer" style="margin-top:10px;"></div>
+                </div>
+
+                <div class="sub-box" style="margin-bottom:0;">
+                    <div class="sub-title">🧹 Masanın Çatını Təmizlə</div>
+                    <div class="g-2">
+                        <input type="text" id="clearChatTableInp" class="inp" style="margin-bottom:0;" value="511" placeholder="Masa №">
+                        <button class="btn c-red" onclick="wipeTableChat()">Çatı Təmizlə</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- BÖLMƏ 7: BÜTÜN OYUNA MƏCBURİ YENİLƏMƏ -->
-        <div class="section-card">
-            <div class="section-header">🔄 7. Bütün Oyuna Məcburi Yeniləmə Ver</div>
-            <p class="section-desc">Oyunda yenilik etdikdən sonra bas — hazırda oyunda olan bütün oyunçularda oyun avtomatik yenilənib təzədən açılacaq.</p>
-            <button class="btn b-red btn-full" onclick="forceReloadAllPlayers()">🔄 Bütün Oyunçularda Oyunu Yenilə</button>
+        <!-- 6. GÖRÜNMƏZ (GHOST) REJİM -->
+        <div class="acc-item" data-roles="admin,adminka,mod">
+            <button class="acc-btn" onclick="toggleAcc(this)">
+                <span>👻 6. Görünməz Rejim (Gizli Giriş)</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="acc-body">
+                <p class="hint">Masa nömrəsini yaz və gizli gir — masada görünməyəcəksən, amma oyunçulara hədiyyə göndərə biləcəksən.</p>
+                <div class="g-2" style="margin-bottom:8px;">
+                    <input type="text" id="ghostRoomInp" class="inp" style="margin-bottom:0;" value="511" placeholder="Masa №">
+                    <button class="btn c-purple" onclick="goGhostMode()">👻 Gizli Modda Gir</button>
+                </div>
+                <button class="btn c-gray w-100" onclick="leaveGhostMode()">👁️ Görünən Rejimə Qayıt</button>
+            </div>
+        </div>
+
+        <!-- 7. SATICI, MOD VƏ ADMİNKA TƏYİN ET / GERİ AL -->
+        <div class="acc-item" data-roles="admin">
+            <button class="acc-btn" onclick="toggleAcc(this)">
+                <span>🎖️ 7. Satıcı / Mod / Adminka Təyin Et & Geri Al</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="acc-body">
+                <input type="text" id="roleTargetInp" class="inp" placeholder="İstifadəçinin ID nömrəsi və ya adı..." oninput="previewTarget('roleTargetInp', 'rolePreview')">
+                <div id="rolePreview" class="found-badge" style="display:none;"></div>
+                <div class="g-2" style="margin-bottom:8px;">
+                    <button class="btn c-red" onclick="assignRole('adminka')">🔴 Adminka Ver</button>
+                    <button class="btn c-yellow" onclick="assignRole('mod')">🟡 Mod Ver</button>
+                    <button class="btn c-green" onclick="assignRole('dealer')">🟢 Satıcı Ver</button>
+                    <button class="btn c-gray" onclick="assignRole('user')">❌ Səlahiyyəti Geri Al</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. OYUNA YENİLƏMƏ VER (BÜTÜN OYUNÇULARI ÇIXARIB YENİDƏN SAL) -->
+        <div class="acc-item" data-roles="admin">
+            <button class="acc-btn" onclick="toggleAcc(this)">
+                <span>🔄 8. Oyuna Yeniləmə Ver</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="acc-body">
+                <p class="hint">Bu düyməyə basanda oyunda olan bütün oyunçular oyundan çıxarılacaq və yeni versiya ilə avtomatik yenidən oyuna girəcəklər.</p>
+                <button class="btn c-red w-100" onclick="triggerGlobalReload()">🔄 Bütün Oyuna Yeniləmə Ver</button>
+            </div>
+        </div>
+
+        <!-- 9. PROFİLSİZ "ADMIN" ADIYLA BÜTÜN MASALARA YAZ -->
+        <div class="acc-item" data-roles="admin,adminka">
+            <button class="acc-btn" onclick="toggleAcc(this)">
+                <span>📢 9. "Admin" Adıyla Bütün Masalara Yaz</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="acc-body">
+                <p class="hint">Profil görünmədən yalnız <b>🛡️ Admin</b> adıyla oyundakı bütün masaların çatına real vaxtda mesaj göndərir.</p>
+                <input type="text" id="adminGlobalMsgInp" class="inp" placeholder="Bütün masalara gedəcək mesaj...">
+                <button class="btn c-blue w-100" onclick="sendGlobalAdminChat()">📢 Bütün Masalara Göndər</button>
+            </div>
         </div>
 
     </div>
@@ -173,7 +284,7 @@
     <script type="module">
         import { rtdb, fsdb } from "./js/core/firebase.js";
         import { ref, set, push, remove, onValue, get, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
-        import { collection, doc, getDoc, getDocs, updateDoc, onSnapshot, increment } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+        import { collection, doc, getDoc, addDoc, updateDoc, onSnapshot, query, orderBy, limit, increment } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
         const MAIN_ADMIN_ID = 96446;
         const sessionRaw = localStorage.getItem("currentUser");
@@ -183,287 +294,328 @@
             location.href = "index.html";
         }
 
+        let me = null;
+        let myRole = "user";
         let allUsers = [];
-        let unsubTable = null;
+        let tableUnsub = null;
 
-        async function initPanel() {
+        // Accordion açılıb-bağlanma
+        window.toggleAcc = function(btn) {
+            const item = btn.parentElement;
+            const wasOpen = item.classList.contains("open");
+            document.querySelectorAll(".acc-item").forEach(el => el.classList.remove("open"));
+            if (!wasOpen) item.classList.add("open");
+        };
+
+        async function init() {
             const snap = await getDoc(doc(fsdb, "users", sessionUser.docId));
             if (!snap.exists()) { location.href = "index.html"; return; }
-            const me = snap.data();
+            me = snap.data();
 
-            const isMainAdmin = Number(me.id) === MAIN_ADMIN_ID || me.isAdmin === true || me.role === "admin";
-            const isDealer = me.role === "dealer";
-
-            if (isMainAdmin) {
-                document.getElementById("panelTitle").textContent = "🛡️ Baş Admin Paneli";
-                document.getElementById("fullAdminView").style.display = "flex";
-                startUsersListener();
-                watchTable();
-            } else if (isDealer) {
-                document.getElementById("panelTitle").textContent = "🪙 Satıcı Paneli";
-                document.getElementById("dealerOnlyView").style.display = "flex";
+            if (Number(me.id) === MAIN_ADMIN_ID || me.isAdmin === true || me.role === "admin") {
+                myRole = "admin";
+                document.getElementById("topRoleTitle").textContent = "🔵 Baş Admin Paneli";
+                document.getElementById("topRoleTitle").style.color = "#60a5fa";
+                document.getElementById("transferLogsBox").style.display = "block";
+                listenLogs();
+            } else if (me.role === "adminka") {
+                myRole = "adminka";
+                document.getElementById("topRoleTitle").textContent = "🔴 Adminka Paneli";
+                document.getElementById("topRoleTitle").style.color = "#f87171";
+            } else if (me.role === "mod") {
+                myRole = "mod";
+                document.getElementById("topRoleTitle").textContent = "🟡 Mod Paneli";
+                document.getElementById("topRoleTitle").style.color = "#fbbf24";
+            } else if (me.role === "dealer") {
+                myRole = "dealer";
+                document.getElementById("topRoleTitle").textContent = "🟢 Satıcı Paneli";
+                document.getElementById("topRoleTitle").style.color = "#4ade80";
             } else {
-                alert("Bu bölməyə giriş icazəniz yoxdur!");
+                alert("Bu panelə giriş icazəniz yoxdur!");
                 location.href = "profil.html";
-            }
-        }
-
-        function startUsersListener() {
-            onSnapshot(collection(fsdb, "users"), (snap) => {
-                allUsers = [];
-                snap.forEach(d => allUsers.push({ docId: d.id, ...d.data() }));
-                populateSelect("idUserSelect", document.getElementById("idSearchInp").value);
-                populateSelect("statUserSelect", document.getElementById("statSearchInp").value);
-                populateSelect("modUserSelect", document.getElementById("modSearchInp").value);
-                onSelectIdUser();
-                renderSelectedUserStats();
-                renderModControls();
-            });
-        }
-
-        function populateSelect(selectId, filterText = "") {
-            const sel = document.getElementById(selectId);
-            const prevVal = sel.value;
-            const q = filterText.trim().toLowerCase();
-
-            const filtered = allUsers.filter(u =>
-                (u.username || "").toLowerCase().includes(q) ||
-                String(u.id || "").toLowerCase().includes(q) ||
-                String(u.customId || "").toLowerCase().includes(q)
-            );
-
-            sel.innerHTML = filtered.map(u => {
-                const isMe = u.docId === sessionUser.docId ? " (SƏN)" : "";
-                const shownId = u.customId ? `${u.customId} [baza: ${u.id}]` : `ID: ${u.id}`;
-                return `<option value="${u.docId}">${u.username}${isMe} — ${shownId}</option>`;
-            }).join("");
-
-            if (prevVal && filtered.some(u => u.docId === prevVal)) {
-                sel.value = prevVal;
-            }
-        }
-
-        window.filterUserSelect = function(inpId, selId) {
-            populateSelect(selId, document.getElementById(inpId).value);
-            if (selId === "idUserSelect") onSelectIdUser();
-            if (selId === "statUserSelect") renderSelectedUserStats();
-            if (selId === "modUserSelect") renderModControls();
-        };
-
-        // --- BÖLMƏ 1: REAL VAXTDA ID NÖMRƏSİ VƏ YA AD DƏYİŞMƏ ---
-        window.onSelectIdUser = function() {
-            const docId = document.getElementById("idUserSelect").value;
-            const u = allUsers.find(x => x.docId === docId);
-            if (u) {
-                document.getElementById("newCustomIdInp").value = u.customId || u.id || "";
-            }
-        };
-
-        window.applyNewUserId = async function() {
-            const docId = document.getElementById("idUserSelect").value;
-            const rawVal = document.getElementById("newCustomIdInp").value.trim();
-            if (!docId || !rawVal) return alert("İstifadəçi seçin və yeni ID və ya ad yazın!");
-
-            // Əgər yalnız rəqəm yazılıbsa həm `id` rəqəm kimi, həm də `customId` yenilənir;
-            // Əgər söz yazılıbsa (məs: "Admin", "BOSS") `id` həmin söz/rəqəm və `customId` də eyni olur.
-            const isPureNumber = /^\d+$/.test(rawVal);
-            const finalIdValue = isPureNumber ? Number(rawVal) : rawVal;
-
-            const updatePayload = {
-                id: finalIdValue,
-                customId: rawVal
-            };
-
-            // Öz hesabının ID-sini dəyişsən belə adminliyin qorunsun
-            if (docId === sessionUser.docId) {
-                updatePayload.isAdmin = true;
-                updatePayload.role = "admin";
-                sessionUser.id = finalIdValue;
-                localStorage.setItem("currentUser", JSON.stringify(sessionUser));
-            }
-
-            await updateDoc(doc(fsdb, "users", docId), updatePayload);
-            alert(`✅ Bazada istifadəçinin yeni ID-si "${rawVal}" olaraq yeniləndi!`);
-        };
-
-        // --- BÖLMƏ 2: GÖRÜNMƏZ (GHOST) REJİMİ ---
-        window.enterGhost = async function() {
-            const masa = document.getElementById("ghostTableNo").value.trim() || "511";
-            await updateDoc(doc(fsdb, "users", sessionUser.docId), { gizli: true });
-            location.href = `oyun.html?masa=${masa}&v=${Date.now()}`;
-        };
-
-        window.exitGhost = async function() {
-            await updateDoc(doc(fsdb, "users", sessionUser.docId), { gizli: false });
-            alert("👁️ Görünən rejim aktivdir. İndi masaya normal oyunçu kimi oturacaqsınız.");
-        };
-
-        // --- BÖLMƏ 3: CANLI MASA NƏZARƏTİ ---
-        window.watchTable = function() {
-            const masa = document.getElementById("watchTableNo").value.trim() || "511";
-            if (unsubTable) unsubTable();
-            unsubTable = onValue(ref(rtdb, `masalar/${masa}/oturacaqlar`), (snap) => {
-                const data = snap.val() || {};
-                const box = document.getElementById("tableSeatsList");
-                let html = "";
-                Object.entries(data).forEach(([idx, p]) => {
-                    if (p && p.uid) {
-                        html += `
-                            <div class="mini-row">
-                                <div>
-                                    <span class="badge-id">Yer #${Number(idx) + 1}</span>
-                                    <b style="margin-left:6px;">${p.ad}</b>
-                                </div>
-                                <button class="btn b-red" style="padding:6px 10px;" onclick="kickPlayer('${masa}', '${idx}', '${p.uid}')">Masadan At 🥾</button>
-                            </div>
-                        `;
-                    }
-                });
-                box.innerHTML = html || `<p class="section-desc" style="margin-bottom:0;">Masa ${masa} hazırda boşdur.</p>`;
-            });
-        };
-
-        window.kickPlayer = async function(masa, seatIdx, uid) {
-            await remove(ref(rtdb, `masalar/${masa}/oturacaqlar/${seatIdx}`));
-            await set(ref(rtdb, `sistem/kick/${uid}`), Date.now());
-            alert("Oyunçu masadan çıxarıldı!");
-        };
-
-        window.clearTableChat = async function() {
-            const masa = document.getElementById("watchTableNo").value.trim() || "511";
-            await remove(ref(rtdb, `masalar/${masa}/chat`));
-            alert(`Masa ${masa} çatı təmizləndi!`);
-        };
-
-        // --- BÖLMƏ 4: BÜTÜN REYTİNQLƏRİ ARTIRMAQ / SIFIRLAMAQ ---
-        window.renderSelectedUserStats = function() {
-            const docId = document.getElementById("statUserSelect").value;
-            const u = allUsers.find(x => x.docId === docId);
-            const box = document.getElementById("selectedUserStatsBox");
-            if (!u) { box.innerHTML = ""; return; }
-
-            const items = [
-                { key: "jetons", label: "🪙 Jeton", val: u.jetons || 0, step: 1000 },
-                { key: "hearts", label: "❤️ Ürək", val: u.hearts || 0, step: 50 },
-                { key: "kisses", label: "💋 Öpüş", val: u.kisses || 0, step: 10 },
-                { key: "smileys", label: "😀 Smaylik", val: u.smileys || 0, step: 10 },
-                { key: "musicPoints", label: "🎵 Musiqi", val: u.musicPoints || 0, step: 10 },
-                { key: "views", label: "👁️ Baxış", val: u.views || 0, step: 50 }
-            ];
-
-            box.innerHTML = `<div class="grid-3">` + items.map(it => `
-                <div class="stat-box">
-                    <span>${it.label}</span>
-                    <b>${it.val}</b>
-                    <div style="display:flex; gap:4px; justify-content:center;">
-                        <button class="btn b-green" style="padding:5px 8px; font-size:11px;" onclick="changeStat('${u.docId}', '${it.key}', ${it.step})">+${it.step}</button>
-                        <button class="btn b-red" style="padding:5px 8px; font-size:11px;" onclick="zeroStat('${u.docId}', '${it.key}')">0</button>
-                    </div>
-                </div>
-            `).join("") + `</div>`;
-        };
-
-        window.changeStat = async function(docId, field, delta) {
-            await updateDoc(doc(fsdb, "users", docId), { [field]: increment(delta) });
-        };
-
-        window.zeroStat = async function(docId, field) {
-            await updateDoc(doc(fsdb, "users", docId), { [field]: 0 });
-        };
-
-        // --- BÖLMƏ 5: BAN, SUSDURMA VƏ SATICI TƏYİNİ ---
-        window.renderModControls = function() {
-            const docId = document.getElementById("modUserSelect").value;
-            const u = allUsers.find(x => x.docId === docId);
-            const box = document.getElementById("modControlsBox");
-            if (!u) { box.innerHTML = ""; return; }
-
-            if (u.docId === sessionUser.docId) {
-                box.innerHTML = `<p class="section-desc" style="margin-bottom:0;">Öz hesabınıza ban və ya susdurma tətbiq edilmir.</p>`;
                 return;
             }
 
-            const isMuted = u.mutedUntil && Number(u.mutedUntil) > Date.now();
-            const isDealer = u.role === "dealer";
+            // Rütbəyə uyğun bölmələri göstər
+            document.querySelectorAll(".acc-item").forEach(item => {
+                const allowed = (item.getAttribute("data-roles") || "").split(",");
+                if (!allowed.includes(myRole)) item.style.display = "none";
+            });
+            document.querySelectorAll("[data-subroles]").forEach(el => {
+                const allowed = (el.getAttribute("data-subroles") || "").split(",");
+                if (!allowed.includes(myRole)) el.style.display = "none";
+            });
+
+            document.getElementById("mainWrap").style.display = "flex";
+
+            // Bütün istifadəçiləri real vaxtda dinlə
+            onSnapshot(collection(fsdb, "users"), (s) => {
+                allUsers = [];
+                s.forEach(d => allUsers.push({ docId: d.id, ...d.data() }));
+                searchRatingUser();
+            });
+
+            loadTableSeats();
+        }
+
+        function findUser(queryStr) {
+            const q = String(queryStr || "").trim().toLowerCase();
+            if (!q) return null;
+            return allUsers.find(u =>
+                String(u.id || "").toLowerCase() === q ||
+                String(u.customId || "").toLowerCase() === q ||
+                (u.username || "").toLowerCase() === q
+            ) || allUsers.find(u => (u.username || "").toLowerCase().includes(q));
+        }
+
+        window.previewTarget = function(inpId, boxId) {
+            const val = document.getElementById(inpId).value;
+            const box = document.getElementById(boxId);
+            const u = findUser(val);
+            if (!val.trim()) { box.style.display = "none"; return; }
+            box.style.display = "block";
+            if (u) {
+                box.innerHTML = `✅ Tapıldı: <b>${u.username}</b> (ID: ${u.customId || u.id}) • 🪙 ${u.jetons || 0} • ❤️ ${u.hearts || 0}`;
+            } else {
+                box.innerHTML = `❌ Bu ID və ya adla oyunçu tapılmadı`;
+            }
+        };
+
+        // 1. JETON VƏ BONUS GÖNDƏRMƏ + LOG YAZMAQ
+        window.sendCurrency = async function(field, targetInpId, amountInpId, label) {
+            const targetVal = document.getElementById(targetInpId).value.trim();
+            const amount = parseInt(document.getElementById(amountInpId).value, 10);
+            const u = findUser(targetVal);
+
+            if (!u) return alert("Oyunçu tapılmadı!");
+            if (isNaN(amount) || amount <= 0) return alert("Düzgün miqdar yazın!");
+
+            // Satıcı və Mod özünə göndərə bilməz; Baş Admin və Adminka özünə də göndərə bilər
+            if ((myRole === "dealer" || myRole === "mod") && u.docId === sessionUser.docId) {
+                return alert("Öz hesabınıza göndərə bilməzsiniz!");
+            }
+
+            await updateDoc(doc(fsdb, "users", u.docId), {
+                [field]: increment(amount)
+            });
+
+            // Log bazasına yaz (Admin nəzarəti üçün)
+            await addDoc(collection(fsdb, "transfer_logs"), {
+                fromName: me.username,
+                fromRole: myRole,
+                toName: u.username,
+                toId: u.customId || u.id,
+                type: label,
+                amount: amount,
+                createdAt: Date.now()
+            });
+
+            document.getElementById(amountInpId).value = "";
+            alert(`✅ ${u.username} hesabına ${amount} ${label} göndərildi!`);
+        };
+
+        function listenLogs() {
+            const q = query(collection(fsdb, "transfer_logs"), orderBy("createdAt", "desc"), limit(30));
+            onSnapshot(q, (snap) => {
+                const box = document.getElementById("logsContainer");
+                if (snap.empty) { box.innerHTML = "<div class='hint'>Hələ göndəriş edilməyib.</div>"; return; }
+                let html = "";
+                snap.forEach(d => {
+                    const l = d.data();
+                    const dt = new Date(l.createdAt).toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit" });
+                    html += `<div class="log-row">[${dt}] <b>${l.fromName}</b> (${l.fromRole}) ➔ <b>${l.toName}</b> (ID:${l.toId}): <b>+${l.amount} ${l.type}</b></div>`;
+                });
+                box.innerHTML = html;
+            });
+        }
+
+        // 2. REYTİNQLƏR VƏ 30 GÜNLÜK 0-DA DONDURMAQ
+        window.searchRatingUser = function() {
+            const val = document.getElementById("rateSearchInp").value;
+            const box = document.getElementById("ratingUserPanel");
+            const u = findUser(val);
+            if (!val.trim() || !u) {
+                box.innerHTML = val.trim() ? `<div class="hint">Oyunçu tapılmadı.</div>` : "";
+                return;
+            }
+
+            const now = Date.now();
+            const kissFrozen = u.freeze_kisses && Number(u.freeze_kisses) > now;
+            const musicFrozen = u.freeze_music && Number(u.freeze_music) > now;
+            const smileFrozen = u.freeze_smileys && Number(u.freeze_smileys) > now;
 
             box.innerHTML = `
-                <div class="grid-2">
-                    <button class="btn b-gray" onclick="setMute('${u.docId}', 30)">🔇 30 dəq Susdur</button>
-                    <button class="btn b-green" onclick="setMute('${u.docId}', 0)">🔊 Səsi Aç ${isMuted ? "(Aktiv)" : ""}</button>
-                    <button class="btn ${u.banned ? 'b-green' : 'b-red'}" onclick="setBan('${u.docId}', ${!u.banned})">${u.banned ? "✅ Banı Aç" : "🚫 Ban Et"}</button>
-                    <button class="btn b-blue" onclick="setDealer('${u.docId}', ${!isDealer})">${isDealer ? "❌ Satıcılığı Al" : "🪙 Satıcı Et"}</button>
+                <div class="found-badge">👤 <b>${u.username}</b> (ID: ${u.customId || u.id})</div>
+                <div class="g-3">
+                    <div class="rate-card">
+                        <span style="font-size:11px;">💋 Öpüş</span>
+                        <b>${kissFrozen ? "0 ❄️" : (u.kisses || 0)}</b>
+                        <button class="btn c-green" style="width:100%; margin-bottom:4px;" onclick="editRate('${u.docId}', 'kisses', 10)">+10</button>
+                        <button class="btn ${kissFrozen ? 'c-blue' : 'c-red'}" style="width:100%; font-size:10px;" onclick="toggleFreeze30('${u.docId}', 'kisses', 'freeze_kisses', ${!kissFrozen})">
+                            ${kissFrozen ? "Donu Aç" : "30g 0 Dondur"}
+                        </button>
+                    </div>
+                    <div class="rate-card">
+                        <span style="font-size:11px;">🎵 Musiqi</span>
+                        <b>${musicFrozen ? "0 ❄️" : (u.musicPoints || 0)}</b>
+                        <button class="btn c-green" style="width:100%; margin-bottom:4px;" onclick="editRate('${u.docId}', 'musicPoints', 10)">+10</button>
+                        <button class="btn ${musicFrozen ? 'c-blue' : 'c-red'}" style="width:100%; font-size:10px;" onclick="toggleFreeze30('${u.docId}', 'musicPoints', 'freeze_music', ${!musicFrozen})">
+                            ${musicFrozen ? "Donu Aç" : "30g 0 Dondur"}
+                        </button>
+                    </div>
+                    <div class="rate-card">
+                        <span style="font-size:11px;">😀 Smaylik</span>
+                        <b>${smileFrozen ? "0 ❄️" : (u.smileys || 0)}</b>
+                        <button class="btn c-green" style="width:100%; margin-bottom:4px;" onclick="editRate('${u.docId}', 'smileys', 10)">+10</button>
+                        <button class="btn ${smileFrozen ? 'c-blue' : 'c-red'}" style="width:100%; font-size:10px;" onclick="toggleFreeze30('${u.docId}', 'smileys', 'freeze_smileys', ${!smileFrozen})">
+                            ${smileFrozen ? "Donu Aç" : "30g 0 Dondur"}
+                        </button>
+                    </div>
                 </div>
             `;
         };
 
-        window.setMute = async function(docId, mins) {
+        window.editRate = async function(docId, field, delta) {
+            await updateDoc(doc(fsdb, "users", docId), { [field]: increment(delta) });
+        };
+
+        window.toggleFreeze30 = async function(docId, statField, freezeField, shouldFreeze) {
+            const thirtyDays = 30 * 24 * 60 * 60 * 1000;
             await updateDoc(doc(fsdb, "users", docId), {
-                mutedUntil: mins > 0 ? Date.now() + mins * 60000 : 0
+                [statField]: 0,
+                [freezeField]: shouldFreeze ? Date.now() + thirtyDays : 0
             });
-            alert(mins > 0 ? `Oyunçu ${mins} dəqiqəlik susduruldu!` : "Susdurma ləğv edildi!");
+            alert(shouldFreeze ? "❄️ Reytinq 0-a salındı və 30 günlük donduruldu!" : "✅ 30 günlük dondurma ləğv edildi!");
         };
 
-        window.setBan = async function(docId, status) {
-            await updateDoc(doc(fsdb, "users", docId), { banned: status });
-            alert(status ? "🚫 Oyunçu ban edildi!" : "✅ Oyunçunun banı açıldı!");
+        // 3. ID DƏYİŞMƏK VƏ YA AD YAZMAQ
+        window.updateUserCustomId = async function() {
+            const u = findUser(document.getElementById("idFindInp").value);
+            const newVal = document.getElementById("newIdValueInp").value.trim();
+            if (!u) return alert("İstifadəçi tapılmadı!");
+            if (!newVal) return alert("Yeni ID nömrəsi və ya ad yazın!");
+
+            const isNum = /^\d+$/.test(newVal);
+            const payload = {
+                id: isNum ? Number(newVal) : newVal,
+                customId: newVal
+            };
+            if (u.docId === sessionUser.docId) {
+                payload.isAdmin = true;
+                payload.role = "admin";
+                sessionUser.id = payload.id;
+                localStorage.setItem("currentUser", JSON.stringify(sessionUser));
+            }
+            await updateDoc(doc(fsdb, "users", u.docId), payload);
+            alert(`✅ ${u.username} üçün yeni ID "${newVal}" olaraq bazada yeniləndi!`);
         };
 
-        window.setDealer = async function(docId, makeDealer) {
-            await updateDoc(doc(fsdb, "users", docId), { role: makeDealer ? "dealer" : "user" });
-            alert(makeDealer ? "🪙 İstifadəçiyə Satıcı Paneli verildi!" : "Satıcı səlahiyyəti alındı!");
+        // 4. BAN VƏ ÇATDA SUSDURMAQ
+        window.setBanStatus = async function(status) {
+            const u = findUser(document.getElementById("banIdInp").value);
+            if (!u) return alert("Oyunçu tapılmadı!");
+            if (u.docId === sessionUser.docId) return alert("Özünüzü ban edə bilməzsiniz!");
+            await updateDoc(doc(fsdb, "users", u.docId), { banned: status });
+            alert(status ? `🚫 ${u.username} ban olundu!` : `✅ ${u.username} banı açıldı!`);
         };
 
-        // --- BÖLMƏ 6: PROFİLSİZ "ADMIN" BİLDİRİŞİ ---
-        window.sendAdminBroadcast = async function() {
-            const text = document.getElementById("broadcastInp").value.trim();
+        window.setChatMute = async function(days) {
+            const u = findUser(document.getElementById("muteIdInp").value);
+            if (!u) return alert("Oyunçu tapılmadı!");
+            const ms = days * 24 * 60 * 60 * 1000;
+            await updateDoc(doc(fsdb, "users", u.docId), {
+                mutedUntil: days > 0 ? Date.now() + ms : 0
+            });
+            alert(days > 0 ? `🔇 ${u.username} ${days} günlük çatda susduruldu!` : `🔊 ${u.username} çat səsi açıldı!`);
+        };
+
+        // 5. MASADAN ATMA (ÇATA BİLDİRİŞ İLƏ) VƏ ÇATI SİLMƏ
+        window.loadTableSeats = function() {
+            const masa = document.getElementById("kickTableInp").value.trim() || "511";
+            if (tableUnsub) tableUnsub();
+            tableUnsub = onValue(ref(rtdb, `masalar/${masa}/oturacaqlar`), (snap) => {
+                const seats = snap.val() || {};
+                const box = document.getElementById("kickSeatsContainer");
+                let html = "";
+                Object.entries(seats).forEach(([idx, p]) => {
+                    if (p && p.uid) {
+                        html += `
+                            <div class="seat-row">
+                                <span><b>#${Number(idx) + 1}</b> ${p.ad}</span>
+                                <button class="btn c-red" style="padding:6px 10px;" onclick="kickFromTable('${masa}', '${idx}', '${p.uid}', '${p.ad.replace(/'/g, "")}')">Masadan At</button>
+                            </div>
+                        `;
+                    }
+                });
+                box.innerHTML = html || `<div class="hint">Masa ${masa} hazırda boşdur.</div>`;
+            });
+        };
+
+        window.kickFromTable = async function(masa, idx, uid, playerName) {
+            await remove(ref(rtdb, `masalar/${masa}/oturacaqlar/${idx}`));
+            await set(ref(rtdb, `sistem/kick/${uid}`), Date.now());
+            // Hamıya görünəcək şəkildə çata bildiriş yaz
+            await push(ref(rtdb, `masalar/${masa}/chat`), {
+                isAdminBroadcast: true,
+                ad: "Admin",
+                metn: `⚠️ ${playerName} admin tərəfindən qovuldu!`,
+                vaxt: serverTimestamp()
+            });
+        };
+
+        window.wipeTableChat = async function() {
+            const masa = document.getElementById("clearChatTableInp").value.trim() || "511";
+            await remove(ref(rtdb, `masalar/${masa}/chat`));
+            alert(`🧹 Masa ${masa} çatı tamamilə təmizləndi!`);
+        };
+
+        // 6. GÖRÜNMƏZ (GHOST) REJİM
+        window.goGhostMode = async function() {
+            const masa = document.getElementById("ghostRoomInp").value.trim() || "511";
+            await updateDoc(doc(fsdb, "users", sessionUser.docId), { gizli: true });
+            location.href = `oyun.html?masa=${masa}&v=${Date.now()}`;
+        };
+
+        window.leaveGhostMode = async function() {
+            await updateDoc(doc(fsdb, "users", sessionUser.docId), { gizli: false });
+            alert("👁️ Görünən rejimə qayıtdınız.");
+        };
+
+        // 7. SATICI / MOD / ADMİNKA TƏYİN ET VƏ YA GERİ AL
+        window.assignRole = async function(newRole) {
+            const u = findUser(document.getElementById("roleTargetInp").value);
+            if (!u) return alert("İstifadəçi tapılmadı!");
+            if (u.docId === sessionUser.docId) return alert("Öz rütbənizi dəyişə bilməzsiniz!");
+            await updateDoc(doc(fsdb, "users", u.docId), { role: newRole });
+            const names = { adminka: "Adminka (Qırmızı)", mod: "Mod (Sarı)", dealer: "Satıcı (Yaşıl)", user: "Adi oyunçu (Səlahiyyət geri alındı)" };
+            alert(`✅ ${u.username} üçün yeni status: ${names[newRole]}`);
+        };
+
+        // 8. BÜTÜN OYUNA YENİLƏMƏ VER
+        window.triggerGlobalReload = async function() {
+            await set(ref(rtdb, "sistem/yenileme"), Date.now());
+            alert("🔄 Bütün oyunçulara yeniləmə əmri göndərildi!");
+        };
+
+        // 9. PROFİLSİZ "ADMIN" ADIYLA BÜTÜN MASALARA YAZ
+        window.sendGlobalAdminChat = async function() {
+            const text = document.getElementById("adminGlobalMsgInp").value.trim();
             if (!text) return alert("Mesaj yazın!");
-
-            const masalarSnap = await get(ref(rtdb, "masalar"));
-            const masalar = masalarSnap.val() || { "511": true };
-
-            for (const masaNo of Object.keys(masalar)) {
-                await push(ref(rtdb, `masalar/${masaNo}/chat`), {
+            const mSnap = await get(ref(rtdb, "masalar"));
+            const masalar = mSnap.val() || { "511": true };
+            for (const mNo of Object.keys(masalar)) {
+                await push(ref(rtdb, `masalar/${mNo}/chat`), {
                     isAdminBroadcast: true,
                     ad: "Admin",
                     metn: text,
                     vaxt: serverTimestamp()
                 });
             }
-            document.getElementById("broadcastInp").value = "";
-            alert("✅ Profilsiz Admin mesajı bütün masaların çatına göndərildi!");
+            document.getElementById("adminGlobalMsgInp").value = "";
+            alert("📢 Profilsiz Admin mesajı bütün masalara göndərildi!");
         };
 
-        // --- BÖLMƏ 7: BÜTÜN OYUNU YENİLƏ ---
-        window.forceReloadAllPlayers = async function() {
-            await set(ref(rtdb, "sistem/yenileme"), Date.now());
-            alert("🔄 Bütün oyunçulara yeniləmə əmri göndərildi!");
-        };
-
-        // --- SATICI (DEALER) JETON GÖNDƏRMƏ ---
-        window.dealerSendJetons = async function() {
-            const targetId = document.getElementById("dealerTargetId").value.trim();
-            const amount = parseInt(document.getElementById("dealerAmount").value, 10);
-            if (!targetId || isNaN(amount) || amount <= 0) return alert("Düzgün ID və məbləğ yazın!");
-
-            const snap = await getDocs(collection(fsdb, "users"));
-            let foundDocId = null;
-            let foundName = "";
-            snap.forEach(d => {
-                const u = d.data();
-                if (String(u.id) === targetId || String(u.customId || "") === targetId) {
-                    foundDocId = d.id;
-                    foundName = u.username;
-                }
-            });
-
-            if (!foundDocId) return alert("Bu ID ilə oyunçu tapılmadı!");
-            await updateDoc(doc(fsdb, "users", foundDocId), { jetons: increment(amount) });
-            document.getElementById("dealerTargetId").value = "";
-            document.getElementById("dealerAmount").value = "";
-            alert(`✅ ${foundName} hesabına ${amount} jeton göndərildi!`);
-        };
-
-        initPanel();
+        init();
     </script>
 </body>
 </html>
