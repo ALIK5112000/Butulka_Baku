@@ -2,43 +2,33 @@ import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu, cinsTap, vipMi, adRengi, toast } from "./yardimci.js";
 import { tanisYaz } from "./dostlar.js";
-import { ref, push, query, limitToLast, limitToFirst, onChildAdded, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
-import { doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { ref, push, set, query, limitToLast, limitToFirst, onChildAdded, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { doc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cari = cariOyuncu();
 const yol = `masalar/${MASA_NOMRESI}/chat`;
+const klipYol = `masalar/${MASA_NOMRESI}/aktivKlip`;
 const qutu = document.getElementById("mesajlar");
 const inp = document.getElementById("mesajInput");
 const panel = document.getElementById("smayPanel");
 let men = null;
 
-// Real vaxtda musiqi qoşulu deyilsə də oyunçuların düymələri görməsi üçün panel idarəsi
-let aktivMusiqi = null; // sonrakı mərhələdə real vaxt (RTDB/Firestore) musiqi obyektinə bağlanacaq
-
-function musiqiPanelYenile() {
+function musiqiPanelYenile(calir) {
   const mPanel = document.getElementById("musiqiPanel");
   if (!mPanel) return;
   mPanel.style.display = "flex";
-  mPanel.classList.toggle("aktiv-calir", Boolean(aktivMusiqi));
+  mPanel.classList.toggle("aktiv-calir", Boolean(calir));
 }
 
 function musiqiDüymeleriniBagla() {
-  musiqiPanelYenile();
+  musiqiPanelYenile(false);
   const b1 = document.getElementById("musiqiBtn1");
   const b2 = document.getElementById("musiqiBtn2");
   if (b1) {
-    b1.onclick = () => toast(
-      aktivMusiqi
-        ? "Musiqi qoşuludur"
-        : "Hazırda masada musiqi qoşulu deyil — tezliklə qoşma paneli aktiv olacaq"
-    );
+    b1.onclick = () => window.MusiqiPanel && window.MusiqiPanel.open("popular");
   }
   if (b2) {
-    b2.onclick = () => toast(
-      aktivMusiqi
-        ? "Musiqi siyahısı"
-        : "Musiqi siyahısı tezliklə əlavə olunacaq"
-    );
+    b2.onclick = () => window.MusiqiPanel && window.MusiqiPanel.open("search");
   }
 }
 
@@ -93,7 +83,20 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(50)), (s) => {
   const d = document.createElement("div");
   d.className = "mesaj";
 
-  // Profilsiz "Admin" elanı və ya qovulma bildirişi (Ağ baloncuk içində tünd aydın yazı):
+  // Klip qoşulma bildirişi (bütün masada görünür)
+  if (m.isMusicNotice) {
+    const g = document.createElement("div");
+    g.className = "mgovde";
+    g.style.cssText = "background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:5px 10px; font-size:12px; color:#166534; font-weight:700;";
+    g.textContent = `🎵 ${m.ad} klip qoşdu: ${m.metn}`;
+    d.append(g);
+    qutu.appendChild(d);
+    while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
+    qutu.scrollTop = qutu.scrollHeight;
+    return;
+  }
+
+  // Profilsiz "Admin" elanı və ya qovulma bildirişi:
   if (m.isAdminBroadcast) {
     const yazilanSoz = m.metn || m.text || m.mesaj || "";
     const g = document.createElement("div");
@@ -176,10 +179,110 @@ document.getElementById("smayBtn").onclick = () => panel.classList.toggle("ac");
 
 onValue(query(ref(rtdb, yol), limitToFirst(1)), (s) => { if (!s.exists()) qutu.innerHTML = ""; });
 
-// Musiqi: klip düyməsi paneli açır, ikonlar yeni şəkillərlə əvəz olunur
+// ==================== REAL-VAXT MASA KLİP KÖRPÜSÜ ====================
+window.MusiqiFirebase = {
+  // 9 bonus çıxıb klipi yalnız BU masaya (`masalar/${MASA_NOMRESI}/aktivKlip`) yazır
+  async klipQos(clip, cost = 9) {
+    if (!cari || !cari.docId) {
+      toast("Oyunçu məlumatı tapılmadı");
+      return false;
+    }
+    const uRef = doc(fsdb, "users", cari.docId);
+    const uSnap = await getDoc(uRef);
+    if (!uSnap.exists()) return false;
+
+    const uData = uSnap.data();
+    const field = uData.hearts !== undefined ? "hearts" : (uData.bonus !== undefined ? "bonus" : "balance");
+    const balans = Number(uData[field] || 0);
+
+    if (balans < cost) {
+      toast(`Klip qoşmaq üçün minimum ${cost} bonus lazımdır!`);
+      return false;
+    }
+
+    // Firestore-da 9 bonus çıx
+    await updateDoc(uRef, { [field]: balans - cost });
+    const urekEl = document.getElementById("urekSayi");
+    if (urekEl) urekEl.textContent = String(balans - cost);
+
+    const payload = {
+      klipId: Date.now() + "_" + cari.docId,
+      masa: String(MASA_NOMRESI),
+      videoId: clip.videoId,
+      title: clip.title,
+      djUid: cari.docId,
+      djAd: uData.username || "Oyunçu",
+      djAvatar: uData.avatar || "images/avatar/nophoto.svg",
+      startedAt: Date.now(),
+      durationSec: Number(clip.durationSec || 240)
+    };
+
+    // Yalnız bu masanın RTDB yoluna yaz
+    await set(ref(rtdb, klipYol), payload);
+
+    // Chatda mahnının adını bütün masaya göstər
+    await push(ref(rtdb, yol), {
+      isMusicNotice: true,
+      ad: payload.djAd,
+      metn: clip.title,
+      vaxt: serverTimestamp()
+    });
+
+    return true;
+  },
+
+  async klipBitir() {
+    await set(ref(rtdb, klipYol), null).catch(() => {});
+  }
+};
+
+// Yalnız cari masanın (`masalar/${MASA_NOMRESI}/aktivKlip`) klipini real-vaxt dinlə
+onValue(ref(rtdb, klipYol), (snap) => {
+  const data = snap.val();
+  if (!data || !data.videoId) {
+    musiqiPanelYenile(false);
+    if (window.MusiqiPanel && typeof window.MusiqiPanel.stop === "function") {
+      window.MusiqiPanel.stop();
+    }
+    return;
+  }
+
+  const kecenSaniye = Math.floor((Date.now() - Number(data.startedAt || Date.now())) / 1000);
+  const muddet = Number(data.durationSec || 240);
+
+  // Vaxtı artıq bitibsə göstərmə
+  if (kecenSaniye >= muddet) {
+    musiqiPanelYenile(false);
+    if (window.MusiqiPanel && typeof window.MusiqiPanel.stop === "function") {
+      window.MusiqiPanel.stop();
+    }
+    return;
+  }
+
+  musiqiPanelYenile(true);
+
+  // Əgər djAvatar boşdursa Firestore-dan real profil şəklini gətir
+  if (!data.djAvatar && data.djUid) {
+    sekil(data.djUid).then((realAvatar) => {
+      data.djAvatar = realAvatar || "images/avatar/nophoto.svg";
+      if (window.MusiqiPanel && typeof window.MusiqiPanel.play === "function") {
+        window.MusiqiPanel.play(data);
+      }
+    });
+  } else {
+    if (window.MusiqiPanel && typeof window.MusiqiPanel.play === "function") {
+      window.MusiqiPanel.play(data);
+    }
+  }
+});
+
+// İkonları yenilə və #musiqiBtn1 / #musiqiBtn2 düymələrini MusiqiPanel-ə bağla
 setTimeout(() => {
   const b1 = document.getElementById("musiqiBtn1");
-  if (b1) b1.onclick = () => window.MusiqiPanel && window.MusiqiPanel.open();
+  const b2 = document.getElementById("musiqiBtn2");
+  if (b1) b1.onclick = () => window.MusiqiPanel && window.MusiqiPanel.open("popular");
+  if (b2) b2.onclick = () => window.MusiqiPanel && window.MusiqiPanel.open("search");
+
   [["musiqiBtn1", "klip-ikon.png"], ["musiqiBtn2", "musiqi-ikon.png"]].forEach(([id, f]) => {
     const b = document.getElementById(id);
     if (b) b.innerHTML = '<img src="images/' + f + '" style="width:36px;height:36px;object-fit:contain">';
