@@ -87,7 +87,16 @@
 <script type="module" src="js/oyun/panel.js"></script>
 <script type="module" src="js/oyun/raund.js"></script>
 <script type="module" src="js/oyun/chat.js"></script>
-<script src="js/carx.js"></script>  
+<script src="js/sans-carxi.js"></script>
+<script>
+SansCarxi.init({
+  button: '#sansCarxBtn',
+  ikonYenile: false,
+  sesYolu: 'sesler/',
+  getHearts: () => parseInt(document.getElementById('urekSayi').textContent) || 0,
+  addHearts: () => {}
+});
+</script> 
 </body>
   <script type="module">
 for (const f of ["core/firebase", "core/config", "oyun/yardimci", "oyun/dostlar", "oyun/masalar", "oyun/masa", "oyun/panel", "oyun/raund", "oyun/chat"]) {
