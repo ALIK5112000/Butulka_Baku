@@ -106,6 +106,41 @@
             color: #fff; font-size: 16px; outline: none; transition: 0.3s;
         }
         .form-group input:focus { border-color: #ff758c; box-shadow: 0 0 15px rgba(255, 117, 140, 0.4); }
+
+        /* Cins Seçimi Düymələri */
+        .gender-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .gender-btn {
+            padding: 13px 12px;
+            border-radius: 14px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1.5px solid rgba(255, 117, 140, 0.22);
+            color: #cbd5e1;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .gender-btn.active-boy {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.18);
+            color: #7dd3fc;
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+        }
+        .gender-btn.active-girl {
+            border-color: #f472b6;
+            background: rgba(244, 114, 182, 0.18);
+            color: #f9a8d4;
+            box-shadow: 0 0 14px rgba(244, 114, 182, 0.35);
+        }
+
         .btn {
             width: 100%; padding: 15px; background: linear-gradient(135deg, #ff758c, #ff7eb3);
             border: none; border-radius: 14px; color: #fff; font-size: 18px; font-weight: bold;
@@ -167,6 +202,17 @@
                 <label id="lblRegPass">Şifrə (ən azı 6 simvol)</label>
                 <input type="password" id="regPass" placeholder="••••••••">
             </div>
+            <div class="form-group">
+                <label id="lblRegGender">Cinsini seç</label>
+                <div class="gender-grid">
+                    <button type="button" id="btnGenderBoy" class="gender-btn active-boy" onclick="selectRegGender('Kişi')">
+                        <span>♂️</span> <span id="txtBoy">Oğlan</span>
+                    </button>
+                    <button type="button" id="btnGenderGirl" class="gender-btn" onclick="selectRegGender('Qadın')">
+                        <span>♀️</span> <span id="txtGirl">Qız</span>
+                    </button>
+                </div>
+            </div>
             <button id="btnRegister" class="btn" onclick="registerUser()">Hesab yarat</button>
         </div>
     </div>
@@ -200,11 +246,21 @@
             window.location.href = "profil.html";
         }
 
+        let selectedRegGender = "Kişi";
+
+        window.selectRegGender = function(gender) {
+            selectedRegGender = gender;
+            const boyBtn = document.getElementById("btnGenderBoy");
+            const girlBtn = document.getElementById("btnGenderGirl");
+            boyBtn.classList.toggle("active-boy", gender === "Kişi");
+            girlBtn.classList.toggle("active-girl", gender === "Qadın");
+        };
+
         const translations = {
-            az: { subtitle: "Hesabına daxil ol və oyuna davam et", loginTab: "Giriş", regTab: "Qeydiyyat", lblUser: "İstifadəçi adı və ya ID", lblPass: "Şifrə", btnLogin: "Daxil ol", lblRegUser: "İstifadəçi adı", lblRegPass: "Şifrə (ən azı 6 simvol)", btnReg: "Hesab yarat", modalTitle: "Uğurlu Qeydiyyat!", modalDesc: "Sizin unikal ID nömrəniz:", modalBtn: "Davam et" },
-            ru: { subtitle: "Войдите в аккаунт и продолжайте игру", loginTab: "Вход", regTab: "Регистрация", lblUser: "Имя пользователя или ID", lblPass: "Пароль", btnLogin: "Войти", lblRegUser: "Имя пользователя", lblRegPass: "Пароль (мин. 6 символов)", btnReg: "Создать аккаунт", modalTitle: "Успешная регистрация!", modalDesc: "Ваш уникальный ID номер:", modalBtn: "Продолжить" },
-            en: { subtitle: "Login to your account and continue playing", loginTab: "Login", regTab: "Register", lblUser: "Username or ID", lblPass: "Password", btnLogin: "Sign In", lblRegUser: "Username", lblRegPass: "Password (min 6 chars)", btnReg: "Create Account", modalTitle: "Successful Registration!", modalDesc: "Your unique ID number:", modalBtn: "Continue" },
-            ka: { subtitle: "შედით ანგარიშზე და გააგრძელეთ თამაში", loginTab: "შესვლა", regTab: "რეგისტრაცია", lblUser: "მომხმარებელი ან ID", lblPass: "პაროლი", btnLogin: "შესვლა", lblRegUser: "მომხმარებლის სახელი", lblRegPass: "პაროლი (მინ. 6 სიმბოლო)", btnReg: "ანგარიშის შექმნა", modalTitle: "წარმატებული რეგისტრაცია!", modalDesc: "თქვენი უნიკალური ID ნომერი:", modalBtn: "გაგრძელება" }
+            az: { subtitle: "Hesabına daxil ol və oyuna davam et", loginTab: "Giriş", regTab: "Qeydiyyat", lblUser: "İstifadəçi adı və ya ID", lblPass: "Şifrə", btnLogin: "Daxil ol", lblRegUser: "İstifadəçi adı", lblRegPass: "Şifrə (ən azı 6 simvol)", lblRegGender: "Cinsini seç", boy: "Oğlan", girl: "Qız", btnReg: "Hesab yarat", modalTitle: "Uğurlu Qeydiyyat!", modalDesc: "Sizin unikal ID nömrəniz:", modalBtn: "Davam et" },
+            ru: { subtitle: "Войдите в аккаунт и продолжайте игру", loginTab: "Вход", regTab: "Регистрация", lblUser: "Имя пользователя или ID", lblPass: "Пароль", btnLogin: "Войти", lblRegUser: "Имя пользователя", lblRegPass: "Пароль (мин. 6 символов)", lblRegGender: "Выберите пол", boy: "Парень", girl: "Девушка", btnReg: "Создать аккаунт", modalTitle: "Успешная регистрация!", modalDesc: "Ваш уникальный ID номер:", modalBtn: "Продолжить" },
+            en: { subtitle: "Login to your account and continue playing", loginTab: "Login", regTab: "Register", lblUser: "Username or ID", lblPass: "Password", btnLogin: "Sign In", lblRegUser: "Username", lblRegPass: "Password (min 6 chars)", lblRegGender: "Select gender", boy: "Boy", girl: "Girl", btnReg: "Create Account", modalTitle: "Successful Registration!", modalDesc: "Your unique ID number:", modalBtn: "Continue" },
+            ka: { subtitle: "შედით ანგარიშზე და გააგრძელეთ თამაში", loginTab: "შესვლა", regTab: "რეგისტრაცია", lblUser: "მომხმარებელი ან ID", lblPass: "პაროლი", btnLogin: "შესვლა", lblRegUser: "მომხმარებლის სახელი", lblRegPass: "პაროლი (მინ. 6 სიმბოლო)", lblRegGender: "აირჩიეთ სქესი", boy: "ბიჭი", girl: "გოგო", btnReg: "ანგარიშის შექმნა", modalTitle: "წარმატებული რეგისტრაცია!", modalDesc: "თქვენი უნიკალური ID ნომერი:", modalBtn: "გაგრძელება" }
         };
 
         window.setLanguage = function(lang, btn) {
@@ -219,6 +275,9 @@
             document.getElementById('btnLogin').innerText = t.btnLogin;
             document.getElementById('lblRegUser').innerText = t.lblRegUser;
             document.getElementById('lblRegPass').innerText = t.lblRegPass;
+            document.getElementById('lblRegGender').innerText = t.lblRegGender;
+            document.getElementById('txtBoy').innerText = t.boy;
+            document.getElementById('txtGirl').innerText = t.girl;
             document.getElementById('btnRegister').innerText = t.btnReg;
             document.getElementById('modalTitle').innerText = t.modalTitle;
             document.getElementById('modalDesc').innerText = t.modalDesc;
@@ -272,7 +331,7 @@
                     country: "",
                     city: "",
                     age: 18,
-                    gender: "Kişi",
+                    gender: selectedRegGender,
                     vip: false,
                     vipUntil: 0,
                     sessionVersion: 1,
@@ -284,6 +343,7 @@
                     docId: docRef.id,
                     id: uniqueId,
                     username: username,
+                    gender: selectedRegGender,
                     sessionVersion: 1
                 }));
 
@@ -295,7 +355,6 @@
             }
         };
 
-        // Real vaxtda nik, rəqəmli ID və ya söz/xüsusi ID (məs: Admin) ilə giriş
         window.loginUser = async function() {
             const userInput = document.getElementById('loginUser').value.trim();
             const passwordInput = document.getElementById('loginPass').value;
