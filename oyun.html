@@ -12,100 +12,81 @@
 <link rel="stylesheet" href="css/chat.css">
 </head>
 <body>
-
 <div id="yuklemeEkrani" class="ekran aktiv">
-  <div id="naxis"></div>
-  <div class="logo">
-    <div class="logo-boyuk">Butulka</div>
-    <div class="logo-kicik">Baku</div>
-  </div>
-  <div class="bar"><div id="barDolu" class="bar-dolu"></div></div>
+<div id="naxis"></div>
+<div class="logo">
+<div class="logo-boyuk">Butulka</div>
+<div class="logo-kicik">Baku</div>
 </div>
-
+<div class="bar"><div id="barDolu" class="bar-dolu"></div></div>
+</div>
 <div id="oyunEkrani" class="ekran">
-  <div id="taxta">
-
-    <div id="masa">
-      <img id="butulka" src="images/butulka/butulka.png" alt="">
-      <div id="gozleYazi"></div>
-      <div id="sayac"></div>
-      <div id="sizinSecim">Sənin seçimin</div>
-      <div id="dugmeler"><button id="btnImtina">İmtina et</button><button id="btnOp">Öp</button></div>
-    </div>
-
-    <div id="ustPanel">
-      <svg class="urek" id="urekBtn" viewBox="0 0 24 24">
-        <path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="#ff6a10" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
-      </svg>
-      <div id="urekSayi">0</div>
-
-      <button class="ub" id="sansCarxBtn" style="left:35.4vw">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1.8"/><path d="M12 3v3M12 18v3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/><path d="M5.5 9.6v4.8l3.8-2.4z"/></svg>
-      </button>
-      <div class="pill" id="vipPill" style="left:25.7vw;display:none">0 gün</div>
-
-      <button class="ub" style="left:35.4vw">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v7M12 15v7M2 12h7M15 12h7M5 5l5 5M14 14l5 5M19 5l-5 5M10 14l-5 5"/></svg>
-      </button>
-
-      <button class="ub" style="left:45.2vw">#-</button>
-
-      <button class="ub" style="left:54.9vw">
-        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h12M4 17h8"/></svg>
-        <span class="nuqte"></span>
-      </button>
-
-      <button class="ub" style="left:64.5vw">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
-      </button>
-
-      <button class="ub" id="cixisBtn" style="left:74.2vw">
-        <svg viewBox="0 0 24 24"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/></svg>
-      </button>
-
-      <div id="masaYazi">Masa<br><span id="masaNo">511</span></div>
-
-      <button class="ub" style="left:93.7vw">
-        <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>
-      </button>
-    </div>
-
-  </div>
-
-  <div id="chatYeri">
-    <div id="mesajlar"></div>
-    <div id="smayPanel"></div>
-    <div id="yazBar">
-      <input id="mesajInput" type="text" placeholder="Mesajı bura yaz" enterkeyhint="send" maxlength="300" autocomplete="off">
-      <button id="smayBtn">☺</button>
-      <button id="gonderBtn"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z" fill="#fff"/></svg></button>
-    </div>
-  </div>
+<div id="taxta">
+<div id="masa">
+<img id="butulka" src="images/butulka/butulka.png" alt="">
+<div id="gozleYazi"></div>
+<div id="sayac"></div>
+<div id="sizinSecim">Sənin seçimin</div>
+<div id="dugmeler"><button id="btnImtina">İmtina et</button><button id="btnOp">Öp</button></div>
+</div>
+<div id="ustPanel">
+<svg class="urek" id="urekBtn" viewBox="0 0 24 24">
+<path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="#ff6a10" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
+</svg>
+<div id="urekSayi">0</div>
+<button class="ub" id="sansCarxBtn" style="left:35.4vw">
+<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1.8"/><path d="M12 3v3M12 18v3M18 12h3M6 6l2 2M16 16l2 2M6 18l2-2M16 8l2-2"/><path d="M5.5 9.6v4.8l3.8-2.4z"/></svg>
+</button>
+<div class="pill" id="vipPill" style="left:25.7vw;display:none">0 gün</div>
+<button class="ub" style="left:45.2vw">#-</button>
+<button class="ub" style="left:54.9vw">
+<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h12M4 17h8"/></svg>
+<span class="nuqte"></span>
+</button>
+<button class="ub" style="left:64.5vw">
+<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+</button>
+<button class="ub" id="cixisBtn" style="left:74.2vw">
+<svg viewBox="0 0 24 24"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/></svg>
+</button>
+<div id="masaYazi">Masa<br><span id="masaNo">511</span></div>
+<button class="ub" style="left:93.7vw">
+<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg>
+</button>
+</div>
+</div>
+<div id="chatYeri">
+<div id="mesajlar"></div>
+<div id="smayPanel"></div>
+<div id="yazBar">
+<input id="mesajInput" type="text" placeholder="Mesajı bura yaz" enterkeyhint="send" maxlength="300" autocomplete="off">
+<button id="smayBtn">☺</button>
+<button id="gonderBtn"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z" fill="#fff"/></svg></button>
+</div>
+</div>
 </div>
 <script type="module" src="js/oyun/olcu.js"></script>
 <script type="module" src="js/oyun/yukleme.js"></script>
 <script type="module" src="js/oyun/panel.js"></script>
 <script type="module" src="js/oyun/raund.js"></script>
 <script type="module" src="js/oyun/chat.js"></script>
-<script src="js/sans-carxi.js"></script>
 <script>
-SansCarxi.init({
-  button: '#sansCarxBtn',
-  ikonYenile: false,
-  sesYolu: 'sesler/',
-  getHearts: () => parseInt(document.getElementById('urekSayi').textContent) || 0,
-  addHearts: () => {}
-});
-</script> 
+window.CARX_OPTIONS = {
+  trigger: '#sansCarxBtn',
+  getHearts: function () { return parseInt(document.getElementById('urekSayi').textContent) || 0; },
+  addHearts: function (n) { var el = document.getElementById('urekSayi'); el.textContent = (parseInt(el.textContent) || 0) + n; }
+};
+</script>
+<script src="js/carx.js"></script>
 </body>
-  <script type="module">
+<script type="module">
 for (const f of ["core/firebase", "core/config", "oyun/yardimci", "oyun/dostlar", "oyun/masalar", "oyun/masa", "oyun/panel", "oyun/raund", "oyun/chat"]) {
-  try { await import("./js/" + f + ".js"); }
-  catch (e) {
-    document.body.insertAdjacentHTML("afterbegin",
-      '<div style="position:fixed;z-index:99;top:0;left:0;right:0;background:#fff;color:red;padding:8px;font-size:14px;word-break:break-all">' + f + ".js: " + e.message + "</div>");
-    break;
-  }
+try { await import("./js/" + f + ".js"); }
+catch (e) {
+document.body.insertAdjacentHTML("afterbegin",
+'<div style="position:fixed;z-index:99;top:0;left:0;right:0;background:#fff;color:red;padding:8px;font-size:14px;word-break:break-all">' + f + ".js: " + e.message + "</div>");
+break;
 }
-  </script>
+}
+</script>
 </html>
