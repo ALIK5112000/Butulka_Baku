@@ -22,7 +22,6 @@
   font:700 10px Roboto,Arial,sans-serif;padding:3px 8px;border-radius:3px}
 .hs-tag.pink{background:#e0007a}.hs-tag.purple{background:#9b4fc4}
 .hs-sellers{margin-top:10px;background:#fff;border-radius:12px;padding:12px;font:500 14px Roboto,Arial,sans-serif;color:#555;cursor:pointer}
-#urekBtn,#urekSayi{pointer-events:auto!important;cursor:pointer}
-#urekBtn{width:8vw;height:8vw;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
-#urekBtn path{fill:#e8590c;stroke:#e9e2dc;stroke-width:1.8}
-#urekSayi{font-weight:700;color:#e6dfd8;font-size:5.4vw;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+#urekBtn,#urekSayi{cursor:pointer}
+#ustPanel .urek path{fill:#e8590c;stroke:#e9e2dc;stroke-width:1.9}
+#urekSayi{color:#e9e2dc;font-size:3.2vw}
