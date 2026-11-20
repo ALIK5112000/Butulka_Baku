@@ -11,7 +11,36 @@
     <link rel="stylesheet" href="css/panel.css">
     <link rel="stylesheet" href="css/raund.css">
     <link rel="stylesheet" href="css/chat.css">
-    <link rel="stylesheet" href="css/heart-shop.css">
+    <style>
+/* ===== Ürək mağazası pəncərəsi ===== */
+.hs-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10000}
+.hs-overlay.open{display:flex}
+.hs-modal{position:relative;width:min(94vw,420px);border-radius:22px 22px 18px 18px;padding:18px 10px 12px;
+  background:linear-gradient(#f0606a 0,#f58f95 30%,#fde4e4 60%,#fff0f0 100%);animation:hsin .25s ease}
+@keyframes hsin{from{transform:translateY(30px);opacity:0}}
+.hs-scroll{max-height:70vh;overflow-y:auto;padding-top:12px}
+.hs-title{text-align:center;color:#fff;font:700 17px Roboto,Arial,sans-serif;margin:4px 0 4px}
+.hs-close{position:absolute;top:-14px;right:-6px;width:42px;height:42px;border-radius:50%;background:#fff;border:0;
+  color:#f0606a;font-size:26px;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,.3);z-index:2}
+.hs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.hs-card{position:relative;background:#fff;border-radius:14px;padding:10px 6px 8px;text-align:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.15);display:flex;flex-direction:column;align-items:center;min-height:150px}
+.hs-top{font:700 17px Roboto,Arial,sans-serif;color:#ff4a0a;line-height:1.1}
+.hs-top small{display:block;font:500 11px Roboto,Arial,sans-serif;color:#f59a00}
+.hs-top.gold{color:#f59a00;font-size:12px}
+.hs-img{flex:1;display:flex;align-items:center;justify-content:center;width:100%;font-size:46px;
+  background:radial-gradient(circle,#fff6b8 0,#fff 70%);border-radius:50%;margin:4px 0}
+.hs-btn{width:100%;border:0;border-radius:8px;padding:8px 0;color:#fff;font:500 15px Roboto,Arial,sans-serif}
+.hs-btn.blue{background:#2f86e8}.hs-btn.green{background:#8dc63f}.hs-btn.cyan{background:#1ec8f0}
+.hs-tag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);white-space:nowrap;color:#fff;
+  font:700 10px Roboto,Arial,sans-serif;padding:3px 8px;border-radius:3px}
+.hs-tag.pink{background:#e0007a}.hs-tag.purple{background:#9b4fc4}
+.hs-sellers{margin-top:10px;background:#fff;border-radius:12px;padding:12px;font:500 14px Roboto,Arial,sans-serif;color:#555;cursor:pointer}
+#urekBtn,#urekSayi{cursor:pointer}
+#ustPanel .urek path{fill:#e8590c;stroke:#e9e2dc;stroke-width:1.9}
+#urekSayi{color:#e9e2dc;font-size:3.2vw}
+
+    </style>
 </head>
 <body>
 <div id="yuklemeEkrani" class="ekran aktiv">
@@ -158,7 +187,74 @@ window.CARX_OPTIONS = {
 </script>
 
 <!-- ÜRƏK MAĞAZASI PƏNCƏRƏSİ -->
-<script src="js/heart-shop.js"></script>
+<script>
+(function () {
+  const PACKS = [
+    { top: 'PREMIUM<br>İCAZƏNAMƏ', icon: '🎟️', btn: 'Təfərrüatlar', color: 'blue' },
+    { top: '<b>VIP</b><small>STATUS</small>', icon: '👑', btn: 'Təfərrüatlar', color: 'blue' },
+    { hearts: 14000, bonus: 40, icon: '🧰', btn: '10000', color: 'green', tag: ['Ən yaxşı təklif', 'pink'] },
+    { hearts: 6500, bonus: 30, icon: '🛢️', btn: '5000', color: 'green' },
+    { hearts: 1200, bonus: 20, icon: '🏺', btn: '1000', color: 'green', tag: ['Ən yaxşı', 'purple'] },
+    { hearts: 575, bonus: 15, icon: '👝', btn: '500', color: 'green' },
+    { hearts: 270, bonus: 8, icon: '🎁', btn: '250', color: 'green' },
+    { hearts: 300, icon: '❤️', btn: 'Götür', color: 'cyan', tag: ['Pulsuz', 'purple'], free: true }
+  ];
+
+  const ov = document.createElement('div');
+  ov.className = 'hs-overlay';
+  ov.innerHTML = '<div class="hs-modal"><button class="hs-close">×</button><div class="hs-title">Ürəklər satın al</div><div class="hs-scroll"><div class="hs-grid"></div><div class="hs-sellers">▸ 💬 Satıcılardan al (1)</div></div></div>';
+  const grid = ov.querySelector('.hs-grid');
+
+  PACKS.forEach(p => {
+    const c = document.createElement('div');
+    c.className = 'hs-card';
+    const top = p.hearts
+      ? '<div class="hs-top">❤️' + p.hearts + (p.bonus ? '<small>' + p.bonus + '% BONUS</small>' : '') + '</div>'
+      : '<div class="hs-top gold">' + p.top + '</div>';
+    c.innerHTML = (p.tag ? '<div class="hs-tag ' + p.tag[1] + '">' + p.tag[0] + '</div>' : '') + top +
+      '<div class="hs-img">' + p.icon + '</div><button class="hs-btn ' + p.color + '">' + p.btn + '</button>';
+    // satın alma / pulsuz götürmə məntiqi sonra bu hadisəyə bağlanacaq
+    c.querySelector('button').onclick = () => window.dispatchEvent(new CustomEvent('hearts:buy', { detail: p }));
+    grid.appendChild(c);
+  });
+
+  let openedAt = 0;
+  const open = () => { openedAt = Date.now(); ov.classList.add('open'); };
+  const close = () => ov.classList.remove('open');
+  ov.querySelector('.hs-close').onclick = close;
+  ov.addEventListener('click', e => { if (e.target === ov && Date.now() - openedAt > 500) close(); });
+  document.body.appendChild(ov);
+
+  // Üst panelin üstünü hansısa qat örtsə belə işləsin deyə: toxunuşun koordinatına baxırıq
+  function inside(el, x, y) {
+    if (!el) return false;
+    var r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return false;
+    return x >= r.left - 10 && x <= r.right + 10 && y >= r.top - 10 && y <= r.bottom + 10;
+  }
+  var lastOpen = 0;
+  function check(e) {
+    if (ov.classList.contains('open')) return;
+    if (Date.now() - lastOpen < 400) return;
+    var x = e.clientX, y = e.clientY;
+    if (inside(document.getElementById('urekBtn'), x, y) || inside(document.getElementById('urekSayi'), x, y)) {
+      lastOpen = Date.now();
+      open();
+    }
+  }
+  window.addEventListener('click', check, true);
+
+  window.HeartShop = { open, close };
+
+  // TEST: fayl yükləndiyini göstərir (təsdiqləndikdən sonra silin)
+  var tt = document.createElement('div');
+  tt.textContent = 'heart-shop v3 yükləndi';
+  tt.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:6px 12px;border-radius:8px;font:13px Arial;z-index:100000';
+  document.body.appendChild(tt);
+  setTimeout(function () { tt.remove(); }, 3000);
+})();
+
+</script>
 
 <!-- MUSİQİ PANELİ UI + CANLI AXTARIŞ + PLEYER -->
 <script>
