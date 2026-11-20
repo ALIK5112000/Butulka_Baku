@@ -35,10 +35,9 @@
   document.body.appendChild(ov);
 
   // Mövcud ❤️ və rəqəm (oyun.html-də hazırdır) — yenisini yaratmırıq
-  const btn = document.getElementById('urekBtn');
-  const num = document.getElementById('urekSayi');
-  if (btn) btn.addEventListener('click', open);
-  if (num) num.addEventListener('click', open);
+  document.addEventListener('click', function (e) {
+  if (e.target.closest && e.target.closest('#urekBtn, #urekSayi')) open();
+  }, true);
 
   window.HeartShop = { open, close };
 })();
