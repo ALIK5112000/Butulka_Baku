@@ -34,10 +34,26 @@
   ov.addEventListener('click', e => { if (e.target === ov) close(); });
   document.body.appendChild(ov);
 
-  // Mövcud ❤️ və rəqəm (oyun.html-də hazırdır) — yenisini yaratmırıq
-  document.addEventListener('click', function (e) {
-  if (e.target.closest && e.target.closest('#urekBtn, #urekSayi')) open();
-  }, true);
+  // Üst panelin üstünü hansısa qat örtsə belə işləsin deyə: toxunuşun koordinatına baxırıq
+  function inside(el, x, y) {
+    if (!el) return false;
+    var r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return false;
+    return x >= r.left - 10 && x <= r.right + 10 && y >= r.top - 10 && y <= r.bottom + 10;
+  }
+  var lastOpen = 0;
+  function check(e) {
+    if (ov.classList.contains('open')) return;
+    if (Date.now() - lastOpen < 400) return;
+    var t = (e.changedTouches && e.changedTouches[0]) || e;
+    var x = t.clientX, y = t.clientY;
+    if (inside(document.getElementById('urekBtn'), x, y) || inside(document.getElementById('urekSayi'), x, y)) {
+      lastOpen = Date.now();
+      open();
+    }
+  }
+  window.addEventListener('click', check, true);
+  window.addEventListener('touchend', check, true);
 
   window.HeartShop = { open, close };
 })();
