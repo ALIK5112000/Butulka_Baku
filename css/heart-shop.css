@@ -1,20 +1,13 @@
-/* ===== Ürək ikonu + say ===== */
-#heart-widget{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
-#heart-widget.hw-fixed{position:fixed;top:8px;left:8px;z-index:999}
-#heart-widget svg{width:34px;height:34px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
-#heart-widget .hw-num{font:700 15px Roboto,Arial,sans-serif;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
-#heart-widget.hw-pop svg{animation:hwpop .35s}
-@keyframes hwpop{50%{transform:scale(1.3)}}
-
-/* ===== Pəncərə ===== */
+/* ===== Ürək mağazası pəncərəsi ===== */
 .hs-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10000}
 .hs-overlay.open{display:flex}
-.hs-modal{position:relative;width:min(94vw,420px);max-height:86vh;overflow-y:auto;border-radius:22px 22px 18px 18px;padding:18px 10px 12px;
+.hs-modal{position:relative;width:min(94vw,420px);border-radius:22px 22px 18px 18px;padding:18px 10px 12px;
   background:linear-gradient(#f0606a 0,#f58f95 30%,#fde4e4 60%,#fff0f0 100%);animation:hsin .25s ease}
 @keyframes hsin{from{transform:translateY(30px);opacity:0}}
-.hs-title{text-align:center;color:#fff;font:700 17px Roboto,Arial,sans-serif;margin:4px 0 16px}
+.hs-scroll{max-height:70vh;overflow-y:auto;padding-top:12px}
+.hs-title{text-align:center;color:#fff;font:700 17px Roboto,Arial,sans-serif;margin:4px 0 4px}
 .hs-close{position:absolute;top:-14px;right:-6px;width:42px;height:42px;border-radius:50%;background:#fff;border:0;
-  color:#f0606a;font-size:26px;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,.3)}
+  color:#f0606a;font-size:26px;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,.3);z-index:2}
 .hs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
 .hs-card{position:relative;background:#fff;border-radius:14px;padding:10px 6px 8px;text-align:center;
   box-shadow:0 2px 6px rgba(0,0,0,.15);display:flex;flex-direction:column;align-items:center;min-height:150px}
@@ -25,8 +18,8 @@
   background:radial-gradient(circle,#fff6b8 0,#fff 70%);border-radius:50%;margin:4px 0}
 .hs-btn{width:100%;border:0;border-radius:8px;padding:8px 0;color:#fff;font:500 15px Roboto,Arial,sans-serif}
 .hs-btn.blue{background:#2f86e8}.hs-btn.green{background:#8dc63f}.hs-btn.cyan{background:#1ec8f0}
-.hs-btn:disabled{opacity:.5}
 .hs-tag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);white-space:nowrap;color:#fff;
   font:700 10px Roboto,Arial,sans-serif;padding:3px 8px;border-radius:3px}
 .hs-tag.pink{background:#e0007a}.hs-tag.purple{background:#9b4fc4}
 .hs-sellers{margin-top:10px;background:#fff;border-radius:12px;padding:12px;font:500 14px Roboto,Arial,sans-serif;color:#555;cursor:pointer}
+#urekBtn,#urekSayi{cursor:pointer}
