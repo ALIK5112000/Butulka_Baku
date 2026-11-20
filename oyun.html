@@ -59,9 +59,9 @@
     </div>
 
     <div id="chatYeri">
-        <div id="musiqiPanel" aria-label="Musiqi">
+        <div id="musiqiPanel" aria-label="Musiqi" style="z-index:50;">
             <button type="button" class="musiqi-btn" id="musiqiBtn1" title="Klip qoş (9 bonus)">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;">
                     <rect x="3" y="4" width="14" height="12" rx="2"/>
                     <path d="M9 19v-8l7-2v8"/>
                     <circle cx="7" cy="19" r="2"/>
@@ -69,7 +69,7 @@
                 </svg>
             </button>
             <button type="button" class="musiqi-btn" id="musiqiBtn2" title="Musiqi siyahısı">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;">
                     <circle cx="12" cy="12" r="8"/>
                     <path d="M12 15V8l5-1.5v6.5"/>
                     <circle cx="10.5" cy="15.5" r="1.5"/>
@@ -78,27 +78,22 @@
             </button>
         </div>
 
-        <!-- CANLI KLİP KARTI (Chat üstündə hamıda eyni anda görünür) -->
+        <!-- CANLI KLİP KARTI -->
         <div id="bb-live-clip-widget" style="display:none; position:fixed; right:10px; bottom:185px; width:265px; background:#fff; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,0.24); z-index:9500; overflow:hidden; transition:all 0.25s ease; font-family:sans-serif;">
             <div id="bb-live-top" style="display:flex; align-items:stretch; height:96px; transition:height 0.25s ease;">
-                <!-- Sol: Dairəvi vaxt halqası + Klipi qoşan oyunçunun profil şəkli -->
                 <div style="width:96px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#fafafa; position:relative;">
                     <svg width="76" height="76" viewBox="0 0 76 76" style="transform:rotate(-90deg);">
                         <circle cx="38" cy="38" r="33" fill="none" stroke="#e6e6e6" stroke-width="5"></circle>
                         <circle id="bb-ring-progress" cx="38" cy="38" r="33" fill="none" stroke="#9ccc65" stroke-width="5"
                             stroke-dasharray="207.35" stroke-dashoffset="207.35" stroke-linecap="round"></circle>
                     </svg>
-                    <img id="bb-dj-avatar" src="images/default-avatar.png" alt="DJ"
+                    <img id="bb-dj-avatar" src="images/butulka/butulka.png" alt="DJ"
                         style="position:absolute; width:58px; height:58px; border-radius:50%; object-fit:cover; border:2px solid #fff;" />
                 </div>
-
-                <!-- Sağ: Canlı YouTube Klip -->
                 <div style="flex:1; background:#000; position:relative; overflow:hidden;">
                     <div id="bb-live-yt-frame" style="width:100%; height:100%; pointer-events:none;"></div>
                 </div>
             </div>
-
-            <!-- Alt idarəetmə paneli: [ ] 1x/2x böyütmə + Səs ikonu + Slider -->
             <div style="height:38px; background:#f7f7f7; border-top:1px solid #ececec; display:flex; align-items:center; gap:8px; padding:0 10px;">
                 <button id="bb-zoom-clip-btn" type="button" title="Ölçünü dəyiş"
                     style="background:none; border:none; padding:2px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#7a828a;">
@@ -123,8 +118,8 @@
     </div>
 </div>
 
-<!-- KLİP SEÇİM VƏ AXTARIŞ PƏNCƏRƏSİ (#musiqiBtn1 basılanda açılır) -->
-<div id="bb-clip-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.52); z-index:10000; align-items:center; justify-content:center; padding:14px; font-family:sans-serif;">
+<!-- KLİP MODAL PƏNCƏRƏSİ -->
+<div id="bb-clip-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.52); z-index:99999; align-items:center; justify-content:center; padding:14px; font-family:sans-serif;">
     <div style="width:100%; max-width:390px; height:82vh; background:#fff; border-radius:22px; padding:16px 14px; display:flex; flex-direction:column; gap:12px; box-shadow:0 14px 36px rgba(0,0,0,0.3); position:relative;">
         <button id="bb-clip-close" type="button" style="position:absolute; top:-10px; right:-8px; width:36px; height:36px; border-radius:50%; border:3px solid #fff; background:#9ccc65; color:#fff; font-size:18px; font-weight:700; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.25);">✕</button>
 
@@ -158,7 +153,351 @@ window.CARX_OPTIONS = {
   addHearts: function (n) { var el = document.getElementById('urekSayi'); el.textContent = (parseInt(el.textContent) || 0) + n; }
 };
 </script>
-<script type="module" src="js/musiqi.js"></script>
+
+<!-- BİRBAŞA İŞLƏYƏN KLİP SİSTEMİ (Heç bir import xətası olmadan 100% açılır) -->
+<script>
+(function () {
+  const CLIP_COST = 9;
+  const YT_SEARCH_ENDPOINTS = [
+    "https://pipedapi.kavin.rocks/search?filter=music_songs&q=",
+    "https://pipedapi.adminforge.de/search?filter=music_songs&q=",
+    "https://inv.nadeko.net/api/v1/search?type=video&q="
+  ];
+
+  const POPULAR_CLIPS = [
+    { videoId: "M7lc1UVf-VE", title: "OMER DEEP - Medusa (Original Mix)", thumb: "https://i.ytimg.com/vi/M7lc1UVf-VE/mqdefault.jpg" },
+    { videoId: "kJQP7kiw5Fk", title: "Luis Fonsi - Despacito", thumb: "https://i.ytimg.com/vi/kJQP7kiw5Fk/mqdefault.jpg" },
+    { videoId: "JGwWNGJdvx8", title: "Ed Sheeran - Shape of You", thumb: "https://i.ytimg.com/vi/JGwWNGJdvx8/mqdefault.jpg" },
+    { videoId: "RgKAFK5djSk", title: "Wiz Khalifa - See You Again", thumb: "https://i.ytimg.com/vi/RgKAFK5djSk/mqdefault.jpg" },
+    { videoId: "60ItHLz5WEA", title: "Alan Walker - Faded", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/mqdefault.jpg" },
+    { videoId: "fRh_vgS2dFE", title: "Justin Bieber - Sorry", thumb: "https://i.ytimg.com/vi/fRh_vgS2dFE/mqdefault.jpg" }
+  ];
+
+  let ytLivePlayer = null;
+  let ytReady = false;
+  let progressInterval = null;
+  let zoomLevel = 0;
+
+  // YouTube IFrame API yüklə
+  if (!window.YT) {
+    const s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(s);
+  }
+  const prevReady = window.onYouTubeIframeAPIReady;
+  window.onYouTubeIframeAPIReady = function () {
+    if (typeof prevReady === "function") prevReady();
+    ytLivePlayer = new YT.Player("bb-live-yt-frame", {
+      width: "100%",
+      height: "100%",
+      playerVars: { autoplay: 1, controls: 0, disablekb: 1, modestbranding: 1, playsinline: 1, rel: 0 },
+      events: {
+        onReady: () => { ytReady = true; },
+        onStateChange: (e) => {
+          if (e.data === 0) stopAndHideClip();
+        }
+      }
+    });
+  };
+
+  function openClipModal() {
+    const modal = document.getElementById("bb-clip-modal");
+    if (modal) {
+      modal.style.display = "flex";
+      switchTab("popular");
+    }
+  }
+
+  // Həm #musiqiBtn1, həm də #musiqiBtn2 basılanda dərhal açılsın
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest("#musiqiBtn1, #musiqiBtn2, .musiqi-btn");
+    if (btn) {
+      e.preventDefault();
+      e.stopPropagation();
+      openClipModal();
+    }
+  }, true);
+
+  document.getElementById("bb-clip-close").addEventListener("click", function () {
+    document.getElementById("bb-clip-modal").style.display = "none";
+  });
+
+  document.querySelectorAll(".bb-tab-btn").forEach(function (b) {
+    b.addEventListener("click", function () { switchTab(b.dataset.tab); });
+  });
+
+  function switchTab(tab) {
+    document.querySelectorAll(".bb-tab-btn").forEach(function (b) {
+      b.style.opacity = b.dataset.tab === tab ? "1" : "0.45";
+    });
+    const titleEl = document.getElementById("bb-tab-title");
+    const searchBox = document.getElementById("bb-search-box");
+
+    if (tab === "search") {
+      titleEl.textContent = "Musiqi axtar (9 bonus)";
+      searchBox.style.display = "block";
+      const inp = document.getElementById("bb-yt-query");
+      setTimeout(() => inp.focus(), 80);
+      if (inp.value.trim()) searchYouTubeFree(inp.value.trim());
+      else renderGrid([]);
+    } else if (tab === "favorites") {
+      titleEl.textContent = "Sevimli musiqilər";
+      searchBox.style.display = "none";
+      renderGrid(JSON.parse(localStorage.getItem("bb_fav_clips") || "[]"));
+    } else if (tab === "history") {
+      titleEl.textContent = "Son qoşulan kliplər";
+      searchBox.style.display = "none";
+      renderGrid(JSON.parse(localStorage.getItem("bb_hist_clips") || "[]"));
+    } else {
+      titleEl.textContent = "Populyar bölməsindən musiqi seç (9 bonus)";
+      searchBox.style.display = "none";
+      renderGrid(POPULAR_CLIPS);
+    }
+  }
+
+  async function searchYouTubeFree(query) {
+    const grid = document.getElementById("bb-clip-grid");
+    grid.style.display = "block";
+    grid.innerHTML = '<div style="text-align:center; color:#888; padding:26px 0; font-size:14px;">Axtarılır...</div>';
+
+    for (const base of YT_SEARCH_ENDPOINTS) {
+      try {
+        const res = await fetch(base + encodeURIComponent(query));
+        if (!res.ok) continue;
+        const data = await res.json();
+
+        if (Array.isArray(data.items)) {
+          const parsed = data.items
+            .filter(it => it.url && it.url.includes("v="))
+            .slice(0, 14)
+            .map(it => {
+              const vid = it.url.split("v=")[1].split("&")[0];
+              return {
+                videoId: vid,
+                title: it.title || "YouTube Musiqi",
+                thumb: it.thumbnail || ("https://i.ytimg.com/vi/" + vid + "/mqdefault.jpg")
+              };
+            });
+          if (parsed.length) {
+            renderGrid(parsed);
+            return;
+          }
+        }
+
+        if (Array.isArray(data)) {
+          const parsed = data
+            .filter(it => it.videoId)
+            .slice(0, 14)
+            .map(it => ({
+              videoId: it.videoId,
+              title: it.title || "YouTube Musiqi",
+              thumb: "https://i.ytimg.com/vi/" + it.videoId + "/mqdefault.jpg"
+            }));
+          if (parsed.length) {
+            renderGrid(parsed);
+            return;
+          }
+        }
+      } catch (_) {}
+    }
+
+    renderGrid(POPULAR_CLIPS.filter(c => c.title.toLowerCase().includes(query.toLowerCase())));
+  }
+
+  let searchTimer = null;
+  document.getElementById("bb-yt-query").addEventListener("input", function (e) {
+    clearTimeout(searchTimer);
+    const q = e.target.value.trim();
+    searchTimer = setTimeout(function () {
+      if (!q) renderGrid([]);
+      else searchYouTubeFree(q);
+    }, 400);
+  });
+
+  function renderGrid(items) {
+    const grid = document.getElementById("bb-clip-grid");
+    grid.innerHTML = "";
+    if (!items.length) {
+      grid.style.display = "block";
+      grid.innerHTML = '<div style="text-align:center; color:#777; padding:28px 0; font-size:14px;">Hər hansı musiqi tapılmadı</div>';
+      return;
+    }
+    const favs = JSON.parse(localStorage.getItem("bb_fav_clips") || "[]");
+    grid.style.display = "grid";
+
+    items.forEach(function (clip) {
+      const isFav = favs.some(x => x.videoId === clip.videoId);
+      const card = document.createElement("div");
+      card.style.cssText = "border-radius:10px; overflow:hidden; background:#fafafa; border:1px solid #eee; cursor:pointer; position:relative;";
+      card.innerHTML = `
+        <div style="position:relative;">
+          <img src="${clip.thumb}" style="width:100%; height:78px; object-fit:cover; display:block;" />
+          <span class="bb-fav-star" style="position:absolute; top:4px; right:5px; font-size:16px; color:#fff; text-shadow:0 1px 4px #000;">${isFav ? "⭐" : "☆"}</span>
+          <span style="position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.75); color:#fff; font-size:10px; padding:1px 5px; border-radius:4px;">9 🔶</span>
+        </div>
+        <div style="padding:6px; font-size:11px; font-weight:600; color:#222; line-height:1.25; height:32px; overflow:hidden;">${clip.title}</div>
+      `;
+
+      card.querySelector(".bb-fav-star").addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        let list = JSON.parse(localStorage.getItem("bb_fav_clips") || "[]");
+        if (list.some(x => x.videoId === clip.videoId)) {
+          list = list.filter(x => x.videoId !== clip.videoId);
+          ev.currentTarget.textContent = "☆";
+        } else {
+          list.unshift(clip);
+          ev.currentTarget.textContent = "⭐";
+        }
+        localStorage.setItem("bb_fav_clips", JSON.stringify(list.slice(0, 30)));
+      });
+
+      card.addEventListener("click", function () { startClipWithBonus(clip); });
+      grid.appendChild(card);
+    });
+  }
+
+  function startClipWithBonus(clip) {
+    const urekEl = document.getElementById("urekSayi");
+    const currentHearts = parseInt(urekEl?.textContent || "0", 10);
+
+    if (currentHearts < CLIP_COST) {
+      alert("Klip qoşmaq üçün minimum 9 bonus lazımdır!");
+      return;
+    }
+
+    if (urekEl) urekEl.textContent = String(currentHearts - CLIP_COST);
+
+    const hist = JSON.parse(localStorage.getItem("bb_hist_clips") || "[]");
+    localStorage.setItem("bb_hist_clips", JSON.stringify([clip, ...hist.filter(x => x.videoId !== clip.videoId)].slice(0, 20)));
+    document.getElementById("bb-clip-modal").style.display = "none";
+
+    const myAvatar =
+      document.querySelector("#masa img:not(#butulka)")?.src ||
+      localStorage.getItem("userAvatar") ||
+      "images/butulka/butulka.png";
+
+    const payload = {
+      clipInstanceId: Date.now() + "_clip",
+      videoId: clip.videoId,
+      title: clip.title,
+      djAvatar: myAvatar,
+      startedAt: Date.now()
+    };
+
+    // Əgər window.bbBroadcastClip qoşulubsa masadakı hamıya göndər
+    if (typeof window.bbBroadcastClip === "function") {
+      window.bbBroadcastClip(payload, CLIP_COST);
+    }
+
+    playClipOnWidget(payload);
+  }
+
+  window.playClipOnWidget = function (data) {
+    if (!data || !data.videoId) return;
+    const widget = document.getElementById("bb-live-clip-widget");
+    document.getElementById("bb-dj-avatar").src = data.djAvatar || "images/butulka/butulka.png";
+    widget.style.display = "block";
+
+    const elapsedSec = Math.max(0, Math.floor((Date.now() - Number(data.startedAt || Date.now())) / 1000));
+
+    const run = function () {
+      ytLivePlayer.loadVideoById({ videoId: data.videoId, startSeconds: elapsedSec });
+      const vol = Number(document.getElementById("bb-volume-slider").value || 85);
+      ytLivePlayer.unMute();
+      ytLivePlayer.setVolume(vol);
+      ytLivePlayer.playVideo();
+      startCircularRing();
+    };
+
+    if (ytReady && ytLivePlayer && typeof ytLivePlayer.loadVideoById === "function") {
+      run();
+    } else {
+      const wait = setInterval(function () {
+        if (ytReady && ytLivePlayer && typeof ytLivePlayer.loadVideoById === "function") {
+          clearInterval(wait);
+          run();
+        }
+      }, 200);
+    }
+  };
+
+  function startCircularRing() {
+    clearInterval(progressInterval);
+    const circle = document.getElementById("bb-ring-progress");
+    const circumference = 2 * Math.PI * 33;
+
+    progressInterval = setInterval(function () {
+      if (!ytLivePlayer || typeof ytLivePlayer.getCurrentTime !== "function") return;
+      const cur = ytLivePlayer.getCurrentTime() || 0;
+      const dur = ytLivePlayer.getDuration() || 0;
+
+      if (dur > 0) {
+        const ratio = Math.min(1, cur / dur);
+        circle.style.strokeDashoffset = String(circumference * (1 - ratio));
+        if (cur >= dur - 0.5) {
+          stopAndHideClip();
+        }
+      }
+    }, 250);
+  }
+
+  function stopAndHideClip() {
+    clearInterval(progressInterval);
+    if (ytLivePlayer && typeof ytLivePlayer.stopVideo === "function") {
+      ytLivePlayer.stopVideo();
+    }
+    const w = document.getElementById("bb-live-clip-widget");
+    if (w) w.style.display = "none";
+  }
+
+  document.getElementById("bb-zoom-clip-btn").addEventListener("click", function () {
+    zoomLevel = (zoomLevel + 1) % 3;
+    const widget = document.getElementById("bb-live-clip-widget");
+    const topBox = document.getElementById("bb-live-top");
+
+    if (zoomLevel === 0) {
+      widget.style.width = "265px";
+      topBox.style.height = "96px";
+    } else if (zoomLevel === 1) {
+      widget.style.width = "315px";
+      topBox.style.height = "135px";
+    } else {
+      widget.style.width = "94vw";
+      topBox.style.height = "185px";
+    }
+  });
+
+  const volSlider = document.getElementById("bb-volume-slider");
+  const muteBtn = document.getElementById("bb-mute-clip-btn");
+
+  volSlider.addEventListener("input", function () {
+    const v = Number(volSlider.value);
+    if (!ytLivePlayer) return;
+    if (v === 0) {
+      ytLivePlayer.mute();
+      muteBtn.textContent = "🔇";
+    } else {
+      ytLivePlayer.unMute();
+      ytLivePlayer.setVolume(v);
+      muteBtn.textContent = "🔊";
+    }
+  });
+
+  muteBtn.addEventListener("click", function () {
+    if (!ytLivePlayer) return;
+    if (ytLivePlayer.isMuted()) {
+      ytLivePlayer.unMute();
+      const v = Number(volSlider.value) || 80;
+      volSlider.value = v;
+      ytLivePlayer.setVolume(v);
+      muteBtn.textContent = "🔊";
+    } else {
+      ytLivePlayer.mute();
+      muteBtn.textContent = "🔇";
+    }
+  });
+})();
+</script>
 </body>
 <script type="module">
 for (const f of ["core/firebase", "core/config", "oyun/yardimci", "oyun/dostlar", "oyun/masalar", "oyun/masa", "oyun/panel", "oyun/raund", "oyun/chat"]) {
