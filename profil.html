@@ -717,14 +717,18 @@
 
         const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
         const MAIN_ADMIN_ID = 96446;
+        const MAIN_ADMIN_DOC = "ErC7uig5zDYVzXPQpal2";
 
         function formatDisplayId(user) {
             if (!user) return "-----";
-            if (Number(user.id) === MAIN_ADMIN_ID || user.role === "admin") {
-                return user.customId ? `👑 ${user.customId}` : "👑 Admin";
+            const hasCustom = user.customId !== undefined && user.customId !== null && String(user.customId).trim() !== "";
+            const isMain = Number(user.id) === MAIN_ADMIN_ID || user.role === "admin";
+            if (isMain) {
+                return hasCustom ? `👑 ${String(user.customId).trim()}` : "👑 Admin";
             }
-            if (user.customId && String(user.customId).trim() !== "") {
-                return String(user.customId).trim();
+            if (hasCustom) {
+                const cVal = String(user.customId).trim();
+                return /^\d+$/.test(cVal) ? `ID ${cVal}` : cVal;
             }
             return `ID ${user.id}`;
         }
@@ -800,13 +804,20 @@
                 }
                 myData = docSnap.data();
 
+                // Real-vaxt yenilənən məlumatları localStorage ilə sinxron saxla
+                localStorage.setItem("currentUser", JSON.stringify({
+                    ...sessionUser,
+                    ...myData,
+                    docId: myDocId
+                }));
+
                 if (myData.banned) {
                     alert("Admin tərəfindən ban olunmusunuz!");
                     logoutAccount();
                     return;
                 }
 
-                if (Number(myData.id) === MAIN_ADMIN_ID && myData.role !== "admin") {
+                if ((myDocId === MAIN_ADMIN_DOC || Number(myData.id) === MAIN_ADMIN_ID) && myData.role !== "admin") {
                     await updateDoc(doc(db, "users", myDocId), {
                         isAdmin: true,
                         role: "admin",
@@ -831,7 +842,7 @@
             if (!myData) return;
 
             const r = myData.role || "user";
-            const isMainAdmin = Number(myData.id) === MAIN_ADMIN_ID || r === "admin";
+            const isMainAdmin = myDocId === MAIN_ADMIN_DOC || Number(myData.id) === MAIN_ADMIN_ID || r === "admin";
             const activeRole = isMainAdmin ? "admin" : (["adminka", "mod", "dealer"].includes(r) ? r : null);
 
             document.getElementById("myUsername").textContent = myData.username;
@@ -1047,6 +1058,7 @@
                 if (
                     u.username.toLowerCase().includes(term) ||
                     String(u.id).toLowerCase().includes(term) ||
+                    String(u.customId || "").toLowerCase().includes(term) ||
                     dispId.toLowerCase().includes(term)
                 ) {
                     html += `
