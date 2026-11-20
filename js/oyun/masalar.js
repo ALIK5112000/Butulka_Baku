@@ -9,6 +9,7 @@ document.head.insertAdjacentHTML("beforeend", '<link rel="stylesheet" href="css/
 
 const cari = cariOyuncu() || {};
 const QIYMET = 5000, GUN30 = 30 * 86400000, ADMIN = "511";
+const $ = (id) => document.getElementById(id);
 const xetaGoster = (e) => toast("Xəta: " + ((e && (e.message || (e.reason && e.reason.message))) || e));
 window.addEventListener("unhandledrejection", xetaGoster);
 window.addEventListener("error", xetaGoster);
@@ -210,4 +211,4 @@ async function yaratModal() {
         : e.message === "JETON" ? "Kifayət qədər jetonunuz yoxdur" : "Xəta: " + e.message);
     }
   };
-}
+              }
