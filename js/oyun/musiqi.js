@@ -1,136 +1,447 @@
-/* musiqi.js — YouTube musiqi paneli (js/ qovluğuna at)
-   oyun.html-də: <script src="js/musiqi.js"></script>
-   Klip düyməsinin onclick-ində: MusiqiPanel.open()  */
-(function () {
-  var CFG = {
-    API_KEY: "BURA_YOUTUBE_API_ACARINI_YAZ",
-    COST: 9,          // ürək qiyməti
-    REGION: "AZ",
-    // "İfa et" basılanda çağrılır. v = {id,title,thumb}
-    // Burada ürəyi çıx və serverə/Firebase-ə göndər ki, hamıda MusiqiPanel.play(v) işləsin
-    onPlay: function (v) { MusiqiPanel.play(v); }
+import * as fbModule from "./core/firebase.js";
+
+const CLIP_COST = 9;
+
+// API açarsız canlı YouTube axtarış mənbələri
+const YT_SEARCH_ENDPOINTS = [
+  "https://pipedapi.kavin.rocks/search?filter=music_songs&q=",
+  "https://pipedapi.adminforge.de/search?filter=music_songs&q=",
+  "https://inv.nadeko.net/api/v1/search?type=video&q="
+];
+
+const POPULAR_CLIPS = [
+  { videoId: "M7lc1UVf-VE", title: "OMER DEEP - Medusa (Original Mix)", thumb: "https://i.ytimg.com/vi/M7lc1UVf-VE/mqdefault.jpg" },
+  { videoId: "kJQP7kiw5Fk", title: "Luis Fonsi - Despacito", thumb: "https://i.ytimg.com/vi/kJQP7kiw5Fk/mqdefault.jpg" },
+  { videoId: "JGwWNGJdvx8", title: "Ed Sheeran - Shape of You", thumb: "https://i.ytimg.com/vi/JGwWNGJdvx8/mqdefault.jpg" },
+  { videoId: "RgKAFK5djSk", title: "Wiz Khalifa - See You Again", thumb: "https://i.ytimg.com/vi/RgKAFK5djSk/mqdefault.jpg" },
+  { videoId: "60ItHLz5WEA", title: "Alan Walker - Faded", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/mqdefault.jpg" },
+  { videoId: "fRh_vgS2dFE", title: "Justin Bieber - Sorry", thumb: "https://i.ytimg.com/vi/fRh_vgS2dFE/mqdefault.jpg" }
+];
+
+let ytLivePlayer = null;
+let ytReady = false;
+let progressInterval = null;
+let zoomLevel = 0; // 0: orijinal, 1: 1x, 2: 2x
+let currentPlayingId = null;
+
+function getTableId() {
+  const spanNo = document.getElementById("masaNo")?.textContent?.trim();
+  const urlNo = new URLSearchParams(window.location.search).get("table");
+  return String(urlNo || spanNo || "511");
+}
+
+// 1. YouTube IFrame API yüklə
+function initYouTubeAPI() {
+  if (!window.YT) {
+    const s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(s);
+  }
+  const prevReady = window.onYouTubeIframeAPIReady;
+  window.onYouTubeIframeAPIReady = function () {
+    if (typeof prevReady === "function") prevReady();
+    ytLivePlayer = new YT.Player("bb-live-yt-frame", {
+      width: "100%",
+      height: "100%",
+      playerVars: {
+        autoplay: 1,
+        controls: 0,
+        disablekb: 1,
+        modestbranding: 1,
+        playsinline: 1,
+        rel: 0
+      },
+      events: {
+        onReady: () => { ytReady = true; },
+        onStateChange: (e) => {
+          // Mahnı bitəndə (0 = ENDED) avtomatik gizlət
+          if (e.data === 0) stopAndHideClip(true);
+        }
+      }
+    });
   };
-  var API = "https://www.googleapis.com/youtube/v3/";
-  var tab = "pop", $ = function (s) { return document.querySelector(s); };
-  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
-  var ls = function (k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || "[]"); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return []; } };
+}
 
-  var css = '#mq-ov,#mq-cf{position:fixed;inset:0;background:#0006;display:none;z-index:9998}#mq-cf{z-index:9999;align-items:center;justify-content:center}' +
-    '#mq-sh{background:#fff;color:#111;margin:16px 12px;border-radius:28px;padding:16px;height:calc(100% - 32px);display:flex;flex-direction:column;position:relative;font-family:system-ui,sans-serif}' +
-    '#mq-x{position:absolute;top:-12px;right:-6px;width:44px;height:44px;border-radius:50%;background:#fff;color:#7ab800;font-size:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px #0004;cursor:pointer}' +
-    '#mq-tb{display:flex;justify-content:center;gap:28px;font-size:30px}#mq-tb span{opacity:.35;cursor:pointer}#mq-tb .on{opacity:1}' +
-    '#mq-h{color:#aaa;margin:10px 0;font-weight:bold}#mq-q{display:none;background:#f0f0f0;border:0;border-radius:12px;padding:12px;font-size:16px;width:100%;margin-bottom:10px}' +
-    '#mq-g{overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;align-content:start}' +
-    '.mq-v{position:relative;font-size:14px;cursor:pointer;line-height:1.2}.mq-th{position:relative;padding-top:56%;background:#333 center/cover}' +
-    '.mq-d{position:absolute;right:4px;bottom:4px;background:#000a;color:#fff;font-size:12px;padding:1px 4px}' +
-    '.mq-st{position:absolute;top:4px;right:6px;font-size:24px;color:#fff;text-shadow:0 0 3px #000}.mq-st.f{color:#f5b800}.mq-e{grid-column:1/-1;text-align:center;padding:30px}' +
-    '#mq-dl{background:#fff;color:#111;border-radius:24px;padding:20px;width:88%;max-width:420px;text-align:center;font-family:system-ui,sans-serif}' +
-    '#mq-dl img{width:100%;border-radius:8px}#mq-dl button{border:2px solid #8cc63f;background:none;color:#8cc63f;border-radius:10px;padding:12px 18px;font-size:17px;margin:4px}#mq-dl .g{background:#8cc63f;color:#fff}' +
-    '#mq-pl{position:fixed;right:8px;bottom:80px;z-index:9997;background:#222;border-radius:12px;padding:6px;display:none}#mq-pl b{position:absolute;top:-10px;right:-6px;background:#fff;border-radius:50%;width:28px;height:28px;text-align:center;line-height:28px;cursor:pointer}';
-  var st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
-
-  var box = document.createElement("div");
-  box.innerHTML = '<div id="mq-ov"><div id="mq-sh"><div id="mq-x">✕</div><div id="mq-tb"><span data-t="pop" class="on">🔥</span><span data-t="fav">⭐</span><span data-t="his">🕒</span><span data-t="src">🔍</span></div><div id="mq-h"></div><input id="mq-q" placeholder="Mahnı adı yaz və Enter bas"><div id="mq-g"></div></div></div><div id="mq-cf"><div id="mq-dl"></div></div><div id="mq-pl"><b id="mq-px">✕</b><div id="mq-fr"></div></div>';
-  document.body.appendChild(box);
-
-  var TITLES = { pop: "Populyar bölməsindən musiqi seç", fav: "Sevimlilər", his: "Tarixçə", src: "Musiqi axtar" };
-  var items = {}; // id -> video
-
-  function dur(iso) {
-    var m = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(iso || ""); if (!m) return "";
-    var h = +m[1] || 0, mi = +m[2] || 0, s = +m[3] || 0, p = function (n) { return (n < 10 ? "0" : "") + n; };
-    return (h ? h + ":" : "") + p(mi) + ":" + p(s);
-  }
-  function api(path, params) {
-    params.key = CFG.API_KEY;
-    var u = API + path + "?" + Object.keys(params).map(function (k) { return k + "=" + encodeURIComponent(params[k]); }).join("&");
-    var c = sessionStorage.getItem(u); if (c) return Promise.resolve(JSON.parse(c));
-    return fetch(u).then(function (r) { return r.json(); }).then(function (j) {
-      if (j.error) throw new Error(j.error.message);
-      try { sessionStorage.setItem(u, JSON.stringify(j)); } catch (e) { }
-      return j;
-    });
-  }
-  function toVideos(j) {
-    return j.items.map(function (x) {
-      var t = x.snippet.thumbnails;
-      return { id: x.id, title: x.snippet.title, thumb: (t.medium || t.default).url, dur: dur(x.contentDetails && x.contentDetails.duration) };
-    });
-  }
-  function popular() {
-    return api("videos", { part: "snippet,contentDetails", chart: "mostPopular", videoCategoryId: 10, regionCode: CFG.REGION, maxResults: 12 }).then(toVideos);
-  }
-  function search(q) {
-    return api("search", { part: "snippet", type: "video", videoEmbeddable: "true", maxResults: 12, q: q }).then(function (j) {
-      var ids = j.items.map(function (x) { return x.id.videoId; }).join(",");
-      if (!ids) return [];
-      return api("videos", { part: "snippet,contentDetails", id: ids }).then(toVideos);
-    });
-  }
-
-  function render(list, empty) {
-    var g = $("#mq-g"), fav = ls("mq_fav").map(function (v) { return v.id; });
-    list.forEach(function (v) { items[v.id] = v; });
-    g.innerHTML = list.length ? list.map(function (v) {
-      var f = fav.indexOf(v.id) > -1;
-      return '<div class="mq-v" data-i="' + v.id + '"><div class="mq-th" style="background-image:url(' + esc(v.thumb) + ')"><span class="mq-d">' + esc(v.dur || "") + '</span></div><span class="mq-st' + (f ? " f" : "") + '" data-f="' + v.id + '">' + (f ? "★" : "☆") + "</span>" + esc(v.title) + "</div>";
-    }).join("") : '<div class="mq-e">' + (empty || "Boşdur") + "</div>";
-  }
-  function show() {
-    $("#mq-h").textContent = TITLES[tab];
-    $("#mq-q").style.display = tab === "src" ? "block" : "none";
-    if (tab === "fav") return render(ls("mq_fav"));
-    if (tab === "his") return render(ls("mq_his"));
-    if (tab === "src") return render([], "Mahnı adı yaz");
-    $("#mq-g").innerHTML = '<div class="mq-e">Yüklənir…</div>';
-    popular().then(function (l) { render(l); }).catch(err);
-  }
-  function err(e) { $("#mq-g").innerHTML = '<div class="mq-e">Xəta: ' + esc(e.message) + "</div>"; }
-
-  document.querySelectorAll("#mq-tb span").forEach(function (s) {
-    s.onclick = function () {
-      tab = s.dataset.t;
-      document.querySelectorAll("#mq-tb span").forEach(function (x) { x.classList.remove("on"); });
-      s.classList.add("on"); show();
-    };
+// 2. #musiqiBtn1 düyməsinə basanda pəncərəni aç
+const btn1 = document.getElementById("musiqiBtn1");
+if (btn1) {
+  btn1.addEventListener("click", (e) => {
+    e.preventDefault();
+    document.getElementById("bb-clip-modal").style.display = "flex";
+    switchTab("popular");
   });
-  $("#mq-q").onkeydown = function (e) {
-    if (e.key !== "Enter" || !this.value.trim()) return;
-    $("#mq-g").innerHTML = '<div class="mq-e">Axtarılır…</div>';
-    search(this.value.trim()).then(function (l) { render(l, "Hər hansı musiqi tapılmadı"); }).catch(err);
-  };
-  $("#mq-x").onclick = function () { $("#mq-ov").style.display = "none"; };
+}
 
-  $("#mq-g").onclick = function (e) {
-    var f = e.target.dataset.f;
-    if (f) {
-      var a = ls("mq_fav"), i = a.map(function (v) { return v.id; }).indexOf(f);
-      if (i > -1) a.splice(i, 1); else a.unshift(items[f]);
-      ls("mq_fav", a); if (tab === "fav") show(); else { e.target.classList.toggle("f"); e.target.textContent = i > -1 ? "☆" : "★"; }
+document.getElementById("bb-clip-close")?.addEventListener("click", () => {
+  document.getElementById("bb-clip-modal").style.display = "none";
+});
+
+document.querySelectorAll(".bb-tab-btn").forEach((b) => {
+  b.addEventListener("click", () => switchTab(b.dataset.tab));
+});
+
+function switchTab(tab) {
+  document.querySelectorAll(".bb-tab-btn").forEach((b) => {
+    b.style.opacity = b.dataset.tab === tab ? "1" : "0.45";
+  });
+  const titleEl = document.getElementById("bb-tab-title");
+  const searchBox = document.getElementById("bb-search-box");
+
+  if (tab === "search") {
+    titleEl.textContent = "Musiqi axtar (9 bonus)";
+    searchBox.style.display = "block";
+    const inp = document.getElementById("bb-yt-query");
+    setTimeout(() => inp.focus(), 80);
+    if (inp.value.trim()) searchYouTubeFree(inp.value.trim());
+    else renderGrid([]);
+  } else if (tab === "favorites") {
+    titleEl.textContent = "Sevimli musiqilər";
+    searchBox.style.display = "none";
+    renderGrid(JSON.parse(localStorage.getItem("bb_fav_clips") || "[]"));
+  } else if (tab === "history") {
+    titleEl.textContent = "Son qoşulan kliplər";
+    searchBox.style.display = "none";
+    renderGrid(JSON.parse(localStorage.getItem("bb_hist_clips") || "[]"));
+  } else {
+    titleEl.textContent = "Populyar bölməsindən musiqi seç (9 bonus)";
+    searchBox.style.display = "none";
+    renderGrid(POPULAR_CLIPS);
+  }
+}
+
+// 3. YouTube-da mahnı adı ilə canlı axtarış
+async function searchYouTubeFree(query) {
+  const grid = document.getElementById("bb-clip-grid");
+  grid.style.display = "block";
+  grid.innerHTML = `<div style="text-align:center; color:#888; padding:26px 0; font-size:14px;">Axtarılır...</div>`;
+
+  for (const base of YT_SEARCH_ENDPOINTS) {
+    try {
+      const res = await fetch(base + encodeURIComponent(query));
+      if (!res.ok) continue;
+      const data = await res.json();
+
+      if (Array.isArray(data.items)) {
+        const parsed = data.items
+          .filter(it => it.url && it.url.includes("v="))
+          .slice(0, 14)
+          .map(it => {
+            const vid = it.url.split("v=")[1].split("&")[0];
+            return {
+              videoId: vid,
+              title: it.title || "YouTube Musiqi",
+              thumb: it.thumbnail || `https://i.ytimg.com/vi/${vid}/mqdefault.jpg`
+            };
+          });
+        if (parsed.length) {
+          renderGrid(parsed);
+          return;
+        }
+      }
+
+      if (Array.isArray(data)) {
+        const parsed = data
+          .filter(it => it.videoId)
+          .slice(0, 14)
+          .map(it => ({
+            videoId: it.videoId,
+            title: it.title || "YouTube Musiqi",
+            thumb: `https://i.ytimg.com/vi/${it.videoId}/mqdefault.jpg`
+          }));
+        if (parsed.length) {
+          renderGrid(parsed);
+          return;
+        }
+      }
+    } catch (_) {}
+  }
+
+  const fallback = POPULAR_CLIPS.filter(c => c.title.toLowerCase().includes(query.toLowerCase()));
+  renderGrid(fallback);
+}
+
+let searchTimer = null;
+document.getElementById("bb-yt-query")?.addEventListener("input", (e) => {
+  clearTimeout(searchTimer);
+  const q = e.target.value.trim();
+  searchTimer = setTimeout(() => {
+    if (!q) renderGrid([]);
+    else searchYouTubeFree(q);
+  }, 400);
+});
+
+function toggleFavorite(clip, starBtn) {
+  let favs = JSON.parse(localStorage.getItem("bb_fav_clips") || "[]");
+  const exists = favs.some(x => x.videoId === clip.videoId);
+  if (exists) {
+    favs = favs.filter(x => x.videoId !== clip.videoId);
+    starBtn.textContent = "☆";
+  } else {
+    favs.unshift(clip);
+    starBtn.textContent = "⭐";
+  }
+  localStorage.setItem("bb_fav_clips", JSON.stringify(favs.slice(0, 30)));
+}
+
+function renderGrid(items) {
+  const grid = document.getElementById("bb-clip-grid");
+  grid.innerHTML = "";
+  if (!items.length) {
+    grid.style.display = "block";
+    grid.innerHTML = `<div style="text-align:center; color:#777; padding:28px 0; font-size:14px;">Hər hansı musiqi tapılmadı</div>`;
+    return;
+  }
+  const favs = JSON.parse(localStorage.getItem("bb_fav_clips") || "[]");
+  grid.style.display = "grid";
+
+  items.forEach((clip) => {
+    const isFav = favs.some(x => x.videoId === clip.videoId);
+    const card = document.createElement("div");
+    card.style.cssText = "border-radius:10px; overflow:hidden; background:#fafafa; border:1px solid #eee; cursor:pointer; position:relative;";
+    card.innerHTML = `
+      <div style="position:relative;">
+        <img src="${clip.thumb}" style="width:100%; height:78px; object-fit:cover; display:block;" />
+        <span class="bb-fav-star" style="position:absolute; top:4px; right:5px; font-size:16px; color:#fff; text-shadow:0 1px 4px #000;">${isFav ? "⭐" : "☆"}</span>
+        <span style="position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.75); color:#fff; font-size:10px; padding:1px 5px; border-radius:4px;">9 🔶</span>
+      </div>
+      <div style="padding:6px; font-size:11px; font-weight:600; color:#222; line-height:1.25; height:32px; overflow:hidden;">${clip.title}</div>
+    `;
+
+    card.querySelector(".bb-fav-star").addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      toggleFavorite(clip, ev.currentTarget);
+    });
+
+    card.addEventListener("click", () => startClipWithBonus(clip));
+    grid.appendChild(card);
+  });
+}
+
+// 4. 9 Bonus çıx (#urekSayi + Firebase) və bütün masada real-vaxt başlat
+async function startClipWithBonus(clip) {
+  const urekEl = document.getElementById("urekSayi");
+  const currentHearts = parseInt(urekEl?.textContent || "0", 10);
+
+  if (currentHearts < CLIP_COST) {
+    alert("Klip qoşmaq üçün minimum 9 bonus lazımdır!");
+    return;
+  }
+
+  // Ekranda bonus sayını dərhal 9 azalt
+  if (urekEl) urekEl.textContent = String(currentHearts - CLIP_COST);
+
+  // Tarixçəyə əlavə et
+  const hist = JSON.parse(localStorage.getItem("bb_hist_clips") || "[]");
+  localStorage.setItem("bb_hist_clips", JSON.stringify([clip, ...hist.filter(x => x.videoId !== clip.videoId)].slice(0, 20)));
+  document.getElementById("bb-clip-modal").style.display = "none";
+
+  const uid = localStorage.getItem("userId") || localStorage.getItem("uid") || fbModule?.auth?.currentUser?.uid || "guest";
+  const myAvatar =
+    document.querySelector("#masa .oyuncu[data-uid='" + uid + "'] img")?.src ||
+    localStorage.getItem("userAvatar") ||
+    localStorage.getItem("avatar") ||
+    "images/default-avatar.png";
+
+  const payload = {
+    clipInstanceId: Date.now() + "_" + uid,
+    videoId: clip.videoId,
+    title: clip.title,
+    djUid: uid,
+    djAvatar: myAvatar,
+    startedAt: Date.now()
+  };
+
+  // Modular Firebase (v9/v10) və ya Compat Firebase dəstəyi
+  try {
+    const db = fbModule.db || fbModule.firestore || window.db;
+    if (db) {
+      if (typeof db.collection === "function") {
+        if (uid !== "guest") {
+          const uDoc = await db.collection("users").doc(uid).get();
+          if (uDoc.exists) {
+            const d = uDoc.data();
+            const field = d.bonus !== undefined ? "bonus" : (d.hearts !== undefined ? "hearts" : "balance");
+            await db.collection("users").doc(uid).update({ [field]: Math.max(0, Number(d[field] || 0) - CLIP_COST) });
+          }
+        }
+        await db.collection("tables").doc(getTableId()).set({ activeClip: payload }, { merge: true });
+        return;
+      } else {
+        // Firebase Modular SDK (v9+)
+        const { doc, getDoc, updateDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+        if (uid !== "guest") {
+          const uRef = doc(db, "users", uid);
+          const uSnap = await getDoc(uRef);
+          if (uSnap.exists()) {
+            const d = uSnap.data();
+            const field = d.bonus !== undefined ? "bonus" : (d.hearts !== undefined ? "hearts" : "balance");
+            await updateDoc(uRef, { [field]: Math.max(0, Number(d[field] || 0) - CLIP_COST) });
+          }
+        }
+        await setDoc(doc(db, "tables", getTableId()), { activeClip: payload }, { merge: true });
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn("Firebase klip sinxron xətası:", err);
+  }
+
+  // Ehtiyat lokal başlatma
+  playClipOnWidget(payload);
+}
+
+// 5. Masadakı bütün oyunçular üçün real-vaxt dinləmə
+async function attachTableListener() {
+  const db = fbModule.db || fbModule.firestore || window.db;
+  if (!db) {
+    setTimeout(attachTableListener, 600);
+    return;
+  }
+
+  const handleClipSnap = (data) => {
+    const activeClip = data?.activeClip;
+    if (!activeClip || !activeClip.videoId) {
+      stopAndHideClip(false);
       return;
     }
-    var v = e.target.closest(".mq-v"); if (v) ask(items[v.dataset.i]);
+    if (currentPlayingId === activeClip.clipInstanceId) return;
+    currentPlayingId = activeClip.clipInstanceId;
+    playClipOnWidget(activeClip);
   };
 
-  function ask(v) {
-    $("#mq-dl").innerHTML = "<h3 style='color:#aaa'>Musiqini ifa etdir</h3><img src='" + esc(v.thumb) + "'><p>❤️ <b>" + CFG.COST + "</b> üçün \"" + esc(v.title) + "\" musiqi hər kəs üçün ifa edilsin?</p><button id='mq-no'>Ləğv et</button><button class='g' id='mq-ok'>İfa et</button>";
-    $("#mq-cf").style.display = "flex";
-    $("#mq-no").onclick = function () { $("#mq-cf").style.display = "none"; };
-    $("#mq-ok").onclick = function () {
-      $("#mq-cf").style.display = "none"; $("#mq-ov").style.display = "none";
-      var h = ls("mq_his").filter(function (x) { return x.id !== v.id; }); h.unshift(v); ls("mq_his", h.slice(0, 30));
-      CFG.onPlay(v);
-    };
+  if (typeof db.collection === "function") {
+    db.collection("tables").doc(getTableId()).onSnapshot((snap) => {
+      if (snap.exists) handleClipSnap(snap.data());
+    });
+  } else {
+    const { doc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    onSnapshot(doc(db, "tables", getTableId()), (snap) => {
+      if (snap.exists()) handleClipSnap(snap.data());
+    });
   }
+}
 
-  $("#mq-px").onclick = function () { $("#mq-fr").innerHTML = ""; $("#mq-pl").style.display = "none"; };
+function playClipOnWidget(data) {
+  const widget = document.getElementById("bb-live-clip-widget");
+  document.getElementById("bb-dj-avatar").src = data.djAvatar || "images/default-avatar.png";
+  widget.style.display = "block";
 
-  window.MusiqiPanel = {
-    cfg: CFG,
-    open: function () { $("#mq-ov").style.display = "block"; show(); },
-    play: function (v) {
-      $("#mq-fr").innerHTML = '<iframe width="240" height="135" src="https://www.youtube.com/embed/' + encodeURIComponent(v.id) + '?autoplay=1&playsinline=1" allow="autoplay; encrypted-media" frameborder="0"></iframe>';
-      $("#mq-pl").style.display = "block";
-    }
+  const elapsedSec = Math.max(0, Math.floor((Date.now() - Number(data.startedAt || Date.now())) / 1000));
+
+  const run = () => {
+    ytLivePlayer.loadVideoById({ videoId: data.videoId, startSeconds: elapsedSec });
+    const vol = Number(document.getElementById("bb-volume-slider").value || 85);
+    ytLivePlayer.unMute();
+    ytLivePlayer.setVolume(vol);
+    ytLivePlayer.playVideo();
+    startCircularRing();
   };
-})();
+
+  if (ytReady && ytLivePlayer && typeof ytLivePlayer.loadVideoById === "function") {
+    run();
+  } else {
+    const wait = setInterval(() => {
+      if (ytReady && ytLivePlayer && typeof ytLivePlayer.loadVideoById === "function") {
+        clearInterval(wait);
+        run();
+      }
+    }, 200);
+  }
+}
+
+// Profil şəklinin kənarındakı yaşıl dairəvi müddət halqası
+function startCircularRing() {
+  clearInterval(progressInterval);
+  const circle = document.getElementById("bb-ring-progress");
+  const circumference = 2 * Math.PI * 33;
+
+  progressInterval = setInterval(() => {
+    if (!ytLivePlayer || typeof ytLivePlayer.getCurrentTime !== "function") return;
+    const cur = ytLivePlayer.getCurrentTime() || 0;
+    const dur = ytLivePlayer.getDuration() || 0;
+
+    if (dur > 0) {
+      const ratio = Math.min(1, cur / dur);
+      circle.style.strokeDashoffset = String(circumference * (1 - ratio));
+      if (cur >= dur - 0.5) {
+        stopAndHideClip(true);
+      }
+    }
+  }, 250);
+}
+
+async function stopAndHideClip(clearDb) {
+  clearInterval(progressInterval);
+  currentPlayingId = null;
+  if (ytLivePlayer && typeof ytLivePlayer.stopVideo === "function") {
+    ytLivePlayer.stopVideo();
+  }
+  const w = document.getElementById("bb-live-clip-widget");
+  if (w) w.style.display = "none";
+
+  if (clearDb) {
+    try {
+      const db = fbModule.db || fbModule.firestore || window.db;
+      if (db) {
+        if (typeof db.collection === "function") {
+          await db.collection("tables").doc(getTableId()).set({ activeClip: null }, { merge: true });
+        } else {
+          const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+          await setDoc(doc(db, "tables", getTableId()), { activeClip: null }, { merge: true });
+        }
+      }
+    } catch (_) {}
+  }
+}
+
+// 6. Kvadrat düymə: 1-ci klik -> 1x, 2-ci klik -> 2x, 3-cü klik -> orijinal
+document.getElementById("bb-zoom-clip-btn")?.addEventListener("click", () => {
+  zoomLevel = (zoomLevel + 1) % 3;
+  const widget = document.getElementById("bb-live-clip-widget");
+  const topBox = document.getElementById("bb-live-top");
+
+  if (zoomLevel === 0) {
+    widget.style.width = "265px";
+    topBox.style.height = "96px";
+  } else if (zoomLevel === 1) {
+    widget.style.width = "315px";
+    topBox.style.height = "135px";
+  } else {
+    widget.style.width = "94vw";
+    topBox.style.height = "185px";
+  }
+});
+
+// 7. Səs slideri və bağlama (mute)
+const volSlider = document.getElementById("bb-volume-slider");
+const muteBtn = document.getElementById("bb-mute-clip-btn");
+
+volSlider?.addEventListener("input", () => {
+  const v = Number(volSlider.value);
+  if (!ytLivePlayer) return;
+  if (v === 0) {
+    ytLivePlayer.mute();
+    muteBtn.textContent = "🔇";
+  } else {
+    ytLivePlayer.unMute();
+    ytLivePlayer.setVolume(v);
+    muteBtn.textContent = "🔊";
+  }
+});
+
+muteBtn?.addEventListener("click", () => {
+  if (!ytLivePlayer) return;
+  if (ytLivePlayer.isMuted()) {
+    ytLivePlayer.unMute();
+    const v = Number(volSlider.value) || 80;
+    volSlider.value = v;
+    ytLivePlayer.setVolume(v);
+    muteBtn.textContent = "🔊";
+  } else {
+    ytLivePlayer.mute();
+    muteBtn.textContent = "🔇";
+  }
+});
+
+initYouTubeAPI();
+attachTableListener();
