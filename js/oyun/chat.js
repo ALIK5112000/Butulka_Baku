@@ -175,4 +175,13 @@ inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefau
 document.getElementById("smayBtn").onclick = () => panel.classList.toggle("ac");
 
 onValue(query(ref(rtdb, yol), limitToFirst(1)), (s) => { if (!s.exists()) qutu.innerHTML = ""; });
-setTimeout(() => { const b = document.getElementById("musiqiBtn1"); if (b) b.onclick = () => window.MusiqiPanel.open(); }, 500);
+
+// Musiqi: klip düyməsi paneli açır, ikonlar yeni şəkillərlə əvəz olunur
+setTimeout(() => {
+  const b1 = document.getElementById("musiqiBtn1");
+  if (b1) b1.onclick = () => window.MusiqiPanel && window.MusiqiPanel.open();
+  [["musiqiBtn1", "klip-ikon.png"], ["musiqiBtn2", "musiqi-ikon.png"]].forEach(([id, f]) => {
+    const b = document.getElementById(id);
+    if (b) b.innerHTML = '<img src="images/' + f + '" style="width:36px;height:36px;object-fit:contain">';
+  });
+}, 500);
