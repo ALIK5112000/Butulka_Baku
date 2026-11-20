@@ -47,8 +47,8 @@ export async function girisIcazesi(n) {
 
 async function git(n) {
   sessionStorage.setItem("sonMasa", MASA_NOMRESI);
-  // Köhnə masadakı yerini dərhal boşalt (iki masada eyni anda görünməsin)
-  try {
+  // Köhnə masadakı yerini boşalt (ən çox 1,5 san gözlə, sonra hər halda keç)
+  const temizle = (async () => {
     const yolu = `masalar/${MASA_NOMRESI}/oturacaqlar`;
     const hamisi = (await get(ref(rtdb, yolu))).val() || {};
     await Promise.all(Object.keys(hamisi)
@@ -56,7 +56,8 @@ async function git(n) {
       .map((k) => remove(ref(rtdb, `${yolu}/${k}`))));
     await remove(ref(rtdb, `masalar/${MASA_NOMRESI}/opus/${cari.docId}`));
     await remove(ref(rtdb, "prezans/" + cari.docId));
-  } catch (e) {}
+  })().catch(() => {});
+  await Promise.race([temizle, new Promise((r) => setTimeout(r, 1500))]);
   location.href = "oyun.html?masa=" + n;
 }
 
