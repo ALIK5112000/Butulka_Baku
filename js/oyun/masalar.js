@@ -9,7 +9,9 @@ document.head.insertAdjacentHTML("beforeend", '<link rel="stylesheet" href="css/
 
 const cari = cariOyuncu() || {};
 const QIYMET = 5000, GUN30 = 30 * 86400000, ADMIN = "511";
-const $ = (id) => document.getElementById(id);
+const xetaGoster = (e) => toast("Xəta: " + ((e && (e.message || (e.reason && e.reason.message))) || e));
+window.addEventListener("unhandledrejection", xetaGoster);
+window.addEventListener("error", xetaGoster);
 const COIN = '<svg class="coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#f5b800"/><circle cx="12" cy="12" r="8" fill="#ffd84d" stroke="#d99a00" stroke-width="1.5"/><path d="M12 6l1.8 3.8 4.2.5-3.1 2.9.8 4.1L12 15.2 8.3 17.3l.8-4.1L6 10.3l4.2-.5z" fill="#d99a00"/></svg>';
 const IK_O = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#cfcfcf"/><path d="M5 11C4 4 20 4 19 11C16 7 8 7 5 11Z" fill="#8c8c8c"/><circle cx="9" cy="13.5" r="1.2" fill="#fff"/><circle cx="15" cy="13.5" r="1.2" fill="#fff"/></svg>';
 const IK_Q = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#cfcfcf"/><path d="M4 18C2 6 8 3 12 3C16 3 22 6 20 18C19 12 17 8 12 8C7 8 5 12 4 18Z" fill="#8c8c8c"/><circle cx="9" cy="13.5" r="1.2" fill="#fff"/><circle cx="15" cy="13.5" r="1.2" fill="#fff"/></svg>';
