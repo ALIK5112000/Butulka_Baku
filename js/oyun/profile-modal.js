@@ -1,19 +1,13 @@
 import { fsdb } from "../core/firebase.js";
 import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-/* Profildəki sahə adları fərqlidirsə, yalnız bu siyahıları dəyiş (soldakı ad ilk tapılan götürülür) */
+/* users sənədindəki real sahə adları (profil.html-dən) */
 const SAHE = {
-  ad:     ["ad", "name", "username", "nick", "displayName"],
-  yas:    ["yas", "yaş", "age"],
-  sheher: ["seher", "şəhər", "city", "yer", "yasayis", "location"],
-  sekil:  ["sekil", "foto", "photo", "photoURL", "avatar", "image"],
-  vip:    ["vip", "isVip"],
-  opuc:   ["opuc", "opucler", "kisses"],
-  musiqi: ["musiqi", "music"],
-  jeton:  ["jeton", "jetonlar", "coins", "coin"],
-  urek:   ["hearts", "urek", "urekler"]
+  ad: ["username"], yas: ["age"], olke: ["country"], sheher: ["city"],
+  sekil: ["avatar"], status: ["status"], urek: ["hearts"], jeton: ["jetons"], baxish: ["views"]
 };
 const pick = (d, keys) => { for (const k of keys) if (d[k] !== undefined && d[k] !== null && d[k] !== "") return d[k]; return null; };
+const vipMi = d => d.role === "admin" || (d.vip && (!d.vipUntil || Number(d.vipUntil) > Date.now()));
 const fmt = n => (Number(n) || 0).toLocaleString("ru-RU");
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const NOPHOTO = "images/avatar/nophoto.svg";
@@ -33,9 +27,10 @@ ov.addEventListener("click", e => { if (e.target === ov) bagla(); });
 function ciz(d) {
   const ad = pick(d, SAHE.ad) || "Oyunçu";
   const yas = pick(d, SAHE.yas);
-  const sheher = pick(d, SAHE.sheher);
+  const sheher = [pick(d, SAHE.olke), pick(d, SAHE.sheher)].filter(Boolean).join(", ");
   const sekil = pick(d, SAHE.sekil) || NOPHOTO;
-  const vip = pick(d, SAHE.vip);
+  const vip = vipMi(d);
+  const status = pick(d, SAHE.status);
 
   ov.innerHTML =
     '<div class="pk-card">' +
@@ -44,13 +39,13 @@ function ciz(d) {
       '<div class="pk-photo"><img src="' + esc(sekil) + '" alt="" onerror="this.src=\'' + NOPHOTO + '\'">' +
         '<div class="pk-cap">' + esc(ad) + (yas ? ", " + esc(yas) : "") + (sheher ? "<small>" + esc(sheher) + "</small>" : "") + "</div></div>" +
       '<div class="pk-stats"><div>' +
-        '<div class="pk-row pk-k"><span class="ic">💋</span><b>' + fmt(pick(d, SAHE.opuc)) + "</b></div>" +
-        '<div class="pk-row pk-m"><span class="ic">🎵</span><b>' + fmt(pick(d, SAHE.musiqi)) + "</b></div>" +
-        '<div class="pk-row pk-c"><span class="ic">😊</span><b>' + fmt(pick(d, SAHE.jeton)) + "</b></div>" +
+        '<div class="pk-row pk-k"><span class="ic">❤️</span><b>' + fmt(pick(d, SAHE.urek)) + "</b></div>" +
+        '<div class="pk-row pk-m"><span class="ic">👁️</span><b>' + fmt(pick(d, SAHE.baxish)) + "</b></div>" +
+        '<div class="pk-row pk-c"><span class="ic">🪙</span><b>' + fmt(pick(d, SAHE.jeton)) + "</b></div>" +
       '</div><div class="pk-trophy">🏆</div></div>' +
       '<div class="pk-user"><img class="pk-ava" src="' + esc(sekil) + '" alt="" onerror="this.src=\'' + NOPHOTO + '\'">' +
         '<div><div class="pk-name">' + esc(ad) + "</div>" +
-        '<div class="pk-heart">❤️ ' + fmt(pick(d, SAHE.urek)) + "</div>" +
+        '<div class="pk-heart">' + esc(status || "") + "</div>" +
         '<button class="pk-follow">Tərk et</button></div></div>' +
       '<div class="pk-actions">' +
         '<button class="pk-btn" style="background:#f0553f">🛡️</button>' +
