@@ -12,6 +12,42 @@ const inp = document.getElementById("mesajInput");
 const panel = document.getElementById("smayPanel");
 let men = null;
 
+// Real vaxtda musiqi qoşulu deyilsə də oyunçuların düymələri görməsi üçün panel idarəsi
+let aktivMusiqi = null; // sonrakı mərhələdə real vaxt (RTDB/Firestore) musiqi obyektinə bağlanacaq
+
+function musiqiPanelYenile() {
+  const mPanel = document.getElementById("musiqiPanel");
+  if (!mPanel) return;
+  mPanel.style.display = "flex";
+  mPanel.classList.toggle("aktiv-calir", Boolean(aktivMusiqi));
+}
+
+function musiqiDüymeleriniBagla() {
+  musiqiPanelYenile();
+  const b1 = document.getElementById("musiqiBtn1");
+  const b2 = document.getElementById("musiqiBtn2");
+  if (b1) {
+    b1.onclick = () => toast(
+      aktivMusiqi
+        ? "Musiqi qoşuludur"
+        : "Hazırda masada musiqi qoşulu deyil — tezliklə qoşma paneli aktiv olacaq"
+    );
+  }
+  if (b2) {
+    b2.onclick = () => toast(
+      aktivMusiqi
+        ? "Musiqi siyahısı"
+        : "Musiqi siyahısı tezliklə əlavə olunacaq"
+    );
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", musiqiDüymeleriniBagla);
+} else {
+  musiqiDüymeleriniBagla();
+}
+
 if (cari && cari.docId) {
   onSnapshot(doc(fsdb, "users", cari.docId), (s) => {
     men = s.data();
