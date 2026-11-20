@@ -13,6 +13,8 @@
     sounds: { tick: '', spin: '', win: '', click: '' }, // məs: 'sesler/tick.mp3'
   };
 
+  Object.assign(CARX_CONFIG, window.CARX_OPTIONS || {});
+
   const SEG = [ // sektorlar: tip + dəyər
     ['heart',3],['dice',3],['heart',25],['dice',1],['heart',100],['heart',3],['dice',3],['heart',10],
     ['heart',5],['dice',1],['heart',1000],['heart',3],['dice',3],['heart',25],['heart',5],['dice',1]
@@ -164,6 +166,12 @@
   }
 
   function bind() {
+    if (CARX_CONFIG.trigger) {   // seçici verilibsə: ikona toxunmadan, yalnız klikə qulaq as
+      document.addEventListener('click', e => {
+        if (e.target.closest && e.target.closest(CARX_CONFIG.trigger)) { e.stopPropagation(); e.preventDefault(); open(); }
+      }, true);
+      return;
+    }
     try {
       let t = findTarget();
       if (t) {
@@ -181,7 +189,7 @@
     } catch (err) { console.error('carx xətası:', err); }
   }
   // oyun paneli gec yaranırsa üçün bir az gözlə
-  const go = () => { bind(); setTimeout(() => { if (!document.getElementById('carxBtn')) bind(); }, 1500); };
+  const go = () => { bind(); if (!CARX_CONFIG.trigger) setTimeout(() => { if (!document.getElementById('carxBtn')) bind(); }, 1500); };
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', go) : go();
   window.openCarx = open;
 })();
