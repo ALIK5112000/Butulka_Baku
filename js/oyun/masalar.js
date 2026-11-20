@@ -83,7 +83,7 @@ const gozle = setInterval(() => {
 }, 200);
 yBtn.onclick = () => { if (sayac > 0) return; deyisModal(); };
 // ---------- Masanı dəyiş ----------
-async function deyisModal() {
+export async function deyisModal() {
   ac(`<div class="mk"><button class="mx" id="mX">✕</button><h2>Masanı dəyiş</h2>
     <div class="et">🔍 Masa axtar</div>
     <div class="arama"><input id="mAra" type="text" inputmode="numeric" placeholder="Masa nömrəsi, məs. 666"><button class="btn-get" id="mGet">Get</button></div>
