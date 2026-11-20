@@ -175,3 +175,4 @@ inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefau
 document.getElementById("smayBtn").onclick = () => panel.classList.toggle("ac");
 
 onValue(query(ref(rtdb, yol), limitToFirst(1)), (s) => { if (!s.exists()) qutu.innerHTML = ""; });
+setTimeout(() => { const b = document.getElementById("musiqiBtn1"); if (b) b.onclick = () => window.MusiqiPanel.open(); }, 500);
