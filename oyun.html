@@ -55,6 +55,14 @@
 #ustPanel .urek path{fill:#e8590c;stroke:#e9e2dc;stroke-width:1.9}
 #urekSayi{color:#e9e2dc}
 
+.hs-toast{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:10001;
+  background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.hs-toast.show{opacity:1}
+.hs-fly{position:fixed;z-index:10002;width:5.4vw;height:5.4vw;pointer-events:none;will-change:transform,opacity}
+.hs-fly svg{width:100%;height:100%;filter:drop-shadow(0 .3vw .5vw rgba(0,0,0,.3))}
+.hs-btn:disabled{opacity:.6}
+
     </style>
 </head>
 <body>
@@ -202,66 +210,166 @@ window.CARX_OPTIONS = {
 </script>
 
 <!-- ÜRƏK MAĞAZASI PƏNCƏRƏSİ -->
-<script>
-(function () {
-  const H = '<svg class="hs-h" viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="#f0541a"/></svg>';
-  const PACKS = [
-    { top: 'PREMIUM<br>İCAZƏNAMƏ', gold: 1, icon: '🎟️', btn: 'Təfərrüatlar', color: 'blue' },
-    { top: '<b>VIP</b><small>STATUS</small>', gold: 1, icon: '👑', btn: 'Təfərrüatlar', color: 'blue' },
-    { hearts: 14000, bonus: 40, icon: '🧰', btn: '10000', color: 'green', tag: ['Ən yaxşı təklif', 'pink'] },
-    { hearts: 6500, bonus: 30, icon: '🛢️', btn: '5000', color: 'green' },
-    { hearts: 1200, bonus: 20, icon: '🏺', btn: '1000', color: 'green', tag: ['Ən yaxşı', 'purple'] },
-    { hearts: 575, bonus: 15, icon: '👝', btn: '500', color: 'green' },
-    { hearts: 270, bonus: 8, icon: '🎁', btn: '250', color: 'green' },
-    { hearts: 300, icon: '❤️', btn: 'Götür', color: 'cyan', tag: ['Pulsuz', 'purple'], free: true }
-  ];
+<script type="module">
+import { fsdb } from "./js/core/firebase.js";
+import { cariOyuncu } from "./js/oyun/yardimci.js";
+import { doc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-  const ov = document.createElement('div');
-  ov.className = 'hs-overlay';
-  ov.innerHTML = '<div class="hs-modal"><button class="hs-close"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#ef5f60" stroke-width="3.2" stroke-linecap="round"/></svg></button><div class="hs-title">Ürəklər satın al</div><div class="hs-scroll"><div class="hs-grid"></div><div class="hs-sellers"><span class="tri">▶</span><span>💬</span><span>Satıcılardan al</span><i>(1)</i></div></div></div>';
-  const grid = ov.querySelector('.hs-grid');
+/* Profildəki jeton sahəsinin adı. Bilinmirsə null saxla, aşağıdakı adaylardan özü tapır.
+   Dəqiq adı bilirsənsə yaz, məs.: const JETON_ALANI = "coins"; */
+const JETON_ALANI = null;
+const ADAYLAR = ["jeton", "jetonlar", "jetons", "coins", "coin", "tokens", "token"];
 
-  PACKS.forEach(p => {
-    const c = document.createElement('div');
-    c.className = 'hs-card';
-    const top = p.hearts
-      ? '<div class="hs-top"><div class="row">' + H + '<span>' + p.hearts + '</span></div>' + (p.bonus ? '<small>' + p.bonus + '% BONUS</small>' : '') + '</div>'
-      : '<div class="hs-top gold">' + p.top + '</div>';
-    c.innerHTML = (p.tag ? '<div class="hs-tag ' + p.tag[1] + '">' + p.tag[0] + '</div>' : '') + top +
-      '<div class="hs-img"><span>' + p.icon + '</span></div><button class="hs-btn ' + p.color + '">' + p.btn + '</button>';
-    // satın alma / pulsuz götürmə məntiqi sonra bu hadisəyə bağlanacaq
-    c.querySelector('button').onclick = () => window.dispatchEvent(new CustomEvent('hearts:buy', { detail: p }));
-    grid.appendChild(c);
+const H = '<svg class="hs-h" viewBox="0 0 24 24"><path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z" fill="#f0541a"/></svg>';
+const PACKS = [
+  { top: 'PREMIUM<br>İCAZƏNAMƏ', icon: '🎟️', btn: 'Təfərrüatlar', color: 'blue' },
+  { top: '<b>VIP</b><small>STATUS</small>', icon: '👑', btn: 'Təfərrüatlar', color: 'blue' },
+  { hearts: 14000, bonus: 40, cost: 10000, icon: '🧰', color: 'green', tag: ['Ən yaxşı təklif', 'pink'] },
+  { hearts: 6500, bonus: 30, cost: 5000, icon: '🛢️', color: 'green' },
+  { hearts: 1200, bonus: 20, cost: 1000, icon: '🏺', color: 'green', tag: ['Ən yaxşı', 'purple'] },
+  { hearts: 575, bonus: 15, cost: 500, icon: '👝', color: 'green' },
+  { hearts: 270, bonus: 8, cost: 250, icon: '🎁', color: 'green' },
+  { hearts: 300, icon: '❤️', btn: 'Götür', color: 'cyan', tag: ['Pulsuz', 'purple'], free: true }
+];
+
+const ov = document.createElement('div');
+ov.className = 'hs-overlay';
+ov.innerHTML = '<div class="hs-modal"><button class="hs-close"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#ef5f60" stroke-width="3.2" stroke-linecap="round"/></svg></button><div class="hs-title">Ürəklər satın al</div><div class="hs-scroll"><div class="hs-grid"></div><div class="hs-sellers"><span class="tri">▶</span><span>💬</span><span>Satıcılardan al</span><i>(1)</i></div></div></div>';
+const grid = ov.querySelector('.hs-grid');
+const toastEl = document.createElement('div');
+toastEl.className = 'hs-toast';
+
+let toastTimer = null;
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
+}
+
+PACKS.forEach(p => {
+  const c = document.createElement('div');
+  c.className = 'hs-card';
+  const top = p.hearts
+    ? '<div class="hs-top"><div class="row">' + H + '<span>' + p.hearts + '</span></div>' + (p.bonus ? '<small>' + p.bonus + '% BONUS</small>' : '') + '</div>'
+    : '<div class="hs-top gold">' + p.top + '</div>';
+  c.innerHTML = (p.tag ? '<div class="hs-tag ' + p.tag[1] + '">' + p.tag[0] + '</div>' : '') + top +
+    '<div class="hs-img"><span>' + p.icon + '</span></div><button class="hs-btn ' + p.color + '">' + (p.cost || p.btn) + '</button>';
+  const b = c.querySelector('button');
+  if (p.cost) b.onclick = () => al(p, b);
+  grid.appendChild(c);
+});
+
+let openedAt = 0;
+const open = () => { openedAt = Date.now(); ov.classList.add('open'); };
+const close = () => ov.classList.remove('open');
+ov.querySelector('.hs-close').onclick = close;
+ov.addEventListener('click', e => { if (e.target === ov && Date.now() - openedAt > 500) close(); });
+document.body.appendChild(ov);
+document.body.appendChild(toastEl);
+
+/* ---- ❤️-ə toxunanda aç (üstünü qat örtsə belə) ---- */
+function inside(el, x, y) {
+  if (!el) return false;
+  const r = el.getBoundingClientRect();
+  if (!r.width || !r.height) return false;
+  return x >= r.left - 10 && x <= r.right + 10 && y >= r.top - 10 && y <= r.bottom + 10;
+}
+let lastOpen = 0;
+window.addEventListener('click', e => {
+  if (ov.classList.contains('open') || Date.now() - lastOpen < 400) return;
+  if (inside(document.getElementById('urekBtn'), e.clientX, e.clientY) || inside(document.getElementById('urekSayi'), e.clientX, e.clientY)) {
+    lastOpen = Date.now();
+    open();
+  }
+}, true);
+
+/* ---- Satın alma: jeton -> bonus ürək ---- */
+function jetonAlani(p) {
+  if (JETON_ALANI) return JETON_ALANI;
+  for (const k of ADAYLAR) if (p[k] !== undefined && p[k] !== null && isFinite(Number(p[k]))) return k;
+  return null;
+}
+function yaz(n) {
+  if (window.urekYaz) window.urekYaz(n);
+  else document.getElementById('urekSayi').textContent = n;
+}
+function pulse() {
+  const h = document.getElementById('urekBtn');
+  if (h && h.animate) h.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.3)' }, { transform: 'scale(1)' }], { duration: 240 });
+}
+function uc(sx, sy, evvel, qazanc, bitdi) {
+  const hb = document.getElementById('urekBtn').getBoundingClientRect();
+  const tx = hb.left + hb.width / 2, ty = hb.top + hb.height / 2;
+  const S = innerWidth * 0.054, N = 8;
+  let gelen = 0;
+  for (let i = 0; i < N; i++) {
+    const h = document.createElement('div');
+    h.className = 'hs-fly';
+    h.innerHTML = H.replace('class="hs-h"', '');
+    h.style.left = (sx - S / 2) + 'px';
+    h.style.top = (sy - S / 2) + 'px';
+    document.body.appendChild(h);
+    const dx = tx - sx, dy = ty - sy;
+    const ox = (Math.random() - 0.5) * innerWidth * 0.25, oy = -Math.random() * innerWidth * 0.12;
+    const a = h.animate([
+      { transform: 'translate(0,0) scale(.6)', opacity: 0 },
+      { transform: 'translate(' + (dx * 0.45 + ox) + 'px,' + (dy * 0.45 + oy) + 'px) scale(1)', opacity: 1, offset: 0.45 },
+      { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.55)', opacity: 1 }
+    ], { duration: 850, delay: i * 70, easing: 'ease-in', fill: 'both' });
+    a.onfinish = () => {
+      h.remove();
+      gelen++;
+      yaz(Math.round(evvel + qazanc * gelen / N));
+      pulse();
+      if (gelen === N) bitdi();
+    };
+  }
+}
+
+let mesgul = false;
+async function al(p, btn) {
+  if (mesgul) return;
+  const cari = cariOyuncu();
+  if (!cari || !cari.docId) { toast('Hesaba giriş edilməyib'); return; }
+  mesgul = true;
+  const br = btn.getBoundingClientRect();
+  const sx = br.left + br.width / 2, sy = br.top + br.height / 2;
+  const evvel = parseInt(document.getElementById('urekSayi').textContent) || 0;
+  window.__urekHold = true;
+  const sigorta = setTimeout(() => { window.__urekHold = false; }, 8000);
+  const buraxdir = () => {
+    clearTimeout(sigorta);
+    window.__urekHold = false;
+    if (window.__urekSon != null) yaz(window.__urekSon);
+  };
+  try {
+    const ref = doc(fsdb, 'users', cari.docId);
+    await runTransaction(fsdb, async tx => {
+      const s = await tx.get(ref);
+      const d = s.data() || {};
+      const sahe = jetonAlani(d);
+      if (!sahe) { const e = new Error('ALAN'); e.acarlar = Object.keys(d).join(', '); throw e; }
+      const jeton = Number(d[sahe]) || 0;
+      if (jeton < p.cost) throw new Error('YETMIR');
+      tx.update(ref, { [sahe]: jeton - p.cost, hearts: (Number(d.hearts) || 0) + p.hearts });
+    });
+  } catch (e) {
+    buraxdir();
+    mesgul = false;
+    if (e.message === 'YETMIR') toast('Kifayət qədər jetonunuz yoxdur');
+    else if (e.message === 'ALAN') toast('Jeton sahəsi tapılmadı. Sahələr: ' + e.acarlar);
+    else { console.error(e); toast('Xəta baş verdi, yenidən cəhd edin'); }
+    return;
+  }
+  close();
+  uc(sx, sy, evvel, p.hearts, () => {
+    buraxdir();
+    mesgul = false;
   });
+}
 
-  let openedAt = 0;
-  const open = () => { openedAt = Date.now(); ov.classList.add('open'); };
-  const close = () => ov.classList.remove('open');
-  ov.querySelector('.hs-close').onclick = close;
-  ov.addEventListener('click', e => { if (e.target === ov && Date.now() - openedAt > 500) close(); });
-  document.body.appendChild(ov);
-
-  // Üst panelin üstünü hansısa qat örtsə belə işləsin deyə: toxunuşun koordinatına baxırıq
-  function inside(el, x, y) {
-    if (!el) return false;
-    var r = el.getBoundingClientRect();
-    if (!r.width || !r.height) return false;
-    return x >= r.left - 10 && x <= r.right + 10 && y >= r.top - 10 && y <= r.bottom + 10;
-  }
-  var lastOpen = 0;
-  function check(e) {
-    if (ov.classList.contains('open')) return;
-    if (Date.now() - lastOpen < 400) return;
-    var x = e.clientX, y = e.clientY;
-    if (inside(document.getElementById('urekBtn'), x, y) || inside(document.getElementById('urekSayi'), x, y)) {
-      lastOpen = Date.now();
-      open();
-    }
-  }
-  window.addEventListener('click', check, true);
-
-  window.HeartShop = { open, close };
-})();
+window.HeartShop = { open, close };
 
 </script>
 
