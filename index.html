@@ -196,7 +196,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Əgər istifadəçi artıq giriş edibsə birbaşa profilə at
         if (localStorage.getItem("currentUser")) {
             window.location.href = "profil.html";
         }
@@ -250,7 +249,6 @@
 
             btn.disabled = true;
             try {
-                // Adın artıq tutulub-tutulmadığını yoxla
                 const nameCheck = await getDocs(query(collection(db, "users"), where("username", "==", username)));
                 if (!nameCheck.empty) {
                     alert("Bu istifadəçi adı artıq mövcuddur!");
@@ -297,6 +295,7 @@
             }
         };
 
+        // Real vaxtda nik, rəqəmli ID və ya söz/xüsusi ID (məs: Admin) ilə giriş
         window.loginUser = async function() {
             const userInput = document.getElementById('loginUser').value.trim();
             const passwordInput = document.getElementById('loginPass').value;
@@ -309,29 +308,42 @@
 
             btn.disabled = true;
             try {
-                let querySnapshot = await getDocs(query(collection(db, "users"), where("username", "==", userInput)));
-                
-                // Əgər adla tapılmadısa və rəqəmdirsə, ID ilə axtar
-                if (querySnapshot.empty && !isNaN(userInput)) {
-                    querySnapshot = await getDocs(query(collection(db, "users"), where("id", "==", Number(userInput))));
-                }
-                
-                let found = false;
-                querySnapshot.forEach((docSnap) => {
+                const qLower = userInput.toLowerCase();
+                const allSnap = await getDocs(collection(db, "users"));
+                let matchedDoc = null;
+
+                allSnap.forEach((docSnap) => {
+                    if (matchedDoc) return;
                     const data = docSnap.data();
-                    if(data.password === passwordInput) {
-                        found = true;
-                        localStorage.setItem("currentUser", JSON.stringify({
-                            docId: docSnap.id,
-                            id: data.id,
-                            username: data.username,
-                            sessionVersion: data.sessionVersion || 1
-                        }));
-                        window.location.href = "profil.html";
+                    const uname = String(data.username || "").trim().toLowerCase();
+                    const uid = String(data.id ?? "").trim().toLowerCase();
+                    const ucustom = String(data.customId ?? "").trim().toLowerCase();
+
+                    const matchesIdentifier =
+                        uname === qLower ||
+                        uid === qLower ||
+                        (ucustom && ucustom === qLower);
+
+                    if (matchesIdentifier && data.password === passwordInput) {
+                        matchedDoc = { docId: docSnap.id, data };
                     }
                 });
 
-                if(!found) {
+                if (matchedDoc) {
+                    const { docId, data } = matchedDoc;
+                    if (data.banned) {
+                        alert("Hesabınız bloklanıb!");
+                        btn.disabled = false;
+                        return;
+                    }
+                    localStorage.setItem("currentUser", JSON.stringify({
+                        docId: docId,
+                        id: data.id,
+                        username: data.username,
+                        sessionVersion: data.sessionVersion || 1
+                    }));
+                    window.location.href = "profil.html";
+                } else {
                     alert("İstifadəçi adı/ID və ya şifrə yanlışdır!");
                     btn.disabled = false;
                 }
