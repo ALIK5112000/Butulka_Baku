@@ -57,12 +57,21 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(50)), (s) => {
   const d = document.createElement("div");
   d.className = "mesaj";
 
-  // Profilsiz "Admin" elanı və ya qovulma bildirişi:
+  // Profilsiz "Admin" elanı və ya qovulma bildirişi (Ağ baloncuk içində tünd aydın yazı):
   if (m.isAdminBroadcast) {
     const yazilanSoz = m.metn || m.text || m.mesaj || "";
-    d.style.cssText = "display:block; width:100%; background:linear-gradient(90deg, rgba(220,38,38,0.32), rgba(245,158,11,0.25)); border:1px solid #f59e0b; border-radius:10px; padding:7px 11px; margin:4px 0; white-space:normal; word-break:break-word; overflow:visible;";
-    d.innerHTML = `<span style="color:#fbbf24; font-weight:800;">🛡️ Admin: </span><span style="color:#ffffff; font-weight:600; display:inline; opacity:1; visibility:visible;"></span>`;
-    d.querySelector("span:last-child").textContent = yazilanSoz;
+    const g = document.createElement("div");
+    g.className = "mgovde";
+    g.style.cssText = "background:#fffbeb; border:1.5px solid #f59e0b; border-radius:12px; padding:7px 12px; width:100%;";
+    const a = document.createElement("span");
+    a.className = "mad";
+    a.style.cssText = "color:#dc2626; font-weight:800;";
+    a.textContent = "🛡️ Admin: ";
+    const t = document.createElement("span");
+    t.style.cssText = "color:#111827; font-weight:700;";
+    t.textContent = yazilanSoz;
+    g.append(a, t);
+    d.append(g);
     qutu.appendChild(d);
     while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
     qutu.scrollTop = qutu.scrollHeight;
