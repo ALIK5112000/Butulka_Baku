@@ -18,6 +18,9 @@ for (let i = 0; i < OTURACAQ_SAYI; i++) {
   yerler.push(d);
 }
 
+let aktivOyuncu = null;
+let bərpaGedir = false;
+
 // Boş yer tapıb oturur. Uğurlu olarsa true qaytarır
 async function yerTut(oyuncu) {
   for (let i = 0; i < OTURACAQ_SAYI; i++) {
@@ -45,6 +48,44 @@ async function oturacaqTap(oyuncu) {
   if (!(await novbeBaxis(oyuncu.uid)) && (await yerTut(oyuncu))) return;
   novbeBaslat(oyuncu, yerTut);
 }
+
+// WhatsApp / başqa tabdan qayıdanda oturacaq düşübsə yerinə qaytar
+async function oturacagiYoxlaVeBerpaEt() {
+  if (!aktivOyuncu || bərpaGedir) return;
+  bərpaGedir = true;
+  try {
+    const hamisi = (await get(ref(rtdb, yol))).val() || {};
+    let tapildi = false;
+    for (const k in hamisi) {
+      if (hamisi[k] && hamisi[k].uid === aktivOyuncu.uid) {
+        const r = ref(rtdb, `${yol}/${k}`);
+        await set(r, aktivOyuncu);
+        onDisconnect(r).remove();
+        tapildi = true;
+        break;
+      }
+    }
+    if (!tapildi) {
+      await oturacaqTap(aktivOyuncu);
+    }
+  } catch (e) {
+    // qısamüddətli şəbəkə kəsintisində səssiz keç, növbəti oyanmada təkrar yoxlayacaq
+  } finally {
+    bərpaGedir = false;
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    oturacagiYoxlaVeBerpaEt();
+  }
+});
+
+window.addEventListener("pageshow", () => {
+  if (document.visibilityState === "visible") {
+    oturacagiYoxlaVeBerpaEt();
+  }
+});
 
 function cizdir(data) {
   yerler.forEach((d, i) => {
@@ -76,13 +117,15 @@ async function katil(cari) {
     // Admin gizli rejimi: oturmur, masanı gizlicə izləyir
     if (p.gizli) return;
 
-    await oturacaqTap({
+    const oyuncu = {
       uid: cari.docId,
       ad: p.username || "Oyunçu",
       sekil: p.avatar || "",
       vip: vipMi(p),
       cins: cinsTap(p.gender)
-    });
+    };
+    aktivOyuncu = oyuncu;
+    await oturacaqTap(oyuncu);
   } catch (e) {
     alert("Masa xətası: " + e.message);
   }
