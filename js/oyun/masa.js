@@ -20,6 +20,23 @@ for (let i = 0; i < OTURACAQ_SAYI; i++) {
 
 let aktivOyuncu = null;
 let bərpaGedir = false;
+let sonData = {};
+
+function cizdir(data) {
+  sonData = data || {};
+  yerler.forEach((d, i) => {
+    const o = sonData[i];
+    d.classList.toggle("dolu", !!o);
+    if (o) {
+      d.querySelector(".ad").textContent = o.ad;
+      const s = o.sekil ? String(o.sekil).replace(/"/g, "%22") : "";
+      d.querySelector(".foto").style.backgroundImage = s ? `url("${s}")` : "";
+    } else {
+      d.querySelector(".ad").textContent = "";
+      d.querySelector(".foto").style.backgroundImage = "";
+    }
+  });
+}
 
 // Boş yer tapıb oturur. Uğurlu olarsa true qaytarır
 async function yerTut(oyuncu) {
@@ -27,7 +44,7 @@ async function yerTut(oyuncu) {
     const r = ref(rtdb, `${yol}/${i}`);
     const netice = await runTransaction(r, (cur) => (cur ? undefined : oyuncu));
     if (netice.committed) {
-      onDisconnect(r).remove(); // çıxanda yer avtomatik boşalır
+      onDisconnect(r).remove();
       return true;
     }
   }
@@ -39,22 +56,46 @@ async function oturacaqTap(oyuncu) {
   for (const k in hamisi) {
     if (hamisi[k] && hamisi[k].uid === oyuncu.uid) {
       const r = ref(rtdb, `${yol}/${k}`);
-      await set(r, oyuncu); // məlumatı yenilə
+      await set(r, oyuncu);
       onDisconnect(r).remove();
+      cizdir({ ...sonData, [k]: oyuncu });
       return;
     }
   }
-  // Növbədə başqası varsa növbəsiz keçmək olmaz; yer yoxdursa növbəyə yazıl
-  if (!(await novbeBaxis(oyuncu.uid)) && (await yerTut(oyuncu))) return;
+  if (!(await novbeBaxis(oyuncu.uid)) && (await yerTut(oyuncu))) {
+    const yenilenmis = (await get(ref(rtdb, yol))).val() || {};
+    cizdir(yenilenmis);
+    return;
+  }
   novbeBaslat(oyuncu, yerTut);
 }
 
-// WhatsApp / başqa tabdan qayıdanda oturacaq düşübsə yerinə qaytar
 async function oturacagiYoxlaVeBerpaEt() {
-  if (!aktivOyuncu || bərpaGedir) return;
+  if (bərpaGedir) return;
   bərpaGedir = true;
   try {
+    if (!aktivOyuncu) {
+      let cari = null;
+      try { cari = JSON.parse(localStorage.getItem("currentUser")); } catch (e) {}
+      if (cari && cari.docId) {
+        const snap = await getDoc(doc(fsdb, "users", cari.docId));
+        if (snap.exists() && !snap.data().banned && !snap.data().gizli) {
+          const p = snap.data();
+          aktivOyuncu = {
+            uid: cari.docId,
+            ad: p.username || "Oyunçu",
+            sekil: p.avatar || "",
+            vip: vipMi(p),
+            cins: cinsTap(p.gender)
+          };
+        }
+      }
+    }
+    if (!aktivOyuncu) return;
+
     const hamisi = (await get(ref(rtdb, yol))).val() || {};
+    cizdir(hamisi);
+
     let tapildi = false;
     for (const k in hamisi) {
       if (hamisi[k] && hamisi[k].uid === aktivOyuncu.uid) {
@@ -69,35 +110,24 @@ async function oturacagiYoxlaVeBerpaEt() {
       await oturacaqTap(aktivOyuncu);
     }
   } catch (e) {
-    // qısamüddətli şəbəkə kəsintisində səssiz keç, növbəti oyanmada təkrar yoxlayacaq
+    // qısamüddətli şəbəkə kəsintisində səssiz keç
   } finally {
     bərpaGedir = false;
   }
 }
 
-document.addEventListener("visibilitychange", () => {
+function geriQayidandaYoxla() {
   if (document.visibilityState === "visible") {
     oturacagiYoxlaVeBerpaEt();
+    setTimeout(() => {
+      if (document.visibilityState === "visible") oturacagiYoxlaVeBerpaEt();
+    }, 700);
   }
-});
-
-window.addEventListener("pageshow", () => {
-  if (document.visibilityState === "visible") {
-    oturacagiYoxlaVeBerpaEt();
-  }
-});
-
-function cizdir(data) {
-  yerler.forEach((d, i) => {
-    const o = data[i];
-    d.classList.toggle("dolu", !!o);
-    if (o) {
-      d.querySelector(".ad").textContent = o.ad;
-      const s = o.sekil ? String(o.sekil).replace(/"/g, "%22") : "";
-      d.querySelector(".foto").style.backgroundImage = s ? `url("${s}")` : "";
-    }
-  });
 }
+
+document.addEventListener("visibilitychange", geriQayidandaYoxla);
+window.addEventListener("pageshow", geriQayidandaYoxla);
+window.addEventListener("focus", geriQayidandaYoxla);
 
 // Oturacağı arxa planda tut (oyun ekranı gözləmir)
 async function katil(cari) {
@@ -106,7 +136,6 @@ async function katil(cari) {
     if (!snap.exists()) { location.href = "index.html"; return; }
     const p = snap.data();
 
-    // Bloklanmış oyunçu oyuna girə bilməz
     if (p.banned) {
       alert("Hesabınız bloklanıb");
       localStorage.removeItem("currentUser");
@@ -114,7 +143,6 @@ async function katil(cari) {
       return;
     }
 
-    // Admin gizli rejimi: oturmur, masanı gizlicə izləyir
     if (p.gizli) return;
 
     const oyuncu = {
@@ -131,7 +159,6 @@ async function katil(cari) {
   }
 }
 
-// İlk masa məlumatı gələn kimi tamamlanır (oyun dərhal açılır)
 export async function masaniBasla() {
   let cari = null;
   try { cari = JSON.parse(localStorage.getItem("currentUser")); } catch (e) {}
