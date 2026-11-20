@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    <div id="chatYeri">
+    <div id="chatYeri" style="position:relative;">
         <div id="musiqiPanel" aria-label="Musiqi" style="z-index:50;">
             <button type="button" class="musiqi-btn" id="musiqiBtn1" title="Klip qoş (9 bonus)">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;">
@@ -78,33 +78,38 @@
             </button>
         </div>
 
-        <!-- CANLI KLİP KARTI -->
-        <div id="bb-live-clip-widget" style="display:none; position:fixed; right:10px; bottom:185px; width:265px; background:#fff; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,0.24); z-index:9500; overflow:hidden; transition:all 0.25s ease; font-family:sans-serif;">
-            <div id="bb-live-top" style="display:flex; align-items:stretch; height:96px; transition:height 0.25s ease;">
-                <div style="width:96px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#fafafa; position:relative;">
-                    <svg width="76" height="76" viewBox="0 0 76 76" style="transform:rotate(-90deg);">
-                        <circle cx="38" cy="38" r="33" fill="none" stroke="#e6e6e6" stroke-width="5"></circle>
+        <!-- CHAT-IN İÇİNDƏ SƏLİQƏLİ OTURAN CANLI KLİP KARTI -->
+        <div id="bb-live-clip-widget" style="display:none; position:absolute; top:6px; right:6px; width:258px; background:#fff; border-radius:14px; box-shadow:0 4px 16px rgba(0,0,0,0.18); z-index:80; overflow:hidden; transition:all 0.22s ease; font-family:sans-serif; border:1px solid #ececec;">
+            <div id="bb-live-top" style="display:flex; align-items:stretch; height:86px; transition:height 0.22s ease;">
+                <!-- Sol: Dairəvi vaxt halqası + Qoşan oyunçunun REAL profil şəkli (basanda yenidən mahnı yeri açılır) -->
+                <div id="bb-dj-avatar-box" title="Yeni klip seçmək üçün toxun" style="width:86px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#f8f8f8; position:relative; cursor:pointer;">
+                    <svg width="68" height="68" viewBox="0 0 76 76" style="transform:rotate(-90deg);">
+                        <circle cx="38" cy="38" r="33" fill="none" stroke="#e4e4e4" stroke-width="5"></circle>
                         <circle id="bb-ring-progress" cx="38" cy="38" r="33" fill="none" stroke="#9ccc65" stroke-width="5"
                             stroke-dasharray="207.35" stroke-dashoffset="207.35" stroke-linecap="round"></circle>
                     </svg>
-                    <img id="bb-dj-avatar" src="images/butulka/butulka.png" alt="DJ"
-                        style="position:absolute; width:58px; height:58px; border-radius:50%; object-fit:cover; border:2px solid #fff;" />
+                    <img id="bb-dj-avatar" src="" alt=""
+                        style="position:absolute; width:52px; height:52px; border-radius:50%; object-fit:cover; object-position:center top; border:2px solid #fff; background:#ddd;" />
                 </div>
+
+                <!-- Sağ: Canlı Klip Video -->
                 <div style="flex:1; background:#000; position:relative; overflow:hidden;">
                     <div id="bb-live-yt-frame" style="width:100%; height:100%; pointer-events:none;"></div>
                 </div>
             </div>
-            <div style="height:38px; background:#f7f7f7; border-top:1px solid #ececec; display:flex; align-items:center; gap:8px; padding:0 10px;">
+
+            <!-- Alt idarəetmə paneli: [ ] 1x/2x böyütmə + Səs + Slider -->
+            <div style="height:34px; background:#f9f9f9; border-top:1px solid #efefef; display:flex; align-items:center; gap:8px; padding:0 10px;">
                 <button id="bb-zoom-clip-btn" type="button" title="Ölçünü dəyiş"
                     style="background:none; border:none; padding:2px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#7a828a;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                     </svg>
                 </button>
                 <button id="bb-mute-clip-btn" type="button"
-                    style="background:none; border:none; padding:2px; cursor:pointer; font-size:18px; color:#7a828a; line-height:1;">🔊</button>
+                    style="background:none; border:none; padding:2px; cursor:pointer; font-size:16px; color:#7a828a; line-height:1;">🔊</button>
                 <input id="bb-volume-slider" type="range" min="0" max="100" value="85"
-                    style="flex:1; accent-color:#9ccc65; cursor:pointer; height:5px;" />
+                    style="flex:1; accent-color:#9ccc65; cursor:pointer; height:4px;" />
             </div>
         </div>
 
@@ -118,7 +123,7 @@
     </div>
 </div>
 
-<!-- KLİP MODAL PƏNCƏRƏSİ -->
+<!-- KLİP SEÇİM VƏ AXTARIŞ PƏNCƏRƏSİ -->
 <div id="bb-clip-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.52); z-index:99999; align-items:center; justify-content:center; padding:14px; font-family:sans-serif;">
     <div style="width:100%; max-width:390px; height:82vh; background:#fff; border-radius:22px; padding:16px 14px; display:flex; flex-direction:column; gap:12px; box-shadow:0 14px 36px rgba(0,0,0,0.3); position:relative;">
         <button id="bb-clip-close" type="button" style="position:absolute; top:-10px; right:-8px; width:36px; height:36px; border-radius:50%; border:3px solid #fff; background:#9ccc65; color:#fff; font-size:18px; font-weight:700; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,0.25);">✕</button>
@@ -133,7 +138,7 @@
         <div id="bb-tab-title" style="font-size:14px; font-weight:700; color:#888; padding:0 4px;">Populyar bölməsindən musiqi seç (9 bonus)</div>
 
         <div id="bb-search-box" style="display:none;">
-            <input id="bb-yt-query" type="text" placeholder="YouTube-da mahnı adı yaz..."
+            <input id="bb-yt-query" type="text" placeholder="Mahnı və ya müğənni adı yaz..."
                 style="width:100%; padding:11px 14px; border-radius:12px; border:none; background:#f2f2f2; font-size:14px; outline:none; box-sizing:border-box;" />
         </div>
 
@@ -154,23 +159,38 @@ window.CARX_OPTIONS = {
 };
 </script>
 
-<!-- BİRBAŞA İŞLƏYƏN KLİP SİSTEMİ (Heç bir import xətası olmadan 100% açılır) -->
 <script>
 (function () {
   const CLIP_COST = 9;
-  const YT_SEARCH_ENDPOINTS = [
-    "https://pipedapi.kavin.rocks/search?filter=music_songs&q=",
-    "https://pipedapi.adminforge.de/search?filter=music_songs&q=",
-    "https://inv.nadeko.net/api/v1/search?type=video&q="
+
+  // Geniş Populyar Siyahı (Azərbaycan, Türk, Rus, Qafqaz, Xarici hitlər)
+  const POPULAR_CLIPS = [
+    { videoId: "nVjsGKrE6E8", title: "Lana Del Rey - Summertime Sadness", duration: "04:25", thumb: "https://i.ytimg.com/vi/nVjsGKrE6E8/mqdefault.jpg" },
+    { videoId: "M7lc1UVf-VE", title: "OMER DEEP - Medusa (Original Mix)", duration: "06:17", thumb: "https://i.ytimg.com/vi/M7lc1UVf-VE/mqdefault.jpg" },
+    { videoId: "60ItHLz5WEA", title: "Alan Walker - Faded", duration: "03:32", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/mqdefault.jpg" },
+    { videoId: "kJQP7kiw5Fk", title: "Luis Fonsi - Despacito", duration: "04:41", thumb: "https://i.ytimg.com/vi/kJQP7kiw5Fk/mqdefault.jpg" },
+    { videoId: "JGwWNGJdvx8", title: "Ed Sheeran - Shape of You", duration: "04:23", thumb: "https://i.ytimg.com/vi/JGwWNGJdvx8/mqdefault.jpg" },
+    { videoId: "RgKAFK5djSk", title: "Wiz Khalifa - See You Again", duration: "03:57", thumb: "https://i.ytimg.com/vi/RgKAFK5djSk/mqdefault.jpg" },
+    { videoId: "fRh_vgS2dFE", title: "Justin Bieber - Sorry", duration: "03:25", thumb: "https://i.ytimg.com/vi/fRh_vgS2dFE/mqdefault.jpg" },
+    { videoId: "09R8_2nJtjg", title: "Maroon 5 - Sugar", duration: "05:01", thumb: "https://i.ytimg.com/vi/09R8_2nJtjg/mqdefault.jpg" },
+    { videoId: "OPf0YbXqDm0", title: "Mark Ronson - Uptown Funk", duration: "04:30", thumb: "https://i.ytimg.com/vi/OPf0YbXqDm0/mqdefault.jpg" },
+    { videoId: "hT_nvWreIhg", title: "OneRepublic - Counting Stars", duration: "04:43", thumb: "https://i.ytimg.com/vi/hT_nvWreIhg/mqdefault.jpg" },
+    { videoId: "YQHsXMglC9A", title: "Adele - Hello", duration: "06:06", thumb: "https://i.ytimg.com/vi/YQHsXMglC9A/mqdefault.jpg" },
+    { videoId: "CevxZvSJLk8", title: "Katy Perry - Roar", duration: "04:29", thumb: "https://i.ytimg.com/vi/CevxZvSJLk8/mqdefault.jpg" },
+    { videoId: "pRpeEdMmmQ0", title: "Shakira - Waka Waka", duration: "03:30", thumb: "https://i.ytimg.com/vi/pRpeEdMmmQ0/mqdefault.jpg" },
+    { videoId: "SlPhMPnQ58k", title: "Maroon 5 - Memories", duration: "03:15", thumb: "https://i.ytimg.com/vi/SlPhMPnQ58k/mqdefault.jpg" },
+    { videoId: "2Vv-BfVoq4g", title: "Ed Sheeran - Perfect", duration: "04:39", thumb: "https://i.ytimg.com/vi/2Vv-BfVoq4g/mqdefault.jpg" },
+    { videoId: "e-ORhEE9VVg", title: "Taylor Swift - Blank Space", duration: "04:32", thumb: "https://i.ytimg.com/vi/e-ORhEE9VVg/mqdefault.jpg" }
   ];
 
-  const POPULAR_CLIPS = [
-    { videoId: "M7lc1UVf-VE", title: "OMER DEEP - Medusa (Original Mix)", thumb: "https://i.ytimg.com/vi/M7lc1UVf-VE/mqdefault.jpg" },
-    { videoId: "kJQP7kiw5Fk", title: "Luis Fonsi - Despacito", thumb: "https://i.ytimg.com/vi/kJQP7kiw5Fk/mqdefault.jpg" },
-    { videoId: "JGwWNGJdvx8", title: "Ed Sheeran - Shape of You", thumb: "https://i.ytimg.com/vi/JGwWNGJdvx8/mqdefault.jpg" },
-    { videoId: "RgKAFK5djSk", title: "Wiz Khalifa - See You Again", thumb: "https://i.ytimg.com/vi/RgKAFK5djSk/mqdefault.jpg" },
-    { videoId: "60ItHLz5WEA", title: "Alan Walker - Faded", thumb: "https://i.ytimg.com/vi/60ItHLz5WEA/mqdefault.jpg" },
-    { videoId: "fRh_vgS2dFE", title: "Justin Bieber - Sorry", thumb: "https://i.ytimg.com/vi/fRh_vgS2dFE/mqdefault.jpg" }
+  // Çoxmənbəli canlı YouTube axtarış serverləri
+  const YT_SEARCH_APIS = [
+    "https://pipedapi.kavin.rocks/search?filter=all&q=",
+    "https://pipedapi.adminforge.de/search?filter=all&q=",
+    "https://api.piped.projectsegfau.lt/search?filter=all&q=",
+    "https://inv.nadeko.net/api/v1/search?type=video&q=",
+    "https://invidious.nerdvpn.de/api/v1/search?type=video&q=",
+    "https://yt.artemislena.eu/api/v1/search?type=video&q="
   ];
 
   let ytLivePlayer = null;
@@ -178,7 +198,7 @@ window.CARX_OPTIONS = {
   let progressInterval = null;
   let zoomLevel = 0;
 
-  // YouTube IFrame API yüklə
+  // YouTube No-Cookie IFrame API (Reklamları minimuma endirir)
   if (!window.YT) {
     const s = document.createElement("script");
     s.src = "https://www.youtube.com/iframe_api";
@@ -190,7 +210,17 @@ window.CARX_OPTIONS = {
     ytLivePlayer = new YT.Player("bb-live-yt-frame", {
       width: "100%",
       height: "100%",
-      playerVars: { autoplay: 1, controls: 0, disablekb: 1, modestbranding: 1, playsinline: 1, rel: 0 },
+      host: "https://www.youtube-nocookie.com",
+      playerVars: {
+        autoplay: 1,
+        controls: 0,
+        disablekb: 1,
+        modestbranding: 1,
+        playsinline: 1,
+        rel: 0,
+        iv_load_policy: 3,
+        fs: 0
+      },
       events: {
         onReady: () => { ytReady = true; },
         onStateChange: (e) => {
@@ -200,6 +230,26 @@ window.CARX_OPTIONS = {
     });
   };
 
+  // Oyundakı aktiv istifadəçinin REAL profil şəklini tap (butulka şəklini deyil!)
+  function getRealPlayerAvatar() {
+    const uid = localStorage.getItem("userId") || localStorage.getItem("uid") || "";
+    // 1. Masadakı oyunçu kartlarından öz profil şəklini tap (butulka.png olmayan ilk real profil şəkli)
+    const seatImgs = Array.from(document.querySelectorAll("#masa img")).filter(
+      img => img.id !== "butulka" && img.src && !img.src.includes("butulka")
+    );
+    if (uid) {
+      const mySeat = document.querySelector(`#masa [data-uid="${uid}"] img, #masa [data-id="${uid}"] img`);
+      if (mySeat && mySeat.src && !mySeat.src.includes("butulka")) return mySeat.src;
+    }
+    if (seatImgs.length > 0) return seatImgs[0].src;
+
+    // 2. LocalStorage-də saxlanılan profil şəkli
+    const stored = localStorage.getItem("userAvatar") || localStorage.getItem("avatar") || localStorage.getItem("photoURL") || localStorage.getItem("sekil");
+    if (stored && !stored.includes("butulka")) return stored;
+
+    return "https://ui-avatars.com/api/?background=ff6a10&color=fff&name=DJ";
+  }
+
   function openClipModal() {
     const modal = document.getElementById("bb-clip-modal");
     if (modal) {
@@ -208,9 +258,9 @@ window.CARX_OPTIONS = {
     }
   }
 
-  // Həm #musiqiBtn1, həm də #musiqiBtn2 basılanda dərhal açılsın
+  // Sağ üst klip düyməsinə və ya dairəvi DJ şəklinə basanda seçim pəncərəsini aç
   document.addEventListener("click", function (e) {
-    const btn = e.target.closest("#musiqiBtn1, #musiqiBtn2, .musiqi-btn");
+    const btn = e.target.closest("#musiqiBtn1, #musiqiBtn2, .musiqi-btn, #bb-dj-avatar-box");
     if (btn) {
       e.preventDefault();
       e.stopPropagation();
@@ -238,8 +288,8 @@ window.CARX_OPTIONS = {
       searchBox.style.display = "block";
       const inp = document.getElementById("bb-yt-query");
       setTimeout(() => inp.focus(), 80);
-      if (inp.value.trim()) searchYouTubeFree(inp.value.trim());
-      else renderGrid([]);
+      if (inp.value.trim()) searchYouTubeLive(inp.value.trim());
+      else renderGrid(POPULAR_CLIPS.slice(0, 8));
     } else if (tab === "favorites") {
       titleEl.textContent = "Sevimli musiqilər";
       searchBox.style.display = "none";
@@ -255,53 +305,61 @@ window.CARX_OPTIONS = {
     }
   }
 
-  async function searchYouTubeFree(query) {
+  // Canlı YouTube Axtarışı (Bütün serverləri paralel yoxlayır, hansı tez cavab versə onu göstərir)
+  async function searchYouTubeLive(query) {
     const grid = document.getElementById("bb-clip-grid");
     grid.style.display = "block";
-    grid.innerHTML = '<div style="text-align:center; color:#888; padding:26px 0; font-size:14px;">Axtarılır...</div>';
+    grid.innerHTML = '<div style="text-align:center; color:#888; padding:26px 0; font-size:14px;">Mahnılar axtarılır...</div>';
 
-    for (const base of YT_SEARCH_ENDPOINTS) {
+    const requests = YT_SEARCH_APIS.map(async (base) => {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 4500);
       try {
-        const res = await fetch(base + encodeURIComponent(query));
-        if (!res.ok) continue;
+        const res = await fetch(base + encodeURIComponent(query), { signal: ctrl.signal });
+        clearTimeout(t);
+        if (!res.ok) throw new Error("bad");
         const data = await res.json();
 
         if (Array.isArray(data.items)) {
-          const parsed = data.items
+          const list = data.items
             .filter(it => it.url && it.url.includes("v="))
-            .slice(0, 14)
+            .slice(0, 16)
             .map(it => {
               const vid = it.url.split("v=")[1].split("&")[0];
               return {
                 videoId: vid,
                 title: it.title || "YouTube Musiqi",
-                thumb: it.thumbnail || ("https://i.ytimg.com/vi/" + vid + "/mqdefault.jpg")
+                thumb: "https://i.ytimg.com/vi/" + vid + "/mqdefault.jpg"
               };
             });
-          if (parsed.length) {
-            renderGrid(parsed);
-            return;
-          }
+          if (list.length) return list;
         }
 
         if (Array.isArray(data)) {
-          const parsed = data
+          const list = data
             .filter(it => it.videoId)
-            .slice(0, 14)
+            .slice(0, 16)
             .map(it => ({
               videoId: it.videoId,
               title: it.title || "YouTube Musiqi",
               thumb: "https://i.ytimg.com/vi/" + it.videoId + "/mqdefault.jpg"
             }));
-          if (parsed.length) {
-            renderGrid(parsed);
-            return;
-          }
+          if (list.length) return list;
         }
-      } catch (_) {}
-    }
+        throw new Error("empty");
+      } catch (e) {
+        clearTimeout(t);
+        throw e;
+      }
+    });
 
-    renderGrid(POPULAR_CLIPS.filter(c => c.title.toLowerCase().includes(query.toLowerCase())));
+    try {
+      const results = await Promise.any(requests);
+      renderGrid(results);
+    } catch (_) {
+      const localMatch = POPULAR_CLIPS.filter(c => c.title.toLowerCase().includes(query.toLowerCase()));
+      renderGrid(localMatch);
+    }
   }
 
   let searchTimer = null;
@@ -309,9 +367,9 @@ window.CARX_OPTIONS = {
     clearTimeout(searchTimer);
     const q = e.target.value.trim();
     searchTimer = setTimeout(function () {
-      if (!q) renderGrid([]);
-      else searchYouTubeFree(q);
-    }, 400);
+      if (!q) renderGrid(POPULAR_CLIPS.slice(0, 8));
+      else searchYouTubeLive(q);
+    }, 350);
   });
 
   function renderGrid(items) {
@@ -371,20 +429,14 @@ window.CARX_OPTIONS = {
     localStorage.setItem("bb_hist_clips", JSON.stringify([clip, ...hist.filter(x => x.videoId !== clip.videoId)].slice(0, 20)));
     document.getElementById("bb-clip-modal").style.display = "none";
 
-    const myAvatar =
-      document.querySelector("#masa img:not(#butulka)")?.src ||
-      localStorage.getItem("userAvatar") ||
-      "images/butulka/butulka.png";
-
     const payload = {
       clipInstanceId: Date.now() + "_clip",
       videoId: clip.videoId,
       title: clip.title,
-      djAvatar: myAvatar,
+      djAvatar: getRealPlayerAvatar(),
       startedAt: Date.now()
     };
 
-    // Əgər window.bbBroadcastClip qoşulubsa masadakı hamıya göndər
     if (typeof window.bbBroadcastClip === "function") {
       window.bbBroadcastClip(payload, CLIP_COST);
     }
@@ -395,7 +447,7 @@ window.CARX_OPTIONS = {
   window.playClipOnWidget = function (data) {
     if (!data || !data.videoId) return;
     const widget = document.getElementById("bb-live-clip-widget");
-    document.getElementById("bb-dj-avatar").src = data.djAvatar || "images/butulka/butulka.png";
+    document.getElementById("bb-dj-avatar").src = data.djAvatar || getRealPlayerAvatar();
     widget.style.display = "block";
 
     const elapsedSec = Math.max(0, Math.floor((Date.now() - Number(data.startedAt || Date.now())) / 1000));
@@ -450,20 +502,21 @@ window.CARX_OPTIONS = {
     if (w) w.style.display = "none";
   }
 
+  // Kvadrat düymə: 1-ci klik -> 1x, 2-ci klik -> 2x, 3-cü klik -> orijinal
   document.getElementById("bb-zoom-clip-btn").addEventListener("click", function () {
     zoomLevel = (zoomLevel + 1) % 3;
     const widget = document.getElementById("bb-live-clip-widget");
     const topBox = document.getElementById("bb-live-top");
 
     if (zoomLevel === 0) {
-      widget.style.width = "265px";
-      topBox.style.height = "96px";
+      widget.style.width = "258px";
+      topBox.style.height = "86px";
     } else if (zoomLevel === 1) {
       widget.style.width = "315px";
-      topBox.style.height = "135px";
+      topBox.style.height = "125px";
     } else {
-      widget.style.width = "94vw";
-      topBox.style.height = "185px";
+      widget.style.width = "calc(100% - 12px)";
+      topBox.style.height = "175px";
     }
   });
 
