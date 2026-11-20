@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Butulka Admin</title>
+<style>
+:root{--bg:#f5f5f7;--card:#fff;--tx:#1c1c1e;--mu:#6b6b70;--bd:#e2e2e6;--ac:#6c4cf1;--er:#d93a3a}
+@media (prefers-color-scheme:dark){:root{--bg:#121214;--card:#1c1c20;--tx:#f2f2f4;--mu:#9a9aa2;--bd:#2d2d33;--ac:#8d73ff;--er:#ff6464;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0 auto;max-width:560px;padding:12px;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,sans-serif}
+h1{font-size:18px}h2{font-size:13px;color:var(--mu);text-transform:uppercase;margin:0 0 8px}
+input,button{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%}
+button{cursor:pointer}.p{background:var(--ac);color:#fff;border-color:var(--ac)}.d{color:var(--er);border-color:var(--er)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:10px}
+.row{display:flex;gap:6px;margin-bottom:6px}.mu{color:var(--mu);font-size:13px}.er{color:var(--er)}
+#toast{position:fixed;left:12px;right:12px;bottom:12px;padding:10px;border-radius:12px;background:var(--tx);color:var(--bg);display:none;max-width:536px;margin:auto}
+</style>
+</head>
+<body>
+<h1>🍾 Butulka Admin</h1>
+<div id="app"></div><div id="toast"></div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFirestore,collection,query,where,getDocs,doc,updateDoc,increment,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const ADMIN_UID="fpMGhfUsyENS4huCfa1eVyJEy8C3";
+const PROTECTED=["Admin","Adminka","Mod"];
+const app=initializeApp({apiKey:"AIzaSyAANVVrJKhZyaCErn8YFNVTUPF70A9xlmQ",authDomain:"butulka-baku-istifadeci-bazasi.firebaseapp.com",projectId:"butulka-baku-istifadeci-bazasi",appId:"1:52438073026:web:1c4a0a8d1fc1ce5f78455b"},"admin");
+const auth=getAuth(app),db=getFirestore(app);
+const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const toast=(t,b)=>{const e=$("#toast");e.textContent=t;e.style.display="block";e.style.background=b?"var(--er)":"var(--tx)";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",2500)};
+let unsub=null,cur=null;
+
+onAuthStateChanged(auth,u=>{
+  if(!u) return loginView();
+  if(u.uid!==ADMIN_UID){signOut(auth);return loginView("Bu hesab admin deyil")}
+  mainView();
+});
+
+function loginView(err){
+  $("#app").innerHTML=`<div class="card"><h2>Giriş</h2>
+  <div class="row"><input id="em" type="email" placeholder="E-poçt"></div>
+  <div class="row"><input id="pw" type="password" placeholder="Parol"></div>
+  <button class="p" id="go">Daxil ol</button><div class="er">${esc(err||"")}</div></div>`;
+  $("#go").onclick=async()=>{try{await signInWithEmailAndPassword(auth,$("#em").value.trim(),$("#pw").value)}catch(e){loginView("E-poçt və ya parol səhvdir")}};
+}
+
+function mainView(){
+  $("#app").innerHTML=`<div class="card"><h2>Oyunçu axtar (ID)</h2>
+  <div class="row"><input id="q" inputmode="numeric" placeholder="məs: 84602"><button class="p" style="width:90px" id="find">Tap</button></div></div>
+  <div id="pv"></div><button id="out" style="margin-top:6px">Çıxış</button>`;
+  $("#find").onclick=find;$("#out").onclick=()=>signOut(auth);
+}
+
+async function find(){
+  const n=Number($("#q").value.trim());if(!n)return toast("ID yaz",1);
+  const s=await getDocs(query(collection(db,"users"),where("id","==",n)));
+  if(s.empty){$("#pv").innerHTML='<div class="er">Belə oyunçu yoxdur</div>';return}
+  cur=s.docs[0].id;if(unsub)unsub();
+  unsub=onSnapshot(doc(db,"users",cur),d=>draw(d.data()));
+}
+const prot=p=>PROTECTED.includes(String(p.displayId));
+function draw(p){
+  $("#pv").innerHTML=`<div class="card"><b>${esc(p.username)}</b> <span class="mu">ID ${esc(p.id)} · oyunda: ${esc(p.displayId??p.id)}</span>
+  <div class="mu">🪙 ${p.jetons??0} · ❤️ ${p.hearts??0} · 💋 ${p.kisses??0} · ${p.banned?'<span class="er">BAN</span>':"aktiv"} · ${p.muted?'<span class="er">susdurulub</span>':"çat açıq"}${prot(p)?" · 🛡":""}</div></div>
+  <div class="card"><h2>Jeton / ürək</h2>
+  <div class="row"><input id="tk" type="number" placeholder="Jeton sayı"><button class="p" style="width:130px" id="gt">Göndər</button></div>
+  <div class="row"><input id="hr" type="number" placeholder="Ürək sayı"><button class="p" style="width:130px" id="gh">Göndər</button></div></div>
+  <div class="card"><h2>Cəza</h2><div class="row">
+  <button class="d" id="bn">${p.banned?"Banı götür":"Blok / Ban"}</button><button class="d" id="mt">${p.muted?"Susdurmanı götür":"Çatda sustur"}</button></div></div>
+  <div class="card"><h2>Oyunda görünən ID</h2><div class="row"><input id="dn" value="${esc(p.displayId??"")}" placeholder="rəqəm və ya ad (boş = real ID)"><button class="p" style="width:100px" id="sv">Saxla</button></div></div>`;
+  const up=async(o,m)=>{try{await updateDoc(doc(db,"users",cur),o);toast(m||"Tamam")}catch(e){toast("Xəta: "+e.code,1)}};
+  $("#gt").onclick=()=>{const n=parseInt($("#tk").value,10);n>0?up({jetons:increment(n)},n+" jeton göndərildi"):toast("Düzgün say yaz",1)};
+  $("#gh").onclick=()=>{const n=parseInt($("#hr").value,10);n>0?up({hearts:increment(n)},n+" ürək göndərildi"):toast("Düzgün say yaz",1)};
+  $("#bn").onclick=()=>prot(p)?toast("Qorunan hesab",1):up({banned:!p.banned});
+  $("#mt").onclick=()=>prot(p)?toast("Qorunan hesab",1):up({muted:!p.muted});
+  $("#sv").onclick=()=>{const v=$("#dn").value.trim();up({displayId:v||null},"ID dəyişdi")};
+}
+</script>
+</body>
+</html>
