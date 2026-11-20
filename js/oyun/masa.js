@@ -64,6 +64,18 @@ async function katil(cari) {
     const snap = await getDoc(doc(fsdb, "users", cari.docId));
     if (!snap.exists()) { location.href = "index.html"; return; }
     const p = snap.data();
+
+    // Bloklanmış oyunçu oyuna girə bilməz
+    if (p.banned) {
+      alert("Hesabınız bloklanıb");
+      localStorage.removeItem("currentUser");
+      location.href = "index.html";
+      return;
+    }
+
+    // Admin gizli rejimi: oturmur, masanı gizlicə izləyir
+    if (p.gizli) return;
+
     await oturacaqTap({
       uid: cari.docId,
       ad: p.username || "Oyunçu",
