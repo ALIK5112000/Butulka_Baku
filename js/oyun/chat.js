@@ -2,7 +2,7 @@ import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu, cinsTap, vipMi, adRengi, toast } from "./yardimci.js";
 import { tanisYaz } from "./dostlar.js";
-import { ref, push, get, remove, query, limitToLast, limitToFirst, onChildAdded, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, push, get, remove, update, query, limitToLast, limitToFirst, onChildAdded, onChildChanged, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 // Masaya yeni girən oyunçu çatın yalnız son bu qədər mesajını görür
@@ -91,37 +91,61 @@ function musiqiXalVer(key) {
   toast("+9 musiqi xalı");
 }
 
+// Klip bildirişi sətri: [qoşanın şəkli] ♫ ad  (kiminsə adına olsa:  » [onun şəkli])
+const musiqiSatirlari = {};
+function musiqiSatiri(m) {
+  const d = document.createElement("div");
+  d.className = "mesaj";
+  const f = document.createElement("div");
+  f.className = "mfoto";
+  fotoVer(f, m.uid);
+  const g = document.createElement("div");
+  g.className = "klip-musiqi";
+  g.innerHTML = NOTA_SVG;
+  const ks = document.createElement("span");
+  ks.textContent = m.metn;
+  g.appendChild(ks);
+  if (m.hedef) {
+    const ox = document.createElement("span");
+    ox.className = "klip-ox";
+    ox.innerHTML = OX_SVG;
+    const f2 = document.createElement("div");
+    f2.className = "mfoto";
+    fotoVer(f2, m.hedef);
+    g.append(ox, f2);
+  }
+  d.append(f, g);
+  return d;
+}
+
+// Mesaja sonradan "hedef" əlavə olunanda (kiminsə adına qoşulduqda) həmin sətir yenilənir
+onChildChanged(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
+  const m = s.val(), köhnə = musiqiSatirlari[s.key];
+  if (!m || !m.isMusicNotice || !köhnə || !köhnə.isConnected) return;
+  const yeni = musiqiSatiri(m);
+  köhnə.replaceWith(yeni);
+  musiqiSatirlari[s.key] = yeni;
+});
+
 onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   const m = s.val();
   if (!m) return;
   const d = document.createElement("div");
   d.className = "mesaj";
 
-  // Klip qoşulma bildirişi (bütün masada görünür): qoşan oyunçunun şəkli + klipin adı
+  // Klip qoşulma bildirişi (bütün masada görünür): qoşan oyunçunun şəkli + klipin adı (+ kimin adına olduğu)
   if (m.isMusicNotice) {
     window.__sonDJ = { uid: m.uid, key: s.key }; // hədiyyə xalı üçün: son musiqini kim qoşub
-    if (cari && m.uid === cari.docId) musiqiXalVer(s.key);
-    const f = document.createElement("div");
-    f.className = "mfoto";
-    fotoVer(f, m.uid);
-    const g = document.createElement("div");
-    g.className = "klip-musiqi";
-    g.innerHTML = NOTA_SVG;
-    const ks = document.createElement("span");
-    ks.textContent = m.metn;
-    g.appendChild(ks);
-    // Kiminsə adına qoşulubsa: » işarəsi + həmin oyunçunun şəkli
-    if (m.hedef) {
-      const ox = document.createElement("span");
-      ox.className = "klip-ox";
-      ox.innerHTML = OX_SVG;
-      const f2 = document.createElement("div");
-      f2.className = "mfoto";
-      fotoVer(f2, m.hedef);
-      g.append(ox, f2);
+    if (cari && m.uid === cari.docId) {
+      musiqiXalVer(s.key);
+      // Kiminsə adına qoşulubsa və bildirişdə hələ yoxdursa, əlavə et (klip.js dəyişməsə də işləyir)
+      if (!m.hedef && window.__klipHedef && Date.now() + serverOffset - pushVaxti(s.key) <= 30000) {
+        update(ref(rtdb, yol + "/" + s.key), { hedef: window.__klipHedef }).catch(() => {});
+      }
     }
-    d.append(f, g);
-    qutu.appendChild(d);
+    const sat = musiqiSatiri(m);
+    musiqiSatirlari[s.key] = sat;
+    qutu.appendChild(sat);
     while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
     qutu.scrollTop = qutu.scrollHeight;
     return;
