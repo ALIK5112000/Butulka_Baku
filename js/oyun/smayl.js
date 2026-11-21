@@ -20,29 +20,70 @@ const PAKETLER = [
 const SATIN_ALMA_SESI = "sesler/smayl.mp3";
 const SES_OBJ = SATIN_ALMA_SESI ? Object.assign(new Audio(SATIN_ALMA_SESI), { preload: "auto" }) : null;
 
-/* Jestlər. e = emoji (öz şəkliniz olsa e əvəzinə img: "images/jest/1.png" yazın), q = qiymət (smaylik),
+/* Jestlər. img = şəkil (w = eni, vw ilə), q = qiymət; emoji istəsəniz img əvəzinə e: "😍" yazın, q = qiymət (smaylik),
    a = şəkil üstündəki hərəkət: bounce | spin | float | shake | pulse | zoom */
 const JESTLER = [
-  { id: "j1",  e: "😍", q: 1,  a: "pulse" },
-  { id: "j2",  e: "😂", q: 1,  a: "shake" },
-  { id: "j3",  e: "😘", q: 1,  a: "float" },
-  { id: "j4",  e: "👍", q: 1,  a: "bounce" },
-  { id: "j5",  e: "😎", q: 2,  a: "spin" },
-  { id: "j6",  e: "🎉", q: 2,  a: "zoom" },
-  { id: "j7",  e: "🔥", q: 2,  a: "float" },
-  { id: "j8",  e: "💃", q: 2,  a: "shake" },
-  { id: "j9",  e: "🥳", q: 3,  a: "bounce" },
-  { id: "j10", e: "🤩", q: 3,  a: "spin" },
-  { id: "j11", e: "😈", q: 3,  a: "pulse" },
-  { id: "j12", e: "💋", q: 3,  a: "float" },
-  { id: "j13", e: "🌹", q: 5,  a: "zoom" },
-  { id: "j14", e: "🍾", q: 5,  a: "shake" },
-  { id: "j15", e: "👑", q: 5,  a: "bounce" },
-  { id: "j16", e: "🚀", q: 10, a: "float" },
-  { id: "j17", e: "💎", q: 10, a: "spin" },
-  { id: "j18", e: "🦄", q: 15, a: "pulse" },
-  { id: "j19", e: "🏆", q: 20, a: "zoom" },
-  { id: "j20", e: "💰", q: 50, a: "bounce" }
+  { id: "j1", img: "images/jest/j01.png", w: 54.81, q: 1, a: "pulse" },
+  { id: "j2", img: "images/jest/j02.png", w: 11.85, q: 3, a: "shake" },
+  { id: "j3", img: "images/jest/j03.png", w: 14.81, q: 1, a: "float" },
+  { id: "j4", img: "images/jest/j04.png", w: 14.81, q: 1, a: "bounce" },
+  { id: "j5", img: "images/jest/j05.png", w: 14.35, q: 1, a: "zoom" },
+  { id: "j6", img: "images/jest/j06.png", w: 18.33, q: 2, a: "pulse" },
+  { id: "j7", img: "images/jest/j07.png", w: 11.94, q: 1, a: "shake" },
+  { id: "j8", img: "images/jest/j08.png", w: 16.94, q: 2, a: "float" },
+  { id: "j9", img: "images/jest/j09.png", w: 11.76, q: 1, a: "bounce" },
+  { id: "j10", img: "images/jest/j10.png", w: 12.13, q: 3, a: "zoom" },
+  { id: "j11", img: "images/jest/j11.png", w: 12.87, q: 2, a: "pulse" },
+  { id: "j12", img: "images/jest/j12.png", w: 12.22, q: 3, a: "shake" },
+  { id: "j13", img: "images/jest/j13.png", w: 11.85, q: 2, a: "float" },
+  { id: "j14", img: "images/jest/j14.png", w: 11.67, q: 2, a: "bounce" },
+  { id: "j15", img: "images/jest/j15.png", w: 11.85, q: 1, a: "zoom" },
+  { id: "j16", img: "images/jest/j16.png", w: 11.85, q: 3, a: "pulse" },
+  { id: "j17", img: "images/jest/j17.png", w: 11.85, q: 2, a: "shake" },
+  { id: "j18", img: "images/jest/j18.png", w: 11.76, q: 2, a: "float" },
+  { id: "j19", img: "images/jest/j19.png", w: 16.02, q: 2, a: "bounce" },
+  { id: "j20", img: "images/jest/j20.png", w: 14.81, q: 2, a: "zoom" },
+  { id: "j21", img: "images/jest/j21.png", w: 11.85, q: 2, a: "pulse" },
+  { id: "j22", img: "images/jest/j22.png", w: 12.04, q: 3, a: "shake" },
+  { id: "j23", img: "images/jest/j23.png", w: 15.0, q: 2, a: "float" },
+  { id: "j24", img: "images/jest/j24.png", w: 11.94, q: 3, a: "bounce" },
+  { id: "j25", img: "images/jest/j25.png", w: 14.72, q: 5, a: "zoom" },
+  { id: "j26", img: "images/jest/j26.png", w: 18.15, q: 100, a: "pulse" },
+  { id: "j27", img: "images/jest/j27.png", w: 18.43, q: 1, a: "shake" },
+  { id: "j28", img: "images/jest/j28.png", w: 18.52, q: 1, a: "float" },
+  { id: "j29", img: "images/jest/j29.png", w: 18.33, q: 1, a: "bounce" },
+  { id: "j30", img: "images/jest/j30.png", w: 13.61, q: 2, a: "zoom" },
+  { id: "j31", img: "images/jest/j31.png", w: 13.61, q: 2, a: "pulse" },
+  { id: "j32", img: "images/jest/j32.png", w: 12.69, q: 3, a: "shake" },
+  { id: "j33", img: "images/jest/j33.png", w: 15.46, q: 2, a: "float" },
+  { id: "j34", img: "images/jest/j34.png", w: 12.31, q: 2, a: "bounce" },
+  { id: "j35", img: "images/jest/j35.png", w: 15.74, q: 1, a: "zoom" },
+  { id: "j36", img: "images/jest/j36.png", w: 11.76, q: 2, a: "pulse" },
+  { id: "j37", img: "images/jest/j37.png", w: 16.2, q: 2, a: "shake" },
+  { id: "j38", img: "images/jest/j38.png", w: 15.0, q: 2, a: "float" },
+  { id: "j39", img: "images/jest/j39.png", w: 11.76, q: 3, a: "bounce" },
+  { id: "j40", img: "images/jest/j40.png", w: 15.65, q: 2, a: "zoom" },
+  { id: "j41", img: "images/jest/j41.png", w: 12.78, q: 3, a: "pulse" },
+  { id: "j42", img: "images/jest/j42.png", w: 12.87, q: 2, a: "shake" },
+  { id: "j43", img: "images/jest/j43.png", w: 11.85, q: 3, a: "float" },
+  { id: "j44", img: "images/jest/j44.png", w: 17.96, q: 5, a: "bounce" },
+  { id: "j45", img: "images/jest/j45.png", w: 11.76, q: 2, a: "zoom" },
+  { id: "j46", img: "images/jest/j46.png", w: 16.39, q: 2, a: "pulse" },
+  { id: "j47", img: "images/jest/j47.png", w: 14.44, q: 1, a: "shake" },
+  { id: "j48", img: "images/jest/j48.png", w: 17.87, q: 1, a: "float" },
+  { id: "j49", img: "images/jest/j49.png", w: 11.67, q: 1, a: "bounce" },
+  { id: "j50", img: "images/jest/j50.png", w: 11.85, q: 1, a: "zoom" },
+  { id: "j51", img: "images/jest/j51.png", w: 11.85, q: 1, a: "pulse" },
+  { id: "j52", img: "images/jest/j52.png", w: 11.85, q: 1, a: "shake" },
+  { id: "j53", img: "images/jest/j53.png", w: 11.85, q: 1, a: "float" },
+  { id: "j54", img: "images/jest/j54.png", w: 11.67, q: 1, a: "bounce" },
+  { id: "j55", img: "images/jest/j55.png", w: 14.91, q: 1, a: "zoom" },
+  { id: "j56", img: "images/jest/j56.png", w: 14.63, q: 1, a: "pulse" },
+  { id: "j57", img: "images/jest/j57.png", w: 12.13, q: 1, a: "shake" },
+  { id: "j58", img: "images/jest/j58.png", w: 11.85, q: 1, a: "float" },
+  { id: "j59", img: "images/jest/j59.png", w: 11.76, q: 1, a: "bounce" },
+  { id: "j60", img: "images/jest/j60.png", w: 11.85, q: 1, a: "zoom" },
+  { id: "j61", img: "images/jest/j61.png", w: 16.2, q: 1, a: "pulse" }
 ];
 
 const CSS = `
@@ -62,8 +103,8 @@ const CSS = `
 .sp-grid{display:grid;grid-template-columns:repeat(5,1fr)}
 .sp-cell{display:flex;flex-direction:column;align-items:center;padding:2.2vw 0 2.6vw}
 .sp-cell:active .sp-e{transform:scale(.9)}
-.sp-e{height:14vw;display:flex;align-items:center;justify-content:center;font-size:11.5vw;line-height:1;transition:transform .12s}
-.sp-e img{height:13vw;width:auto}
+.sp-e{height:15vw;display:flex;align-items:center;justify-content:center;font-size:11.5vw;line-height:1;transition:transform .12s}
+.sp-e img{height:auto;max-width:none;display:block;-webkit-user-drag:none}
 .sp-pr{display:flex;align-items:center;gap:1.2vw;margin-top:1.4vw;font:700 4vw/1 Roboto,Arial,sans-serif;color:#333}
 .sp-pr img.sm{width:3.9vw;height:3.9vw;display:block}
 .sp-x{position:fixed;right:2vw;bottom:2.1vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#7cc92f;border:0;padding:0;z-index:9991;display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3)}
@@ -155,7 +196,7 @@ const grid = $(".sp-grid"), shop = $(".sp-shop");
 JESTLER.forEach(g => {
   const c = document.createElement("div");
   c.className = "sp-cell";
-  c.innerHTML = '<div class="sp-e">' + (g.img ? '<img src="' + g.img + '" alt="">' : g.e) + '</div><div class="sp-pr">' + SM + g.q + "</div>";
+  c.innerHTML = '<div class="sp-e">' + (g.img ? '<img src="' + g.img + '" alt="" draggable="false"' + (g.w ? ' style="width:' + g.w + 'vw"' : '') + '>' : g.e) + '</div><div class="sp-pr">' + SM + g.q + "</div>";
   c.onclick = () => jestIsle(g);
   grid.appendChild(c);
 });
