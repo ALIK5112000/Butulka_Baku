@@ -5,7 +5,7 @@
 import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI, KLIP_QIYMETI } from "../core/config.js";
 import { cariOyuncu, toast } from "./yardimci.js";
-import { ref, onValue, set, push, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, onValue, set, push, runTransaction, serverTimestamp, get } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc, updateDoc, increment, runTransaction as fsRunTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
@@ -34,6 +34,7 @@ let dovr = null;         // 0.5 san-lik dövr: halqa + sinxron + bitmə yoxlamas
 let blokTimer = null;
 let sesliGozle = false;  // brauzer səsli avtooynatmanı blokladı, ilk toxunuşu gözləyirik
 let zoom = 0;
+let secimAcik = false;   // klip seçim pəncərəsi açıqdır: chatdakı klipin səsi YALNIZ bu oyunçuda kəsilir
 // Şəxsi idarə: oyunçu klipi özü üçün irəli-geri edə / pauza edə bilər (digər oyunçulara təsir etmir)
 let serbest = false;     // real vaxtdan ayrılıb (özü irəli-geri edib və ya pauza edib)
 let lokalPauza = false;  // özü pauza edib
@@ -44,6 +45,10 @@ const geriQaytarilan = new Set();
 
 const indi = () => Date.now() + offset;
 const kecen = (d) => Math.max(0, (indi() - Number(d.startedAt || indi())) / 1000);
+
+// ---------- yeni klip üçün gözləmə: başqasının klipi başlayandan 60 saniyə keçməyibsə qoşmaq olmaz ----------
+export const KLIP_BEKLE = 60;
+const gozleQalan = (d) => (d ? Math.max(0, Math.ceil(KLIP_BEKLE - kecen(d))) : 0);
 
 // ---------- səs ayarı (yadda qalır) ----------
 const lsOxu = (a, v) => { try { const x = localStorage.getItem(a); return x === null ? v : x; } catch (e) { return v; } };
@@ -60,9 +65,14 @@ function sesUI() {
 function sesiTetbiqEt() {
   if (!oynatici || !oynatici.mute) return;
   try {
-    if (sessiz) oynatici.mute();
+    if (sessiz || secimAcik) oynatici.mute();
     else { oynatici.unMute(); oynatici.setVolume(ses); }
   } catch (e) {}
+}
+// Klip seçim pəncərəsi açılanda chatdakı klipin səsi kəsilir, bağlananda avtomatik qayıdır (yalnız bu oyunçuda)
+export function secimSesi(acik) {
+  secimAcik = !!acik;
+  sesiTetbiqEt();
 }
 sesInp.addEventListener("input", () => {
   const v = Number(sesInp.value);
@@ -369,10 +379,29 @@ kkSeek.addEventListener("change", () => {
 // ---------- klip qoşmaq (ürək çıxılır) ----------
 export const klipCalirMi = () => !!aktiv;
 
+// Seçim pəncərəsi üçün: klip çalır? mənimdir? başqasınındırsa neçə saniyə gözləmək lazımdır?
+export function klipDurumu() {
+  const cari = cariOyuncu();
+  if (!aktiv) return { calir: false, benim: false, qalan: 0 };
+  const benim = !!(cari && cari.docId === aktiv.djUid);
+  return { calir: true, benim, qalan: benim ? 0 : gozleQalan(aktiv) };
+}
+
 export async function klipQos(klip) {
   const cari = cariOyuncu();
   if (!cari || !cari.docId) { toast("Oyunçu məlumatı tapılmadı"); return false; }
   if (!klip || !ID_RE.test(String(klip.videoId))) { toast("Klip tapılmadı"); return false; }
+
+  // Başqasının klipi başlayandan 60 saniyə keçməyibsə qoşmaq olmaz (klipi qoşan oyunçu istənilən an qoşa bilər).
+  // Ürək çıxılmamışdan əvvəl bazadakı ən son məlumata baxırıq (pəncərə açıq qalarkən kimsə klip qoşmuş ola bilər).
+  try {
+    const t = (await get(klipRef)).val();
+    if (t && ID_RE.test(String(t.videoId)) && t.djUid !== cari.docId) {
+      const q = gozleQalan(t);
+      if (q > 0) { toast(`Yeni klip üçün ${vq(q)} gözləyin`); return false; }
+    }
+  } catch (e) {}
+
   // Hədiyyə panelindən kiminsə adına qoşulursa (Hediye.js bunu window.__klipHedef-ə yazır)
   const hedef = window.__klipHedef || null;
 
