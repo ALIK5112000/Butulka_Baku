@@ -199,18 +199,10 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   fotoVer(f, m.uid);
   const g = document.createElement("div");
   g.className = "mgovde mkart" + (m.cins === "q" ? " qiz" : "");
-  g.style.setProperty("--ad", adRengi(m.cins, m.vip));
-  // Ad kapsulu (çərçivəli): [tac] ad
   const a = document.createElement("span");
-  a.className = "mad mpill";
-  if (m.vip) {
-    const tac = document.createElement("span");
-    tac.textContent = "👑";
-    a.appendChild(tac);
-  }
-  const adSpan = document.createElement("span");
-  adSpan.textContent = m.ad;
-  a.appendChild(adSpan);
+  a.className = "mad";
+  a.style.color = adRengi(m.cins, m.vip);
+  a.textContent = (m.vip ? "👑 " : "") + m.ad + ": ";
   // Ada toxunanda yazı xanasına "Ad, " əlavə olunur (həmin oyunçuya müraciət üçün)
   if (!cari || m.uid !== cari.docId) {
     a.style.cursor = "pointer";
@@ -220,16 +212,13 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
       inp.focus();
     };
   }
-  const ik = document.createElement("span");
-  ik.className = "mik";
-  ik.textContent = ": ";
   const t = document.createElement("span");
   t.textContent = m.metn;
   // Hər mesajın altında "Tərcüməni göstər" sətri (hələlik yalnız yazı)
   const tr = document.createElement("span");
   tr.className = "mtercume";
   tr.textContent = "Tərcüməni göstər";
-  g.append(a, ik, t, tr);
+  g.append(a, t, tr);
   d.append(f, g);
   qutu.appendChild(d);
   while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
