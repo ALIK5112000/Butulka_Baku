@@ -153,6 +153,15 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(50)), (s) => {
   a.className = "mad";
   a.style.color = adRengi(m.cins, m.vip);
   a.textContent = (m.vip ? "👑 " : "") + m.ad + ": ";
+  // Ada toxunanda yazı xanasına "Ad, " əlavə olunur (həmin oyunçuya müraciət üçün)
+  if (!cari || m.uid !== cari.docId) {
+    a.style.cursor = "pointer";
+    a.onclick = () => {
+      const mur = m.ad + ", ";
+      if (!inp.value.startsWith(mur)) inp.value = mur + inp.value;
+      inp.focus();
+    };
+  }
   const t = document.createElement("span");
   t.textContent = m.metn;
   g.append(a, t);
