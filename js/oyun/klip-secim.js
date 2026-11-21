@@ -1,6 +1,6 @@
 // Klip seçim pəncərəsi: 🔥 populyar, ⭐ sevimli, 🕒 son qoşulanlar, 🔍 YouTube axtarışı + təsdiq pəncərəsi.
 import { KLIP_QIYMETI } from "../core/config.js";
-import { axtar, populyar, kicikSekil } from "./klip-axtaris.js";
+import { axtar, populyar, kicikSekil, isit, POPULYAR_SABIT } from "./klip-axtaris.js";
 import { klipQos, klipCalirMi } from "./klip.js";
 
 const $ = (id) => document.getElementById(id);
@@ -82,6 +82,43 @@ function mesaj(metn) {
   siyahi.textContent = metn;
 }
 
+// YouTube axtarışı cavab verməyəndə: səhv mesajı + yenidən cəhd + yerli (sevimli/tarixçə/populyar) uyğunluqlar
+function axtarisXetasi(q) {
+  siyahi.textContent = "";
+  siyahi.classList.add("bos");
+  siyahi.append(el("div", "kp-xeta", "YouTube axtarışı hazırda cavab vermir."));
+  const yeniden = el("button", "kp-yeniden", "Yenidən cəhd et");
+  yeniden.type = "button";
+  yeniden.addEventListener("click", () => axtarIsle(q));
+  siyahi.append(yeniden);
+
+  const sozler = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const hovuz = [...oxu(FAV), ...oxu(TAR), ...POPULYAR_SABIT];
+  const gordu = new Set();
+  const yerli = hovuz.filter((c) => {
+    if (!c || gordu.has(c.videoId)) return false;
+    gordu.add(c.videoId);
+    const t = String(c.title || "").toLowerCase();
+    return sozler.every((w) => t.includes(w));
+  });
+  if (yerli.length) {
+    const alt = el("div", "kp-yerli-baslik", "Yadda saxlanılanlardan tapılanlar:");
+    const qutu = el("div", "kp-yerli-qutu");
+    siyahi.append(alt, qutu);
+    // goster() siyahını təmizləyir, ona görə eyni kartları əl ilə düzürük
+    yerli.slice(0, 8).forEach((c) => {
+      const kart = el("div", "kp-kart");
+      const resim = el("div", "kp-resim");
+      const img = new Image();
+      img.src = kicikSekil(c.videoId); img.alt = ""; img.loading = "lazy";
+      resim.append(img);
+      kart.append(resim, el("div", "kp-ad", c.title));
+      kart.addEventListener("click", () => tesdiqAc(c));
+      qutu.append(kart);
+    });
+  }
+}
+
 // ---------- tablar ----------
 async function tabGoster(tab) {
   aktivTab = tab;
@@ -95,6 +132,7 @@ async function tabGoster(tab) {
   if (tab === "search") {
     if (inp.value.trim().length >= 2) return axtarIsle(inp.value);
     mesaj("Mahnı və ya müğənni adını yaz");
+    isit();                       // açıq mənbələrin siyahısını öncədən hazırla
     setTimeout(() => inp.focus(), 80);
     return;
   }
@@ -110,7 +148,7 @@ async function axtarIsle(q) {
     const l = await axtar(q);
     if (n === sayac && aktivTab === "search") goster(l);
   } catch (e) {
-    if (n === sayac) mesaj("Axtarış hazırda işləmir. Bir az sonra yenidən cəhd et.");
+    if (n === sayac && aktivTab === "search") axtarisXetasi(String(q).trim());
   }
 }
 
