@@ -231,8 +231,9 @@ function izleMeftun(uid) {
 }
 
 /* ================= KART ================= */
+let gurulu = false, sig = {};
 function bagla() {
-  tok++; sonD = null; mesgul = false; ownerUid = null;
+  tok++; sonD = null; mesgul = false; ownerUid = null; gurulu = false; sig = {};
   if (mUnsub) { mUnsub(); mUnsub = null; } mUid = null; mD = null;
   ov.classList.remove("open");
   if (unsub) { unsub(); unsub = null; }
@@ -240,48 +241,19 @@ function bagla() {
 }
 ov.addEventListener("click", e => { if (e.target === ov) bagla(); });
 
-function ciz(d) {
-  const ad = pick(d, ["username"]) || "Oyunçu";
-  const yas = pick(d, ["age"]);
-  const yer = [pick(d, ["country"]), pick(d, ["city"])].filter(Boolean).join(", ");
-  const sekil = pick(d, ["avatar"]) || NOPHOTO;
-  const onerr = "this.onerror=null;this.src='" + NOPHOTO + "'";
-  const R = k => '<span class="pf-rk" data-r="' + k + '">' + esc(kesh[k] || "") + "</span>";
-  const row = (cls, ic, val, k) => '<div class="pf-row ' + cls + '"><span class="pf-ic">' + ic + "</span><b>" + fmt(val) + "</b>" + R(k) + "</div>";
-  const qiymet = Math.max(1, num(d.meftunQiymet));
-  const mVar = !!d.meftunUid;
-  const menimdir = ownerUid === MEN;
+const onerr = "this.onerror=null;this.src='" + NOPHOTO + "'";
+const R = k => '<span class="pf-rk" data-r="' + k + '">' + esc(kesh[k] || "") + "</span>";
+const row = (cls, ic, val, k) => '<div class="pf-row ' + cls + '"><span class="pf-ic">' + ic + "</span><b>" + fmt(val) + "</b>" + R(k) + "</div>";
 
-  let rows = row("pf-k", IC.dudaq, d.kisses, "kisses") + row("pf-m", IC.nota, d.music, "music");
-  if (acik) rows += row("pf-h", IC.urek1, qiymet, "meftunQiymet") + row("pf-h", IC.urek2, d.cutUrek, "cutUrek");
-  rows += row("pf-c", IC.smayl, d.smiles, "smiles");
-
-  /* Məftun bloku */
-  let mAva, mAd;
-  if (!mVar) { mAva = IC.bosAva; mAd = "Məftun yoxdur"; }
-  else if (mD && mD.uid === d.meftunUid) {
-    mAva = '<img class="pf-ava" style="border-radius:0;width:100%;height:100%" src="' + esc(mD.avatar || NOPHOTO) + '" alt="" onerror="' + onerr + '">';
-    mAd = "Məftun <u>" + esc(mD.ad) + "</u>";
-  } else { mAva = IC.bosAva; mAd = "Məftun ..."; }
-
-  let dugme;
-  if (menimdir) dugme = mVar ? '<button class="pf-follow" data-a="terk">Tərk et</button>' : '<button class="pf-follow g" disabled>Məftun ol</button>';
-  else if (d.meftunUid === MEN) dugme = '<button class="pf-follow g" disabled>Məftunsan</button>';
-  else dugme = '<button class="pf-follow" data-a="ol">Məftun ol</button>';
-
+/* Kartın karkası bir dəfə qurulur; sonra yalnız dəyişən hissələr yenilənir */
+function qur() {
   ov.innerHTML =
     '<div class="pf-card">' +
       '<button class="pf-close" aria-label="Bağla"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#7cc92f" stroke-width="3.2" stroke-linecap="round"/></svg></button>' +
-      (vipMi(d) ? '<div class="pf-fold"></div><div class="pf-vip">VIP</div>' : "") +
-      '<div class="pf-photo"><img src="' + esc(sekil) + '" alt="" onerror="' + onerr + '">' +
-        '<div class="pf-cap">' + esc(ad) + (yas ? ", " + esc(yas) : "") + (yer ? "<small>" + esc(yer) + "</small>" : "") + "</div>" +
-        '<button class="pf-zoom" aria-label="Böyüt">' + IC.zoom + "</button></div>" +
-      '<div class="pf-stats"><div>' + rows + "</div>" + IC.kubok + "</div>" +
-      '<div class="pf-dv' + (acik ? " up" : "") + '"><i></i><span>' + IC.chev + "</span><i></i></div>" +
-      '<div class="pf-user"><div class="pf-ava" style="overflow:hidden">' + mAva + "</div>" +
-        '<div class="pf-info"><div class="pf-name">' + mAd + "</div>" +
-        '<div class="pf-heart">' + IC.urek1 + "<b>" + fmt(qiymet) + "</b>" + R("meftunQiymet") + "</div>" +
-        dugme + "</div></div>" +
+      '<div class="pf-topw"></div>' +
+      '<div class="pf-stats"><div class="pf-rowsw"></div>' + IC.kubok + "</div>" +
+      '<div class="pf-dv"><i></i><span>' + IC.chev + "</span><i></i></div>" +
+      '<div class="pf-userw"></div>' +
       '<div class="pf-ln"></div>' +
       '<div class="pf-act">' +
         '<button class="pf-btn" style="background:#ec5440">' + IC.qalxan + "</button>" +
@@ -291,28 +263,89 @@ function ciz(d) {
         '<button class="pf-btn" style="background:#4fa9de">' + IC.mail + "</button>" +
       "</div>" +
     "</div>";
-
+  gurulu = true; sig = {};
   ov.querySelector(".pf-close").onclick = bagla;
-  ov.querySelector(".pf-dv span").onclick = () => { acik = !acik; ciz(sonD); };
-  ov.querySelector(".pf-zoom").onclick = () => {
-    const f = document.createElement("div");
-    f.className = "pf-full";
-    f.innerHTML = '<img src="' + esc(sekil) + '" alt="">';
-    f.onclick = () => f.remove();
-    document.body.appendChild(f);
-  };
-  const b = ov.querySelector(".pf-follow[data-a]");
-  if (b) b.onclick = async () => {
-    b.disabled = true;
-    try {
-      if (b.dataset.a === "ol") await meftunOl(ownerUid); else await terkEt();
-    } catch (e) {
-      if (e.message === "YETMIR") toast("Kifayət qədər bonus ürəyiniz yoxdur");
-      else if (e.message === "ARTIQ") toast("Artıq məftunsunuz");
-      else if (e.message === "BOS") toast("Məftun yoxdur");
-      else { console.error(e); toast("Xəta baş verdi, yenidən cəhd edin"); }
-    }
-  };
+  ov.querySelector(".pf-dv span").onclick = () => { acik = !acik; if (sonD) ciz(sonD); };
+}
+
+function ciz(d) {
+  if (!gurulu || !ov.querySelector(".pf-card")) qur();
+  const ad = pick(d, ["username"]) || "Oyunçu";
+  const yas = pick(d, ["age"]);
+  const yer = [pick(d, ["country"]), pick(d, ["city"])].filter(Boolean).join(", ");
+  const sekil = pick(d, ["avatar"]) || NOPHOTO;
+  const qiymet = Math.max(1, num(d.meftunQiymet));
+  const mVar = !!d.meftunUid;
+  const menimdir = ownerUid === MEN;
+
+  /* 1) şəkil, ad, VIP (yalnız dəyişəndə) */
+  const sTop = [sekil, ad, yas, yer, vipMi(d)].join("|");
+  if (sig.top !== sTop) {
+    sig.top = sTop;
+    ov.querySelector(".pf-topw").innerHTML =
+      (vipMi(d) ? '<div class="pf-fold"></div><div class="pf-vip">VIP</div>' : "") +
+      '<div class="pf-photo"><img src="' + esc(sekil) + '" alt="" onerror="' + onerr + '">' +
+      '<div class="pf-cap">' + esc(ad) + (yas ? ", " + esc(yas) : "") + (yer ? "<small>" + esc(yer) + "</small>" : "") + "</div>" +
+      '<button class="pf-zoom" aria-label="Böyüt">' + IC.zoom + "</button></div>";
+    ov.querySelector(".pf-zoom").onclick = () => {
+      const f = document.createElement("div");
+      f.className = "pf-full";
+      f.innerHTML = '<img src="' + esc(sekil) + '" alt="">';
+      f.onclick = () => f.remove();
+      document.body.appendChild(f);
+    };
+  }
+
+  /* 2) xal sətirləri */
+  ov.querySelector(".pf-dv").classList.toggle("up", acik);
+  const sRows = [d.kisses, d.music, d.smiles, qiymet, d.cutUrek, acik].map(num).join("|");
+  if (sig.rows !== sRows) {
+    sig.rows = sRows;
+    let rows = row("pf-k", IC.dudaq, d.kisses, "kisses") + row("pf-m", IC.nota, d.music, "music");
+    if (acik) rows += row("pf-h", IC.urek1, qiymet, "meftunQiymet") + row("pf-h", IC.urek2, d.cutUrek, "cutUrek");
+    rows += row("pf-c", IC.smayl, d.smiles, "smiles");
+    ov.querySelector(".pf-rowsw").innerHTML = rows;
+  }
+
+  /* 3) yalnız Məftun yeri (şəkil/ad/düymə dəyişəndə) */
+  const mOK = mVar && mD && mD.uid === d.meftunUid;
+  const sUser = [d.meftunUid || "", mOK ? mD.ad + "|" + mD.avatar : "", menimdir, d.meftunUid === MEN].join("#");
+  if (sig.user !== sUser) {
+    sig.user = sUser;
+    let mAva, mAd;
+    if (!mVar) { mAva = IC.bosAva; mAd = "Məftun yoxdur"; }
+    else if (mOK) {
+      mAva = '<img style="width:100%;height:100%;object-fit:cover;display:block" src="' + esc(mD.avatar || NOPHOTO) + '" alt="" onerror="' + onerr + '">';
+      mAd = "Məftun <u>" + esc(mD.ad) + "</u>";
+    } else { mAva = IC.bosAva; mAd = "Məftun ..."; }
+
+    let dugme;
+    if (menimdir) dugme = mVar ? '<button class="pf-follow" data-a="terk">Tərk et</button>' : '<button class="pf-follow g" disabled>Məftun ol</button>';
+    else if (d.meftunUid === MEN) dugme = '<button class="pf-follow g" disabled>Məftunsan</button>';
+    else dugme = '<button class="pf-follow" data-a="ol">Məftun ol</button>';
+
+    ov.querySelector(".pf-userw").innerHTML =
+      '<div class="pf-user"><div class="pf-ava" style="overflow:hidden">' + mAva + "</div>" +
+      '<div class="pf-info"><div class="pf-name">' + mAd + "</div>" +
+      '<div class="pf-heart">' + IC.urek1 + '<b class="pf-hv"></b>' + R("meftunQiymet") + "</div>" +
+      dugme + "</div></div>";
+
+    const b = ov.querySelector(".pf-follow[data-a]");
+    if (b) b.onclick = async () => {
+      b.disabled = true;
+      try {
+        if (b.dataset.a === "ol") await meftunOl(ownerUid); else await terkEt();
+      } catch (e) {
+        if (e.message === "YETMIR") toast("Kifayət qədər bonus ürəyiniz yoxdur");
+        else if (e.message === "ARTIQ") toast("Artıq məftunsunuz");
+        else if (e.message === "BOS") toast("Məftun yoxdur");
+        else { console.error(e); toast("Xəta baş verdi, yenidən cəhd edin"); }
+      }
+      if (b.isConnected) b.disabled = false;
+    };
+  }
+  const hv = ov.querySelector(".pf-hv");
+  if (hv) hv.textContent = fmt(qiymet);
 }
 
 /* ProfilKart.ac("istifadəçi_docId") */
@@ -333,18 +366,38 @@ window.ProfilKart = {
   bagla
 };
 
-/* Oturacağa toxunanda aç (üstünü qat örtsə belə, koordinatla tapır) */
-let oturacaqlar = {};
+/* Oturacağa və ya fırlanma zamanı ortaya gələn kartlara toxunanda aç
+   (üstünü qat örtsə belə, koordinatla tapır) */
+let oturacaqlar = {}, spin = null;
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => { oturacaqlar = s.val() || {}; });
+onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/raund/spin"), s => { spin = s.val() || null; });
+
+const icinde = (el, x, y) => {
+  const r = (el.querySelector(".foto") || el).getBoundingClientRect();
+  return r.width > 0 && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+};
 
 window.addEventListener("click", e => {
   if (ov.classList.contains("open")) return;
+
+  /* ortadakı iki kart: birincisi qız (q), ikincisi oğlan (o) oyunçusudur */
+  if (spin) {
+    const ortalar = document.querySelectorAll("#masa .orta");
+    const uidler = [spin.qu, spin.ou];
+    for (let i = 0; i < ortalar.length && i < 2; i++) {
+      const el = ortalar[i];
+      if (el.classList.contains("goster") && uidler[i] && icinde(el, e.clientX, e.clientY)) {
+        window.ProfilKart.ac(uidler[i]);
+        return;
+      }
+    }
+  }
+
   for (const el of document.querySelectorAll("#masa .yer.dolu")) {
     const m = /yer-(\d+)/.exec(el.className);
     if (!m) continue;
     const o = oturacaqlar[m[1]];
-    const r = (el.querySelector(".foto") || el).getBoundingClientRect();
-    if (o && o.uid && r.width && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+    if (o && o.uid && icinde(el, e.clientX, e.clientY)) {
       window.ProfilKart.ac(o.uid);
       return;
     }
