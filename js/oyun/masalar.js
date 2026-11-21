@@ -28,14 +28,62 @@ async function melumat(n) {
   const d = s.exists() ? s.data() : null;
   return d && d.bitis > Date.now() ? d : null;
 }
-const kilidli = async (n) => { const d = await melumat(n); return !!(d && d.parolHash); };
+// Kilid məlumatı 30 saniyə yadda qalır: pəncərə təkrar açılanda kilid işarəsi dərhal görünür
+const kilitKesh = new Map();
+const kilidli = async (n) => {
+  n = String(n);
+  const k = kilitKesh.get(n);
+  if (k && Date.now() - k.t < 30000) return k.v;
+  const d = await melumat(n);
+  const v = !!(d && d.parolHash);
+  kilitKesh.set(n, { v, t: Date.now() });
+  return v;
+};
+// Hər masadakı oğlan/qız sayı son bilinən dəyərlə dərhal görünür, sonra canlı yenilənir
+const sayKesh = new Map();
 
+// ---------- Son baş çəkilən masalar: telefonda (dərhal açılsın) + hesabda (Firestore, itməsin) ----------
 const SON = "sonMasalar_" + cari.docId;
-const sonlar = () => { try { return JSON.parse(localStorage.getItem(SON)) || []; } catch (e) { return []; } };
+function sonOxu() {
+  try {
+    const x = JSON.parse(localStorage.getItem(SON));
+    if (Array.isArray(x)) return { a: x.map(String), t: 0 };                       // köhnə format
+    if (x && Array.isArray(x.a)) return { a: x.a.map(String), t: Number(x.t) || 0 };
+  } catch (e) {}
+  return { a: [], t: 0 };
+}
+const sonlar = () => sonOxu().a;
+function sonYaz(a, t) {
+  try { localStorage.setItem(SON, JSON.stringify({ a: a.slice(0, 10), t })); } catch (e) {}
+}
+function sonFs(a, t) {
+  if (!cari.docId) return;
+  updateDoc(doc(fsdb, "users", cari.docId), { sonMasalar: a.slice(0, 10), sonMasalarT: t }).catch(() => {});
+}
+let sonYenile = null;   // pəncərə açıqdırsa siyahını tamamlayır
 function sonaYaz(n) {
   const a = sonlar().filter((x) => x !== String(n)); a.unshift(String(n));
-  localStorage.setItem(SON, JSON.stringify(a.slice(0, 10)));
+  const t = Date.now();
+  sonYaz(a, t);
+  sonFs(a, t);
 }
+// Oyuna girəndə hesabdakı siyahı ilə sinxronlaşırıq: başqa cihazda və ya təmizlənmiş brauzerdə də siyahı qalır
+(async () => {
+  if (!cari.docId) return;
+  try {
+    const d = (await getDoc(doc(fsdb, "users", cari.docId))).data() || {};
+    const L = sonOxu();
+    const sT = Number(d.sonMasalarT) || 0;
+    if (Array.isArray(d.sonMasalar) && d.sonMasalar.length && sT > L.t) {
+      sonYaz(d.sonMasalar.map(String), sT);                 // hesabdakı daha təzədir
+      if (sonYenile) sonYenile();
+    } else if (L.a.length && L.t > sT) {
+      sonFs(L.a, L.t);                                      // telefondakı daha təzədir: hesaba yaz
+    } else if (L.a.length && !Array.isArray(d.sonMasalar)) {
+      sonFs(L.a, L.t || Date.now());                        // hesabda hələ yoxdur: köhnə siyahını köçür
+    }
+  } catch (e) {}
+})();
 
 // masa.js bunu çağırır: parolu bilmədən şifrəli masaya girmək olmaz
 export async function girisIcazesi(n) {
@@ -66,7 +114,7 @@ async function git(n) {
 const yer = document.createElement("div"); yer.id = "modalYer"; document.body.appendChild(yer);
 let unsubs = [];
 const ac = (html) => { bagla(); yer.innerHTML = html; yer.style.display = "block"; };
-function bagla() { unsubs.forEach((f) => f()); unsubs = []; yer.style.display = "none"; yer.innerHTML = ""; }
+function bagla() { unsubs.forEach((f) => f()); unsubs = []; sonYenile = null; yer.style.display = "none"; yer.innerHTML = ""; }
 function nomreOxu(v) {
   v = String(v).trim();
   if (!/^\d{1,6}$/.test(v) || +v < 1) return null;
@@ -102,26 +150,40 @@ export async function deyisModal() {
   $("mYar").onclick = yaratModal;
   unsubs.push(dostBolmesi($("mDost"), masayaGir, IK_O, IK_Q));
 
-  let sahibler = [];
-  try {
-    const q = await getDocs(query(collection(fsdb, "masalar"), where("sahib", "==", cari.docId)));
-    sahibler = q.docs.filter((d) => d.data().bitis > Date.now()).map((d) => d.id);
-  } catch (e) {}
-  const nums = [...sahibler, ...sonlar().filter((x) => !sahibler.includes(x))];
-  const box = $("mSiya"); if (!box) return;
-  nums.forEach((n) => {
+  // Son masalar telefondakı siyahıdan DƏRHAL çəkilir (şəbəkəni gözləmir), canlı sayılar sonra gəlir
+  const box = $("mSiya");
+  const satirlar = new Map();
+  function masaSirasi(n, basa) {
+    n = String(n);
+    const var_ = satirlar.get(n);
+    if (var_) { if (basa) box.prepend(var_); return; }
     const r = document.createElement("div"); r.className = "sira";
     r.innerHTML = `<div class="mtum"><img src="images/butulka/butulka.png" alt=""></div><div class="mad"><span class="kl"></span>#${n}</div>` +
       `<div class="say"><span>${IK_O}<b class="so">0</b></span><span>${IK_Q}<b class="sq">0</b></span></div>`;
+    const k0 = sayKesh.get(n);
+    if (k0) { r.querySelector(".so").textContent = k0.o; r.querySelector(".sq").textContent = k0.q; }
     r.onclick = () => masayaGir(n);
-    box.appendChild(r);
+    satirlar.set(n, r);
+    if (basa) box.prepend(r); else box.appendChild(r);
     kilidli(n).then((k) => { if (k) r.querySelector(".kl").textContent = "🔒 "; });
     unsubs.push(onValue(ref(rtdb, `masalar/${n}/oturacaqlar`), (s) => {
       const v = Object.values(s.val() || {}).filter(Boolean);
-      r.querySelector(".sq").textContent = v.filter((x) => x.cins === "q").length;
-      r.querySelector(".so").textContent = v.filter((x) => x.cins !== "q").length;
+      const q = v.filter((x) => x.cins === "q").length, o = v.filter((x) => x.cins !== "q").length;
+      sayKesh.set(n, { o, q });
+      r.querySelector(".sq").textContent = q;
+      r.querySelector(".so").textContent = o;
     }));
-  });
+  }
+  sonlar().forEach((n) => masaSirasi(n));
+  sonYenile = () => { if (box.isConnected) sonlar().forEach((n) => masaSirasi(n)); };
+
+  // Özünə məxsus (alınmış) masalar ən üstdə: bu sorğu gec gəlsə də pəncərə artıq açıqdır
+  try {
+    const q = await getDocs(query(collection(fsdb, "masalar"), where("sahib", "==", cari.docId)));
+    const sahibler = q.docs.filter((d) => d.data().bitis > Date.now()).map((d) => d.id);
+    if (!box.isConnected) return;
+    sahibler.slice().reverse().forEach((n) => masaSirasi(n, true));
+  } catch (e) {}
 }
 
 async function masayaGir(v) {
@@ -167,6 +229,7 @@ async function masaAl(n, parolHash) {
     tx.update(uref, { jetons: j - QIYMET });
     tx.set(mref, { sahib: cari.docId, sahibAd: u.data().username || "", parolHash, yaradildi: Date.now(), bitis: Date.now() + GUN30 });
   });
+  kilitKesh.delete(String(n));
 }
 
 async function yaratModal() {
@@ -186,6 +249,7 @@ async function yaratModal() {
   if (menimki) {
     $("yYenile").onclick = async () => {
       await updateDoc(doc(fsdb, "masalar", MASA_NOMRESI), { parolHash: await hash($("yPar2").value.trim()) });
+      kilitKesh.delete(String(MASA_NOMRESI));
       toast("Şifrə yeniləndi"); bagla();
     };
   }
@@ -211,4 +275,4 @@ async function yaratModal() {
         : e.message === "JETON" ? "Kifayət qədər jetonunuz yoxdur" : "Xəta: " + e.message);
     }
   };
-              }
+}
