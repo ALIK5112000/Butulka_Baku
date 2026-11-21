@@ -2,23 +2,11 @@ import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu, cinsTap, vipMi, adRengi, toast } from "./yardimci.js";
 import { tanisYaz } from "./dostlar.js";
-import { ref, push, query, limitToLast, limitToFirst, onChildAdded, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, push, get, remove, query, limitToLast, limitToFirst, onChildAdded, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-// ---- Çat görünüşü (referans şəklə görə, 1080px = 100vw) ----
-// MUSIQI_OLCU: sağdakı musiqi düymələrinin ölçüsü (1 = köhnə ölçü, 0.7 = 30% kiçik)
-const MUSIQI_OLCU = 0.7;
-const cs = document.createElement("style");
-cs.textContent = `
-#chatYeri #mesajlar .mesaj{gap:1.9vw;margin-bottom:1.7vw;align-items:flex-start}
-#chatYeri .mfoto{width:7.8vw!important;height:7.8vw!important;min-width:7.8vw;flex:none;border-radius:1.6vw!important;background-size:cover!important;background-position:center top!important}
-#chatYeri .mgovde{font-size:3.5vw!important;line-height:1.3!important;padding:1.6vw 2.4vw!important;border-radius:2.2vw!important;box-shadow:0 .2vw .8vw rgba(0,0,0,.06);background:#fff}
-#chatYeri .mgovde.qiz{background:#eaf8f2!important;border:.25vw solid #cfe8dc!important}
-#chatYeri .mgovde.klip-bildiris{background:#eaf8f2!important}
-#chatYeri .mad{font-weight:600}
-#musiqiPanel{transform:scale(${MUSIQI_OLCU});transform-origin:right top}
-`;
-document.head.appendChild(cs);
+// Masaya yeni girən oyunçu çatın yalnız son bu qədər mesajını görür
+const SON_MESAJ_SAYI = 10;
 
 const cari = cariOyuncu();
 const yol = `masalar/${MASA_NOMRESI}/chat`;
@@ -99,7 +87,7 @@ function musiqiXalVer(key) {
   toast("+9 musiqi xalı");
 }
 
-onChildAdded(query(ref(rtdb, yol), limitToLast(50)), (s) => {
+onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   const m = s.val();
   if (!m) return;
   const d = document.createElement("div");
@@ -226,3 +214,13 @@ inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefau
 document.getElementById("smayBtn").onclick = () => panel.classList.toggle("ac");
 
 onValue(query(ref(rtdb, yol), limitToFirst(1)), (s) => { if (!s.exists()) qutu.innerHTML = ""; });
+
+// Masa boşdursa (özümdən başqa oturan oyunçu yoxdursa) köhnə çat avtomatik silinir.
+// (Hamı çıxanda çatda heç kim qalmır, ona görə təmizləmə növbəti girişdə edilir; nəticə eynidir.)
+if (cari && cari.docId) {
+  get(ref(rtdb, `masalar/${MASA_NOMRESI}/oturacaqlar`)).then((s) => {
+    const v = s.val() || {};
+    const baskasi = Object.values(v).some((o) => o && o.uid && o.uid !== cari.docId);
+    if (!baskasi) remove(ref(rtdb, yol)).catch(() => {});
+  }).catch(() => {});
+}
