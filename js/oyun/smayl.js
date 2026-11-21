@@ -53,7 +53,8 @@ const CSS = `
 .sp-av svg{width:4.4vw;height:4.4vw}
 .sp-ttl{flex:1;margin-left:3.2vw;font:400 3.9vw/1.2 Roboto,Arial,sans-serif;color:#a8a8a8}
 .sp-bal{display:flex;align-items:center;gap:1.4vw;height:8.8vw;padding:0 1.2vw 0 1.6vw;border:.3vw solid #9cc454;border-radius:5vw;background:#f4f9e8}
-.sp-bal svg.sm{width:5vw;height:5vw}
+.sp-bal img.sm{width:4.8vw;height:4.8vw;display:block}
+.sp-bal{cursor:pointer}
 .sp-bal b{font:700 4.2vw/1 Roboto,Arial,sans-serif;color:#222}
 .sp-plus{width:6.4vw;height:6.4vw;border-radius:50%;background:#7cc92f;border:0;padding:0;display:flex;align-items:center;justify-content:center}
 .sp-plus svg{width:3.6vw;height:3.6vw}
@@ -64,7 +65,7 @@ const CSS = `
 .sp-e{height:14vw;display:flex;align-items:center;justify-content:center;font-size:11.5vw;line-height:1;transition:transform .12s}
 .sp-e img{height:13vw;width:auto}
 .sp-pr{display:flex;align-items:center;gap:1.2vw;margin-top:1.4vw;font:700 4vw/1 Roboto,Arial,sans-serif;color:#333}
-.sp-pr svg{width:4.7vw;height:4.7vw}
+.sp-pr img.sm{width:3.9vw;height:3.9vw;display:block}
 .sp-x{position:fixed;right:2vw;bottom:2.1vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#7cc92f;border:0;padding:0;z-index:9991;display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3)}
 .sp-x svg{width:4.4vw;height:4.4vw}
 .sp-shop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9995;display:none;align-items:center;justify-content:center;font-family:Roboto,Arial,sans-serif}
@@ -82,7 +83,7 @@ const CSS = `
 .sp-p button{width:100%;height:8.3vw;border:0;background:none;padding:0;display:flex;align-items:center;justify-content:center;gap:1.4vw;font:700 4.5vw/1 Roboto,Arial,sans-serif;color:#222}
 .sp-p button svg{width:4.9vw;height:4.5vw}
 .sp-fly{position:fixed;left:0;top:0;z-index:10010;pointer-events:none;will-change:transform,opacity}
-.sp-fly svg{width:5vw;height:5vw;display:block}
+.sp-fly img.sm{width:5vw;height:5vw;display:block}
 .sp-plus-n{position:fixed;z-index:10011;pointer-events:none;font:700 5vw/1 Roboto,Arial,sans-serif;color:#ffd54a;text-shadow:0 .3vw .8vw rgba(0,0,0,.55);will-change:transform,opacity}
 .sp-t{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
 .pfj{position:fixed;z-index:9000;pointer-events:none;line-height:1;will-change:transform,opacity;animation-fill-mode:both}
@@ -98,7 +99,7 @@ const st = document.createElement("style");
 st.textContent = CSS;
 document.head.appendChild(st);
 
-const SM = '<svg class="sm" viewBox="0 0 48 48"><defs><linearGradient id="spg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc83a"/><stop offset="1" stop-color="#f08a00"/></linearGradient></defs><circle cx="24" cy="24" r="22" fill="url(#spg)" stroke="#e17f00" stroke-width="2"/><path d="M12 21q4.5-6 9 0M27 21q4.5-6 9 0" fill="none" stroke="#7a3c00" stroke-width="3" stroke-linecap="round"/><path d="M12 28q12 14 24 0z" fill="#7a3c00"/><path d="M17 34q7 5 14 0" fill="none" stroke="#e8573b" stroke-width="3" stroke-linecap="round"/></svg>';
+const SM = '<img class="sm" src="images/jeton/smayl.png" alt="" draggable="false">';
 const UREK = '<svg viewBox="0 0 24 22"><path d="M12 21C5 16 1 12 1 7.2A5.2 5.2 0 0 1 12 4.5 5.2 5.2 0 0 1 23 7.2C23 12 19 16 12 21z" fill="#ff6a3d" stroke="#fff" stroke-width="1.2"/></svg>';
 const FC = (x, y, t) => '<g transform="translate(' + x + ' ' + y + ')"><circle r="32"/><path d="M-13 -8v5M13 -8v5"/><path d="' + ["M-14 8q14 14 28 0", "M-12 13h24", "M-13 17q13 -13 26 0"][t] + '"/></g>';
 const DECO = '<div class="sp-deco"><svg viewBox="0 0 844 300" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3.5" stroke-linecap="round">' +
@@ -196,7 +197,7 @@ function bagla() {
 }
 $(".sp-x").onclick = bagla;
 $(".sp-av").onclick = () => { if (window.ProfilKart) window.ProfilKart.ac(MEN); };
-$(".sp-plus").onclick = () => shop.classList.add("open");
+$(".sp-bal").onclick = () => shop.classList.add("open");
 $(".sp-sx").onclick = () => shop.classList.remove("open");
 shop.addEventListener("click", e => { if (e.target === shop) shop.classList.remove("open"); });
 
@@ -208,7 +209,7 @@ let mesgul = false;
 /* alan oyunçunun öz şəklinin üstünə alınan sayda smaylik düşür (yüngül: yalnız transform/opacity) */
 function dusdur(sayi) {
   const el = fotoTap(MEN);
-  const src = $(".sp-bal svg.sm");
+  const src = $(".sp-bal img.sm");
   if (!el || !src) return;
   const r = (el.querySelector(".foto") || el).getBoundingClientRect();
   const s0 = src.getBoundingClientRect();
@@ -223,7 +224,7 @@ function dusdur(sayi) {
   for (let i = 0; i < N; i++) {
     const d = document.createElement("div");
     d.className = "sp-fly";
-    d.innerHTML = SM.replace(' id="spg"', "").replace('url(#spg)', "#ffb52a");
+    d.innerHTML = SM;
     frag.appendChild(d); list.push(d);
   }
   document.body.appendChild(frag);
