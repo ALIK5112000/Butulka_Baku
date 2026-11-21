@@ -101,16 +101,22 @@ function musiqiSatiri(m) {
   fotoVer(f, m.uid);
   const g = document.createElement("div");
   g.className = "klip-musiqi";
+  // Sətir həmişə bir qatda qalır (CSS keşdə qalsa və ya başqa qayda üstün gəlsə də işləsin deyə birbaşa yazılır)
+  g.style.cssText = "display:flex!important;flex-wrap:nowrap!important;align-items:center!important;min-width:0!important;max-width:80vw!important;";
   g.innerHTML = NOTA_SVG;
   const ks = document.createElement("span");
   ks.textContent = m.metn;
+  // Klipin adı uzundursa soldan başlayır, sığan qədəri görünür, qalanı "…" ilə kəsilir
+  ks.style.cssText = "flex:0 1 auto!important;min-width:0!important;overflow:hidden!important;white-space:nowrap!important;text-overflow:ellipsis!important;word-break:normal!important;";
   g.appendChild(ks);
   if (m.hedef) {
     const ox = document.createElement("span");
     ox.className = "klip-ox";
+    ox.style.cssText = "flex:none!important;";
     ox.innerHTML = OX_SVG;
     const f2 = document.createElement("div");
     f2.className = "mfoto";
+    f2.style.cssText = "flex:none!important;";
     fotoVer(f2, m.hedef);
     g.append(ox, f2);
   }
