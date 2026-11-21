@@ -372,6 +372,12 @@ let oturacaqlar = {}, spin = null;
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => { oturacaqlar = s.val() || {}; });
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/raund/spin"), s => { spin = s.val() || null; });
 
+/* Öz şəklinə toxunanda smaylik paneli də açılır */
+function ackart(uid) {
+  window.ProfilKart.ac(uid);
+  if (uid === MEN && window.SmaylPanel) window.SmaylPanel.ac();
+}
+
 const icinde = (el, x, y) => {
   const r = (el.querySelector(".foto") || el).getBoundingClientRect();
   return r.width > 0 && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
@@ -387,7 +393,7 @@ window.addEventListener("click", e => {
     for (let i = 0; i < ortalar.length && i < 2; i++) {
       const el = ortalar[i];
       if (el.classList.contains("goster") && uidler[i] && icinde(el, e.clientX, e.clientY)) {
-        window.ProfilKart.ac(uidler[i]);
+        ackart(uidler[i]);
         return;
       }
     }
@@ -398,7 +404,7 @@ window.addEventListener("click", e => {
     if (!m) continue;
     const o = oturacaqlar[m[1]];
     if (o && o.uid && icinde(el, e.clientX, e.clientY)) {
-      window.ProfilKart.ac(o.uid);
+      ackart(o.uid);
       return;
     }
   }
