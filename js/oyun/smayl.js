@@ -80,6 +80,9 @@ const CSS = `
 .sp-p img{width:100%;display:block}
 .sp-p button{width:100%;height:8.3vw;border:0;background:none;padding:0;display:flex;align-items:center;justify-content:center;gap:1.4vw;font:700 4.5vw/1 Roboto,Arial,sans-serif;color:#222}
 .sp-p button svg{width:4.9vw;height:4.5vw}
+.sp-fly{position:fixed;left:0;top:0;z-index:10010;pointer-events:none;will-change:transform,opacity}
+.sp-fly svg{width:5vw;height:5vw;display:block}
+.sp-plus-n{position:fixed;z-index:10011;pointer-events:none;font:700 5vw/1 Roboto,Arial,sans-serif;color:#ffd54a;text-shadow:0 .3vw .8vw rgba(0,0,0,.55);will-change:transform,opacity}
 .sp-t{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
 .pfj{position:fixed;z-index:9000;pointer-events:none;line-height:1;will-change:transform,opacity;animation-fill-mode:both}
 .pfj img{height:1em;width:auto;display:block}
@@ -115,14 +118,14 @@ function toast(msg) {
 /* ---------- Səs ---------- */
 function ses() {
   try {
-    if (SATIN_ALMA_SESI) { new Audio(SATIN_ALMA_SESI).play().catch(() => {}); return; }
+    if (SATIN_ALMA_SESI) { const a = new Audio(SATIN_ALMA_SESI); a.volume = .25; a.play().catch(() => {}); return; }
     const C = window.AudioContext || window.webkitAudioContext;
     const c = new C();
     [[880, 0, .09], [1320, .09, .16]].forEach(([f, t0, d]) => {
       const o = c.createOscillator(), g = c.createGain();
       o.type = "sine"; o.frequency.value = f;
       g.gain.setValueAtTime(.0001, c.currentTime + t0);
-      g.gain.exponentialRampToValueAtTime(.35, c.currentTime + t0 + .02);
+      g.gain.exponentialRampToValueAtTime(.06, c.currentTime + t0 + .02);
       g.gain.exponentialRampToValueAtTime(.0001, c.currentTime + t0 + d);
       o.connect(g); g.connect(c.destination);
       o.start(c.currentTime + t0); o.stop(c.currentTime + t0 + d + .02);
@@ -199,9 +202,61 @@ window.SmaylPanel = { ac, bagla };
 
 /* ---------- Smaylik almaq (bonus ürək -> smaylik) ---------- */
 let mesgul = false;
+
+/* alan oyunçunun öz şəklinin üstünə alınan sayda smaylik düşür (yüngül: yalnız transform/opacity) */
+function dusdur(sayi) {
+  const el = fotoTap(MEN);
+  const src = $(".sp-bal svg.sm");
+  if (!el || !src) return;
+  const r = (el.querySelector(".foto") || el).getBoundingClientRect();
+  const s0 = src.getBoundingClientRect();
+  if (!r.width || !s0.width) return;
+  const tx = r.left + r.width / 2, ty = r.top + r.height / 2;
+  const sx = s0.left + s0.width / 2, sy = s0.top + s0.height / 2;
+  const N = Math.min(sayi, 40);                /* çox olanda da donma olmasın deyə maksimum 40 görünür */
+  const gap = N > 1 ? Math.min(60, 1100 / (N - 1)) : 0;
+  const S = innerWidth * 0.025;
+  let bitdi = 0;
+  const frag = document.createDocumentFragment(), list = [];
+  for (let i = 0; i < N; i++) {
+    const d = document.createElement("div");
+    d.className = "sp-fly";
+    d.innerHTML = SM.replace(' id="spg"', "").replace('url(#spg)', "#ffb52a");
+    frag.appendChild(d); list.push(d);
+  }
+  document.body.appendChild(frag);
+  list.forEach((d, i) => {
+    const ox = (Math.random() - .5) * innerWidth * 0.12, oy = Math.random() * innerWidth * 0.06;
+    const a = d.animate([
+      { transform: "translate(" + (sx - S) + "px," + (sy - S) + "px) scale(.5)", opacity: 0 },
+      { transform: "translate(" + ((sx + tx) / 2 + ox - S) + "px," + ((sy + ty) / 2 - oy - S) + "px) scale(1.1)", opacity: 1, offset: .45 },
+      { transform: "translate(" + (tx + ox * .25 - S) + "px," + (ty - S) + "px) scale(.7)", opacity: 1, offset: .9 },
+      { transform: "translate(" + (tx + ox * .25 - S) + "px," + (ty - S) + "px) scale(.2)", opacity: 0 }
+    ], { duration: 750, delay: i * gap, easing: "ease-in", fill: "both" });
+    a.onfinish = () => {
+      d.remove();
+      if (++bitdi === N) {
+        const t = document.createElement("div");
+        t.className = "sp-plus-n";
+        t.textContent = "+" + fmt(sayi);
+        t.style.left = (tx - innerWidth * 0.06) + "px";
+        t.style.top = (ty - innerWidth * 0.03) + "px";
+        document.body.appendChild(t);
+        const b = t.animate([
+          { transform: "translateY(0) scale(.6)", opacity: 0 },
+          { transform: "translateY(-2vw) scale(1.15)", opacity: 1, offset: .25 },
+          { transform: "translateY(-9vw) scale(1)", opacity: 0 }
+        ], { duration: 1100, easing: "ease-out", fill: "both" });
+        b.onfinish = () => t.remove();
+      }
+    };
+  });
+}
+
 async function satinAl(p, btn) {
   if (mesgul || !MEN) return;
-  mesgul = true; btn.disabled = true;
+  mesgul = true;
+  shop.classList.remove("open");               /* alışda mağaza dərhal bağlanır */
   try {
     const yeni = await runTransaction(fsdb, async tx => {
       const r = doc(fsdb, "users", MEN), s = await tx.get(r), d = s.data() || {};
@@ -215,14 +270,14 @@ async function satinAl(p, btn) {
     if (window.urekYaz) window.urekYaz(yeni.h);
     else { const ue = document.getElementById("urekSayi"); if (ue) ue.textContent = yeni.h; }
     ses();
-    toast("+" + fmt(p.smayl) + " smaylik");
+    requestAnimationFrame(() => dusdur(p.smayl));
   } catch (e) {
     if (e.message === "YETMIR") {
       toast("Bonus ürəyiniz çatmır");
-      if (window.HeartShop) { shop.classList.remove("open"); window.HeartShop.open(); }
-    } else { console.error(e); toast("Xəta baş verdi, yenidən cəhd edin"); }
+      if (window.HeartShop) window.HeartShop.open();
+    } else { console.error(e); toast("Xəta baş verdi, yenidən cəhd edin"); shop.classList.add("open"); }
   }
-  mesgul = false; btn.disabled = false;
+  mesgul = false;
 }
 
 /* ---------- Jest işlətmək ---------- */
