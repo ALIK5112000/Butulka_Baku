@@ -1,0 +1,161 @@
+/* Klip sistemi: chatın küncündəki canlı kart + seçim və təsdiq pəncərələri */
+
+/* Klip çalanda musiqi düymələri gizlənir (js/oyun/klip.js idarə edir) */
+#musiqiPanel.gizli { display: none; }
+
+/* ---------- Canlı klip kartı (chatın yuxarı sağ küncü) ---------- */
+#klipKart {
+  position: absolute; top: 2.5vw; right: 0; z-index: 20;
+  width: 78vw; overflow: hidden; background: #fff;
+  border-radius: 5vw 0 0 5vw;
+  box-shadow: 0 .8vw 3vw rgba(0, 0, 0, .22);
+  transition: width .2s ease;
+}
+#klipKart[hidden] { display: none; }
+/* Ölçü: standart -> 1x -> 2x -> standart */
+#klipKart.z1 { width: 90vw; }
+#klipKart.z2 { width: 100vw; border-radius: 0; }
+
+#klipUst { display: flex; height: 21vw; transition: height .2s ease; }
+#klipKart.z1 #klipUst { height: 30vw; }
+#klipKart.z2 #klipUst { height: 46vw; }
+
+#klipAvatarQutu {
+  flex: none; width: 22vw; position: relative; border: 0; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #f6f6f6; cursor: pointer;
+}
+#klipHalqa { width: 17vw; height: 17vw; transform: rotate(-90deg); }
+#klipHalqa circle { fill: none; stroke-width: 5; }
+#klipHalqa .iz { stroke: #e2e2e2; }
+#klipHalqa .dolu { stroke: #9ccc65; stroke-linecap: round; stroke-dasharray: 207.35; stroke-dashoffset: 207.35; }
+#klipAvatar {
+  position: absolute; width: 12.4vw; height: 12.4vw; border-radius: 50%;
+  object-fit: cover; object-position: center top;
+  border: .6vw solid #fff; background: #ddd;
+}
+
+/* Video toxunuşa cavab vermir (YouTube-a keçid, pauza və reklam linkləri bağlıdır) */
+#klipVideo {
+  flex: 1; position: relative; overflow: hidden; background: #000;
+  container-type: size; pointer-events: none;
+}
+#klipVideo iframe {
+  position: absolute; left: 50%; top: 50%; border: 0;
+  width: max(100cqw, 177.78cqh); height: max(56.25cqw, 100cqh);
+  transform: translate(-50%, -50%);
+}
+
+#klipAlt {
+  height: 9.5vw; display: flex; align-items: center; gap: 3vw; padding: 0 4vw 0 3vw;
+  background: #f9f9f9; border-top: .3vw solid #eee;
+}
+#klipAlt button {
+  flex: none; width: 7vw; height: 7vw; padding: 0; border: 0; background: none;
+  color: #6f7780; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+#klipAlt button svg { width: 5.4vw; height: 5.4vw; }
+#klipSesBtn .ses-bagli { display: none; }
+#klipSesBtn.sessiz .ses-bagli, #klipKart.klik-gozle #klipSesBtn .ses-bagli { display: block; }
+#klipSesBtn.sessiz .ses-aciq, #klipKart.klik-gozle #klipSesBtn .ses-aciq { display: none; }
+/* Brauzer səsi blokladı: səs düyməsi yanıb-sönür, istənilən toxunuş səsi açır */
+#klipKart.klik-gozle #klipSesBtn { color: #e8452c; animation: klipNefes 1s ease-in-out infinite; }
+@keyframes klipNefes { 50% { transform: scale(1.3); } }
+
+#klipSes {
+  flex: 1; min-width: 0; margin: 0; height: 1.4vw; border-radius: 1vw; outline: 0;
+  -webkit-appearance: none; appearance: none;
+  background: linear-gradient(to right, #9ccc65 var(--d, 85%), #3a3a3a var(--d, 85%));
+}
+#klipSes::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 5.6vw; height: 5.6vw; border-radius: 50%;
+  background: #fff; border: 0; box-shadow: 0 .3vw 1.2vw rgba(0, 0, 0, .35);
+}
+#klipSes::-moz-range-thumb {
+  width: 5.6vw; height: 5.6vw; border-radius: 50%;
+  background: #fff; border: 0; box-shadow: 0 .3vw 1.2vw rgba(0, 0, 0, .35);
+}
+
+/* Klip çalanda chat mesajları kartın ALTINDAN başlayır (kart mesajları örtmür).
+   Rəqəmlər kartın hündürlüyüdür: 21vw+9.5vw, 30+9.5, 46+9.5 + yuxarıdan 2.5vw + 1.5vw ara */
+#chatYeri #mesajlar { transition: padding-top .2s ease; }
+#chatYeri.klip-var #mesajlar { padding-top: 35vw; }
+#chatYeri.klip-var.kz1 #mesajlar { padding-top: 44vw; }
+#chatYeri.klip-var.kz2 #mesajlar { padding-top: 60vw; }
+
+/* ---------- Chatda klip bildirişi ---------- */
+.mgovde.klip-bildiris {
+  background: #f0fdf4; border: 1px solid #86efac; color: #166534; font-weight: 700;
+}
+
+/* ---------- Seçim pəncərəsi ---------- */
+#klipPenceresi, #klipTesdiq {
+  position: fixed; inset: 0; z-index: 70;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .5);
+}
+#klipTesdiq { z-index: 80; }
+#klipPenceresi[hidden], #klipTesdiq[hidden], #kpAxtarQutu[hidden], #ktXeber[hidden] { display: none; }
+
+.kp-qutu {
+  position: relative; width: min(88vw, 420px); height: min(80vh, 640px);
+  background: #fff; border-radius: 24px; padding: 14px 14px 12px;
+  display: flex; flex-direction: column; gap: 10px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .3);
+}
+.kp-bagla {
+  position: absolute; top: -12px; right: -8px; width: 38px; height: 38px;
+  border-radius: 50%; border: 0; background: #fff; color: #7cb342;
+  font-size: 20px; font-weight: 800; line-height: 1; cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .28);
+}
+.kp-tablar { display: flex; justify-content: space-around; padding: 4px 8px 6px; }
+.kp-tab { border: 0; background: none; font-size: 27px; line-height: 1; padding: 2px 6px; opacity: .38; filter: grayscale(.5); cursor: pointer; }
+.kp-tab.aktiv { opacity: 1; filter: none; }
+.kp-baslik { padding: 0 4px; font-size: 15px; font-weight: 700; color: #9a9a9a; }
+.kp-axtar input {
+  width: 100%; padding: 11px 14px; border: 0; border-radius: 12px; outline: 0;
+  background: #f2f2f2; font-size: 15px; color: #222;
+}
+.kp-siyahi {
+  flex: 1; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px 10px; align-content: start;
+}
+.kp-siyahi.bos { display: block; text-align: center; color: #222; font-size: 16px; padding: 22px 0; }
+.kp-kart { cursor: pointer; }
+.kp-resim { position: relative; aspect-ratio: 16 / 9; border-radius: 6px; overflow: hidden; background: #222; }
+.kp-resim img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.kp-ulduz {
+  position: absolute; top: 1px; right: 4px; border: 0; background: none; padding: 0;
+  color: #fff; font-size: 26px; line-height: 1.2; text-shadow: 0 1px 4px #000; cursor: pointer;
+}
+.kp-muddet {
+  position: absolute; bottom: 4px; right: 4px; padding: 1px 5px; border-radius: 3px;
+  background: rgba(0, 0, 0, .72); color: #fff; font-size: 12px;
+}
+.kp-ad { margin-top: 4px; font-size: 15px; line-height: 1.2; color: #222; max-height: 3.6em; overflow: hidden; word-break: break-word; }
+
+/* ---------- Təsdiq pəncərəsi ---------- */
+.kt-qutu {
+  position: relative; width: min(88vw, 420px); background: #fff; border-radius: 24px;
+  padding: 18px 18px 20px; text-align: center; box-shadow: 0 14px 36px rgba(0, 0, 0, .3);
+}
+.kt-bagla {
+  position: absolute; top: -12px; right: -8px; width: 38px; height: 38px;
+  border-radius: 50%; border: 0; background: #fff; color: #7cb342;
+  font-size: 20px; font-weight: 800; line-height: 1; cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .28);
+}
+.kt-baslik { font-size: 17px; font-weight: 700; color: #9a9a9a; margin-bottom: 12px; }
+#ktOnizle { aspect-ratio: 16 / 9; background: #000; border-radius: 4px; overflow: hidden; }
+#ktOnizle iframe { width: 100%; height: 100%; border: 0; display: block; }
+.kt-metn { margin: 16px 4px 0; font-size: 18px; line-height: 1.3; color: #222; }
+.kt-metn svg { width: 24px; height: 24px; vertical-align: -5px; }
+#ktXeber { margin: 8px 0 0; font-size: 14px; color: #c0392b; }
+.kt-duymeler { display: flex; justify-content: center; gap: 16px; margin-top: 18px; }
+.kt-duymeler button {
+  min-width: 118px; padding: 10px 16px; border-radius: 10px; font-size: 18px; cursor: pointer;
+  border: 2px solid #8bc34a; background: #fff; color: #7cb342;
+}
+.kt-duymeler button.esas { background: #8bc34a; color: #fff; }
+.kt-duymeler button:disabled { opacity: .5; }
