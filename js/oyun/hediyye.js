@@ -244,15 +244,23 @@ function klipIzle() {
 const kt = setInterval(() => { if (klipIzle()) clearInterval(kt); }, 500);
 setTimeout(() => clearInterval(kt), 300000);
 
+const norm = s => { try { return new URL(s || "images/avatar/nophoto.svg", location.href).href; } catch (e) { return s || ""; } };
 function djUid() {
-  const d = sonKlip;
-  if (!d) return null;
-  const bitis = num(d.startedAt) + num(d.durationSec || 240) * 1000 + 3000;
-  if (num(d.startedAt) && Date.now() + offset > bitis) return null;
   const oy = Object.values(oturacaqlar).filter(Boolean);
-  const uids = new Set(oy.map(o => o.uid));
-  for (const k in d) if (typeof d[k] === "string" && uids.has(d[k])) return d[k];
-  if (d.djAvatar) { const o = oy.find(x => x.sekil === d.djAvatar); if (o) return o.uid; }
+  const d = sonKlip;
+  if (d) {
+    const bitis = num(d.startedAt) + num(d.durationSec || 240) * 1000 + 3000;
+    if (!(num(d.startedAt) && Date.now() + offset > bitis)) {
+      const uids = new Set(oy.map(o => o.uid));
+      for (const k in d) if (typeof d[k] === "string" && uids.has(d[k])) return d[k];
+    }
+  }
+  /* ekrandakı canlı klip kartına görə: musiqini qoşanın şəkli */
+  const w = document.getElementById("bb-live-clip-widget"), im = document.getElementById("bb-dj-avatar");
+  if (w && im && getComputedStyle(w).display !== "none") {
+    const o = oy.find(x => x.sekil && norm(x.sekil) === norm(im.src));
+    if (o) return o.uid;
+  }
   return null;
 }
 
