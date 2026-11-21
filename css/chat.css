@@ -12,9 +12,10 @@
 /* qız oyunçunun mesajı və klip/məftun bildirişləri: açıq nanə-yaşıl */
 .mgovde.qiz, .mgovde.klip-bildiris { background: #eaf8f2; border: .25vw solid #cfe8dc; }
 /* Klip qoşulma bildirişi: qoşanın şəkli + musiqi işarəsi + musiqinin adı (qabarcıqsız) */
-.klip-musiqi { display: flex; align-items: center; gap: 1.8vw; min-height: 7.8vw; max-width: 80vw; color: #666; font-size: 3.6vw; line-height: 1.25; word-break: break-word; }
+.klip-musiqi { display: flex; align-items: center; gap: 1.8vw; min-height: 7.8vw; max-width: 80vw; min-width: 0; color: #666; font-size: 3.6vw; line-height: 1.25; }
 .klip-musiqi svg { width: 6.4vw; height: 6.4vw; flex: none; }
-.klip-musiqi > span:not(.klip-ox) { min-width: 0; }
+/* Klipin adı uzundursa bir sətirdə sığan qədəri görünür, qalanı "…" ilə kəsilir */
+.klip-musiqi > span:not(.klip-ox) { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .klip-ox { display: flex; flex: none; }
 .klip-ox svg { width: 5.4vw; height: 5.4vw; }
 .mad { font-weight: 700; }
