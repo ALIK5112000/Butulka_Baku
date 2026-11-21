@@ -51,9 +51,37 @@ function sekil(uid) {
   return sekiller[uid];
 }
 
+// Şəkil: toxunanda həmin oyunçunun profil kartı açılır (öz şəklin olsa öz kartın)
 function fotoVer(f, uid) {
   f.style.backgroundImage = 'url("images/avatar/nophoto.svg")';
-  if (uid) sekil(uid).then((u) => { if (u) f.style.backgroundImage = `url("${String(u).replace(/"/g, "%22")}")`; });
+  if (uid) {
+    f.dataset.uid = uid;
+    f.style.cursor = "pointer";
+    f.onclick = () => { if (window.ProfilKart) window.ProfilKart.ac(uid); };
+    sekil(uid).then((u) => { if (u) f.style.backgroundImage = `url("${String(u).replace(/"/g, "%22")}")`; });
+  }
+}
+
+// ---- Musiqi qoşana +9 xal: qoşma bildirişi gələndə (yalnız təzə bildirişə, bir dəfə) ----
+const PUSH_CHARS = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
+function pushVaxti(key) {
+  let t = 0;
+  for (let i = 0; i < 8; i++) t = t * 64 + PUSH_CHARS.indexOf(key.charAt(i));
+  return t;
+}
+let serverOffset = 0;
+onValue(ref(rtdb, ".info/serverTimeOffset"), (x) => { serverOffset = x.val() || 0; });
+
+function musiqiXalVer(key) {
+  if (!cari || !cari.docId || !window.Xallar) return;
+  if (Date.now() + serverOffset - pushVaxti(key) > 30000) return; // köhnə bildiriş (səhifə yenilənəndə təkrar oxunur)
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem("xalMusiqi") || "[]"); } catch (e) {}
+  if (list.includes(key)) return;
+  list.push(key);
+  localStorage.setItem("xalMusiqi", JSON.stringify(list.slice(-50)));
+  window.Xallar.musiqiQosdu(cari.docId);
+  toast("+9 musiqi xalı");
 }
 
 onChildAdded(query(ref(rtdb, yol), limitToLast(50)), (s) => {
@@ -64,12 +92,30 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(50)), (s) => {
 
   // Klip qoşulma bildirişi (bütün masada görünür): qoşan oyunçunun şəkli + klipin adı
   if (m.isMusicNotice) {
+    window.__sonDJ = { uid: m.uid, key: s.key }; // hədiyyə xalı üçün: son musiqini kim qoşub
+    if (cari && m.uid === cari.docId) musiqiXalVer(s.key);
     const f = document.createElement("div");
     f.className = "mfoto";
     fotoVer(f, m.uid);
     const g = document.createElement("div");
     g.className = "mgovde klip-bildiris";
     g.textContent = `🎵 ${m.ad} klip qoşdu: ${m.metn}`;
+    d.append(f, g);
+    qutu.appendChild(d);
+    while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
+    qutu.scrollTop = qutu.scrollHeight;
+    return;
+  }
+
+  // Məftun bildirişi: kim kimə məftun oldu / kim tərk etdi
+  if (m.isMeftunNotice) {
+    const f = document.createElement("div");
+    f.className = "mfoto";
+    fotoVer(f, m.uid);
+    const g = document.createElement("div");
+    g.className = "mgovde klip-bildiris";
+    g.style.cssText = "background:#fff0f6;border-color:#f06aa8;";
+    g.textContent = m.metn;
     d.append(f, g);
     qutu.appendChild(d);
     while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
