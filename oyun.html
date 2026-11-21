@@ -146,7 +146,24 @@
                     <svg id="klipHalqa" viewBox="0 0 76 76"><circle class="iz" cx="38" cy="38" r="33"/><circle id="klipHalqaDolu" class="dolu" cx="38" cy="38" r="33"/></svg>
                     <img id="klipAvatar" src="images/avatar/nophoto.svg" alt="">
                 </button>
-                <div id="klipVideo"><div id="klipOynatici"></div></div>
+                <div id="klipVideo">
+                    <div id="klipOynatici"></div>
+                    <!-- Toxunanda şəxsi idarə açılır (yalnız toxunan oyunçuya təsir edir, başqalarının klipi dəyişmir) -->
+                    <div id="klipDokunus">
+                        <div id="klipKontrol">
+                            <div class="kk-ust"><button type="button" id="kkCanli">Canlı</button></div>
+                            <div class="kk-orta">
+                                <button type="button" id="kkGeri" aria-label="10 saniyə geri">−10</button>
+                                <button type="button" id="kkOyna" aria-label="Oynat / pauza">
+                                    <svg class="i-oyna" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+                                    <svg class="i-pauza" viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>
+                                </button>
+                                <button type="button" id="kkIrali" aria-label="10 saniyə irəli">+10</button>
+                            </div>
+                            <div class="kk-alt"><span id="kkVaxt">0:00</span><input id="kkSeek" type="range" min="0" max="100" step="1" value="0" aria-label="Klipdə yer"><span id="kkMuddet">0:00</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div id="klipAlt">
                 <button type="button" id="klipOlcuBtn" aria-label="Pəncərənin ölçüsü">
