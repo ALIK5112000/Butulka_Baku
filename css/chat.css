@@ -1,10 +1,16 @@
-#mesajlar { position: absolute; top: 0; bottom: 12vw; left: 0; right: 0; overflow-y: auto; padding: 2vw 1.8vw; }
-.mesaj { display: flex; gap: 2.2vw; margin-bottom: 1.8vw; align-items: flex-start; }
-.mfoto { flex: none; width: 8vw; height: 8vw; border-radius: 1.2vw; background: #999 center/cover no-repeat; }
+/* Çat: ölçülər referans şəklə görə (1080px = 100vw) */
+#mesajlar { position: absolute; top: 0; bottom: 12vw; left: 0; right: 0; overflow-y: auto; padding: 2vw 1.8vw; display: flex; flex-direction: column; }
+/* Az mesaj olanda onlar aşağıdan başlayıb yuxarı yığılır (çox olanda adi şəkildə sürüşür) */
+#mesajlar > * { flex: none; }
+#mesajlar > :first-child { margin-top: auto; }
+.mesaj { display: flex; gap: 1.9vw; margin-bottom: 1.7vw; align-items: flex-start; }
+.mfoto { flex: none; width: 7.8vw; height: 7.8vw; border-radius: 1.6vw; background: #999 center top/cover no-repeat; }
 .mgovde {
-  background: #fff; border-radius: 1.2vw; padding: 1.25vw 2.2vw; font-size: 3.4vw; line-height: 1.3;
+  background: #fff; border-radius: 2vw; padding: 1.5vw 2.4vw; font-size: 3.4vw; line-height: 1.3;
   color: #222; max-width: 86vw; word-break: break-word; box-shadow: 0 .2vw .8vw rgba(0,0,0,.08);
 }
+/* qız oyunçunun mesajı və klip/məftun bildirişləri: açıq nanə-yaşıl */
+.mgovde.qiz, .mgovde.klip-bildiris { background: #eaf8f2; border: .25vw solid #cfe8dc; }
 .mad { font-weight: 700; }
 /* Referansdakı "Tərcüməni göstər" sətri (istəsən chat.js-də əlavə edərik) */
 .mtercume { display: block; font-size: 3.2vw; line-height: 1.25; color: #9a9a9a; }
@@ -23,6 +29,7 @@
 #smayPanel.ac { display: flex; }
 #smayPanel span { width: 11vw; text-align: center; }
 
+/* Musiqi düymələri: 0.7 = köhnə ölçünün 70%-i (böyük/kiçik gəlsə bu rəqəmi dəyişin) */
 #musiqiPanel {
   position: absolute;
   top: 2.5vw;
@@ -31,6 +38,8 @@
   display: flex;
   flex-direction: column;
   gap: 2.2vw;
+  transform: scale(0.7);
+  transform-origin: right top;
 }
 .musiqi-btn {
   width: 11vw;
