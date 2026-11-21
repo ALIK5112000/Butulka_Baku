@@ -132,7 +132,7 @@ function klipQosBagla() {
   const asil = mf.klipQos.bind(mf);
   mf.klipQos = async (...a) => {
     const r = await asil(...a);
-    if (r !== false && MEN) { window.Xallar.musiqiQosdu(MEN); toast("+9 musiqi xalı"); }
+    if (r !== false && MEN) { window.__xalSon = Date.now(); window.Xallar.musiqiQosdu(MEN); toast("+9 musiqi xalı"); }
     return r;
   };
   mf.__xal = true;
@@ -140,6 +140,34 @@ function klipQosBagla() {
 }
 const bagTimer = setInterval(() => { if (klipQosBagla()) clearInterval(bagTimer); }, 500);
 setTimeout(() => clearInterval(bagTimer), 300000);
+
+/* Musiqi qoşanda +9 (ehtiyat yol): ekranda yeni klip başlayanda və klipi qoşanın şəkli mənim şəklimdirsə */
+const normSrc = x => { try { return new URL(x || "images/avatar/nophoto.svg", location.href).href; } catch (e) { return x || ""; } };
+const isledi = new WeakSet();
+function klipDOM() {
+  if (!MEN) return;
+  const w = document.getElementById("bb-live-video-wrap"), im = document.getElementById("bb-dj-avatar");
+  const fr = w && w.querySelector("iframe");
+  if (!fr || !im || isledi.has(fr)) return;
+  isledi.add(fr);
+  const m = /[?&]start=(\d+)/.exec(fr.src);
+  if (m && Number(m[1]) > 10) return;                        /* çalan klipə sonradan qoşulub */
+  if (Date.now() - (window.__xalSon || 0) < 20000) return;   /* xal artıq verilib */
+  const o = Object.values(oturacaqlar).find(x => x && x.uid === MEN);
+  if (!o || !o.sekil) return;
+  if (normSrc(im.src) === normSrc(o.sekil)) { window.__xalSon = Date.now(); window.Xallar.musiqiQosdu(MEN); toast("+9 musiqi xalı"); }
+}
+setInterval(klipDOM, 700);
+
+/* Panel və ya kart açıqkən yuxarıdakı ürək düyməsi gizlədilir ki, sol-yuxarı göy düyməyə toxunanda
+   ürək mağazası da açılmasın (mağaza koordinata görə işləyir) */
+let urekGizli = false;
+setInterval(() => {
+  const acik = !!document.querySelector(".sp-root.open, .hd-root.open, .pf-ov.open");
+  if (acik === urekGizli) return;
+  urekGizli = acik;
+  ["urekBtn", "urekSayi"].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = acik ? "none" : ""; });
+}, 50);
 
 /* ================= MƏFTUN ƏMƏLİYYATLARI (tranzaksiya) ================= */
 function meftunTx(isle) {
