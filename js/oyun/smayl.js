@@ -17,7 +17,8 @@ const PAKETLER = [
   { urek: 3,   smayl: 3,   img: "images/jeton/p3.png" }
 ];
 /* Alma səsi: öz səs faylınız varsa yazın, məs. "sesler/smayl.mp3". null olsa hazır "sikkə" səsi çalınır */
-const SATIN_ALMA_SESI = null;
+const SATIN_ALMA_SESI = "sesler/smayl.mp3";
+const SES_OBJ = SATIN_ALMA_SESI ? Object.assign(new Audio(SATIN_ALMA_SESI), { preload: "auto" }) : null;
 
 /* Jestlər. e = emoji (öz şəkliniz olsa e əvəzinə img: "images/jest/1.png" yazın), q = qiymət (smaylik),
    a = şəkil üstündəki hərəkət: bounce | spin | float | shake | pulse | zoom */
@@ -118,7 +119,7 @@ function toast(msg) {
 /* ---------- Səs ---------- */
 function ses() {
   try {
-    if (SATIN_ALMA_SESI) { const a = new Audio(SATIN_ALMA_SESI); a.volume = .25; a.play().catch(() => {}); return; }
+    if (SES_OBJ) { try { SES_OBJ.currentTime = 0; } catch (e) {} SES_OBJ.volume = 1; SES_OBJ.play().catch(() => {}); return; }
     const C = window.AudioContext || window.webkitAudioContext;
     const c = new C();
     [[880, 0, .09], [1320, .09, .16]].forEach(([f, t0, d]) => {
@@ -164,7 +165,7 @@ PAKETLER.forEach(p => {
   d.className = "sp-p";
   d.innerHTML = '<img src="' + p.img + '" alt="' + p.smayl + '"><button>' + UREK + p.urek + "</button>";
   const b = d.querySelector("button");
-  d.onclick = () => satinAl(p, b);
+  d.onclick = () => satinAl(p);
   pk.appendChild(d);
 });
 
@@ -178,13 +179,14 @@ function yerlesdir() {
 }
 window.addEventListener("resize", () => { if (root.classList.contains("open")) yerlesdir(); });
 
-let balUnsub = null;
+let balUnsub = null, balNow = 0, bekle = 0;
 function ac() {
   if (!MEN) return;
   yerlesdir();
   root.classList.add("open");
   if (!balUnsub) balUnsub = onSnapshot(doc(fsdb, "users", MEN), s => {
-    $("#spBal").textContent = fmt((s.data() || {}).smileBal);
+    balNow = num((s.data() || {}).smileBal);
+    if (!bekle) $("#spBal").textContent = fmt(balNow);
   }, () => {});
 }
 function bagla() {
@@ -253,10 +255,48 @@ function dusdur(sayi) {
   });
 }
 
-async function satinAl(p, btn) {
-  if (mesgul || !MEN) return;
-  mesgul = true;
+const urekOxu = () => parseInt((document.getElementById("urekSayi") || {}).textContent) || 0;
+function urekGoster(n) {
+  if (window.urekYaz) window.urekYaz(n);
+  else { const ue = document.getElementById("urekSayi"); if (ue) ue.textContent = n; }
+}
+
+async function satinAl(p) {
+  if (!MEN) return;
   shop.classList.remove("open");               /* alışda mağaza dərhal bağlanır */
+  const lokal = urekOxu() >= p.urek;           /* ekrandakı ürək kifayətdirsə: gecikmədən göstər, serverə arxada yaz */
+
+  if (lokal) {
+    bekle++; window.__urekHold = true;
+    const sigorta = setTimeout(() => { window.__urekHold = false; }, 8000);
+    ses();                                      /* toxunuş anında çalır (gecikmə yoxdur) */
+    balNow += p.smayl;
+    $("#spBal").textContent = fmt(balNow);
+    urekGoster(urekOxu() - p.urek);
+    dusdur(p.smayl);
+    try {
+      const yeni = await runTransaction(fsdb, async tx => {
+        const r = doc(fsdb, "users", MEN), s = await tx.get(r), d = s.data() || {};
+        if (num(d.hearts) < p.urek) throw new Error("YETMIR");
+        const h = num(d.hearts) - p.urek, sb = num(d.smileBal) + p.smayl;
+        tx.update(r, { hearts: h, smileBal: sb });
+        return { h, sb };
+      });
+      balNow = yeni.sb;
+      if (--bekle === 0) { clearTimeout(sigorta); window.__urekHold = false; $("#spBal").textContent = fmt(balNow); urekGoster(yeni.h); }
+    } catch (e) {
+      /* server qəbul etmədi: göstərilən dəyişikliyi geri qaytar */
+      balNow -= p.smayl;
+      if (--bekle === 0) { clearTimeout(sigorta); window.__urekHold = false; }
+      $("#spBal").textContent = fmt(balNow);
+      urekGoster(urekOxu() + p.urek);
+      if (e.message === "YETMIR") { toast("Bonus ürəyiniz çatmır"); if (window.HeartShop) window.HeartShop.open(); }
+      else { console.error(e); toast("Xəta baş verdi, yenidən cəhd edin"); shop.classList.add("open"); }
+    }
+    return;
+  }
+
+  /* ekranda ürək azdır: serverdən dəqiq yoxla */
   try {
     const yeni = await runTransaction(fsdb, async tx => {
       const r = doc(fsdb, "users", MEN), s = await tx.get(r), d = s.data() || {};
@@ -265,19 +305,15 @@ async function satinAl(p, btn) {
       tx.update(r, { hearts: h, smileBal: sb });
       return { h, sb };
     });
-    /* dərhal göstər: yuxarıdakı smaylik balansı artır, oyundakı bonus ürək sayı azalır */
+    balNow = yeni.sb;
     $("#spBal").textContent = fmt(yeni.sb);
-    if (window.urekYaz) window.urekYaz(yeni.h);
-    else { const ue = document.getElementById("urekSayi"); if (ue) ue.textContent = yeni.h; }
+    urekGoster(yeni.h);
     ses();
-    requestAnimationFrame(() => dusdur(p.smayl));
+    dusdur(p.smayl);
   } catch (e) {
-    if (e.message === "YETMIR") {
-      toast("Bonus ürəyiniz çatmır");
-      if (window.HeartShop) window.HeartShop.open();
-    } else { console.error(e); toast("Xəta baş verdi, yenidən cəhd edin"); shop.classList.add("open"); }
+    if (e.message === "YETMIR") { toast("Bonus ürəyiniz çatmır"); if (window.HeartShop) window.HeartShop.open(); }
+    else { console.error(e); toast("Xəta baş verdi, yenidən cəhd edin"); shop.classList.add("open"); }
   }
-  mesgul = false;
 }
 
 /* ---------- Jest işlətmək ---------- */
