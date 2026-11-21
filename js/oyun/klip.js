@@ -17,6 +17,9 @@ const sesBtn = $("klipSesBtn");
 const sesInp = $("klipSes");
 const panel = $("musiqiPanel");
 const oyunEkrani = $("oyunEkrani");
+const kkDokunus = $("klipDokunus");
+const kkOyna = $("kkOyna");
+const kkSeek = $("kkSeek");
 
 const ID_RE = /^[\w-]{11}$/;
 const HALQA_UZUN = 2 * Math.PI * 33;
@@ -31,6 +34,12 @@ let dovr = null;         // 0.5 san-lik dövr: halqa + sinxron + bitmə yoxlamas
 let blokTimer = null;
 let sesliGozle = false;  // brauzer səsli avtooynatmanı blokladı, ilk toxunuşu gözləyirik
 let zoom = 0;
+// Şəxsi idarə: oyunçu klipi özü üçün irəli-geri edə / pauza edə bilər (digər oyunçulara təsir etmir)
+let serbest = false;     // real vaxtdan ayrılıb (özü irəli-geri edib və ya pauza edib)
+let lokalPauza = false;  // özü pauza edib
+let suruk = false;       // vaxt çubuğunu sürüşdürür
+let kkTimer = null;
+const YAXIN = 2.5;       // real vaxta bu qədər yaxındırsa "canlı" sayılır (saniyə)
 const geriQaytarilan = new Set();
 
 const indi = () => Date.now() + offset;
@@ -73,8 +82,7 @@ sesUI();
 $("klipOlcuBtn").addEventListener("click", () => {
   zoom = (zoom + 1) % 3;
   kart.classList.remove("z1", "z2");
-  chatYeri.classList.remove("kz1", "kz2");
-  if (zoom) { kart.classList.add("z" + zoom); chatYeri.classList.add("kz" + zoom); }
+  if (zoom) kart.classList.add("z" + zoom);
 });
 
 // ---------- yardımçılar ----------
@@ -119,7 +127,7 @@ function oynaticiAl() {
         playerVars: { autoplay: 1, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, modestbranding: 1, playsinline: 1, rel: 0, origin: location.origin },
         events: {
           onReady: () => res(p),
-          onStateChange: (e) => { if (e.data === 0 && aktiv) bitir(aktiv); },
+          onStateChange: (e) => { stateDeyisdi(e.data); },
           onError: () => oynadilmadi(),
           onAutoplayBlocked: () => blok()
         }
@@ -163,8 +171,9 @@ async function baslat(d) {
   panel.classList.add("gizli");               // klip çalanda musiqi düymələri görünmür
   await oyunGorunur;
   if (aktiv !== d) return;
+  serbestSifir();
   kart.hidden = false;
-  chatYeri.classList.add("klip-var");        // chat mesajları kartın altına enir (örtülmür)
+  chatYeri.classList.add("klip-var");        // az mesaj olanda mesajlar aşağıda durur, kartın altına düşmür
   avatar.src = "images/avatar/nophoto.svg";
   profilSekli(d.djUid).then((u) => { if (aktiv === d && u) avatar.src = u; });
   halqaYaz(0);
@@ -193,6 +202,7 @@ function dayandir() {
   try { if (oynatici && oynatici.stopVideo) oynatici.stopVideo(); } catch (e) {}
   kart.hidden = true;
   chatYeri.classList.remove("klip-var");
+  serbestSifir();
   panel.classList.remove("gizli");
 }
 
@@ -211,8 +221,16 @@ function senkron() {
   if (!p || !d || document.visibilityState !== "visible") return;
   try {
     const st = p.getPlayerState();
+    if (serbest) {
+      // Oyunçu özü irəli-geri edib / pauza edib: real vaxta ÇƏKMİRİK. Yalnız sistem pauza edibsə davam etdir.
+      if (st === 2 && !lokalPauza && !sesliGozle) p.playVideo();
+      return;
+    }
     const gozlenen = kecen(d);
-    if (st === 1) {
+    if (st === 0) {
+      const m = muddetAl();
+      if (m <= 0 || gozlenen < m - 3) { p.seekTo(gozlenen, true); p.playVideo(); }
+    } else if (st === 1) {
       if (Math.abs(p.getCurrentTime() - gozlenen) > 3) p.seekTo(gozlenen, true);
     } else if (st === 2 && !sesliGozle) {
       p.seekTo(gozlenen, true);
@@ -239,8 +257,114 @@ function dovrBasla() {
       if (gozlenen >= muddet + 3) { bitir(d); return; }
     }
     if (++say % 8 === 0) senkron();
+    kkYenile();
   }, 500);
 }
+
+// ---------- şəxsi idarə (pauza, ±10 san, vaxt çubuğu, Canlı) ----------
+function muddetAl() {
+  let m = 0;
+  try { m = oynatici && oynatici.getDuration ? oynatici.getDuration() || 0 : 0; } catch (e) {}
+  return m || (aktiv && Number(aktiv.durationSec)) || 0;
+}
+function vq(s) {
+  s = Math.max(0, Math.floor(Number(s) || 0));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), n = s % 60;
+  return h ? `${h}:${String(m).padStart(2, "0")}:${String(n).padStart(2, "0")}` : `${m}:${String(n).padStart(2, "0")}`;
+}
+function cariVaxt() {
+  try { return oynatici && oynatici.getCurrentTime ? oynatici.getCurrentTime() || 0 : 0; } catch (e) { return 0; }
+}
+function serbestSifir() {
+  serbest = false; lokalPauza = false; suruk = false;
+  clearTimeout(kkTimer);
+  kart.classList.remove("serbest", "kk-acik", "oynayir");
+}
+function serbestYaz(b) {
+  serbest = b;
+  kart.classList.toggle("serbest", b);
+}
+function kkYenile() {
+  if (!aktiv || !oynatici) return;
+  let st = -1;
+  try { st = oynatici.getPlayerState(); } catch (e) {}
+  kart.classList.toggle("oynayir", st === 1 || st === 3);
+  if (!kart.classList.contains("kk-acik") || suruk) return;
+  const m = muddetAl(), c = Math.min(cariVaxt(), m || Infinity);
+  kkSeek.max = String(Math.max(1, Math.floor(m)));
+  kkSeek.value = String(Math.floor(c));
+  kkSeek.style.setProperty("--d", (m ? (c / m) * 100 : 0) + "%");
+  $("kkVaxt").textContent = vq(c);
+  $("kkMuddet").textContent = vq(m);
+}
+function kkGoster(ac) {
+  clearTimeout(kkTimer);
+  kart.classList.toggle("kk-acik", ac);
+  if (!ac) return;
+  kkYenile();
+  kkTimer = setTimeout(() => { if (suruk) return kkGoster(true); kart.classList.remove("kk-acik"); }, 4500);
+}
+// Seek: özü üçün (başqalarına təsir etmir). Real vaxta yaxınsa yenə "canlı" sayılır.
+function lokalSeek(t) {
+  const p = oynatici, d = aktiv;
+  if (!p || !d) return;
+  const m = muddetAl();
+  t = Math.max(0, m ? Math.min(t, m - 1) : t);
+  try { p.seekTo(t, true); } catch (e) {}
+  serbestYaz(Math.abs(t - kecen(d)) > YAXIN || lokalPauza);
+  kkYenile();
+}
+function stateDeyisdi(st) {
+  kart.classList.toggle("oynayir", st === 1 || st === 3);
+  if (st !== 0 || !aktiv) return;
+  // Video özü üçün bitdi. Yalnız real vaxt də bitibsə klip hamı üçün silinir;
+  // özü irəli çəkibsə (serbest) başqalarının klipini bitirmir.
+  const m = muddetAl();
+  if (!serbest && (m <= 0 || kecen(aktiv) >= m - 5)) bitir(aktiv);
+}
+
+kkDokunus.addEventListener("click", (e) => {
+  if (e.target.closest("button, input")) return;
+  kkGoster(!kart.classList.contains("kk-acik"));
+});
+kkOyna.addEventListener("click", () => {
+  const p = oynatici;
+  if (!p || !aktiv) return;
+  let st = -1;
+  try { st = p.getPlayerState(); } catch (e) {}
+  if (st === 1 || st === 3) {
+    lokalPauza = true; serbestYaz(true);
+    try { p.pauseVideo(); } catch (e) {}
+    kart.classList.remove("oynayir");
+  } else {
+    lokalPauza = false;
+    sesliGozle = false; kart.classList.remove("klik-gozle"); sesiTetbiqEt();
+    try { p.playVideo(); } catch (e) {}
+    serbestYaz(Math.abs(cariVaxt() - kecen(aktiv)) > YAXIN);
+    kart.classList.add("oynayir");
+  }
+  kkGoster(true);
+});
+$("kkGeri").addEventListener("click", () => { lokalSeek(cariVaxt() - 10); kkGoster(true); });
+$("kkIrali").addEventListener("click", () => { lokalSeek(cariVaxt() + 10); kkGoster(true); });
+$("kkCanli").addEventListener("click", () => {
+  const p = oynatici, d = aktiv;
+  if (!p || !d) return;
+  lokalPauza = false; serbestYaz(false);
+  try { p.seekTo(kecen(d), true); p.playVideo(); } catch (e) {}
+  kkGoster(true);
+});
+kkSeek.addEventListener("input", () => {
+  suruk = true;
+  const m = muddetAl(), v = Number(kkSeek.value);
+  $("kkVaxt").textContent = vq(v);
+  kkSeek.style.setProperty("--d", (m ? (v / m) * 100 : 0) + "%");
+});
+kkSeek.addEventListener("change", () => {
+  suruk = false;
+  lokalSeek(Number(kkSeek.value));
+  kkGoster(true);
+});
 
 // ---------- klip qoşmaq (ürək çıxılır) ----------
 export const klipCalirMi = () => !!aktiv;
