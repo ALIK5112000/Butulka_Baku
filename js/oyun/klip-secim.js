@@ -1,7 +1,7 @@
 // Klip seçim pəncərəsi: 🔥 populyar, ⭐ sevimli, 🕒 son qoşulanlar, 🔍 YouTube axtarışı + təsdiq pəncərəsi.
 import { KLIP_QIYMETI } from "../core/config.js";
 import { axtar, populyar, kicikSekil, isit, POPULYAR_SABIT } from "./klip-axtaris.js";
-import { klipQos, klipCalirMi } from "./klip.js";
+import { klipQos, klipCalirMi, klipDurumu, secimSesi } from "./klip.js";
 
 const $ = (id) => document.getElementById(id);
 const pen = $("klipPenceresi");
@@ -11,6 +11,11 @@ const axtarQutu = $("kpAxtarQutu");
 const inp = $("kpAxtarInput");
 const tesdiq = $("klipTesdiq");
 const tablar = [...document.querySelectorAll(".kp-tab")];
+
+// Boz geri sayım düyməsi (başqasının klipi 60 saniyə çalmayıbsa "İfa etdir" əvəzinə görünür)
+const gozleStil = document.createElement("style");
+gozleStil.textContent = "#ktIfa.gozle{background:#c4c4c4!important;border-color:#c4c4c4!important;color:#fff!important;opacity:1!important;box-shadow:none!important}";
+document.head.appendChild(gozleStil);
 
 const FAV = "bb_fav_clips";
 const TAR = "bb_hist_clips";
@@ -169,11 +174,13 @@ tablar.forEach((b) => b.addEventListener("click", () => tabGoster(b.dataset.tab)
 // ---------- aç / bağla ----------
 function ac(tab) {
   pen.hidden = false;
+  secimSesi(true);          // seçərkən chatdakı klipin səsi (yalnız səndə) kəsilir
   tabGoster(tab);
 }
 function bagla() {
   pen.hidden = true;
   sayac++;
+  secimSesi(false);         // pəncərədən çıxdın: chatdakı klipin səsi avtomatik qayıdır
 }
 $("kpBagla").addEventListener("click", bagla);
 pen.addEventListener("click", (e) => { if (e.target === pen) bagla(); });
@@ -183,6 +190,19 @@ $("klipAvatarQutu").addEventListener("click", () => ac("popular"));   // klip ç
 
 // ---------- təsdiq pəncərəsi ----------
 let secilen = null;
+let ifaTimer = null;
+
+// "İfa etdir" düyməsi: başqasının klipi 60 saniyə çalmayıbsa boz geri sayım (00:54), yoxsa yaşıl "İfa etdir"
+function ifaYenile() {
+  const d = klipDurumu();
+  const gozle = d.calir && !d.benim && d.qalan > 0;
+  const b = $("ktIfa");
+  b.classList.toggle("gozle", gozle);
+  b.disabled = gozle;
+  b.textContent = gozle ? dq(d.qalan) : "İfa etdir";
+  $("ktXeber").hidden = !d.calir || gozle;
+}
+
 function tesdiqAc(c) {
   secilen = c;
   const onizle = $("ktOnizle");
@@ -194,11 +214,13 @@ function tesdiqAc(c) {
 
   $("ktQiymet").textContent = String(KLIP_QIYMETI);
   $("ktMetn").textContent = ` üçün “${c.title}” musiqi hər kəs üçün ifa edilsin?`;
-  $("ktXeber").hidden = !klipCalirMi();
-  $("ktIfa").disabled = false;
+  ifaYenile();
+  clearInterval(ifaTimer);
+  ifaTimer = setInterval(ifaYenile, 500);   // sayğac canlı işləyir, 0 olanda düymə yaşıla çevrilir
   tesdiq.hidden = false;
 }
 function tesdiqBagla() {
+  clearInterval(ifaTimer);
   tesdiq.hidden = true;
   $("ktOnizle").textContent = "";   // önizləmə videosu dayansın
   secilen = null;
@@ -209,6 +231,8 @@ tesdiq.addEventListener("click", (e) => { if (e.target === tesdiq) tesdiqBagla()
 $("ktIfa").addEventListener("click", async () => {
   const c = secilen;
   if (!c) return;
+  const d = klipDurumu();
+  if (d.calir && !d.benim && d.qalan > 0) return;   // hələ gözləmə vaxtıdır
   $("ktIfa").disabled = true;
   const ok = await klipQos(c);
   tesdiqBagla();
