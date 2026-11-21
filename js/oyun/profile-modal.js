@@ -390,10 +390,10 @@ function ackart(uid) {
   const S = window.SmaylPanel, H = window.HediyyePanel;
   if (uid === MEN) {
     if (H) H.bagla();
-    if (S && !S.acikdir()) { S.ac(); return; }
+    if (S && !document.querySelector(".sp-root.open")) { S.ac(); return; }
   } else if (H) {
     if (S) S.bagla();
-    if (H.hedef() !== uid) { H.ac(uid); return; }
+    if ((typeof H.hedef === "function" ? H.hedef() : null) !== uid) { H.ac(uid); return; }
   }
   window.ProfilKart.ac(uid);
 }
