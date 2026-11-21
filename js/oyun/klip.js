@@ -373,6 +373,8 @@ export async function klipQos(klip) {
   const cari = cariOyuncu();
   if (!cari || !cari.docId) { toast("Oyunçu məlumatı tapılmadı"); return false; }
   if (!klip || !ID_RE.test(String(klip.videoId))) { toast("Klip tapılmadı"); return false; }
+  // Hədiyyə panelindən kiminsə adına qoşulursa (Hediye.js bunu window.__klipHedef-ə yazır)
+  const hedef = window.__klipHedef || null;
 
   const uRef = doc(fsdb, "users", cari.docId);
   let ad = "Oyunçu";
@@ -402,8 +404,9 @@ export async function klipQos(klip) {
       djAd: ad,
       startedAt: serverTimestamp()
     });
-    // Chatda: qoşan oyunçunun şəkli + klipin adı (bütün masa görür)
-    await push(ref(rtdb, chatYol), { isMusicNotice: true, uid: cari.docId, ad, metn: title, vaxt: serverTimestamp() });
+    // Chatda: qoşan oyunçunun şəkli + klipin adı (+ kiminsə adına qoşulubsa ox və onun şəkli) — bütün masa görür
+    await push(ref(rtdb, chatYol), { isMusicNotice: true, uid: cari.docId, ad, metn: title, hedef, vaxt: serverTimestamp() });
+    window.__klipHedef = null;
   } catch (e) {
     updateDoc(uRef, { hearts: increment(KLIP_QIYMETI) }).catch(() => {});
     toast("Klip qoşula bilmədi, ürəklər geri qaytarıldı");
