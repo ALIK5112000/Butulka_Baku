@@ -132,14 +132,14 @@ function klipQosBagla() {
   const asil = mf.klipQos.bind(mf);
   mf.klipQos = async (...a) => {
     const r = await asil(...a);
-    if (r !== false && MEN) window.Xallar.musiqiQosdu(MEN);
+    if (r !== false && MEN) { window.Xallar.musiqiQosdu(MEN); toast("+9 musiqi xalı"); }
     return r;
   };
   mf.__xal = true;
   return true;
 }
 const bagTimer = setInterval(() => { if (klipQosBagla()) clearInterval(bagTimer); }, 500);
-setTimeout(() => clearInterval(bagTimer), 60000);
+setTimeout(() => clearInterval(bagTimer), 300000);
 
 /* ================= MƏFTUN ƏMƏLİYYATLARI (tranzaksiya) ================= */
 function meftunTx(isle) {
@@ -330,6 +330,12 @@ function ciz(d) {
       '<div class="pf-heart">' + IC.urek1 + '<b class="pf-hv"></b>' + R("meftunQiymet") + "</div>" +
       dugme + "</div></div>";
 
+    if (mOK) {
+      const goster = () => window.ProfilKart.ac(d.meftunUid);
+      const av = ov.querySelector(".pf-userw .pf-ava"), nm = ov.querySelector(".pf-userw .pf-name");
+      av.style.cursor = nm.style.cursor = "pointer";
+      av.onclick = nm.onclick = goster;
+    }
     const b = ov.querySelector(".pf-follow[data-a]");
     if (b) b.onclick = async () => {
       b.disabled = true;
@@ -353,6 +359,12 @@ window.ProfilKart = {
   ac(docId) {
     if (!docId) return;
     if (unsub) unsub();
+    if (ownerUid !== docId) {
+      /* başqa oyunçunun kartına keçid: köhnə məlumat qalmasın */
+      tok++; mesgul = false; gurulu = false; sig = {}; sonD = null; ov.innerHTML = "";
+      for (const k in kesh) delete kesh[k];
+      if (mUnsub) { mUnsub(); mUnsub = null; } mUid = null; mD = null;
+    }
     ownerUid = docId;
     ov.classList.add("open");
     unsub = onSnapshot(doc(fsdb, "users", docId), snap => {
@@ -372,10 +384,18 @@ let oturacaqlar = {}, spin = null;
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => { oturacaqlar = s.val() || {}; });
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/raund/spin"), s => { spin = s.val() || null; });
 
-/* Öz şəklinə toxunanda smaylik paneli də açılır */
+/* Öz şəklinə ilk toxunuş: smaylik paneli, panel açıqkən yenə toxunsan: profil kartı.
+   Başqasının şəklinə ilk toxunuş: hədiyyə paneli, yenə toxunsan: profil kartı. */
 function ackart(uid) {
+  const S = window.SmaylPanel, H = window.HediyyePanel;
+  if (uid === MEN) {
+    if (H) H.bagla();
+    if (S && !S.acikdir()) { S.ac(); return; }
+  } else if (H) {
+    if (S) S.bagla();
+    if (H.hedef() !== uid) { H.ac(uid); return; }
+  }
   window.ProfilKart.ac(uid);
-  if (uid === MEN && window.SmaylPanel) window.SmaylPanel.ac();
 }
 
 const icinde = (el, x, y) => {
