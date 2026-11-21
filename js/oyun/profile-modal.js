@@ -438,6 +438,8 @@ const icinde = (el, x, y) => {
 
 window.addEventListener("click", e => {
   if (ov.classList.contains("open")) return;
+  // Klip pəncərələri / klip kartı / musiqi düymələri masanın üstündən keçir: onlara toxunanda altındakı oturacağın profili açılmasın
+  if (e.target && e.target.closest && e.target.closest("#klipPenceresi, #klipTesdiq, #klipKart, #musiqiPanel")) return;
 
   /* ortadakı iki kart: birincisi qız (q), ikincisi oğlan (o) oyunçusudur */
   if (spin) {
