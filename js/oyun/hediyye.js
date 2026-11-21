@@ -70,6 +70,11 @@ const CSS = `
 .hd-send{position:fixed;left:50%;bottom:3vw;transform:translateX(-50%);z-index:9991;display:none;height:8.6vw;padding:0 8vw;border:0;border-radius:5vw;background:#7cc92f;color:#fff;font:700 4vw/1 Roboto,Arial,sans-serif;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3)}
 .hd-x{position:fixed;right:2vw;bottom:2.1vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#7cc92f;border:0;padding:0;z-index:9991;display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3)}
 .hd-x svg{width:4.4vw;height:4.4vw}
+.hd-tray{position:fixed;right:3.9vw;z-index:9992;display:none;gap:2.4vw;padding:1.6vw 2vw;background:#fff;border-radius:6vw;box-shadow:0 .6vw 2.4vw rgba(0,0,0,.3)}
+.hd-tray.open{display:flex}
+.hd-tray button{width:10vw;height:10vw;border-radius:50%;border:0;padding:0;display:flex;align-items:center;justify-content:center;font-size:6vw;line-height:1;color:#fff}
+.hd-tb{background:#3b8fe0}.hd-tg{background:#f26aa6}.hd-tx{background:#e03d1c;font:700 5vw/1 Roboto,Arial,sans-serif}
+.yer.hd-mk .foto{outline:.9vw solid #7cc92f;outline-offset:.2vw;box-shadow:0 0 3vw #7cc92f}
 .hd-t{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
 .hd-fly{position:fixed;z-index:9000;pointer-events:none;line-height:1;will-change:transform,opacity;font-size:11vw}
 .hd-fly img{height:1em;width:auto;display:block}
@@ -96,20 +101,23 @@ const root = document.createElement("div");
 root.className = "hd-root";
 root.innerHTML =
   '<div class="hd-top"><button class="hd-av" aria-label="Profil"><svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c0-4.6 3.8-7 8.5-7s8.5 2.4 8.5 7z"/></svg></button>' +
-    '<div class="hd-ttl"><b id="hdAd">...</b><span>üçün hədiyyə göndər</span></div>' +
+    '<div class="hd-ttl"><b id="hdAd">...</b><span id="hdSub">üçün hədiyyə göndər</span></div>' +
     '<button class="hd-plus" aria-label="Bonus ürək al"><svg viewBox="0 0 24 24"><path d="M12 4v16M4 12h16" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg></button></div>' +
   '<div class="hd-main"><div class="hd-ctl">' +
     '<div class="hd-r1"><div class="hd-seg hd-tabs"><button data-k="ozel">Özəl</button><button data-k="yeni">Yeni</button><button data-k="hamisi" class="on">Hamısı</button></div>' +
     '<div class="hd-seg hd-mode"><button data-m="avto" class="on">Avtomatik</button><button data-m="el">Əl ilə</button></div></div>' +
     '<div class="hd-r2"><span>Say</span><button class="hd-pm" data-d="-1">−</button><input class="hd-n" value="1" inputmode="numeric" maxlength="2"><button class="hd-pm" data-d="1">+</button></div>' +
   '</div><div class="hd-list"><div class="hd-grid"></div></div></div>' +
+  '<div class="hd-tray"><button class="hd-tb" aria-label="Oğlanlar">👦</button><button class="hd-tg" aria-label="Qızlar">👧</button><button class="hd-tx" aria-label="Seçimi dayandır">✕</button></div>' +
   '<button class="hd-send">Göndər</button>' +
   '<button class="hd-x" aria-label="Bağla"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></button>';
 document.body.appendChild(root);
 
 const $ = s => root.querySelector(s);
 const grid = $(".hd-grid"), sayInp = $(".hd-n"), sendBtn = $(".hd-send");
-let hedef = null, tab = "hamisi", mod = "avto", sec = null, mesgul = false, uUnsub = null;
+let hedef = null, hedefAd = "...", tab = "hamisi", mod = "avto", sec = null, mesgul = false, uUnsub = null;
+const isaret = new Set();
+const tray = $(".hd-tray");
 
 const say = () => Math.min(99, Math.max(1, parseInt(sayInp.value, 10) || 1));
 
@@ -157,15 +165,17 @@ function yerlesdir() {
   top.style.top = (ur && ur.height > 0 ? ur.top : 0) + "px";
   top.style.height = (ur && ur.height > 0 ? ur.height : innerWidth * 0.124) + "px";
   main.style.top = (cr && cr.height > 0 ? cr.top : innerHeight * 0.55) + "px";
+  tray.style.top = ((ur && ur.height > 0 ? ur.bottom : innerWidth * 0.124) + innerWidth * 0.01) + "px";
 }
 window.addEventListener("resize", () => { if (root.classList.contains("open")) yerlesdir(); });
 
 function ac(uid) {
   if (!uid || uid === MEN) return;
   if (uUnsub) { uUnsub(); uUnsub = null; }
+  if (!root.classList.contains("open")) { isaret.clear(); tray.classList.remove("open"); }
   hedef = uid; sec = null; sendBtn.style.display = "none";
-  $("#hdAd").textContent = "...";
-  uUnsub = onSnapshot(doc(fsdb, "users", uid), s => { $("#hdAd").textContent = (s.data() || {}).username || "Oyunçu"; }, () => {});
+  hedefAd = "..."; basliq();
+  uUnsub = onSnapshot(doc(fsdb, "users", uid), s => { hedefAd = (s.data() || {}).username || "Oyunçu"; basliq(); }, () => {});
   yerlesdir(); ciz();
   root.classList.add("open");
 }
@@ -174,12 +184,46 @@ function bagla() {
   sendBtn.style.display = "none";
   if (uUnsub) { uUnsub(); uUnsub = null; }
   hedef = null; sec = null;
+  isaret.clear(); tray.classList.remove("open"); markYenile();
 }
 $(".hd-x").onclick = bagla;
 $(".hd-av").onclick = () => { if (hedef && window.ProfilKart) window.ProfilKart.ac(hedef); };
-$(".hd-plus").onclick = () => { if (window.HeartShop) window.HeartShop.open(); };
+$(".hd-plus").onclick = () => tray.classList.toggle("open");
 
-window.HediyyePanel = { ac, bagla, hedef: () => hedef };
+/* ---------- Çoxlu seçim: qızlar / oğlanlar / tək-tək ---------- */
+function basliq() {
+  if (isaret.size) { $("#hdAd").textContent = "Seçilmiş: " + isaret.size; $("#hdSub").textContent = "oyunçuya hədiyyə göndər"; }
+  else { $("#hdAd").textContent = hedefAd; $("#hdSub").textContent = "üçün hədiyyə göndər"; }
+}
+function markYenile() {
+  for (const u of [...isaret]) if (!Object.values(oturacaqlar).some(o => o && o.uid === u)) isaret.delete(u);
+  const var_ = new Set();
+  for (const k in oturacaqlar) { const o = oturacaqlar[k]; if (o && isaret.has(o.uid)) var_.add(k); }
+  document.querySelectorAll("#masa .yer").forEach(el => {
+    const m = /yer-(\d+)/.exec(el.className);
+    el.classList.toggle("hd-mk", !!(m && var_.has(m[1])));
+  });
+  basliq();
+}
+setInterval(markYenile, 400);
+function isaretle(uid) {
+  if (!uid || uid === MEN) return;
+  if (isaret.has(uid)) isaret.delete(uid); else isaret.add(uid);
+  markYenile();
+}
+function toplu(qiz) {
+  const l = [];
+  for (const k in oturacaqlar) { const o = oturacaqlar[k]; if (o && o.uid && o.uid !== MEN && (o.cins === "q") === qiz) l.push(o.uid); }
+  if (!l.length) { toast(qiz ? "Masada qız yoxdur" : "Masada oğlan yoxdur"); return; }
+  const hamisi = l.every(u => isaret.has(u));
+  l.forEach(u => (hamisi ? isaret.delete(u) : isaret.add(u)));
+  markYenile();
+}
+$(".hd-tg").onclick = () => toplu(true);
+$(".hd-tb").onclick = () => toplu(false);
+$(".hd-tx").onclick = () => { isaret.clear(); tray.classList.remove("open"); markYenile(); };
+
+window.HediyyePanel = { ac, bagla, hedef: () => hedef, modu: () => root.classList.contains("open") && tray.classList.contains("open"), isaretle };
 
 /* ---------- Hazırda kimin musiqisi çalır? ---------- */
 let oturacaqlar = {}, spin = null, offset = 0, sonKlip = null;
@@ -214,9 +258,12 @@ function djUid() {
 
 /* ---------- Hədiyyə göndərmək ---------- */
 async function gonder(g, c) {
-  if (mesgul || !MEN || !hedef) return;
+  if (mesgul || !MEN) return;
+  /* alanlar: işarələnmişlər, işarə yoxdursa toxunulan oyunçu */
+  const alanlar = isaret.size ? [...isaret].filter(u => u !== MEN) : (hedef ? [hedef] : []);
+  if (!alanlar.length) { toast("Oyunçu seçilməyib"); return; }
   mesgul = true;
-  const kim = hedef, cost = g.q * c;
+  const cost = g.q * c * alanlar.length;
   try {
     await runTransaction(fsdb, async tx => {
       const r = doc(fsdb, "users", MEN), s = await tx.get(r), d = s.data() || {};
@@ -224,13 +271,16 @@ async function gonder(g, c) {
       tx.update(r, { hearts: num(d.hearts) - cost });
     });
     /* öpüş hədiyyəsi: masadakı sayğac artır, alan oyunçunun öz klienti "kisses" xalını eyni qədər artırır */
-    if (g.opus) rtTx(ref(rtdb, "masalar/" + MASA_NOMRESI + "/opus/" + kim), v => (num(v)) + c);
-    /* hədiyyə alan oyunçunun musiqisi çalırsa: hər hədiyyəyə +1 musiqi xalı */
-    if (djUid() === kim && window.Xallar) window.Xallar.musiqiHediyye(kim, c);
+    if (g.opus) alanlar.forEach(k => rtTx(ref(rtdb, "masalar/" + MASA_NOMRESI + "/opus/" + k), v => num(v) + c));
+    /* hədiyyə alanlardan musiqisi çalan varsa: hər hədiyyəyə +1 musiqi xalı */
+    const dj = djUid();
+    if (dj && alanlar.includes(dj) && window.Xallar) window.Xallar.musiqiHediyye(dj, c);
     /* hamıya göstər */
     const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye/" + MEN);
     onDisconnect(r).remove();
-    set(r, { to: kim, i: g.id, c, n: Date.now() + "-" + Math.random().toString(36).slice(2, 7) });
+    set(r, { to: alanlar, i: g.id, c, n: Date.now() + "-" + Math.random().toString(36).slice(2, 7) });
+    /* hədiyyə atılandan sonra işarələr sıfırlanır */
+    isaret.clear(); tray.classList.remove("open"); sec = null; sendBtn.style.display = "none"; ciz(); markYenile();
   } catch (e) {
     if (e.message === "YETMIR") { toast("Bonus ürəyiniz çatmır"); if (window.HeartShop) window.HeartShop.open(); }
     else { console.error(e); toast("Xəta baş verdi, yenidən cəhd edin"); }
@@ -251,9 +301,9 @@ const merkez = el => {
   return r.width ? [r.left + r.width / 2, r.top + r.height / 2] : null;
 };
 
-function oyna(kimden, x) {
+function oynaBir(kimden, x, to) {
   const g = HEDIYYELER.find(h => h.id === x.i);
-  const a = fotoTap(kimden), b = fotoTap(x.to);
+  const a = fotoTap(kimden), b = fotoTap(to);
   if (!g || !b) return;
   const pb = merkez(b), pa = (a && merkez(a)) || [innerWidth / 2, innerHeight * 0.6];
   if (!pb) return;
@@ -271,6 +321,11 @@ function oyna(kimden, x) {
     { transform: "translate(calc(-50% + " + dx + "px),calc(-50% + " + dy + "px)) scale(1.9)", opacity: 0 }
   ], { duration: 1800, easing: "ease-in-out", fill: "both" });
   an.onfinish = () => d.remove();
+}
+
+function oyna(kimden, x) {
+  const l = Array.isArray(x.to) ? x.to : [x.to];
+  l.forEach((to, i) => setTimeout(() => oynaBir(kimden, x, to), i * 120));
 }
 
 let ilk = true;
