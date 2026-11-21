@@ -66,11 +66,11 @@
 #ustPanel .urek path{fill:#e8590c;stroke:#e9e2dc;stroke-width:1.9}
 #urekSayi{color:#e9e2dc}
 
-.hs-toast{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:10001;
+.hs-toast{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:10006;
   background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw;
   opacity:0;pointer-events:none;transition:opacity .2s}
 .hs-toast.show{opacity:1}
-.hs-fly{position:fixed;z-index:10002;width:5.4vw;height:5.4vw;pointer-events:none;will-change:transform,opacity}
+.hs-fly{position:fixed;z-index:10007;width:5.4vw;height:5.4vw;pointer-events:none;will-change:transform,opacity}
 .hs-fly svg{width:100%;height:100%;filter:drop-shadow(0 .3vw .5vw rgba(0,0,0,.3))}
 .hs-btn:disabled{opacity:.6}
 
@@ -85,6 +85,29 @@
 .hs-overlay,.hs-overlay *,.hs-toast,.hs-fly,#urekBtn,#urekSayi{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .hs-rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);transform:scale(0);opacity:1;pointer-events:none;animation:hsrip .55s ease-out forwards}
 @keyframes hsrip{to{transform:scale(1);opacity:0}}
+
+/* ===== VIP statusu pəncərəsi ===== */
+.hs-vipov{z-index:10003}
+.vp-box{position:relative;width:80.7vw;border-radius:4vw;background:#fff;box-shadow:0 1vw 4vw rgba(0,0,0,.35);animation:hsin .25s ease}
+.vp-head{border-radius:4vw 4vw 0 0;padding:0 0 .6vw;background:linear-gradient(#c9ee63 0,#e2f6a0 38%,#f6fcdc 78%,#fff 100%)}
+.vp-title{text-align:center;font:500 3.4vw/10vw Roboto,Arial,sans-serif;color:#4a5a2a}
+.vp-desc{padding:0 6vw;text-align:center;font:400 3vw/1.4 Roboto,Arial,sans-serif;color:#3f4a28}
+.vp-car{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-top:2.4vw;-webkit-overflow-scrolling:touch}
+.vp-car::-webkit-scrollbar{display:none}
+.vp-sl{flex:0 0 100%;scroll-snap-align:center;text-align:center;padding:.6vw 0}
+.vp-sl svg{width:40vw;height:26vw}
+.vp-cap{font:700 3.2vw/1.2 Roboto,Arial,sans-serif;color:#333;margin-top:.6vw}
+.vp-dots{display:flex;justify-content:center;gap:1.5vw;margin:2vw 0 1.6vw}
+.vp-dots i{width:1.6vw;height:1.6vw;border-radius:50%;background:#cbd6a4;transition:background .2s,transform .2s}
+.vp-dots i.on{background:#7fb62a;transform:scale(1.25)}
+.vp-aktiv{text-align:center;font:500 3vw/1 Roboto,Arial,sans-serif;color:#2f8a2f;min-height:0}
+.vp-aktiv:not(:empty){margin:.4vw 0 1.4vw}
+.vp-rows{padding:1.4vw 4.4vw 4.4vw;border-top:1px solid #ececec}
+.vp-row{display:flex;align-items:center;justify-content:space-between;height:14vw}
+.vp-lbl{display:flex;align-items:center;gap:1.4vw;font:400 4.4vw/1 Roboto,Arial,sans-serif;color:#1d1d1d}
+.vp-lbl svg{width:9vw;height:9vw;flex:none}
+.hs-btn.vp-buy{width:31vw;height:9.2vw;border-radius:2.2vw;display:flex;align-items:center;justify-content:center;gap:1.2vw;font:500 4.6vw/1 Roboto,Arial,sans-serif}
+.vp-buy .coin{width:5.6vw;height:5.6vw;flex:none}
 
     </style>
 </head>
@@ -309,7 +332,7 @@ const ICONS = {
 
 const PACKS = [
   { top: 'PREMIUM<br>İCAZƏNAMƏ', icon: 'ticket', btn: 'Təfərrüatlar', color: 'blue' },
-  { top: '<b>VIP</b><small>STATUS</small>', icon: 'crown', btn: 'Təfərrüatlar', color: 'blue' },
+  { top: '<b>VIP</b><small>STATUS</small>', icon: 'crown', btn: 'Təfərrüatlar', color: 'blue', vip: true },
   { hearts: 14000, bonus: 40, cost: 10000, icon: 'chest', color: 'green', tag: ['Ən yaxşı təklif', 'pink'] },
   { hearts: 6500, bonus: 30, cost: 5000, icon: 'barrel', color: 'green' },
   { hearts: 1200, bonus: 20, cost: 1000, icon: 'pot', color: 'green', tag: ['Ən yaxşı', 'purple'] },
@@ -345,25 +368,29 @@ PACKS.forEach(p => {
     '<div class="hs-img">' + ICONS[p.icon] + '</div><button class="hs-btn ' + p.color + '">' + (p.cost || p.btn) + '</button>';
   const b = c.querySelector('button');
   if (p.cost) b.onclick = () => al(p, b);
+  if (p.vip) b.onclick = () => vipAc();
   grid.appendChild(c);
 });
 
 let openedAt = 0;
 const open = () => { openedAt = Date.now(); ov.classList.add('open'); };
-const close = () => ov.classList.remove('open');
+const close = () => { ov.classList.remove('open'); vipBagla(); };
 ov.querySelector('.hs-close').onclick = close;
-ov.addEventListener('pointerdown', e => {
-  const t = e.target.closest && e.target.closest('.hs-btn,.hs-close,.hs-sellers');
-  if (!t) return;
-  if (navigator.vibrate) navigator.vibrate(12);
-  const r = t.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2;   // basılan yerdən yayılan dalğa
-  const s = document.createElement('span');
-  s.className = 'hs-rip';
-  s.style.cssText = 'width:' + d + 'px;height:' + d + 'px;left:' + (e.clientX - r.left - d / 2) + 'px;top:' + (e.clientY - r.top - d / 2) + 'px';
-  t.appendChild(s);
-  setTimeout(() => s.remove(), 600);
-});
-['selectstart', 'contextmenu', 'dragstart'].forEach(n => ov.addEventListener(n, e => e.preventDefault()));
+function tactile(el) {
+  el.addEventListener('pointerdown', e => {
+    const t = e.target.closest && e.target.closest('.hs-btn,.hs-close,.hs-sellers');
+    if (!t) return;
+    if (navigator.vibrate) navigator.vibrate(12);
+    const r = t.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2;   // basılan yerdən yayılan dalğa
+    const s = document.createElement('span');
+    s.className = 'hs-rip';
+    s.style.cssText = 'width:' + d + 'px;height:' + d + 'px;left:' + (e.clientX - r.left - d / 2) + 'px;top:' + (e.clientY - r.top - d / 2) + 'px';
+    t.appendChild(s);
+    setTimeout(() => s.remove(), 600);
+  });
+  ['selectstart', 'contextmenu', 'dragstart'].forEach(n => el.addEventListener(n, e => e.preventDefault()));
+}
+tactile(ov);
 ov.addEventListener('click', e => { if (e.target === ov && Date.now() - openedAt > 500) close(); });
 document.body.appendChild(ov);
 document.body.appendChild(toastEl);
@@ -572,6 +599,113 @@ function bonusAl() {
 }
 bonusBasla();
 bonusGuncelle();
+
+
+/* ================= VIP statusu ================= */
+const COIN = '<svg class="coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ffc83a" stroke="#e39a0c" stroke-width="2"/><circle cx="12" cy="12" r="6.4" fill="none" stroke="#f3a712" stroke-width="1.6"/><path d="M12 8l1.2 2.5 2.7.4-2 1.9.5 2.7L12 14.2l-2.4 1.3.5-2.7-2-1.9 2.7-.4z" fill="#fff4b8"/></svg>';
+const VS = (b) => '<svg viewBox="0 0 120 80">' + b + '</svg>';
+const kutu = (x, y, w, h, c, r) => '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="3" fill="' + c + '" transform="rotate(' + (r || 0) + ' ' + (x + w / 2) + ' ' + (y + h / 2) + ')"/>' +
+  '<rect x="' + (x + w / 2 - 2) + '" y="' + y + '" width="4" height="' + h + '" fill="#ffd54a" transform="rotate(' + (r || 0) + ' ' + (x + w / 2) + ' ' + (y + h / 2) + ')"/>' +
+  '<rect x="' + x + '" y="' + (y + h / 2 - 2) + '" width="' + w + '" height="4" fill="#ffd54a" transform="rotate(' + (r || 0) + ' ' + (x + w / 2) + ' ' + (y + h / 2) + ')"/>';
+const SLAYDLAR = [
+  { cap: 'VIP hədiyyələr', svg: VS('<ellipse cx="60" cy="72" rx="42" ry="4" fill="rgba(90,110,30,.18)"/>' + kutu(20, 40, 34, 28, '#e5405b', -6) + kutu(62, 34, 38, 34, '#3d8fe0', 5) +
+      '<path d="M37 40Q28 28 24 36Q28 42 37 40ZM37 40Q46 28 50 36Q46 42 37 40Z" fill="#ffd54a"/>' + hp(60, 22, 1.6) + hp(88, 24, 1.1, '#f27a45', 14) + hp(30, 24, 1.1, '#f27a45', -14) + SP(104, 18, 5) + SP(14, 50, 4)) },
+  { cap: 'Gülüşlər və söhbətdəki rəng', svg: VS('<rect x="14" y="12" width="70" height="30" rx="9" fill="#d8f2a6" stroke="#9ccc4a" stroke-width="2"/><path d="M26 42l-4 10 12-10z" fill="#d8f2a6" stroke="#9ccc4a" stroke-width="2"/>' +
+      '<rect x="22" y="20" width="40" height="4" rx="2" fill="#7fb62a"/><rect x="22" y="29" width="28" height="4" rx="2" fill="#7fb62a" opacity=".7"/>' +
+      '<circle cx="96" cy="30" r="14" fill="#ffd54a" stroke="#e5a017" stroke-width="2"/><circle cx="91" cy="27" r="2" fill="#6b4a00"/><circle cx="101" cy="27" r="2" fill="#6b4a00"/><path d="M89 34Q96 42 103 34" fill="none" stroke="#6b4a00" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<circle cx="40" cy="62" r="9" fill="#ffd54a" stroke="#e5a017" stroke-width="1.6"/><circle cx="37" cy="60" r="1.4" fill="#6b4a00"/><circle cx="43" cy="60" r="1.4" fill="#6b4a00"/><path d="M35 65Q40 69 45 65" fill="none" stroke="#6b4a00" stroke-width="1.6" stroke-linecap="round"/>' +
+      hp(66, 62, 1.3) + SP(108, 58, 5)) },
+  { cap: 'Ölkə bayrağı', svg: VS('<rect x="30" y="8" width="4" height="68" rx="2" fill="#8a6a3a"/><circle cx="32" cy="8" r="4" fill="#ffd54a"/>' +
+      '<path d="M34 12H96Q92 22 96 32H34Z" fill="#3d9be0"/><path d="M34 22H96Q92 32 96 42H34Z" fill="#e8334a" transform="translate(0 0)"/><path d="M34 32H96Q92 42 96 52H34Z" fill="#2fa84f"/>' +
+      '<circle cx="58" cy="30" r="6" fill="#fff"/><circle cx="60" cy="30" r="5" fill="#e8334a"/><path d="M68 30l1.4 2.8 3 .4-2.2 2.1.5 3-2.7-1.4-2.7 1.4.5-3-2.2-2.1 3-.4z" fill="#fff"/>' +
+      '<ellipse cx="32" cy="76" rx="14" ry="3" fill="rgba(90,110,30,.2)"/>') },
+  { cap: 'Profildə fərqlənmə', svg: VS('<rect x="34" y="8" width="52" height="62" rx="7" fill="#f7c63e" stroke="#e5a017" stroke-width="2.4"/><rect x="39" y="13" width="42" height="52" rx="4" fill="#e9eef2"/>' +
+      '<circle cx="60" cy="33" r="10" fill="#aab6c0"/><path d="M42 65Q42 46 60 46Q78 46 78 65Z" fill="#aab6c0"/>' +
+      '<path d="M70 4l5 7 6-5 2 11H62l2-11 6 5z" fill="#ffd54a" stroke="#e5a017" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<rect x="40" y="56" width="22" height="9" rx="3" fill="#7fb62a"/><text x="51" y="63.4" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-family="Arial">VIP</text>' + SP(98, 22, 5) + SP(20, 40, 4)) },
+  { cap: 'Təpik vur və qoru', svg: VS('<circle cx="36" cy="30" r="17" fill="#ffd1a6" stroke="#e5a06a" stroke-width="2"/><circle cx="30" cy="28" r="2" fill="#5a3a1a"/><circle cx="42" cy="28" r="2" fill="#5a3a1a"/><path d="M30 37Q36 42 42 37" fill="none" stroke="#5a3a1a" stroke-width="2" stroke-linecap="round"/><path d="M20 24Q36 6 52 24Q40 14 20 24Z" fill="#5a3a1a"/>' +
+      '<circle cx="84" cy="30" r="17" fill="#ffd1a6" stroke="#e5a06a" stroke-width="2"/><circle cx="78" cy="28" r="2" fill="#5a3a1a"/><circle cx="90" cy="28" r="2" fill="#5a3a1a"/><path d="M78 37Q84 41 90 37" fill="none" stroke="#5a3a1a" stroke-width="2" stroke-linecap="round"/><path d="M66 28Q66 8 84 8Q102 8 102 28Q94 16 66 28Z" fill="#8a3fb8"/>' +
+      '<path d="M60 38l16 5v13q0 12-16 18-16-6-16-18V43z" fill="#7bd856" stroke="#fff" stroke-width="3" transform="translate(0 -2)"/><path d="M52 54l6 6 11-12" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2)"/>') }
+];
+
+const vipOv = document.createElement('div');
+vipOv.className = 'hs-overlay hs-vipov';
+vipOv.innerHTML = '<div class="vp-box"><button class="hs-close"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#ef5f60" stroke-width="3.2" stroke-linecap="round"/></svg></button>' +
+  '<div class="vp-head"><div class="vp-title">VIP statusu</div>' +
+  '<div class="vp-desc">VIP oyunçular başqalarından unikal profil və xüsusi hədiyyə dəsti ilə fərqlənirlər.</div>' +
+  '<div class="vp-car">' + SLAYDLAR.map(s => '<div class="vp-sl">' + s.svg + '<div class="vp-cap">' + s.cap + '</div></div>').join('') + '</div>' +
+  '<div class="vp-dots">' + SLAYDLAR.map(() => '<i></i>').join('') + '</div><div class="vp-aktiv"></div></div>' +
+  '<div class="vp-rows">' +
+  '<div class="vp-row"><div class="vp-lbl">' + ICONS.crown + '<span>VIP həftəlik</span></div><button class="hs-btn vp-buy green" data-gun="7" data-cost="500">500' + COIN + '</button></div>' +
+  '<div class="vp-row"><div class="vp-lbl">' + ICONS.crown + '<span>VIP aylıq</span></div><button class="hs-btn vp-buy green" data-gun="30" data-cost="1200">1200' + COIN + '</button></div>' +
+  '</div></div>';
+document.body.appendChild(vipOv);
+tactile(vipOv);
+
+const vCar = vipOv.querySelector('.vp-car');
+const vDots = [...vipOv.querySelectorAll('.vp-dots i')];
+const vAktiv = vipOv.querySelector('.vp-aktiv');
+let vTimer = null, vDayan = false, vDayanT = null;
+function vNoqte() {
+  const i = Math.round(vCar.scrollLeft / (vCar.clientWidth || 1));
+  vDots.forEach((d, k) => d.classList.toggle('on', k === i));
+}
+vCar.addEventListener('scroll', vNoqte);
+const vDur = () => { vDayan = true; clearTimeout(vDayanT); };
+const vBur = () => { clearTimeout(vDayanT); vDayanT = setTimeout(() => { vDayan = false; }, 3500); };
+vCar.addEventListener('pointerdown', vDur);
+vCar.addEventListener('touchstart', vDur, { passive: true });
+['pointerup', 'pointercancel', 'touchend'].forEach(n => vCar.addEventListener(n, vBur));
+function vStatus(bitis) {
+  const pill = document.getElementById('vipPill');
+  if (bitis) vAktiv.textContent = 'VIP aktivdir: ' + Math.max(1, Math.ceil((bitis - Date.now()) / 864e5)) + ' gün qalıb';
+  else if (pill && pill.style.display !== 'none' && pill.textContent) vAktiv.textContent = 'VIP aktivdir: ' + pill.textContent + ' qalıb';
+  else vAktiv.textContent = '';
+}
+function vipAc() {
+  vCar.scrollLeft = 0; vDayan = false; vNoqte(); vStatus();
+  openedAt = Date.now();
+  vipOv.classList.add('open');
+  clearInterval(vTimer);
+  vTimer = setInterval(() => {
+    if (vDayan) return;
+    const w = vCar.clientWidth, i = (Math.round(vCar.scrollLeft / w) + 1) % SLAYDLAR.length;
+    vCar.scrollTo({ left: i * w, behavior: 'smooth' });
+  }, 3200);
+}
+function vipBagla() { vipOv.classList.remove('open'); clearInterval(vTimer); }
+vipOv.querySelector('.hs-close').onclick = vipBagla;
+vipOv.addEventListener('click', e => { if (e.target === vipOv && Date.now() - openedAt > 500) vipBagla(); });
+
+async function vipAl(gun, cost) {
+  if (mesgul) return;
+  const cari = cariOyuncu();
+  if (!cari || !cari.docId) { toast('Hesaba giriş edilməyib'); return; }
+  mesgul = true;
+  try {
+    const ref = doc(fsdb, 'users', cari.docId);
+    const bitis = await runTransaction(fsdb, async tx => {
+      const d = (await tx.get(ref)).data() || {};
+      const sahe = jetonAlani(d);
+      if (!sahe) { const e = new Error('ALAN'); e.acarlar = Object.keys(d).join(', '); throw e; }
+      const jeton = Number(d[sahe]) || 0;
+      if (jeton < cost) throw new Error('YETMIR');
+      const indi = Date.now();
+      const baza = (d.vip && Number(d.vipUntil) > indi) ? Number(d.vipUntil) : indi;   // VIP varsa üstünə əlavə olunur
+      const son = baza + gun * 864e5;
+      tx.update(ref, { [sahe]: jeton - cost, vip: true, vipUntil: son });
+      return son;
+    });
+    vStatus(bitis);
+    toast('VIP aktiv oldu! ' + Math.ceil((bitis - Date.now()) / 864e5) + ' gün');
+  } catch (e) {
+    if (e.message === 'YETMIR') toast('Kifayət qədər jetonunuz yoxdur');
+    else if (e.message === 'ALAN') toast('Jeton sahəsi tapılmadı. Sahələr: ' + e.acarlar);
+    else { console.error(e); toast('Xəta baş verdi, yenidən cəhd edin'); }
+  }
+  mesgul = false;
+}
+vipOv.querySelectorAll('.vp-buy').forEach(b => { b.onclick = () => vipAl(+b.dataset.gun, +b.dataset.cost); });
 
 window.HeartShop = { open, close };
 
