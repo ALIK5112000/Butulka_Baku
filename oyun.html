@@ -48,7 +48,8 @@
   background:repeating-conic-gradient(from 0deg at 50% 62%,rgba(255,232,120,.6) 0 7deg,rgba(255,255,255,0) 7deg 14deg);
   -webkit-mask-image:radial-gradient(circle at 50% 62%,#000 15%,transparent 72%);mask-image:radial-gradient(circle at 50% 62%,#000 15%,transparent 72%)}
 .hs-img span{position:relative;font-size:11vw;line-height:1}
-.hs-btn{width:100%;height:6.8vw;border:0;border-radius:1.3vw;color:#fff;font:400 3.5vw/1 Roboto,Arial,sans-serif;padding:0}
+.hs-btn{width:100%;height:6.8vw;border:0;border-radius:1.3vw;color:#fff;font:400 3.5vw/1 Roboto,Arial,sans-serif;padding:0;cursor:pointer;touch-action:manipulation;
+  box-shadow:0 .7vw 0 rgba(0,0,0,.2);transition:transform .08s,box-shadow .08s,filter .08s}
 .hs-btn.blue{background:#2c8ae6}.hs-btn.green{background:#93c83a}.hs-btn.cyan{background:#1ec3ee}
 .hs-tag{position:absolute;top:-.6vw;left:50%;transform:translateX(-50%);white-space:nowrap;color:#fff;z-index:2;
   font:700 2.4vw/3.2vw Roboto,Arial,sans-serif;height:3.2vw;padding:0 1.8vw;border-radius:.6vw}
@@ -68,6 +69,13 @@
 .hs-fly{position:fixed;z-index:10002;width:5.4vw;height:5.4vw;pointer-events:none;will-change:transform,opacity}
 .hs-fly svg{width:100%;height:100%;filter:drop-shadow(0 .3vw .5vw rgba(0,0,0,.3))}
 .hs-btn:disabled{opacity:.6}
+
+/* basılan düymə hissi */
+.hs-btn:active{transform:translateY(.6vw) scale(.97);box-shadow:0 .1vw 0 rgba(0,0,0,.2);filter:brightness(.9)}
+.hs-close{transition:transform .08s;touch-action:manipulation}
+.hs-close:active{transform:scale(.88)}
+.hs-sellers{transition:transform .08s,background .08s;touch-action:manipulation}
+.hs-sellers:active{transform:scale(.98);background:#f1eded}
 
     </style>
 </head>
@@ -259,6 +267,9 @@ let openedAt = 0;
 const open = () => { openedAt = Date.now(); ov.classList.add('open'); };
 const close = () => ov.classList.remove('open');
 ov.querySelector('.hs-close').onclick = close;
+ov.addEventListener('pointerdown', e => {
+  if (e.target.closest && e.target.closest('.hs-btn,.hs-close,.hs-sellers') && navigator.vibrate) navigator.vibrate(12);
+});
 ov.addEventListener('click', e => { if (e.target === ov && Date.now() - openedAt > 500) close(); });
 document.body.appendChild(ov);
 document.body.appendChild(toastEl);
@@ -375,6 +386,7 @@ function al(p, btn) {
 /* ================= 40 dəqiqəlik bonus ================= */
 const BONUS_SANIYE = 2400;                         // 40 dəqiqə
 const ODUL = [200, 300, 400, 500, 600, 700, 800, 900, 1000]; // 1000-dən sonra yenə 200
+const BONUS_PAKET = { hearts: 105, cost: 100 };               // yaşıl düymə: 100 jetona 105 ürək
 const bonus = { yuklendi: false, qalan: BONUS_SANIYE, seviyye: 0 };
 const CLOCK = '<svg viewBox="0 0 24 24" style="width:2.4vw;height:2.4vw;vertical-align:-.35vw;margin-right:.6vw"><circle cx="12" cy="13.5" r="8" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M12 9v5l3 2M9.5 2.5h5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg>';
 const fmt = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
@@ -389,17 +401,17 @@ function bonusKartiYarat() {
   B.num = c.querySelector('.row span');
   B.sub = c.querySelector('small');
   B.btn = c.querySelector('button');
-  B.btn.onclick = () => bonusAl();
+  B.btn.onclick = () => (bonus.yuklendi && bonus.qalan <= 0) ? bonusAl() : al(BONUS_PAKET, B.btn);
   return c;
 }
 function bonusGuncelle() {
   if (!B.tag) return;
   const l = bonus.seviyye % ODUL.length;
   const hazir = bonus.yuklendi && bonus.qalan <= 0;
-  B.num.textContent = ODUL[l];
-  B.sub.textContent = '🎁 +' + ODUL[(l + 1) % ODUL.length] + ' ürək';
+  B.num.textContent = BONUS_PAKET.hearts;                    // həmişə 105 (jetonla alınır)
+  B.sub.textContent = '🎁 +' + ODUL[l] + ' ürək';          // sayğac bitəndə veriləcək bonus
   B.tag.innerHTML = hazir ? 'Hazırdır' : CLOCK + fmt(bonus.qalan);
-  B.btn.textContent = hazir ? 'Götür' : '100';
+  B.btn.textContent = hazir ? 'Götür' : BONUS_PAKET.cost;
   B.btn.className = 'hs-btn ' + (hazir ? 'cyan' : 'green');
 }
 function saxlaLocal() {
