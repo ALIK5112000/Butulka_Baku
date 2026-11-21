@@ -226,9 +226,10 @@ $(".hd-tx").onclick = () => { isaret.clear(); tray.classList.remove("open"); mar
 window.HediyyePanel = { ac, bagla, hedef: () => hedef, modu: () => root.classList.contains("open") && tray.classList.contains("open"), isaretle };
 
 /* ---------- Hazırda kimin musiqisi çalır? ---------- */
-let oturacaqlar = {}, spin = null, offset = 0, sonKlip = null;
+let oturacaqlar = {}, spin = null, offset = 0, sonKlip = null, djKayit = null;
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => { oturacaqlar = s.val() || {}; });
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/raund/spin"), s => { spin = s.val() || null; });
+onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/dj"), s => { djKayit = s.val() || null; });
 onValue(ref(rtdb, ".info/serverTimeOffset"), s => { offset = s.val() || 0; });
 
 function klipIzle() {
@@ -247,6 +248,15 @@ setTimeout(() => clearInterval(kt), 300000);
 const norm = s => { try { return new URL(s || "images/avatar/nophoto.svg", location.href).href; } catch (e) { return s || ""; } };
 function djUid() {
   const oy = Object.values(oturacaqlar).filter(Boolean);
+  /* ən etibarlı yol: çatdakı son "klip qoşdu" bildirişi (chat.js yazır), klip hələ ekrandadırsa */
+  const w0 = document.getElementById("bb-live-clip-widget");
+  if (window.__sonDJ && w0 && getComputedStyle(w0).display !== "none" && oy.some(o => o.uid === window.__sonDJ.uid)) return window.__sonDJ.uid;
+  /* musiqini qoşan oyunçu masaya qeyd edib: ekrandakı klip ilə eyni olmalıdır */
+  const wv = document.getElementById("bb-live-clip-widget"), fr0 = document.querySelector("#bb-live-video-wrap iframe");
+  if (djKayit && wv && fr0 && getComputedStyle(wv).display !== "none") {
+    const mm = /embed\/([^?]+)/.exec(fr0.src);
+    if (mm && mm[1] === djKayit.vid && oy.some(o => o.uid === djKayit.uid)) return djKayit.uid;
+  }
   const d = sonKlip;
   if (d) {
     const bitis = num(d.startedAt) + num(d.durationSec || 240) * 1000 + 3000;
