@@ -17,7 +17,20 @@
   transform: rotate(45deg); border-bottom-left-radius: .5vw;
   box-shadow: -.3vw .3vw .6vw rgba(0,0,0,.06);
 }
-/* qız oyunçunun mesajı və klip/məftun bildirişləri: açıq nanə-yaşıl */
+/* Hər mesaj çərçivəli ağ kartda: ad kapsulu + mətn + "Tərcüməni göstər" sətri */
+.mgovde.mkart { padding: 1.5vw 2.4vw 1.3vw; border: .3vw solid #dde4fb; box-shadow: 0 .3vw 1.5vw rgba(70, 90, 170, .18); }
+.mpill {
+  position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: 1vw;
+  vertical-align: middle; margin-right: .4vw; padding: .5vw 2.2vw .5vw 1.6vw;
+  border: .35vw solid currentColor; border-radius: 6vw;
+  color: var(--ad, #2b6be0); font-size: 3.6vw; font-weight: 700; line-height: 1.2;
+}
+/* kapsulun içi: adın rənginin açıq tonu */
+.mpill::before { content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: inherit; background: currentColor; opacity: .12; z-index: -1; }
+/* kapsulun ətrafı: yumşaq parıltı */
+.mpill::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: inherit; box-shadow: 0 0 1.4vw currentColor; opacity: .45; z-index: -1; }
+.mik { color: var(--ad, #2b6be0); font-weight: 700; }
+/* qız oyunçunun mesajı və klip/məftun bildirişləri: açıq nanə-yaşıl (mkart-dan SONRA yazılıb ki, üstün gəlsin) */
 .mgovde.qiz, .mgovde.klip-bildiris { background: #eaf8f2; border: .25vw solid #cfe8dc; }
 /* Klip qoşulma bildirişi: qoşanın şəkli + musiqi işarəsi + musiqinin adı (qabarcıqsız) */
 .klip-musiqi { display: flex; align-items: center; gap: 1.8vw; min-height: 7.8vw; max-width: 80vw; min-width: 0; color: #666; font-size: 3.6vw; line-height: 1.25; }
@@ -27,8 +40,8 @@
 .klip-ox { display: flex; flex: none; }
 .klip-ox svg { width: 5.4vw; height: 5.4vw; }
 .mad { font-weight: 700; }
-/* Referansdakı "Tərcüməni göstər" sətri (istəsən chat.js-də əlavə edərik) */
-.mtercume { display: block; font-size: 3.2vw; line-height: 1.25; color: #9a9a9a; }
+/* Hər mesajın altındakı "Tərcüməni göstər" sətri (hələlik yalnız yazı) */
+.mtercume { display: block; margin-top: .6vw; font-size: 3.2vw; line-height: 1.25; color: #9a9a9a; }
 #yazBar {
   position: absolute; bottom: 0; left: 0; right: 0; height: 10.6vw; background: #fff;
   border-top: .2vw solid #ecebe9; box-shadow: 0 -.5vw 1.6vw rgba(0,0,0,.07);
