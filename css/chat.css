@@ -49,6 +49,7 @@
   transform: none;
 }
 #musiqiPanel .musiqi-btn, #musiqiPanel button {
+  position: relative;
   width: 11vw !important;
   height: 10.4vw !important;
   max-width: none !important;
@@ -60,14 +61,33 @@
   border: none;
   border-radius: 5.2vw 0 0 5.2vw !important;
   background-color: #ffffff !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 7.4vw 7.4vw !important;
   box-shadow: 0 .4vw 1.6vw rgba(0, 0, 0, 0.18) !important;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: transform 0.15s ease;
 }
-#musiqiPanel .musiqi-btn > *, #musiqiPanel button > * { width: 7.4vw; height: 7.4vw; }
+/* içindəki ikon: öz arxa fonu, kölgəsi, çərçivəsi və yeri sıfırlanır ki, düymənin üstünə düşməsin */
+#musiqiPanel .musiqi-btn > *, #musiqiPanel button > * {
+  position: static !important;
+  width: 7.4vw !important;
+  height: 7.4vw !important;
+  max-width: 7.4vw;
+  max-height: 7.4vw;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  object-fit: contain;
+  transform: none !important;
+}
 #musiqiPanel .musiqi-btn:active, #musiqiPanel button:active { transform: scale(0.95); }
 
 /* Klip kartı referansdakı ölçüyə yaxın (köhnə ölçünün 85%-i). Böyük/kiçik gəlsə bu rəqəmi dəyişin. */
