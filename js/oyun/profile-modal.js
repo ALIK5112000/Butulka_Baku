@@ -2,7 +2,7 @@ import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, onSnapshot, updateDoc, increment, runTransaction, collection, query, where, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { ref, onValue, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, onValue, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 /* ADDIM 1: Profil kartı (reytinqlər + Məftun sistemi). Bu fayl təkbaşınadır, CSS də içindədir. */
 
@@ -124,60 +124,9 @@ if (MEN) {
   });
 }
 
-/* Musiqi qoşanda +9 */
-function klipQosBagla() {
-  const mf = window.MusiqiFirebase;
-  if (!mf || typeof mf.klipQos !== "function") return false;
-  if (mf.__xal) return true;
-  const asil = mf.klipQos.bind(mf);
-  mf.klipQos = async (...a) => {
-    const r = await asil(...a);
-    if (r !== false && MEN) { window.__xalSon = Date.now(); window.Xallar.musiqiQosdu(MEN); toast("+9 musiqi xalı"); }
-    return r;
-  };
-  mf.__xal = true;
-  return true;
-}
-const bagTimer = setInterval(() => { if (klipQosBagla()) clearInterval(bagTimer); }, 500);
-setTimeout(() => clearInterval(bagTimer), 300000);
+/* Musiqi qoşanda +9 xalını chat.js verir (klip bildirişi gələndə). */
 
-/* Musiqi qoşanda +9.
-   Mən klip kartına toxunanda vaxtı yadda saxlayıram; ardınca ekranda YENİ klip başlayanda
-   (iframe yaranır) həmin klipi mən qoşmuş sayılıram: sənə +9 yazılır və kimin musiqisi olduğu
-   masaya qeyd olunur (hədiyyə xalı üçün). */
-document.addEventListener("click", e => {
-  const t = e.target && e.target.closest ? e.target.closest("#bb-clip-grid > div") : null;
-  if (t && !e.target.closest(".bb-fav-star")) window.__klipTik = Date.now();
-}, true);
 
-const normSrc = x => { try { return new URL(x || "images/avatar/nophoto.svg", location.href).href; } catch (e) { return x || ""; } };
-const isledi = new WeakSet();
-function klipDOM() {
-  if (!MEN) return;
-  const w = document.getElementById("bb-live-video-wrap"), im = document.getElementById("bb-dj-avatar");
-  const fr = w && w.querySelector("iframe");
-  if (!fr || isledi.has(fr)) return;
-  isledi.add(fr);
-  const m = /[?&]start=(\d+)/.exec(fr.src);
-  if (m && Number(m[1]) > 10) return;                         /* çalan klipə sonradan qoşulub */
-  const tikladi = Date.now() - (window.__klipTik || 0) < 25000;
-  const o = Object.values(oturacaqlar).find(x => x && x.uid === MEN);
-  const sekilUygun = !!(im && o && o.sekil && normSrc(im.src) === normSrc(o.sekil));
-  if (!tikladi && !sekilUygun) return;                         /* bu klipi başqası qoşub */
-  window.__klipTik = 0;
-  if (Date.now() - (window.__xalSon || 0) > 20000) {           /* xal artıq verilməyibsə */
-    window.__xalSon = Date.now();
-    window.Xallar.musiqiQosdu(MEN);
-    toast("+9 musiqi xalı");
-  }
-  const v = /embed\/([^?]+)/.exec(fr.src);
-  if (v) {
-    const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/dj");
-    set(r, { uid: MEN, vid: v[1] }).catch(() => {});
-    onDisconnect(r).remove();
-  }
-}
-setInterval(klipDOM, 500);
 
 /* Panel və ya kart açıqkən yuxarıdakı ürək düyməsi gizlədilir ki, sol-yuxarı göy düyməyə toxunanda
    ürək mağazası da açılmasın (mağaza koordinata görə işləyir) */
@@ -204,8 +153,9 @@ function meftunTx(isle) {
 }
 
 /* Başqası (və ya özü) hədəfə məftun olur: cari qiyməti bonus ürəkdən ödəyir, qiymət +1 artır */
-function meftunOl(hedef) {
-  return meftunTx(async (al, yaz) => {
+async function meftunOl(hedef) {
+  const info = {};
+  await meftunTx(async (al, yaz) => {
     const h = await al(hedef), m = await al(MEN);
     const q = Math.max(1, num(h.meftunQiymet));
     if (h.meftunUid === MEN) throw new Error("ARTIQ");
@@ -217,23 +167,35 @@ function meftunOl(hedef) {
     yaz(hedef, "meftunUid", MEN);
     yaz(hedef, "meftunOdenis", q);
     yaz(hedef, "meftunQiymet", q + 1);
+    info.metn = "💘 " + (m.username || "Oyunçu") + ", " + (h.username || "Oyunçu") + " adlı oyunçuya məftun oldu (" + q + " ❤️)";
   });
+  return info;
 }
 
 /* Hədəf öz məftununu silir: cari qiymət qədər bonus ödəyir, yer boşalır, məftunun cüt ürək xalı azalır */
-function terkEt() {
-  return meftunTx(async (al, yaz) => {
+async function terkEt() {
+  const info = {};
+  await meftunTx(async (al, yaz) => {
     const o = await al(MEN);
     if (!o.meftunUid) throw new Error("BOS");
     const q = Math.max(1, num(o.meftunQiymet));
     if (num(o.hearts) < q) throw new Error("YETMIR");
     const prev = o.meftunUid, odenen = num(o.meftunOdenis);
     const p = await al(prev);
+    const prevAd = p.username || "Oyunçu";
     yaz(prev, "cutUrek", Math.max(0, num(p.cutUrek) - odenen));
     yaz(MEN, "hearts", num(o.hearts) - q);
     yaz(MEN, "meftunUid", null);
     yaz(MEN, "meftunOdenis", 0);
+    info.metn = "💔 " + (o.username || "Oyunçu") + ", məftunu " + prevAd + " adlı oyunçunu tərk etdi (" + q + " ❤️)";
   });
+  return info;
+}
+
+/* Çatda göstərmək üçün bildiriş */
+function chatYaz(info) {
+  if (!info || !info.metn || !MEN) return;
+  push(ref(rtdb, "masalar/" + MASA_NOMRESI + "/chat"), { isMeftunNotice: true, uid: MEN, metn: info.metn, vaxt: serverTimestamp() }).catch(() => {});
 }
 
 /* ================= SIRA (real vaxt) ================= */
@@ -391,7 +353,7 @@ function ciz(d) {
     if (b) b.onclick = async () => {
       b.disabled = true;
       try {
-        if (b.dataset.a === "ol") await meftunOl(ownerUid); else await terkEt();
+        chatYaz(b.dataset.a === "ol" ? await meftunOl(ownerUid) : await terkEt());
       } catch (e) {
         if (e.message === "YETMIR") toast("Kifayət qədər bonus ürəyiniz yoxdur");
         else if (e.message === "ARTIQ") toast("Artıq məftunsunuz");
@@ -493,36 +455,4 @@ window.addEventListener("click", e => {
       if (window.HediyyePanel) window.HediyyePanel.bagla();
     }
   }
-}, true);
-
-/* ================= ÇATDA ŞƏKLƏ TOXUNUŞ ================= */
-/* Çatda oyunçunun şəklinə toxunanda onun profil kartı açılır; öz şəklinə toxunanda öz kartın.
-   Oyunçu şəkil, ad və (varsa) data-uid ilə tapılır. */
-function chatUid(img, sira) {
-  for (let el = img; el && el.id !== "mesajlar"; el = el.parentElement) {
-    const d = el.dataset || {};
-    const v = d.uid || d.docid || d.userid || d.user || d.id;
-    if (v && String(v).length > 10) return String(v);
-  }
-  const oy = Object.values(oturacaqlar).filter(o => o && o.uid);
-  const txt = sira ? sira.textContent : "";
-  const ad = oy.filter(o => o.ad && txt.includes(o.ad));
-  const sk = oy.filter(o => o.sekil && normSrc(o.sekil) === normSrc(img.src));
-  const ikisi = sk.filter(o => ad.includes(o));
-  if (ikisi.length) return ikisi[0].uid;
-  if (ad.length === 1) return ad[0].uid;
-  if (sk.length === 1) return sk[0].uid;
-  return null;
-}
-
-document.addEventListener("click", e => {
-  if (ov.classList.contains("open")) return;
-  const img = e.target && e.target.closest ? e.target.closest("#mesajlar img") : null;
-  if (!img) return;
-  const w = img.getBoundingClientRect().width;
-  if (w > innerWidth * 0.16 || w < innerWidth * 0.05) return;   /* yalnız kiçik avatar şəkilləri */
-  const sira = img.closest("#mesajlar > *") || img.parentElement;
-  const uid = chatUid(img, sira);
-  if (uid) window.ProfilKart.ac(uid);
-  else toast("Oyunçu tapılmadı (masada deyil)");
 }, true);
