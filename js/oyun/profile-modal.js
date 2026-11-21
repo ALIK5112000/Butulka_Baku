@@ -2,7 +2,7 @@ import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, onSnapshot, updateDoc, increment, runTransaction, collection, query, where, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, onValue, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 /* ADDIM 1: Profil kartı (reytinqlər + Məftun sistemi). Bu fayl təkbaşınadır, CSS də içindədir. */
 
@@ -141,23 +141,43 @@ function klipQosBagla() {
 const bagTimer = setInterval(() => { if (klipQosBagla()) clearInterval(bagTimer); }, 500);
 setTimeout(() => clearInterval(bagTimer), 300000);
 
-/* Musiqi qoşanda +9 (ehtiyat yol): ekranda yeni klip başlayanda və klipi qoşanın şəkli mənim şəklimdirsə */
+/* Musiqi qoşanda +9.
+   Mən klip kartına toxunanda vaxtı yadda saxlayıram; ardınca ekranda YENİ klip başlayanda
+   (iframe yaranır) həmin klipi mən qoşmuş sayılıram: sənə +9 yazılır və kimin musiqisi olduğu
+   masaya qeyd olunur (hədiyyə xalı üçün). */
+document.addEventListener("click", e => {
+  const t = e.target && e.target.closest ? e.target.closest("#bb-clip-grid > div") : null;
+  if (t && !e.target.closest(".bb-fav-star")) window.__klipTik = Date.now();
+}, true);
+
 const normSrc = x => { try { return new URL(x || "images/avatar/nophoto.svg", location.href).href; } catch (e) { return x || ""; } };
 const isledi = new WeakSet();
 function klipDOM() {
   if (!MEN) return;
   const w = document.getElementById("bb-live-video-wrap"), im = document.getElementById("bb-dj-avatar");
   const fr = w && w.querySelector("iframe");
-  if (!fr || !im || isledi.has(fr)) return;
+  if (!fr || isledi.has(fr)) return;
   isledi.add(fr);
   const m = /[?&]start=(\d+)/.exec(fr.src);
-  if (m && Number(m[1]) > 10) return;                        /* çalan klipə sonradan qoşulub */
-  if (Date.now() - (window.__xalSon || 0) < 20000) return;   /* xal artıq verilib */
+  if (m && Number(m[1]) > 10) return;                         /* çalan klipə sonradan qoşulub */
+  const tikladi = Date.now() - (window.__klipTik || 0) < 25000;
   const o = Object.values(oturacaqlar).find(x => x && x.uid === MEN);
-  if (!o || !o.sekil) return;
-  if (normSrc(im.src) === normSrc(o.sekil)) { window.__xalSon = Date.now(); window.Xallar.musiqiQosdu(MEN); toast("+9 musiqi xalı"); }
+  const sekilUygun = !!(im && o && o.sekil && normSrc(im.src) === normSrc(o.sekil));
+  if (!tikladi && !sekilUygun) return;                         /* bu klipi başqası qoşub */
+  window.__klipTik = 0;
+  if (Date.now() - (window.__xalSon || 0) > 20000) {           /* xal artıq verilməyibsə */
+    window.__xalSon = Date.now();
+    window.Xallar.musiqiQosdu(MEN);
+    toast("+9 musiqi xalı");
+  }
+  const v = /embed\/([^?]+)/.exec(fr.src);
+  if (v) {
+    const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/dj");
+    set(r, { uid: MEN, vid: v[1] }).catch(() => {});
+    onDisconnect(r).remove();
+  }
 }
-setInterval(klipDOM, 700);
+setInterval(klipDOM, 500);
 
 /* Panel və ya kart açıqkən yuxarıdakı ürək düyməsi gizlədilir ki, sol-yuxarı göy düyməyə toxunanda
    ürək mağazası da açılmasın (mağaza koordinata görə işləyir) */
@@ -438,8 +458,6 @@ const icinde = (el, x, y) => {
 
 window.addEventListener("click", e => {
   if (ov.classList.contains("open")) return;
-  // Klip pəncərələri / klip kartı / musiqi düymələri masanın üstündən keçir: onlara toxunanda altındakı oturacağın profili açılmasın
-  if (e.target && e.target.closest && e.target.closest("#klipPenceresi, #klipTesdiq, #klipKart, #musiqiPanel")) return;
 
   /* ortadakı iki kart: birincisi qız (q), ikincisi oğlan (o) oyunçusudur */
   if (spin) {
@@ -475,4 +493,36 @@ window.addEventListener("click", e => {
       if (window.HediyyePanel) window.HediyyePanel.bagla();
     }
   }
+}, true);
+
+/* ================= ÇATDA ŞƏKLƏ TOXUNUŞ ================= */
+/* Çatda oyunçunun şəklinə toxunanda onun profil kartı açılır; öz şəklinə toxunanda öz kartın.
+   Oyunçu şəkil, ad və (varsa) data-uid ilə tapılır. */
+function chatUid(img, sira) {
+  for (let el = img; el && el.id !== "mesajlar"; el = el.parentElement) {
+    const d = el.dataset || {};
+    const v = d.uid || d.docid || d.userid || d.user || d.id;
+    if (v && String(v).length > 10) return String(v);
+  }
+  const oy = Object.values(oturacaqlar).filter(o => o && o.uid);
+  const txt = sira ? sira.textContent : "";
+  const ad = oy.filter(o => o.ad && txt.includes(o.ad));
+  const sk = oy.filter(o => o.sekil && normSrc(o.sekil) === normSrc(img.src));
+  const ikisi = sk.filter(o => ad.includes(o));
+  if (ikisi.length) return ikisi[0].uid;
+  if (ad.length === 1) return ad[0].uid;
+  if (sk.length === 1) return sk[0].uid;
+  return null;
+}
+
+document.addEventListener("click", e => {
+  if (ov.classList.contains("open")) return;
+  const img = e.target && e.target.closest ? e.target.closest("#mesajlar img") : null;
+  if (!img) return;
+  const w = img.getBoundingClientRect().width;
+  if (w > innerWidth * 0.16 || w < innerWidth * 0.05) return;   /* yalnız kiçik avatar şəkilləri */
+  const sira = img.closest("#mesajlar > *") || img.parentElement;
+  const uid = chatUid(img, sira);
+  if (uid) window.ProfilKart.ac(uid);
+  else toast("Oyunçu tapılmadı (masada deyil)");
 }, true);
