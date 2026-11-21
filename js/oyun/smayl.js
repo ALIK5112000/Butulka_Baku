@@ -68,16 +68,18 @@ const CSS = `
 .sp-x svg{width:4.4vw;height:4.4vw}
 .sp-shop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9995;display:none;align-items:center;justify-content:center;font-family:Roboto,Arial,sans-serif}
 .sp-shop.open{display:flex}
-.sp-sh{position:relative;width:88vw;max-width:420px;background:#ebe9f7;border-radius:6vw;box-sizing:border-box}
-.sp-sh h3{margin:0;padding:6vw 0 5vw;text-align:center;font:700 4.6vw/1.2 Roboto,Arial,sans-serif;color:#fff;background:linear-gradient(#9c82d8,#b3a2e3);border-radius:6vw 6vw 0 0}
+.sp-sh{position:relative;width:78.1vw;background:linear-gradient(180deg,#9a85d8 0,#b2a3e4 17vw,#ebe9f7 32vw);background-color:#ebe9f7;border-radius:5.5vw;box-sizing:border-box;padding-bottom:2.8vw}
+.sp-deco{position:absolute;left:0;top:0;width:100%;height:30vw;overflow:hidden;border-radius:5.5vw 5.5vw 0 0;pointer-events:none}
+.sp-deco svg{display:block;width:100%;height:auto}
+.sp-sh h3{position:relative;margin:0;height:12.2vw;line-height:12.2vw;text-align:center;font:700 3.6vw/12.2vw Roboto,Arial,sans-serif;color:#fff}
 .sp-sh p{display:none}
-.sp-sx{position:absolute;top:-3.5vw;right:-3vw;width:10vw;height:10vw;border-radius:50%;background:#fff;border:0;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3)}
-.sp-sx svg{width:4.6vw;height:4.6vw}
-.sp-pk{display:grid;grid-template-columns:repeat(3,1fr);gap:2vw;padding:2vw 2.4vw 2.4vw}
-.sp-p{background:#fff;border-radius:4vw;padding:2.4vw 2.4vw 1.6vw;text-align:center;box-shadow:0 .3vw 1vw rgba(0,0,0,.12)}
+.sp-sx{position:absolute;top:-2.5vw;right:-2.6vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#fff;border:0;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 .5vw 1.6vw rgba(0,0,0,.28);z-index:3}
+.sp-sx svg{width:4.2vw;height:4.2vw}
+.sp-pk{position:relative;display:grid;grid-template-columns:repeat(3,1fr);column-gap:1.3vw;row-gap:1.4vw;padding:0 2.6vw}
+.sp-p{background:#fff;border-radius:3.7vw;padding:2vw 2.1vw 0;text-align:center;box-shadow:0 .3vw 1vw rgba(0,0,0,.14);overflow:hidden}
 .sp-p img{width:100%;display:block}
-.sp-p button{margin-top:1.4vw;width:100%;border:0;background:none;display:flex;align-items:center;justify-content:center;gap:2vw;font:700 5.6vw/1.2 Roboto,Arial,sans-serif;color:#222}
-.sp-p button svg{width:6.4vw;height:6.4vw}
+.sp-p button{width:100%;height:8.3vw;border:0;background:none;padding:0;display:flex;align-items:center;justify-content:center;gap:1.4vw;font:700 4.5vw/1 Roboto,Arial,sans-serif;color:#222}
+.sp-p button svg{width:4.9vw;height:4.5vw}
 .sp-t{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
 .pfj{position:fixed;z-index:9000;pointer-events:none;line-height:1;will-change:transform,opacity;animation-fill-mode:both}
 .pfj img{height:1em;width:auto;display:block}
@@ -94,6 +96,10 @@ document.head.appendChild(st);
 
 const SM = '<svg class="sm" viewBox="0 0 48 48"><defs><linearGradient id="spg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc83a"/><stop offset="1" stop-color="#f08a00"/></linearGradient></defs><circle cx="24" cy="24" r="22" fill="url(#spg)" stroke="#e17f00" stroke-width="2"/><path d="M12 21q4.5-6 9 0M27 21q4.5-6 9 0" fill="none" stroke="#7a3c00" stroke-width="3" stroke-linecap="round"/><path d="M12 28q12 14 24 0z" fill="#7a3c00"/><path d="M17 34q7 5 14 0" fill="none" stroke="#e8573b" stroke-width="3" stroke-linecap="round"/></svg>';
 const UREK = '<svg viewBox="0 0 24 22"><path d="M12 21C5 16 1 12 1 7.2A5.2 5.2 0 0 1 12 4.5 5.2 5.2 0 0 1 23 7.2C23 12 19 16 12 21z" fill="#ff6a3d" stroke="#fff" stroke-width="1.2"/></svg>';
+const FC = (x, y, t) => '<g transform="translate(' + x + ' ' + y + ')"><circle r="32"/><path d="M-13 -8v5M13 -8v5"/><path d="' + ["M-14 8q14 14 28 0", "M-12 13h24", "M-13 17q13 -13 26 0"][t] + '"/></g>';
+const DECO = '<div class="sp-deco"><svg viewBox="0 0 844 300" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3.5" stroke-linecap="round">' +
+  FC(129, 18, 2) + FC(388, 23, 0) + FC(678, 13, 2) + FC(229, 86, 0) + FC(513, 88, 1) + FC(784, 91, 2) + FC(72, 123, 0) +
+  '<circle cx="44" cy="50" r="9"/><circle cx="290" cy="30" r="8"/><circle cx="504" cy="19" r="9"/><circle cx="706" cy="91" r="9"/><circle cx="140" cy="90" r="4" fill="#fff" fill-opacity=".35"/><circle cx="609" cy="64" r="5" fill="#fff" fill-opacity=".35"/></svg></div>';
 const num = v => Number(v) || 0;
 const fmt = n => num(n).toLocaleString("ru-RU");
 const MEN = (cariOyuncu() || {}).docId || null;
@@ -134,7 +140,7 @@ root.innerHTML =
     '<div class="sp-bal">' + SM + '<b id="spBal">0</b><button class="sp-plus" aria-label="Smaylik al"><svg viewBox="0 0 24 24"><path d="M12 4v16M4 12h16" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg></button></div></div>' +
   '<div class="sp-list"><div class="sp-grid"></div></div>' +
   '<button class="sp-x" aria-label="Bağla"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#fff" stroke-width="3.400" stroke-linecap="round"/></svg></button>' +
-  '<div class="sp-shop"><div class="sp-sh"><button class="sp-sx" aria-label="Bağla"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#7d5fd0" stroke-width="3.200" stroke-linecap="round"/></svg></button>' +
+  '<div class="sp-shop"><div class="sp-sh">' + DECO + '<button class="sp-sx" aria-label="Bağla"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#7d5fd0" stroke-width="3.200" stroke-linecap="round"/></svg></button>' +
     '<h3>Jeton mağazası</h3><p>Bonus ürək qarşılığında</p><div class="sp-pk"></div></div></div>';
 document.body.appendChild(root);
 
@@ -197,11 +203,17 @@ async function satinAl(p, btn) {
   if (mesgul || !MEN) return;
   mesgul = true; btn.disabled = true;
   try {
-    await runTransaction(fsdb, async tx => {
+    const yeni = await runTransaction(fsdb, async tx => {
       const r = doc(fsdb, "users", MEN), s = await tx.get(r), d = s.data() || {};
       if (num(d.hearts) < p.urek) throw new Error("YETMIR");
-      tx.update(r, { hearts: num(d.hearts) - p.urek, smileBal: num(d.smileBal) + p.smayl });
+      const h = num(d.hearts) - p.urek, sb = num(d.smileBal) + p.smayl;
+      tx.update(r, { hearts: h, smileBal: sb });
+      return { h, sb };
     });
+    /* dərhal göstər: yuxarıdakı smaylik balansı artır, oyundakı bonus ürək sayı azalır */
+    $("#spBal").textContent = fmt(yeni.sb);
+    if (window.urekYaz) window.urekYaz(yeni.h);
+    else { const ue = document.getElementById("urekSayi"); if (ue) ue.textContent = yeni.h; }
     ses();
     toast("+" + fmt(p.smayl) + " smaylik");
   } catch (e) {
