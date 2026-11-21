@@ -19,6 +19,10 @@
 }
 /* Hər mesaj çərçivəli ağ kartda: ad + mətn + "Tərcüməni göstər" sətri */
 .mgovde.mkart { padding: 1.5vw 2.4vw 1.3vw; border: .3vw solid #dde4fb; box-shadow: 0 .3vw 1.5vw rgba(70, 90, 170, .18); }
+/* Mənimlə bağlı yazışma (kiminsə adına yazmışam və ya mənim adıma yazılıb): qalın qara yazı.
+   Başqalarının öz aralarındakı yazışması bu qaydaya düşmür, sadə qalır. */
+.mgovde.mene { color: #000; font-weight: 700; }
+.mgovde.mene .mtercume { font-weight: 400; color: #9a9a9a; }
 /* qız oyunçunun mesajı və klip/məftun bildirişləri: açıq nanə-yaşıl (mkart-dan SONRA yazılıb ki, üstün gəlsin) */
 .mgovde.qiz, .mgovde.klip-bildiris { background: #eaf8f2; border: .25vw solid #cfe8dc; }
 /* Klip qoşulma bildirişi: qoşanın şəkli + musiqi işarəsi + musiqinin adı (qabarcıqsız) */
