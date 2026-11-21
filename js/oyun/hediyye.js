@@ -128,7 +128,15 @@ function ciz() {
     const m = document.createElement("div");
     m.className = "hd-cell";
     m.innerHTML = '<div class="hd-e">🎬</div><div class="hd-pr">' + UREK + MUSIQI_QIYMETI + "</div>";
-    m.onclick = () => { bagla(); const bt = document.getElementById("musiqiBtn1"); if (bt) bt.click(); else if (window.MusiqiPanel) window.MusiqiPanel.open("popular"); };
+    m.onclick = () => {
+      const kimin = hedef;                      /* musiqi bu oyunçunun adına qoşulur */
+      bagla();
+      const bt = document.getElementById("musiqiBtn1");
+      if (!bt) { if (window.MusiqiPanel) window.MusiqiPanel.open("popular"); return; }
+      window.__klipHedef = kimin || null;       /* klip.js çata yazanda bunu da əlavə edir */
+      bt.click();
+      klipHedefIzle();
+    };
     grid.appendChild(m);
   }
   HEDIYYELER.filter(g => tab === "hamisi" || g.k === tab).forEach(g => {
@@ -157,6 +165,14 @@ root.querySelectorAll(".hd-pm").forEach(b => b.onclick = () => { sayInp.value = 
 sayInp.oninput = () => { sayInp.value = sayInp.value.replace(/\D/g, ""); };
 sayInp.onblur = () => { sayInp.value = say(); };
 sendBtn.onclick = () => { if (sec) gonder(sec, say()); };
+
+/* Musiqi pəncərəsi bağlananda "kimin adına" qeydi silinir (sonrakı adi musiqi qoşma təsirlənməsin) */
+function klipHedefIzle() {
+  const pen = document.getElementById("klipPenceresi");
+  if (!pen) { setTimeout(() => { window.__klipHedef = null; }, 120000); return; }
+  const mo = new MutationObserver(() => { if (pen.hidden) { window.__klipHedef = null; mo.disconnect(); } });
+  mo.observe(pen, { attributes: true, attributeFilter: ["hidden"] });
+}
 
 function yerlesdir() {
   const u = document.getElementById("ustPanel"), c = document.getElementById("chatYeri");
