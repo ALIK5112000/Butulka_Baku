@@ -18,10 +18,25 @@ const qutu = document.getElementById("mesajlar");
 const inp = document.getElementById("mesajInput");
 const panel = document.getElementById("smayPanel");
 let men = null;
+// Çatda görünən oyunçuların adı → ID-si (kiminsə adına vurub yazanda həmin oyunçunu tanımaq üçün)
+const adUid = new Map();
+if (cari && cari.docId && cari.username) adUid.set(cari.username, cari.docId);
+
+// Mesaj kiminsə adına yazılıbsa ("Ad, ..." ilə başlayırsa) həmin oyunçunun ID-sini qaytarır, yoxsa null
+function mesajHedefi(m) {
+  if (m.hedefUid) return m.hedefUid;
+  const metn = String(m.metn || "");
+  let tapilan = null, uzun = 0;
+  for (const [ad, uid] of adUid) {
+    if (uid !== m.uid && ad.length > uzun && metn.startsWith(ad + ",")) { tapilan = uid; uzun = ad.length; }
+  }
+  return tapilan;
+}
 
 if (cari && cari.docId) {
   onSnapshot(doc(fsdb, "users", cari.docId), (s) => {
     men = s.data();
+    if (men && men.username) adUid.set(men.username, cari.docId);
     if (men && men.banned) {
       alert("Admin tərəfindən ban olunmusunuz!");
       localStorage.removeItem("currentUser");
@@ -198,7 +213,12 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   f.className = "mfoto";
   fotoVer(f, m.uid);
   const g = document.createElement("div");
-  g.className = "mgovde mkart" + (m.cins === "q" ? " qiz" : "");
+  if (m.ad && m.uid) adUid.set(m.ad, m.uid);
+  // Kiminsə adına vurub yazılıbsa və bu yazışmada mən varamsa (mən yazmışam və ya mənə yazılıb):
+  // mesaj qalın qara yazı ilə görünür. Başqalarının öz aralarındakı yazışması sadə qalır.
+  const hed = mesajHedefi(m);
+  const menimle = !!(cari && cari.docId && hed && (m.uid === cari.docId || hed === cari.docId));
+  g.className = "mgovde mkart" + (m.cins === "q" ? " qiz" : "") + (menimle ? " mene" : "");
   const a = document.createElement("span");
   a.className = "mad";
   a.style.color = adRengi(m.cins, m.vip);
@@ -240,14 +260,18 @@ function gonder() {
     return;
   }
   inp.value = "";
-  push(ref(rtdb, yol), {
+  const mesaj = {
     uid: cari.docId,
     ad: men.username,
     vip: vipMi(men),
     cins: cinsTap(men.gender),
     metn: metn.slice(0, 300),
     vaxt: serverTimestamp()
-  });
+  };
+  // Kiminsə adına vurub yazılıbsa ("Ad, ..." ilə başlayırsa) həmin oyunçunun ID-si də mesaja yazılır
+  const hedefUid = mesajHedefi(mesaj);
+  if (hedefUid) mesaj.hedefUid = hedefUid;
+  push(ref(rtdb, yol), mesaj);
 }
 document.getElementById("gonderBtn").onclick = gonder;
 inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); gonder(); } });
