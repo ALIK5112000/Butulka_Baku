@@ -8,14 +8,13 @@ import { ref, onValue, set, onDisconnect } from "https://www.gstatic.com/firebas
    users/{uid}: smileBal = smaylik balansı, smiles = smaylik XALI (istifadə edilən smayliklərin cəmi qiyməti) */
 
 /* ---------- AYARLAR (buranı özünüz dəyişə bilərsiniz) ---------- */
-/* Bonus ürək -> smaylik paketləri */
+/* Bonus ürək -> jeton (smaylik) paketləri. Şəkillər images/jeton/ qovluğundadır */
 const PAKETLER = [
-  { urek: 5,   smayl: 50 },
-  { urek: 10,  smayl: 110 },
-  { urek: 25,  smayl: 300 },
-  { urek: 50,  smayl: 650 },
-  { urek: 100, smayl: 1400 },
-  { urek: 250, smayl: 3750 }
+  { urek: 180, smayl: 450, img: "images/jeton/p450.png" },
+  { urek: 30,  smayl: 75,  img: "images/jeton/p75.png" },
+  { urek: 10,  smayl: 25,  img: "images/jeton/p25.png" },
+  { urek: 5,   smayl: 10,  img: "images/jeton/p10.png" },
+  { urek: 3,   smayl: 3,   img: "images/jeton/p3.png" }
 ];
 /* Alma səsi: öz səs faylınız varsa yazın, məs. "sesler/smayl.mp3". null olsa hazır "sikkə" səsi çalınır */
 const SATIN_ALMA_SESI = null;
@@ -69,17 +68,16 @@ const CSS = `
 .sp-x svg{width:4.4vw;height:4.4vw}
 .sp-shop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9995;display:none;align-items:center;justify-content:center;font-family:Roboto,Arial,sans-serif}
 .sp-shop.open{display:flex}
-.sp-sh{position:relative;width:80vw;background:#fff;border-radius:4.4vw;padding:4vw 3vw 4vw;box-sizing:border-box}
-.sp-sh h3{margin:0 0 1vw;text-align:center;font:700 4.4vw/1.2 Roboto,Arial,sans-serif;color:#333}
-.sp-sh p{margin:0 0 3vw;text-align:center;font:400 3.3vw/1.2 Roboto,Arial,sans-serif;color:#888}
-.sp-sx{position:absolute;top:-2.6vw;right:-2.6vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#fff;border:0;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3)}
-.sp-sx svg{width:4.2vw;height:4.2vw}
-.sp-pk{display:grid;grid-template-columns:repeat(3,1fr);gap:2.2vw}
-.sp-p{background:#fff8ea;border:.3vw solid #f2d9a3;border-radius:2.7vw;padding:2.4vw 0 0;text-align:center;overflow:hidden}
-.sp-p .n{display:flex;align-items:center;justify-content:center;gap:1vw;font:700 4.2vw/1 Roboto,Arial,sans-serif;color:#f08a00}
-.sp-p .n svg{width:5vw;height:5vw}
-.sp-p button{margin-top:2.4vw;width:100%;height:7.4vw;border:0;background:#7cc92f;color:#fff;font:700 3.8vw/1 Roboto,Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:1vw}
-.sp-p button svg{width:4.4vw;height:4.4vw}
+.sp-sh{position:relative;width:88vw;max-width:420px;background:#ebe9f7;border-radius:6vw;box-sizing:border-box}
+.sp-sh h3{margin:0;padding:6vw 0 5vw;text-align:center;font:700 4.6vw/1.2 Roboto,Arial,sans-serif;color:#fff;background:linear-gradient(#9c82d8,#b3a2e3);border-radius:6vw 6vw 0 0}
+.sp-sh p{display:none}
+.sp-sx{position:absolute;top:-3.5vw;right:-3vw;width:10vw;height:10vw;border-radius:50%;background:#fff;border:0;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3)}
+.sp-sx svg{width:4.6vw;height:4.6vw}
+.sp-pk{display:grid;grid-template-columns:repeat(3,1fr);gap:2vw;padding:2vw 2.4vw 2.4vw}
+.sp-p{background:#fff;border-radius:4vw;padding:2.4vw 2.4vw 1.6vw;text-align:center;box-shadow:0 .3vw 1vw rgba(0,0,0,.12)}
+.sp-p img{width:100%;display:block}
+.sp-p button{margin-top:1.4vw;width:100%;border:0;background:none;display:flex;align-items:center;justify-content:center;gap:2vw;font:700 5.6vw/1.2 Roboto,Arial,sans-serif;color:#222}
+.sp-p button svg{width:6.4vw;height:6.4vw}
 .sp-t{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
 .pfj{position:fixed;z-index:9000;pointer-events:none;line-height:1;will-change:transform,opacity;animation-fill-mode:both}
 .pfj img{height:1em;width:auto;display:block}
@@ -136,8 +134,8 @@ root.innerHTML =
     '<div class="sp-bal">' + SM + '<b id="spBal">0</b><button class="sp-plus" aria-label="Smaylik al"><svg viewBox="0 0 24 24"><path d="M12 4v16M4 12h16" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg></button></div></div>' +
   '<div class="sp-list"><div class="sp-grid"></div></div>' +
   '<button class="sp-x" aria-label="Bağla"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#fff" stroke-width="3.400" stroke-linecap="round"/></svg></button>' +
-  '<div class="sp-shop"><div class="sp-sh"><button class="sp-sx" aria-label="Bağla"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#7cc92f" stroke-width="3.200" stroke-linecap="round"/></svg></button>' +
-    '<h3>Smaylik al</h3><p>Bonus ürək qarşılığında</p><div class="sp-pk"></div></div></div>';
+  '<div class="sp-shop"><div class="sp-sh"><button class="sp-sx" aria-label="Bağla"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#7d5fd0" stroke-width="3.200" stroke-linecap="round"/></svg></button>' +
+    '<h3>Jeton mağazası</h3><p>Bonus ürək qarşılığında</p><div class="sp-pk"></div></div></div>';
 document.body.appendChild(root);
 
 const $ = s => root.querySelector(s);
@@ -155,8 +153,9 @@ const pk = $(".sp-pk");
 PAKETLER.forEach(p => {
   const d = document.createElement("div");
   d.className = "sp-p";
-  d.innerHTML = '<div class="n">' + SM + fmt(p.smayl) + "</div><button>" + UREK + p.urek + "</button>";
-  d.querySelector("button").onclick = e => satinAl(p, e.currentTarget);
+  d.innerHTML = '<img src="' + p.img + '" alt="' + p.smayl + '"><button>' + UREK + p.urek + "</button>";
+  const b = d.querySelector("button");
+  d.onclick = () => satinAl(p, b);
   pk.appendChild(d);
 });
 
