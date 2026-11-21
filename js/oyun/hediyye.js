@@ -170,7 +170,9 @@ sendBtn.onclick = () => { if (sec) gonder(sec, say()); };
 function klipHedefIzle() {
   const pen = document.getElementById("klipPenceresi");
   if (!pen) { setTimeout(() => { window.__klipHedef = null; }, 120000); return; }
-  const mo = new MutationObserver(() => { if (pen.hidden) { window.__klipHedef = null; mo.disconnect(); } });
+  // Pəncərə bağlanan kimi hədəfi silmirik: klip.js klipi seçib çata yazana qədər vaxt lazımdır.
+  // (klip.js çata yazandan sonra özü də sıfırlayır.)
+  const mo = new MutationObserver(() => { if (pen.hidden) { mo.disconnect(); setTimeout(() => { window.__klipHedef = null; }, 10000); } });
   mo.observe(pen, { attributes: true, attributeFilter: ["hidden"] });
 }
 
