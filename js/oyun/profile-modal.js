@@ -225,7 +225,7 @@ function izleMeftun(uid) {
   if (!uid) return;
   mUnsub = onSnapshot(doc(fsdb, "users", uid), s => {
     const x = s.data() || {};
-    mD = { uid, ad: x.username || "Oyunçu", avatar: x.avatar || "" };
+    mD = { uid, ad: x.username || "Oyunçu", avatar: x.avatar || "", qiz: x.gender === "Qadın", vip: vipMi(x) };
     if (sonD) ciz(sonD);
   }, () => {});
 }
@@ -240,6 +240,9 @@ function bagla() {
   ov.innerHTML = "";
 }
 ov.addEventListener("click", e => { if (e.target === ov) bagla(); });
+
+/* Məftunun adının rəngi: VIP oğlan göy, VIP qız qırmızı; VIP olmayan oğlan mavi, qız çəhrayı */
+const adRengi = m => (m.vip ? (m.qiz ? "#e0201c" : "#1f5fd6") : (m.qiz ? "#f26aa6" : "#3aa0e0"));
 
 const onerr = "this.onerror=null;this.src='" + NOPHOTO + "'";
 const R = k => '<span class="pf-rk" data-r="' + k + '">' + esc(kesh[k] || "") + "</span>";
@@ -309,14 +312,14 @@ function ciz(d) {
 
   /* 3) yalnız Məftun yeri (şəkil/ad/düymə dəyişəndə) */
   const mOK = mVar && mD && mD.uid === d.meftunUid;
-  const sUser = [d.meftunUid || "", mOK ? mD.ad + "|" + mD.avatar : "", menimdir, d.meftunUid === MEN].join("#");
+  const sUser = [d.meftunUid || "", mOK ? mD.ad + "|" + mD.avatar + "|" + mD.qiz + "|" + mD.vip : "", menimdir, d.meftunUid === MEN].join("#");
   if (sig.user !== sUser) {
     sig.user = sUser;
     let mAva, mAd;
     if (!mVar) { mAva = IC.bosAva; mAd = "Məftun yoxdur"; }
     else if (mOK) {
       mAva = '<img style="width:100%;height:100%;object-fit:cover;display:block" src="' + esc(mD.avatar || NOPHOTO) + '" alt="" onerror="' + onerr + '">';
-      mAd = "Məftun <u>" + esc(mD.ad) + "</u>";
+      mAd = "Məftun <u style=\"color:" + adRengi(mD) + "\">" + esc(mD.ad) + "</u>";
     } else { mAva = IC.bosAva; mAd = "Məftun ..."; }
 
     let dugme;
@@ -393,6 +396,8 @@ function ackart(uid) {
     if (S && !document.querySelector(".sp-root.open")) { S.ac(); return; }
   } else if (H) {
     if (S) S.bagla();
+    /* seçim rejimində toxunuş oyunçunu işarələyir / işarəni götürür */
+    if (typeof H.modu === "function" && H.modu()) { H.isaretle(uid); return; }
     if ((typeof H.hedef === "function" ? H.hedef() : null) !== uid) { H.ac(uid); return; }
   }
   window.ProfilKart.ac(uid);
@@ -426,6 +431,18 @@ window.addEventListener("click", e => {
     if (o && o.uid && icinde(el, e.clientX, e.clientY)) {
       ackart(o.uid);
       return;
+    }
+  }
+
+  /* masada boş yerə toxunanda açıq smaylik/hədiyyə paneli bağlanır */
+  const panelAcik = document.querySelector(".sp-root.open, .hd-root.open");
+  const panelIci = e.target && e.target.closest ? e.target.closest(".sp-root, .hd-root, .pf-ov") : null;
+  const masa = document.getElementById("masa");
+  if (panelAcik && !panelIci && masa) {
+    const r = masa.getBoundingClientRect();
+    if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+      if (window.SmaylPanel) window.SmaylPanel.bagla();
+      if (window.HediyyePanel) window.HediyyePanel.bagla();
     }
   }
 }, true);
