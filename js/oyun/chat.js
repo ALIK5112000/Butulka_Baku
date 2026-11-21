@@ -8,6 +8,10 @@ import { doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.1
 // Masaya yeni girən oyunçu çatın yalnız son bu qədər mesajını görür
 const SON_MESAJ_SAYI = 10;
 
+const NOTA_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#f5a21b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5.5l11-2V16"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>';
+
+const OX_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#7cc92f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg>';
+
 const cari = cariOyuncu();
 const yol = `masalar/${MASA_NOMRESI}/chat`;
 const qutu = document.getElementById("mesajlar");
@@ -101,8 +105,21 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
     f.className = "mfoto";
     fotoVer(f, m.uid);
     const g = document.createElement("div");
-    g.className = "mgovde klip-bildiris";
-    g.textContent = `🎵 ${m.ad} klip qoşdu: ${m.metn}`;
+    g.className = "klip-musiqi";
+    g.innerHTML = NOTA_SVG;
+    const ks = document.createElement("span");
+    ks.textContent = m.metn;
+    g.appendChild(ks);
+    // Kiminsə adına qoşulubsa: » işarəsi + həmin oyunçunun şəkli
+    if (m.hedef) {
+      const ox = document.createElement("span");
+      ox.className = "klip-ox";
+      ox.innerHTML = OX_SVG;
+      const f2 = document.createElement("div");
+      f2.className = "mfoto";
+      fotoVer(f2, m.hedef);
+      g.append(ox, f2);
+    }
     d.append(f, g);
     qutu.appendChild(d);
     while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
