@@ -275,10 +275,33 @@ async function katil(cari, profilP) {
   }
 }
 
+// Oyuna təzə girəndə (linkdə ?masa= yoxdur) kilidsiz və dolu olmayan təsadüfi masa seç
+async function tesadufiMasaSec() {
+  for (let k = 0; k < 15; k++) {
+    const n = String(1 + Math.floor(Math.random() * 40));
+    if (n === MASA_NOMRESI) continue;
+    try {
+      const m = await getDoc(doc(fsdb, "masalar", n));
+      const md = m.exists() ? m.data() : null;
+      if (md && md.bitis > Date.now() && md.parolHash) continue;          // kilidli masa
+      const dolu = Object.values((await get(ref(rtdb, `masalar/${n}/oturacaqlar`))).val() || {}).filter(Boolean).length;
+      if (dolu >= OTURACAQ_SAYI) continue;                                // dolu masa
+      return n;
+    } catch (e) {}
+  }
+  return null;
+}
+
 export async function masaniBasla() {
   let cari = null;
   try { cari = JSON.parse(localStorage.getItem("currentUser")); } catch (e) {}
   if (!cari || !cari.docId) { location.href = "index.html"; return; }
+
+  // Hamı 511-ə düşməsin: linkdə masa nömrəsi yoxdursa təsadüfi masaya yönləndir
+  if (!new URLSearchParams(location.search).has("masa")) {
+    const n = await tesadufiMasaSec();
+    if (n) { location.replace("oyun.html?masa=" + n); return; }
+  }
 
   try {
     const profilP = getDoc(doc(fsdb, "users", cari.docId));   // profil paralel yüklənir
