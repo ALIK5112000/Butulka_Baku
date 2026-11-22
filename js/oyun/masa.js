@@ -22,6 +22,10 @@ let aktivOyuncu = null;
 let sonData = {};
 let oturmusam = false;      // bu səhifədə bir dəfə oturmuşam (yer itərsə dərhal bərpa edək)
 let berpaTimer = null;
+// Oyundan çıxış edibsə (currentUser silinibsə) yer bərpa olunmasın
+const girisVar = () => {
+  try { const c = JSON.parse(localStorage.getItem("currentUser")); return !!(c && c.docId); } catch (e) { return false; }
+};
 
 // Əməliyyatlar növbə ilə işləyir ki, bir-birinin yerini silməsin (itib-gəlmənin əsas səbəbi bu idi)
 let zencir = Promise.resolve();
@@ -79,7 +83,7 @@ function yerliGoster(i, oyuncu) {
 
 // Yer müvəqqəti itibsə (köhnə bağlantının onDisconnect-i), bərpa olunana qədər oyunçu yerində görünsün
 function gosterData(data) {
-  if (oturmusam && aktivOyuncu && !window.__masaCixir) {
+  if (oturmusam && aktivOyuncu && !window.__masaCixir && girisVar()) {
     const var_ = Object.values(data).some((o) => o && o.uid === aktivOyuncu.uid);
     if (!var_) {
       const i = sonYerOxu();
@@ -99,7 +103,7 @@ function gosterData(data) {
 }
 
 function yerItdiYoxla(data) {
-  if (!oturmusam || !aktivOyuncu || window.__masaCixir) return;
+  if (!oturmusam || !aktivOyuncu || window.__masaCixir || !girisVar()) return;
   clearTimeout(berpaTimer);
   const var_ = Object.values(data).some((o) => o && o.uid === aktivOyuncu.uid);
   if (var_) return;
@@ -219,7 +223,7 @@ async function aktivOyuncuHazirla() {
 // Yerim itibsə bərpa et (növbə ilə, başqa əməliyyatla toqquşmasın)
 function berpa() {
   return ardicil(async () => {
-    if (window.__masaCixir) return;
+    if (window.__masaCixir || !girisVar()) return;
     try {
       await aktivOyuncuHazirla();
       if (!aktivOyuncu) return;
@@ -246,6 +250,27 @@ export function yerDeyis() {
   });
 }
 window.yerDeyis = yerDeyis;
+
+// Oyundan tam çıxış: yeri, prezansı sil və bir daha bərpa etmə
+export async function masadanCix() {
+  window.__masaCixir = true;
+  clearTimeout(berpaTimer);
+  try {
+    let uid = aktivOyuncu && aktivOyuncu.uid;
+    if (!uid) { try { uid = (JSON.parse(localStorage.getItem("currentUser")) || {}).docId; } catch (e) {} }
+    if (!uid) return;
+    const hamisi = (await get(ref(rtdb, yol))).val() || {};
+    await Promise.all(Object.keys(hamisi)
+      .filter((k) => hamisi[k] && hamisi[k].uid === uid)
+      .map((k) => remove(ref(rtdb, `${yol}/${k}`))));
+    await remove(ref(rtdb, `masalar/${MASA_NOMRESI}/opus/${uid}`));
+    await remove(ref(rtdb, "prezans/" + uid));
+  } catch (e) {}
+}
+window.masadanCix = masadanCix;
+
+// Səhifədən ayrılanda yer bərpa olunmasın (geri qayıdanda pageshow bunu sıfırlayır)
+window.addEventListener("pagehide", () => { window.__masaCixir = true; });
 
 let yoxlaTimer = null;
 function geriQayidandaYoxla() {
