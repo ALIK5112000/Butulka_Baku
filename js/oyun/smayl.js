@@ -154,11 +154,11 @@ const fmt = n => num(n).toLocaleString("ru-RU");
 const MEN = (cariOyuncu() || {}).docId || null;
 
 let tT = null;
-function toast(msg) {
+function toast(msg, ms) {
   let t = document.getElementById("spToast");
   if (!t) { t = document.createElement("div"); t.id = "spToast"; t.className = "sp-t"; document.body.appendChild(t); }
   t.textContent = msg; t.style.display = "block";
-  clearTimeout(tT); tT = setTimeout(() => { t.style.display = "none"; }, 2600);
+  clearTimeout(tT); tT = setTimeout(() => { t.style.display = "none"; }, ms || 2600);
 }
 
 /* ---------- Səs ---------- */
@@ -412,9 +412,10 @@ function fotoTap(uid) {
 /* Videodan çıxarılmış animasiyalı jestlər: images/jest/jNN.webp. [müddət(san), sonda qalma(san)] */
 const ANIM = {"j01":[5.2,0.15],"j02":[3.4,0.9],"j03":[3.15,0.9],"j04":[3.65,0.9],"j05":[3.05,0.9],"j06":[4.4,0.9],"j07":[2.7,0.9],"j08":[3.3,0.9],"j09":[3.7,0.9],"j10":[3.0,0.9],"j11":[3.35,0.9],"j12":[3.2,0.9],"j13":[2.85,0.9],"j14":[2.45,0.9],"j15":[3.9,0.9],"j16":[3.85,0.9],"j17":[2.85,0.9],"j18":[3.25,0.9],"j19":[4.25,0.9],"j20":[3.45,0.9],"j21":[4.1,0.9],"j22":[4.65,0.9],"j23":[5.0,0.9],"j24":[5.1,0.9],"j25":[5.15,0.9],"j26":[4.2,0.9],"j27":[3.65,0.9],"j28":[3.1,0.9],"j29":[2.7,0.9],"j32":[2.9,0.9],"j33":[2.1,0.9],"j34":[3.75,0.9],"j35":[3.0,0.9],"j36":[4.15,0.9],"j37":[3.85,0.9],"j38":[5.1,0.9],"j39":[5.2,0.9],"j40":[4.45,0.9],"j41":[5.15,0.9],"j42":[4.75,0.9],"j43":[5.15,0.15],"j44":[4.0,0.9],"j45":[2.65,0.9],"j46":[3.35,0.9],"j47":[3.25,0.9],"j48":[3.6,0.9],"j49":[3.1,0.9],"j50":[6.35,0.15],"j51":[2.85,0.9],"j52":[3.1,0.9],"j53":[3.65,0.9],"j54":[4.0,0.9],"j55":[1.8,0.9],"j56":[2.65,0.9],"j57":[4.7,0.9],"j58":[3.75,0.9],"j59":[4.75,0.15],"j60":[5.0,0.9],"j61":[3.1,0.9]};
 const BL = {};
+const EKSIK = [];
 function animBlob(g) {
   if (!ANIM[g.id] || !g.img) return null;
-  if (!BL[g.id]) BL[g.id] = fetch(g.img.replace(/\.png$/, ".webp")).then(r => { if (!r.ok) throw 0; return r.blob(); }).catch(() => null);
+  if (!BL[g.id]) BL[g.id] = fetch(g.img.replace(/\.png$/, ".webp")).then(r => { if (!r.ok) throw 0; return r.blob(); }).catch(() => { EKSIK.push(g.id); return null; });
   return BL[g.id];
 }
 let onyukluDone = false;
@@ -423,6 +424,7 @@ function onyukle() {
   onyukluDone = true;
   let p = Promise.resolve();
   JESTLER.forEach(g => { p = p.then(() => animBlob(g)); });
+  p.then(() => { if (EKSIK.length) toast("images/jest qovluğunda .webp yoxdur: " + EKSIK.join(", "), 12000); });
 }
 
 const AKTIV = {};
