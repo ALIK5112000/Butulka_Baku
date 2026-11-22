@@ -11,11 +11,12 @@
 .opus b { position: relative; color: #fff; font-size: .125em; font-weight: 700; line-height: 1; }
 
 #gozleYazi {
-  display: none; position: absolute; left: 0; width: 100%; top: 55.5vw; z-index: 4;
-  box-sizing: border-box; padding: 0 6vw; white-space: nowrap;
-  text-align: center; color: #fff; font-family: Roboto, Arial, sans-serif;
-  font-size: 4.5vw; font-weight: 700; line-height: 1.15; letter-spacing: -0.01em;
-  text-shadow: 0 .35vw 1.1vw rgba(0,0,0,.58), 0 0 .35vw rgba(0,0,0,.35);
+  display: none; position: absolute; left: 0; width: 100%; top: 53.5vw; z-index: 4;
+  box-sizing: border-box; padding: 0 4vw; white-space: nowrap;
+  text-align: center; color: #fbf8f4;
+  font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 5.15vw; font-weight: 700; line-height: 1.12; letter-spacing: -0.025em;
+  text-shadow: 0 .35vw 1.1vw rgba(35, 18, 5, 0.55), 0 .1vw .35vw rgba(35, 18, 5, 0.45);
   pointer-events: none;
 }
 #sayac {
