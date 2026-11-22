@@ -43,6 +43,8 @@ if (cari && cari.docId) {
     '</defs><path id="oxU" class="xett" d="M9.6 11 Q22 -3 34.4 11"/><path id="oxA" class="xett" d="M34.4 31 Q22 40 9.6 31"/></svg>' +
     '<div id="bdU" class="bd"></div><div id="bdA" class="bd"></div></div>' +
     `<div id="novbeYazi"><svg viewBox="0 0 24 40"><path d="M12 38C8 30 16 24 12 14M12 4L5 13M12 4L19 13" ${OK}/></svg><div>Butulkanı<br>fırladır</div></div>` +
+    // Yan yazı: sol/sağ sütun və künc yerləri üçün (oyunçunun yanında, başqasını örtmür)
+    `<div id="novbeYan" style="position:absolute;display:none;align-items:center;gap:1.4vw;z-index:6;pointer-events:none;color:#fff;font:500 2.9vw/1.15 Roboto,Arial,sans-serif;text-shadow:0 .2vw .6vw rgba(0,0,0,.7);transform:translateY(-50%)"><svg id="novbeOk" viewBox="0 0 40 24" style="width:8vw;height:4.8vw;flex:none"><path d="M38 12C26 8 18 16 4 12M12 4L3 12L12 20" ${OK}/></svg><div id="novbeMetn">Butulkanı<br>fırladır</div></div>` +
     `<div id="firlatYazi"><div>Butulkanı<br>fırlat</div><svg viewBox="0 0 40 24"><path d="M2 12C14 8 22 16 36 12M28 4L37 12L28 20" ${OK}/></svg></div>` +
     '<div id="butulkaDokun"></div>');
 
@@ -148,15 +150,37 @@ if (cari && cari.docId) {
     }
     $("firlatYazi").style.display = menFirlat ? "flex" : "none";
     $("butulkaDokun").style.display = menFirlat ? "block" : "none";
-    const nv = $("novbeYazi");
+    const nv = $("novbeYazi"), ny = $("novbeYan");
     if (faza === "gozle" && !menFirlat) {
       const [x, y] = YER_XY[raund.sp];
-      const ust = y > 88;
-      nv.classList.toggle("ust", ust);
-      nv.style.left = x + "vw";
-      nv.style.top = (ust ? y - 8.5 - 11.2 : y + 12.4) + "vw";
-      nv.style.display = "flex";
-    } else nv.style.display = "none";
+      const yan = x < 25 ? "sol" : x > 75 ? "sag" : "";
+      if (yan) {
+        // Sol/sağ sütun: yazı şəklin yanında (düz). Künc yerləri: yazı qonşu sıranın üstünə düşməsin deyə boş hissədə
+        const kunc = y < 40 || y > 85;
+        const my = kunc ? (y < 40 ? 42 : 88.5) : y;
+        const kenar = kunc ? (yan === "sol" ? 26 : 74) : (yan === "sol" ? x + 10.45 : x - 10.45);
+        ny.style.top = my + "vw";
+        if (yan === "sol") {
+          ny.style.left = kenar + "vw"; ny.style.right = "";
+          ny.style.flexDirection = "row"; ny.style.textAlign = "left";
+          $("novbeOk").style.transform = "";
+        } else {
+          ny.style.right = (100 - kenar) + "vw"; ny.style.left = "";
+          ny.style.flexDirection = "row-reverse"; ny.style.textAlign = "right";
+          $("novbeOk").style.transform = "scaleX(-1)";
+        }
+        ny.style.display = "flex";
+        nv.style.display = "none";
+      } else {
+        // Yuxarı/aşağı sıranın ortası: yazı şəklin altında (aşağı sırada üstündə)
+        const ust = y > 88;
+        nv.classList.toggle("ust", ust);
+        nv.style.left = x + "vw";
+        nv.style.top = (ust ? y - 8 - 11.2 : y + 11.6) + "vw";
+        nv.style.display = "flex";
+        ny.style.display = "none";
+      }
+    } else { nv.style.display = "none"; ny.style.display = "none"; }
 
     // Ortadakı raund (sayğac uçuş bitəndən sonra başlayır: 9 → 0)
     const sec = (cut && raund.sec) || {};
