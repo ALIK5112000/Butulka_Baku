@@ -1,7 +1,7 @@
 {
   "name": "Butulka Baku",
   "short_name": "Butulka",
-  "start_url": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
