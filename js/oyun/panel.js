@@ -11,7 +11,7 @@ document.getElementById("cixisBtn").onclick = () => { location.href = "profil.ht
 function urekYaz(nVal) {
   const n = String(nVal), el = document.getElementById("urekSayi");
   el.textContent = n;
-  el.style.fontSize = (n.length <= 4 ? 3.4 : n.length === 5 ? 2.9 : n.length === 6 ? 2.4 : 2) + "vw";
+  el.style.fontSize = (n.length <= 4 ? 3.85 : n.length === 5 ? 3.2 : n.length === 6 ? 2.6 : 2.15) + "vw";
 }
 window.urekYaz = urekYaz;
 
