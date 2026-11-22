@@ -10,9 +10,14 @@ const yol = `masalar/${MASA_NOMRESI}/oturacaqlar`;
 const masa = document.getElementById("masa");
 const yerler = [];
 
+// Aşağı sıradakı yerlərin (6,7,8,9) adı chat panelinin altında qalıb kəsilir: hələlik adlar gizlədilir.
+// Adları qaytarmaq üçün siyahını boş yaz: const ALT_YERLER = [];
+const ALT_YERLER = [6, 7, 8, 9];
+document.head.insertAdjacentHTML("beforeend", "<style>.yer.alt-yer .ad{display:none!important}</style>");
+
 for (let i = 0; i < OTURACAQ_SAYI; i++) {
   const d = document.createElement("div");
-  d.className = "yer yer-" + i;
+  d.className = "yer yer-" + i + (ALT_YERLER.includes(i) ? " alt-yer" : "");
   d.innerHTML = '<div class="foto"></div><div class="ad"></div>';
   masa.appendChild(d);
   yerler.push(d);
@@ -271,6 +276,15 @@ window.masadanCix = masadanCix;
 
 // Səhifədən ayrılanda yer bərpa olunmasın (geri qayıdanda pageshow bunu sıfırlayır)
 window.addEventListener("pagehide", () => { window.__masaCixir = true; });
+
+// Çıxış düyməsi (#cixisBtn): yeri dərhal sil, bərpa etmə. Səhifədən getməsə (ləğv edilsə) 4 san sonra yenidən otur
+document.addEventListener("click", (e) => {
+  if (!(e.target.closest && e.target.closest("#cixisBtn"))) return;
+  masadanCix();
+  setTimeout(() => {
+    if (document.visibilityState === "visible" && girisVar()) { window.__masaCixir = false; berpa(); }
+  }, 4000);
+}, true);
 
 let yoxlaTimer = null;
 function geriQayidandaYoxla() {
