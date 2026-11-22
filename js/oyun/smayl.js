@@ -23,7 +23,7 @@ const SES_OBJ = SATIN_ALMA_SESI ? Object.assign(new Audio(SATIN_ALMA_SESI), { pr
 /* Jestlər. img = şəkil (w = eni, vw ilə), q = qiymət; emoji istəsəniz img əvəzinə e: "😍" yazın, q = qiymət (smaylik),
    a = şəkil üstündəki hərəkət: bounce | spin | float | shake | pulse | zoom */
 const JESTLER = [
-  { id: "j1", img: "images/jest/j01.png", w: 54.81, q: 1, a: "pulse" },
+  { id: "j1", img: "images/jest/j01.png", w: 12.96, q: 1, a: "pulse" },
   { id: "j2", img: "images/jest/j02.png", w: 11.85, q: 3, a: "shake" },
   { id: "j3", img: "images/jest/j03.png", w: 14.81, q: 1, a: "float" },
   { id: "j4", img: "images/jest/j04.png", w: 14.81, q: 1, a: "bounce" },
@@ -100,7 +100,7 @@ const CSS = `
 .sp-plus{width:6.4vw;height:6.4vw;border-radius:50%;background:#7cc92f;border:0;padding:0;display:flex;align-items:center;justify-content:center}
 .sp-plus svg{width:3.6vw;height:3.6vw}
 .sp-list{position:fixed;left:0;right:0;bottom:0;z-index:9990;background:#fff;overflow-y:auto;padding:2vw 0 22vw;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
-.sp-grid{display:grid;grid-template-columns:repeat(5,1fr)}
+.sp-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
 .sp-cell{display:flex;flex-direction:column;align-items:center;padding:2.2vw 0 2.6vw}
 .sp-cell:active .sp-e{transform:scale(.9)}
 .sp-e{height:15vw;display:flex;align-items:center;justify-content:center;font-size:11.5vw;line-height:1;transition:transform .12s}
