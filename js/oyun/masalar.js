@@ -125,6 +125,14 @@ yer.addEventListener("pointerdown", (e) => {
   t.appendChild(s);
   setTimeout(() => s.remove(), 650);
 });
+// Dost/masa sətirində harasına bassan (şəkil və ya ad) yalnız həmin masaya getsin; ada basanda hədiyyə açılmasın
+yer.addEventListener("click", (e) => {
+  const s = e.target.closest && e.target.closest(".sira");
+  if (!s || !yer.contains(s)) return;
+  e.stopPropagation();
+  e.preventDefault();
+  if (typeof s.onclick === "function") s.onclick(e);
+}, true);
 let unsubs = [];
 const ac = (html) => { bagla(); yer.innerHTML = html; yer.style.display = "block"; };
 function bagla() { unsubs.forEach((f) => f()); unsubs = []; sonYenile = null; yer.style.display = "none"; yer.innerHTML = ""; }
