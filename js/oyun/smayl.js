@@ -125,14 +125,11 @@ const CSS = `
 .sp-fly img.sm{width:5vw;height:5vw;display:block}
 .sp-plus-n{position:fixed;z-index:10011;pointer-events:none;font:700 5vw/1 Roboto,Arial,sans-serif;color:#ffd54a;text-shadow:0 .3vw .8vw rgba(0,0,0,.55);will-change:transform,opacity}
 .sp-t{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
-.pfj{position:fixed;z-index:9000;pointer-events:none;line-height:1;will-change:transform,opacity;animation-fill-mode:both}
-.pfj img{height:1em;width:auto;display:block}
-@keyframes pfj-bounce{0%{transform:translate(-50%,-50%) scale(0);opacity:0}20%{transform:translate(-50%,-95%) scale(1.2);opacity:1}40%{transform:translate(-50%,-50%) scale(1)}60%{transform:translate(-50%,-80%) scale(1.1)}80%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
-@keyframes pfj-spin{0%{transform:translate(-50%,-50%) rotate(0) scale(0);opacity:0}25%{transform:translate(-50%,-50%) rotate(180deg) scale(1.3);opacity:1}80%{transform:translate(-50%,-50%) rotate(720deg) scale(1);opacity:1}100%{transform:translate(-50%,-50%) rotate(720deg) scale(1);opacity:0}}
-@keyframes pfj-float{0%{transform:translate(-50%,-30%) scale(.6);opacity:0}20%{opacity:1}100%{transform:translate(-50%,-220%) scale(1.25);opacity:0}}
-@keyframes pfj-shake{0%{transform:translate(-50%,-50%) scale(0);opacity:0}15%{transform:translate(-50%,-50%) scale(1);opacity:1}25%{transform:translate(-50%,-50%) rotate(-18deg)}40%{transform:translate(-50%,-50%) rotate(18deg)}55%{transform:translate(-50%,-50%) rotate(-14deg)}70%{transform:translate(-50%,-50%) rotate(14deg)}85%{transform:translate(-50%,-50%) rotate(0);opacity:1}100%{transform:translate(-50%,-50%);opacity:0}}
-@keyframes pfj-pulse{0%{transform:translate(-50%,-50%) scale(0);opacity:0}20%{transform:translate(-50%,-50%) scale(1.5);opacity:1}40%{transform:translate(-50%,-50%) scale(1)}60%{transform:translate(-50%,-50%) scale(1.5)}80%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
-@keyframes pfj-zoom{0%{transform:translate(-50%,-50%) scale(0);opacity:0}30%{transform:translate(-50%,-50%) scale(2.2);opacity:1}70%{transform:translate(-50%,-50%) scale(1.6);opacity:1}100%{transform:translate(-50%,-50%) scale(2.6);opacity:0}}
+.pfj{position:fixed;z-index:9000;pointer-events:none;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.pfj img{display:block;height:auto;max-width:96%;max-height:96%;-webkit-user-drag:none;animation:pfj-in .28s cubic-bezier(.2,1.4,.4,1) both}
+.pfj.out{animation:pfj-out .3s ease forwards}
+@keyframes pfj-in{0%{transform:scale(.25);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes pfj-out{to{opacity:0;transform:scale(.9)}}
 `;
 const st = document.createElement("style");
 st.textContent = CSS;
@@ -357,9 +354,16 @@ async function satinAl(p) {
 }
 
 /* ---------- Jest işlətmək ---------- */
+let ozN = null;
 async function jestIsle(g) {
   if (mesgul || !MEN) return;
+  if (balNow < g.q) { toast("Smaylik çatmır, alın"); shop.classList.add("open"); return; }
   mesgul = true;
+  const n = Date.now() + "-" + Math.random().toString(36).slice(2, 7);
+  ozN = n;
+  const h = oyna(MEN, g);                       /* basan kimi öz şəklində dərhal görünür */
+  balNow -= g.q;
+  $("#spBal").textContent = fmt(balNow);
   try {
     await runTransaction(fsdb, async tx => {
       const r = doc(fsdb, "users", MEN), s = await tx.get(r), d = s.data() || {};
@@ -369,8 +373,12 @@ async function jestIsle(g) {
     /* hamıya göstər: n unikal olduğu üçün hər istifadə bir dəfə oynayır */
     const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/jest/" + MEN);
     onDisconnect(r).remove();
-    set(r, { i: g.id, n: Date.now() + "-" + Math.random().toString(36).slice(2, 7) });
+    set(r, { i: g.id, n: n });
   } catch (e) {
+    ozN = null;
+    if (h) h.kill();
+    balNow += g.q;
+    $("#spBal").textContent = fmt(balNow);
     if (e.message === "YETMIR") { toast("Smaylik çatmır, alın"); shop.classList.add("open"); }
     else { console.error(e); toast("Xəta baş verdi, yenidən cəhd edin"); }
   }
@@ -392,25 +400,28 @@ function fotoTap(uid) {
   return null;
 }
 
+const AKTIV = {};
 function oyna(uid, g) {
   const el = fotoTap(uid);
-  if (!el) return;
-  const r = (el.querySelector(".foto") || el).getBoundingClientRect();
-  if (!r.width) return;
-  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-  const say = g.q >= 10 ? 6 : g.q >= 5 ? 3 : 1;
-  for (let i = 0; i < say; i++) {
-    const d = document.createElement("div");
-    d.className = "pfj";
-    const esas = i === 0;
-    d.style.left = (cx + (esas ? 0 : (Math.random() - .5) * r.width * 1.3)) + "px";
-    d.style.top = (cy + (esas ? 0 : (Math.random() - .5) * r.height * 1.1)) + "px";
-    d.style.fontSize = (esas ? 14 : 7 + Math.random() * 3) + "vw";
-    d.style.animation = "pfj-" + g.a + " " + (esas ? 2.4 : 2 + Math.random() * .8) + "s ease " + (esas ? 0 : Math.random() * .5) + "s both";
-    d.innerHTML = g.img ? '<img src="' + g.img + '" alt="">' : g.e;
-    document.body.appendChild(d);
-    setTimeout(() => d.remove(), 3600);
-  }
+  if (!el) return null;
+  const f = el.querySelector(".foto") || el;
+  const r = f.getBoundingClientRect();
+  if (!r.width) return null;
+  if (AKTIV[uid]) AKTIV[uid].kill();
+  const d = document.createElement("div");
+  d.className = "pfj";
+  d.style.cssText = "left:" + r.left + "px;top:" + r.top + "px;width:" + r.width + "px;height:" + r.height + "px;border-radius:" + getComputedStyle(f).borderRadius;
+  const en = Math.min(96, 62 * (g.w || 11.85) / 11.85);
+  d.innerHTML = g.img
+    ? '<img src="' + g.img + '" alt="" draggable="false" style="width:' + en + '%">'
+    : '<span style="font-size:' + (r.width * .6) + 'px;line-height:1">' + g.e + '</span>';
+  document.body.appendChild(d);
+  let t1, t2;
+  const h = { kill() { clearTimeout(t1); clearTimeout(t2); d.remove(); if (AKTIV[uid] === h) delete AKTIV[uid]; } };
+  AKTIV[uid] = h;
+  t1 = setTimeout(() => d.classList.add("out"), 3300);
+  t2 = setTimeout(h.kill, 3650);
+  return h;
 }
 
 let ilk = true;
@@ -421,6 +432,7 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/jest"), s => {
     const x = v[uid];
     if (!x || sonN[uid] === x.n) continue;
     sonN[uid] = x.n;
+    if (uid === MEN && x.n === ozN) continue;
     if (ilk) continue;
     const g = JESTLER.find(j => j.id === x.i);
     if (g) oyna(uid, g);
