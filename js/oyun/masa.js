@@ -10,14 +10,9 @@ const yol = `masalar/${MASA_NOMRESI}/oturacaqlar`;
 const masa = document.getElementById("masa");
 const yerler = [];
 
-// Aşağı sıradakı yerlərin (6,7,8,9) adı chat panelinin altında qalıb kəsilir: hələlik adlar gizlədilir.
-// Adları qaytarmaq üçün siyahını boş yaz: const ALT_YERLER = [];
-const ALT_YERLER = [6, 7, 8, 9];
-document.head.insertAdjacentHTML("beforeend", "<style>.yer.alt-yer .ad{display:none!important}</style>");
-
 for (let i = 0; i < OTURACAQ_SAYI; i++) {
   const d = document.createElement("div");
-  d.className = "yer yer-" + i + (ALT_YERLER.includes(i) ? " alt-yer" : "");
+  d.className = "yer yer-" + i;
   d.innerHTML = '<div class="foto"></div><div class="ad"></div>';
   masa.appendChild(d);
   yerler.push(d);
@@ -67,13 +62,20 @@ function cizdir(data) {
     if (o && gorulen.has(o.uid)) o = null;
     if (o) gorulen.add(o.uid);
     d.classList.toggle("dolu", !!o);
+    d.dataset.uid = o ? o.uid : "";
     if (o) {
+      clearTimeout(d._bosTm);
       d.querySelector(".ad").textContent = o.ad;
       const s = o.sekil ? String(o.sekil).replace(/"/g, "%22") : "";
       d.querySelector(".foto").style.backgroundImage = s ? `url("${s}")` : "";
     } else {
-      d.querySelector(".ad").textContent = "";
-      d.querySelector(".foto").style.backgroundImage = "";
+      // Yer boşalanda şəkil/ad solma bitənə qədər qalsın (boş "NO PHOTO" görünməsin)
+      clearTimeout(d._bosTm);
+      d._bosTm = setTimeout(() => {
+        if (d.classList.contains("dolu")) return;
+        d.querySelector(".ad").textContent = "";
+        d.querySelector(".foto").style.backgroundImage = "";
+      }, 450);
     }
   });
 }
