@@ -269,6 +269,18 @@ function bagla() {
 }
 ov.addEventListener("click", e => { if (e.target === ov) bagla(); });
 
+/* Mavi məktub düyməsi: kart bağlanır, çatın yazı xanasında oyunçunun adı ("Ad, ") görünür */
+function mesajYaz() {
+  const uid = ownerUid, ad = sonD ? pick(sonD, ["username"]) : null;
+  if (!uid || uid === MEN || !ad) return;
+  bagla();
+  if (typeof window.CatHedef === "function") window.CatHedef(ad, uid);
+  else {
+    const inp = document.getElementById("mesajInput");
+    if (inp) { const mur = ad + ", "; if (!inp.value.startsWith(mur)) inp.value = mur + inp.value; inp.focus(); }
+  }
+}
+
 /* Məftunun adının rəngi: VIP oğlan göy, VIP qız qırmızı; VIP olmayan oğlan mavi, qız çəhrayı */
 const adRengi = m => (m.vip ? (m.qiz ? "#e0201c" : "#1f5fd6") : (m.qiz ? "#f26aa6" : "#3aa0e0"));
 
@@ -292,11 +304,12 @@ function qur() {
         '<button class="pf-btn t" style="background:#ef8c0b">Buto</button>' +
         '<button class="pf-btn" style="background:#ab5a98">' + IC.musiqi + "</button>" +
         '<button class="pf-btn" style="background:#f9a23a">' + IC.tesdiq + "</button>" +
-        '<button class="pf-btn" style="background:#4fa9de">' + IC.mail + "</button>" +
+        '<button class="pf-btn pf-mail" style="background:#4fa9de">' + IC.mail + "</button>" +
       "</div>" +
     "</div>";
   gurulu = true; sig = {};
   ov.querySelector(".pf-close").onclick = bagla;
+  ov.querySelector(".pf-mail").onclick = mesajYaz;
   ov.querySelector(".pf-dv span").onclick = () => { acik = !acik; if (sonD) ciz(sonD); };
 }
 
@@ -309,6 +322,9 @@ function ciz(d) {
   const qiymet = Math.max(1, num(d.meftunQiymet));
   const mVar = !!d.meftunUid;
   const menimdir = ownerUid === MEN;
+  /* öz kartında mavi məktub görünmür (digər düymələr öz yerində qalır) */
+  const mailBtn = ov.querySelector(".pf-mail");
+  if (mailBtn) mailBtn.style.visibility = menimdir ? "hidden" : "visible";
 
   /* 1) şəkil, ad, VIP (yalnız dəyişəndə) */
   const sTop = [sekil, ad, yas, yer, vipMi(d)].join("|");
