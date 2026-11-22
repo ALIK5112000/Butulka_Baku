@@ -1,5 +1,5 @@
 import { rtdb, fsdb } from "../core/firebase.js";
-import { MASA_NOMRESI } from "../core/config.js";
+import { MASA_NOMRESI, OTURACAQ_SAYI } from "../core/config.js";
 import { cariOyuncu, toast } from "./yardimci.js";
 import { dostBolmesi } from "./dostlar.js";
 import { ref, get, remove, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
@@ -95,6 +95,7 @@ export async function girisIcazesi(n) {
 }
 
 async function git(n) {
+  window.__masaCixir = true;   // masa.js yerimi yenidən bərpa etməsin
   sessionStorage.setItem("sonMasa", MASA_NOMRESI);
   // Köhnə masadakı yerini boşalt (ən çox 1,5 san gözlə, sonra hər halda keç)
   const temizle = (async () => {
@@ -202,7 +203,14 @@ export async function deyisModal() {
 async function masayaGir(v) {
   const n = nomreOxu(v);
   if (!n) return toast("Masa nömrəsi 1-999999 arasında olmalıdır");
-  if (n === MASA_NOMRESI) { bagla(); return; }
+  if (n === MASA_NOMRESI) {
+    // Artıq bu masadayam: pəncərəni bağla və təsadüfi başqa boş yerə keç
+    bagla();
+    Promise.resolve(window.yerDeyis && window.yerDeyis()).then((ok) => {
+      if (ok === false) toast("Bu masada boş yer yoxdur");
+    });
+    return;
+  }
   const d = n === ADMIN ? null : await melumat(n);
   if (d && d.parolHash && d.sahib !== cari.docId) return parolModal(n, d);
   git(n);
@@ -212,6 +220,9 @@ async function tesadufi() {
   for (let k = 0; k < 20; k++) {
     const n = String(1 + Math.floor(Math.random() * 40));
     if (n === MASA_NOMRESI || (await kilidli(n))) continue;
+    // dolu masaya düşməsin
+    const dolu = Object.values((await get(ref(rtdb, `masalar/${n}/oturacaqlar`))).val() || {}).filter(Boolean).length;
+    if (dolu >= OTURACAQ_SAYI) continue;
     return git(n);
   }
   toast("Uyğun masa tapılmadı");
