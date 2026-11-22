@@ -42,9 +42,9 @@
 /* Oyunçu kartı: left/top şəklin MƏRKƏZİDİR */
 .yer {
   position: absolute;
-  width: 21vw;
+  width: 20vw;
   text-align: center;
-  transform: translate(-50%, -9.25vw);
+  transform: translate(-50%, -8.45vw);
   opacity: 0;
   transition: opacity 0.3s;
 }
@@ -54,8 +54,8 @@
 }
 
 .yer .foto {
-  width: 18.5vw;
-  height: 18.5vw;
+  width: 16.9vw;
+  height: 16.9vw;
   margin: 0 auto;
   border-radius: 1.8vw;
   background: #777 center/cover no-repeat;
@@ -63,8 +63,8 @@
 }
 
 .yer .ad {
-  margin-top: 0.65vw;
-  font-size: 3vw;
+  margin-top: 0.3vw;
+  font-size: 2.2vw;
   line-height: 1.15;
   color: #fff;
   text-shadow: 0 0.2vw 0.6vw rgba(0, 0, 0, 0.7);
@@ -73,21 +73,16 @@
   text-overflow: ellipsis;
 }
 
-/* 12 nəfərlik masa ətrafı düzülüş (114vw daxilində şəkildəki ardıcıllıq) */
-.yer-0  { left: 14.5vw; top: 25.5vw; }
-.yer-1  { left: 38.5vw; top: 22.5vw; }
-.yer-2  { left: 61.5vw; top: 22.5vw; }
-.yer-3  { left: 85.5vw; top: 25.5vw; }
-.yer-4  { left: 86.5vw; top: 50.5vw; }
-.yer-5  { left: 86.5vw; top: 75vw; }
-.yer-6  { left: 85.5vw; top: 99vw; }
-.yer-7  { left: 62vw;   top: 102vw; }
-.yer-8  { left: 38vw;   top: 102vw; }
-.yer-9  { left: 14.5vw; top: 99vw; }
-.yer-10 { left: 13.5vw; top: 75vw; }
-.yer-11 { left: 13.5vw; top: 50.5vw; }
-
-/* Aşağı sıranın adı chat panelinin altında qalmasın */
-#masa { z-index: 2; }
-.yer-6, .yer-9 { top: 97.5vw; }
-.yer-7, .yer-8 { top: 100vw; }
+/* 12 nəfərlik masa ətrafı düzülüş (nümunə şəkildən ölçülüb; left/top = şəklin mərkəzi) */
+.yer-0  { left: 17.2vw; top: 30.6vw; }
+.yer-1  { left: 39.2vw; top: 25.5vw; }
+.yer-2  { left: 61vw;   top: 25.5vw; }
+.yer-3  { left: 82.8vw; top: 30.6vw; }
+.yer-4  { left: 86.9vw; top: 52.7vw; }
+.yer-5  { left: 86.9vw; top: 74.4vw; }
+.yer-6  { left: 82.8vw; top: 96.2vw; }
+.yer-7  { left: 61vw;   top: 101.3vw; }
+.yer-8  { left: 39.2vw; top: 101.3vw; }
+.yer-9  { left: 17.2vw; top: 96.2vw; }
+.yer-10 { left: 13.1vw; top: 74.4vw; }
+.yer-11 { left: 13.1vw; top: 52.7vw; }
