@@ -97,7 +97,7 @@ const CSS = `
 .sp-bal b{font:700 4.2vw/1 Roboto,Arial,sans-serif;color:#222}
 .sp-plus{width:6.4vw;height:6.4vw;border-radius:50%;background:#7cc92f;border:0;padding:0;display:flex;align-items:center;justify-content:center}
 .sp-plus svg{width:3.6vw;height:3.6vw}
-.sp-list{position:fixed;left:0;right:0;bottom:0;z-index:9990;background:#fff;overflow-y:auto;padding:2vw 0 22vw;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
+.sp-list{position:fixed;left:0;right:0;bottom:0;z-index:9990;background:#fff;overflow-y:auto;padding:2vw 0 10vw;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
 .sp-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
 .sp-cell{display:flex;flex-direction:column;align-items:center;padding:2.2vw 0 2.6vw}
 .sp-cell:active .sp-e{transform:scale(.9)}
