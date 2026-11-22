@@ -481,13 +481,19 @@ function oyna(uid, g) {
       if (dead) return;
       const k = koordinat(uid);
       if (!k) { h.kill(); return; }
-      d.style.left = k.r.left + "px";
-      d.style.top = k.r.top + "px";
-      d.style.width = k.r.width + "px";
-      d.style.height = k.r.height + "px";
-      /* Üstündən pəncərə (Masanı dəyiş, profil, mağaza və s.) açıqdırsa jest görünməsin */
-      const e = document.elementFromPoint(k.r.left + k.r.width / 2, k.r.top + k.r.height / 2);
-      d.style.visibility = (!e || e.closest("#masa,#taxta")) ? "" : "hidden";
+      const r = k.r, key = r.left + "|" + r.top + "|" + r.width + "|" + r.height;
+      if (key !== h.sk) {            /* yalnız yer dəyişəndə yaz */
+        h.sk = key;
+        d.style.left = r.left + "px"; d.style.top = r.top + "px";
+        d.style.width = r.width + "px"; d.style.height = r.height + "px";
+      }
+      /* Üstündən pəncərə açıqdırsa jest görünməsin (ağır olduğu üçün 200 msdən bir yoxlanır) */
+      const now = performance.now();
+      if (!h.ck || now - h.ck > 200) {
+        h.ck = now;
+        const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        d.style.visibility = (!e || e.closest("#masa,#taxta")) ? "" : "hidden";
+      }
     }
   };
   /* Kart ortaya uçanda/qayıdanda jest də onunla birlikdə hərəkət etsin */
