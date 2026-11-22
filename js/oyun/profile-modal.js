@@ -315,7 +315,7 @@ function ciz(d) {
   if (sig.top !== sTop) {
     sig.top = sTop;
     ov.querySelector(".pf-topw").innerHTML =
-      (vipMi(d) ? '<div class="pf-fold"></div><div class="pf-vip">VIP</div>' : "") +
+      (vipMi(d) ? '<img class="pf-vipimg" src="images/profil/vip.png" alt="">' : "") +
       '<div class="pf-photo"><img src="' + esc(sekil) + '" alt="" onerror="' + onerr + '">' +
       '<div class="pf-cap">' + esc(ad) + (yas ? ", " + esc(yas) : "") + (yer ? "<small>" + esc(yer) + "</small>" : "") + "</div>" +
       '<button class="pf-zoom" aria-label="Böyüt">' + IC.zoom + "</button></div>";
