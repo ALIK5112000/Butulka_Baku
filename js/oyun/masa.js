@@ -84,6 +84,15 @@ function gosterData(data) {
     if (!var_) {
       const i = sonYerOxu();
       if (i !== null && !data[i]) return { ...data, [i]: aktivOyuncu };
+    } else {
+      // Yer dəyişəndə bir an iki yerdə yazılı olur: yalnız yeni (son) yerdə göstər, titrəməsin
+      const oz = Object.keys(data).filter((k) => data[k] && data[k].uid === aktivOyuncu.uid);
+      const ev = String(sonYerOxu());
+      if (oz.length > 1 && oz.includes(ev)) {
+        const d = { ...data };
+        oz.forEach((k) => { if (k !== ev) delete d[k]; });
+        return d;
+      }
     }
   }
   return data;
@@ -106,7 +115,9 @@ async function dublikatlariSil(uid, saxlaIndeks = null) {
   const silinecekler = [];
   for (const k in hamisi) {
     if (hamisi[k] && hamisi[k].uid === uid && String(k) !== String(saxlaIndeks)) {
-      silinecekler.push(remove(ref(rtdb, `${yol}/${k}`)));
+      const rk = ref(rtdb, `${yol}/${k}`);
+      onDisconnect(rk).cancel().catch(() => {});   // köhnə yerdə qalan "çıxanda sil" başqasının yerini silməsin
+      silinecekler.push(remove(rk));
     }
   }
   if (silinecekler.length) {
@@ -157,6 +168,13 @@ async function yerTutIc(oyuncu, istisna) {
       sonYerYaz(i);
       yerliGoster(i, oyuncu);                    // dərhal görünsün
       onDisconnect(r).remove().catch(() => {});
+      if (istisna !== null) {
+        // Yer dəyişmə: köhnə yeri dərhal boşalt (başqasının yerini silməsin deyə yalnız öz yazımı)
+        const eski = ref(rtdb, `${yol}/${istisna}`);
+        onDisconnect(eski).cancel().catch(() => {});
+        runTransaction(eski, (cur) => (cur && cur.uid === oyuncu.uid ? null : undefined)).catch(() => {});
+        window.dispatchEvent(new CustomEvent("oyuncuYerDeyisdi", { detail: { uid: oyuncu.uid, kohne: Number(istisna), yeni: i } }));
+      }
       await dublikatlariSil(oyuncu.uid, i);      // köhnə yer varsa sil
       return true;
     }
