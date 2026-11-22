@@ -1,5 +1,4 @@
 import { rtdb, fsdb } from "../core/firebase.js";
-import "./botlar.js";   // test botları (yalnız linkdə ?bot=N olanda işləyir)
 import { MASA_NOMRESI, OTURACAQ_SAYI } from "../core/config.js";
 import { cinsTap, vipMi } from "./yardimci.js";
 import { girisIcazesi } from "./masalar.js";
