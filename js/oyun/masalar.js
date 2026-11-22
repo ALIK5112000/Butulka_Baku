@@ -112,6 +112,18 @@ async function git(n) {
 
 // ---------- Pəncərə köməkçiləri ----------
 const yer = document.createElement("div"); yer.id = "modalYer"; document.body.appendChild(yer);
+yer.addEventListener("pointerdown", (e) => {
+  const t = e.target.closest && e.target.closest(".btn-get,.btn-tes,.btn-yar,.sira,.mx");
+  if (!t || !yer.contains(t)) return;
+  if (navigator.vibrate) navigator.vibrate(8);
+  const r = t.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2;
+  const s = document.createElement("span");
+  s.className = "rpl";
+  s.style.cssText = "width:" + d + "px;height:" + d + "px;left:" + (e.clientX - r.left - d / 2) + "px;top:" + (e.clientY - r.top - d / 2) + "px";
+  if (getComputedStyle(t).position === "static") t.style.position = "relative";
+  t.appendChild(s);
+  setTimeout(() => s.remove(), 650);
+});
 let unsubs = [];
 const ac = (html) => { bagla(); yer.innerHTML = html; yer.style.display = "block"; };
 function bagla() { unsubs.forEach((f) => f()); unsubs = []; sonYenile = null; yer.style.display = "none"; yer.innerHTML = ""; }
@@ -136,14 +148,15 @@ const gozle = setInterval(() => {
 yBtn.onclick = () => { if (sayac > 0) return; deyisModal(); };
 // ---------- Masanı dəyiş ----------
 export async function deyisModal() {
-  ac(`<div class="mk"><button class="mx" id="mX">✕</button><h2>Masanı dəyiş</h2>
+  ac(`<div class="mk"><button class="mx" id="mX">✕</button><h2>Masanı dəyiş</h2><div class="mb" id="mB">
     <div class="et">🔍 Masa axtar</div>
     <div class="arama"><input id="mAra" type="text" inputmode="numeric" placeholder="Masa nömrəsi, məs. 666"><button class="btn-get" id="mGet">Get</button></div>
     <button class="btn-tes" id="mTes">Təsadüfi seçilmiş masa!</button>
     <button class="btn-yar" id="mYar">👑 Masa yarat / Mənim masam</button>
     <div class="bolum">Dostlar və tanışlar</div><div class="siyahi" id="mDost"></div>
-    <div class="bolum">Ən son baş çəkmiş olduğun masalar</div><div class="siyahi" id="mSiya"></div></div>`);
+    <div class="bolum">Ən son baş çəkmiş olduğun masalar</div><div class="siyahi" id="mSiya"></div></div></div>`);
   $("mX").onclick = bagla;
+  $("mB").addEventListener("scroll", () => $("mB").parentElement.classList.toggle("kay", $("mB").scrollTop > 4));
   $("mGet").onclick = () => masayaGir($("mAra").value);
   $("mAra").addEventListener("keydown", (e) => { if (e.key === "Enter") masayaGir($("mAra").value); });
   $("mTes").onclick = tesadufi;
