@@ -44,14 +44,38 @@ export async function tanisYaz(metn, men) {
   } catch (e) {}
 }
 
+// ---------- Yaddaş: dost və tanış siyahısı telefonda saxlanır, pəncərə dərhal açılır ----------
+const lsOxu = (k, v) => { try { const x = JSON.parse(localStorage.getItem(k)); return x == null ? v : x; } catch (e) { return v; } };
+const lsYaz = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const K_DOST = "dostKesh_" + cari.docId, K_TANIS = "tanisKesh_" + cari.docId, K_AV = "dostAvKesh";
+
+let dostIds = lsOxu(K_DOST, []);        // dostların id-ləri (telefondan dərhal hazırdır, arxa planda yenilənir)
+let tanisKesh = lsOxu(K_TANIS, {});     // tanışlar
+let preKesh = null;                     // kim oyundadır: köhnə "oyundadır" göstərməsin deyə telefona yazılmır
+let dostSon = 0;
+const avLS = lsOxu(K_AV, {});           // şəkil ünvanları
+const masaSay = new Map();              // masa -> { o, q } son bilinən oğlan/qız sayı
+
 // ---------- Dostlar ----------
 const av = {};
-const avatar = (u) => av[u] || (av[u] = getDoc(doc(fsdb, "users", u)).then((s) => (s.data() || {}).avatar || "").catch(() => ""));
+const avatar = (u) => av[u] || (av[u] = getDoc(doc(fsdb, "users", u)).then((s) => {
+  const a = (s.data() || {}).avatar || "";
+  if (a && avLS[u] !== a) {
+    avLS[u] = a;
+    const ks = Object.keys(avLS);
+    if (ks.length > 200) delete avLS[ks[0]];
+    lsYaz(K_AV, avLS);
+  }
+  return a;
+}).catch(() => ""));
 
+// Siyahını bazadan oxuyur. Əsas sənəd oxuna bilməsə null qaytarır (köhnə yaddaşdakı siyahı pozulmasın)
 async function dostlarim() {
   const ids = new Set();
+  let ok = false;
   try {
     const p = (await getDoc(doc(fsdb, "users", cari.docId))).data() || {};
+    ok = true;
     DOST_SAHELERI.forEach((k) => (Array.isArray(p[k]) ? p[k] : []).forEach((x) => {
       const v = x && typeof x === "object" ? (x.docId || x.uid || x.id) : x;
       if (v) ids.add(String(v));
@@ -74,37 +98,96 @@ async function dostlarim() {
     }
     out.push(x);
   }
-  return out;
+  return ok ? out : null;
+}
+async function dostYukle(zorla) {
+  if (!cari.docId) return;
+  if (!zorla && Date.now() - dostSon < 60000) return;     // dəqiqədə bir dəfədən çox soruşma
+  dostSon = Date.now();
+  const l = await dostlarim();
+  if (l) { dostIds = l; lsYaz(K_DOST, l); }
 }
 
+// Oyun açılan kimi arxa planda hazırlaşırıq (pəncərə 9 saniyədən sonra açılır, hər şey artıq hazır olur)
+if (cari.docId) {
+  dostYukle(true);
+  get(ref(rtdb, "tanis/" + cari.docId)).then((s) => { tanisKesh = s.val() || {}; lsYaz(K_TANIS, tanisKesh); }).catch(() => {});
+  setTimeout(() => {
+    get(ref(rtdb, "prezans")).then((s) => { if (preKesh === null) preKesh = s.val() || {}; }).catch(() => {});
+  }, 2500);
+}
+
+// ---------- Pəncərədəki "Dostlar və tanışlar" siyahısı ----------
 export function dostBolmesi(box, gir, IK_O, IK_Q) {
-  let dost = [], tanis = {}, pre = {}, olu = false;
+  let olu = false;
   const subs = [];
+  const satir = new Map();   // uid -> { el, masa, say }
+
+  function sayAbune(s, masa) {
+    if (s.say) s.say();
+    s.masa = masa;
+    const so = s.el.querySelector(".so"), sq = s.el.querySelector(".sq");
+    const k = masaSay.get(masa);
+    if (k) { so.textContent = k.o; sq.textContent = k.q; }          // son bilinən say dərhal görünür
+    s.say = onValue(ref(rtdb, `masalar/${masa}/oturacaqlar`), (sn) => {
+      const v = Object.values(sn.val() || {}).filter(Boolean);
+      const q = v.filter((x) => x.cins === "q").length, o = v.filter((x) => x.cins !== "q").length;
+      masaSay.set(masa, { o, q });
+      so.textContent = o; sq.textContent = q;
+    });
+  }
+  function yarat(u, p) {
+    const r = document.createElement("div"); r.className = "sira";
+    r.innerHTML = `<div class="dfoto"></div><div class="mad"></div><div class="say"><span>${IK_O}<b class="so">0</b></span><span>${IK_Q}<b class="sq">0</b></span></div>`;
+    r.querySelector(".mad").textContent = p.ad;
+    const s = { el: r, masa: null, say: null };
+    r.onclick = () => gir(s.masa);
+    const foto = r.querySelector(".dfoto");
+    const goster = (a) => { if (a) foto.style.backgroundImage = `url("${String(a).replace(/"/g, "%22")}")`; };
+    goster(avLS[u]);                                               // şəkil telefondan dərhal
+    avatar(u).then(goster);
+    satir.set(u, s);
+    sayAbune(s, p.masa);
+    return s;
+  }
+  function sil(u) {
+    const s = satir.get(u);
+    if (!s) return;
+    if (s.say) s.say();
+    s.el.remove();
+    satir.delete(u);
+  }
 
   function ciz() {
     if (olu) return;
-    const hamisi = new Set([...dost, ...Object.keys(tanis).filter((k) => Date.now() - tanis[k] < HEFTE)]);
+    if (preKesh === null) {                                         // kim oyundadır hələ bilinmir: "yoxdur" yazma
+      if (!box.firstChild) box.innerHTML = '<div class="bos">Yüklənir...</div>';
+      return;
+    }
+    const pre = preKesh;
+    const hamisi = new Set([...dostIds, ...Object.keys(tanisKesh).filter((k) => Date.now() - tanisKesh[k] < HEFTE)]);
     const siya = [...hamisi].filter((u) => u !== cari.docId && pre[u]);
-    box.innerHTML = "";
-    if (!siya.length) { box.innerHTML = '<div class="bos">Hazırda oyunda dost və ya tanış yoxdur</div>'; return; }
+    if (!siya.length) {
+      [...satir.keys()].forEach(sil);
+      box.innerHTML = '<div class="bos">Hazırda oyunda dost və ya tanış yoxdur</div>';
+      return;
+    }
+    const b = box.querySelector(".bos"); if (b) b.remove();
+    [...satir.keys()].forEach((u) => { if (!siya.includes(u)) sil(u); });
     siya.forEach((u) => {
-      const p = pre[u];
-      const r = document.createElement("div"); r.className = "sira";
-      r.innerHTML = `<div class="dfoto"></div><div class="mad"></div><div class="say"><span>${IK_O}<b class="so">0</b></span><span>${IK_Q}<b class="sq">0</b></span></div>`;
-      r.querySelector(".mad").textContent = p.ad;
-      r.onclick = () => gir(p.masa);
-      box.appendChild(r);
-      avatar(u).then((a) => { if (a) r.querySelector(".dfoto").style.backgroundImage = `url("${String(a).replace(/"/g, "%22")}")`; });
-      get(ref(rtdb, `masalar/${p.masa}/oturacaqlar`)).then((s) => {
-        const v = Object.values(s.val() || {}).filter(Boolean);
-        r.querySelector(".sq").textContent = v.filter((x) => x.cins === "q").length;
-        r.querySelector(".so").textContent = v.filter((x) => x.cins !== "q").length;
-      });
+      const p = pre[u], s = satir.get(u);
+      if (!s) { yarat(u, p); return; }
+      const ad = s.el.querySelector(".mad");
+      if (ad.textContent !== p.ad) ad.textContent = p.ad;
+      if (s.masa !== p.masa) sayAbune(s, p.masa);                   // başqa masaya keçibsə
     });
+    const hedef = siya.map((u) => satir.get(u).el);
+    if (hedef.some((e, i) => box.children[i] !== e)) hedef.forEach((e) => box.appendChild(e));   // yalnız sıra dəyişibsə
   }
 
-  dostlarim().then((d) => { dost = d; ciz(); });
-  subs.push(onValue(ref(rtdb, "tanis/" + cari.docId), (s) => { tanis = s.val() || {}; ciz(); }));
-  subs.push(onValue(ref(rtdb, "prezans"), (s) => { pre = s.val() || {}; ciz(); }));
-  return () => { olu = true; subs.forEach((f) => f()); };
+  ciz();                                                            // telefondakı yaddaşla dərhal çək
+  dostYukle().then(ciz);
+  subs.push(onValue(ref(rtdb, "tanis/" + cari.docId), (s) => { tanisKesh = s.val() || {}; lsYaz(K_TANIS, tanisKesh); ciz(); }));
+  subs.push(onValue(ref(rtdb, "prezans"), (s) => { preKesh = s.val() || {}; ciz(); }));
+  return () => { olu = true; subs.forEach((f) => f()); satir.forEach((s) => s.say && s.say()); satir.clear(); };
 }
