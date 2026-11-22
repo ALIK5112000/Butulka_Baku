@@ -33,7 +33,7 @@
 .pk-uinfo{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;min-width:0}
 .pk-name{font:400 3.7vw/1.1 Roboto,Arial,sans-serif;color:#555;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pk-heart{display:flex;align-items:center;gap:2vw}
-.pk-heart svg{width:6.5vw;height:6.5vw}
+.pk-heart img{width:5.8vw;height:auto;margin-right:2.1vw}
 .pk-heart b{font:700 3.7vw/1 Roboto,Arial,sans-serif;color:#222}
 .pk-heart .rk{font:400 2.8vw/1 Roboto,Arial,sans-serif;color:#9a9a9a}
 .pk-follow{background:#7cc92f;color:#fff;border:0;border-radius:.5vw;width:20.8vw;height:6.3vw;font:400 3.3vw/1 Roboto,Arial,sans-serif;padding:0}
