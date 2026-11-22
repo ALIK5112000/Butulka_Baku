@@ -28,8 +28,12 @@ async function melumat(n) {
   const d = s.exists() ? s.data() : null;
   return d && d.bitis > Date.now() ? d : null;
 }
-// Kilid məlumatı 30 saniyə yadda qalır: pəncərə təkrar açılanda kilid işarəsi dərhal görünür
+// Kilid məlumatı telefonda yadda qalır: pəncərə açılanda kilid işarəsi dərhal görünür (sonra arxada yenilənir)
+const KK = "kilitK2";
 const kilitKesh = new Map();
+try { Object.entries(JSON.parse(localStorage.getItem(KK)) || {}).forEach(([k, v]) => kilitKesh.set(k, v)); } catch (e) {}
+const kilitSaxla = () => { try { localStorage.setItem(KK, JSON.stringify(Object.fromEntries(kilitKesh))); } catch (e) {} };
+const kilitOxu = (n) => { const k = kilitKesh.get(String(n)); return k ? k.v : undefined; };
 const kilidli = async (n) => {
   n = String(n);
   const k = kilitKesh.get(n);
@@ -37,8 +41,13 @@ const kilidli = async (n) => {
   const d = await melumat(n);
   const v = !!(d && d.parolHash);
   kilitKesh.set(n, { v, t: Date.now() });
+  kilitSaxla();
   return v;
 };
+// Özünə məxsus masalar da telefonda yadda qalır: pəncərə açılanda ən üstdə dərhal görünür
+const SAHIB = "sahibMasalar_" + cari.docId;
+const sahibOxu = () => { try { const x = JSON.parse(localStorage.getItem(SAHIB)); return Array.isArray(x) ? x.map(String) : []; } catch (e) { return []; } };
+const sahibYaz = (a) => { try { localStorage.setItem(SAHIB, JSON.stringify(a)); } catch (e) {} };
 // Hər masadakı oğlan/qız sayı son bilinən dəyərlə dərhal görünür, sonra canlı yenilənir
 const sayKesh = new Map();
 
@@ -116,7 +125,6 @@ const yer = document.createElement("div"); yer.id = "modalYer"; document.body.ap
 yer.addEventListener("pointerdown", (e) => {
   const t = e.target.closest && e.target.closest(".btn-get,.btn-tes,.btn-yar,.sira,.mx");
   if (!t || !yer.contains(t)) return;
-  if (navigator.vibrate) navigator.vibrate(8);
   const r = t.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2;
   const s = document.createElement("span");
   s.className = "rpl";
@@ -133,6 +141,8 @@ yer.addEventListener("click", (e) => {
   e.preventDefault();
   if (typeof s.onclick === "function") s.onclick(e);
 }, true);
+// Pəncərənin kənarındakı boş yerə toxunanda bağlanır
+yer.addEventListener("click", (e) => { if (e.target === yer) bagla(); });
 let unsubs = [];
 const ac = (html) => { bagla(); yer.innerHTML = html; yer.style.display = "block"; };
 function bagla() { unsubs.forEach((f) => f()); unsubs = []; sonYenile = null; yer.style.display = "none"; yer.innerHTML = ""; }
@@ -142,21 +152,35 @@ function nomreOxu(v) {
   return String(+v);
 }
 
-// ---------- Geri sayım düyməsi (9 → 0) ----------
+// ---------- Masa dəyiş düyməsi: ikon + geri sayım (9 → 0) ----------
 const yBtn = [...document.querySelectorAll("#ustPanel .ub")].pop();
-const ikon = yBtn.innerHTML;
-let sayac = 9;
-const goster = () => { yBtn.innerHTML = sayac > 0 ? `<b class="gerisay">${sayac}</b>` : ikon; };
+const IKON = '<svg viewBox="-4 -4 240 222" style="width:4.6vw;height:auto;display:block;filter:drop-shadow(0 0 .5vw rgba(255,255,255,.55))" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">' +
+  '<path d="M12 74C38 22 130 -4 176 52"/><path d="M232 10V98L172 72Z"/>' +
+  '<g transform="rotate(180 118 108)"><path d="M12 74C38 22 130 -4 176 52"/><path d="M232 10V98L172 72Z"/></g></svg>';
+if (getComputedStyle(yBtn).position === "static") yBtn.style.position = "relative";
+yBtn.innerHTML = '<span class="ikw">' + IKON + '</span><b class="gerisay" style="display:none"></b>';
+const ikw = yBtn.querySelector(".ikw"), gs = yBtn.querySelector(".gerisay");
+let sayac = 9, sayT = null;
+// İkon yerində qalır, üstündə rəqəm görünür; 0 olanda yenidən dəyişmək olar
+const goster = () => {
+  ikw.classList.toggle("sol", sayac > 0);
+  gs.style.display = sayac > 0 ? "flex" : "none";
+  gs.textContent = sayac;
+};
+function baslatSayac() {
+  clearInterval(sayT);
+  sayac = 9; goster();
+  sayT = setInterval(() => { sayac--; goster(); if (sayac <= 0) clearInterval(sayT); }, 1000);
+}
 goster();
 const gozle = setInterval(() => {
-  if ($("oyunEkrani").classList.contains("aktiv")) {
-    clearInterval(gozle);
-    const t = setInterval(() => { sayac--; goster(); if (sayac <= 0) clearInterval(t); }, 1000);
-  }
+  if ($("oyunEkrani").classList.contains("aktiv")) { clearInterval(gozle); baslatSayac(); }
 }, 200);
 yBtn.onclick = () => { if (sayac > 0) return; deyisModal(); };
+
 // ---------- Masanı dəyiş ----------
 export async function deyisModal() {
+  // 1) Karkas dərhal çəkilir (şəbəkə gözlənmir)
   ac(`<div class="mk"><button class="mx" id="mX">✕</button><h2>Masanı dəyiş</h2><div class="mb" id="mB">
     <div class="et">🔍 Masa axtar</div>
     <div class="arama"><input id="mAra" type="text" inputmode="numeric" placeholder="Masa nömrəsi, məs. 666"><button class="btn-get" id="mGet">Get</button></div>
@@ -165,29 +189,19 @@ export async function deyisModal() {
     <div class="bolum">Dostlar və tanışlar</div><div class="siyahi" id="mDost"></div>
     <div class="bolum">Ən son baş çəkmiş olduğun masalar</div><div class="siyahi" id="mSiya"></div></div></div>`);
   $("mX").onclick = bagla;
-  $("mB").addEventListener("scroll", () => $("mB").parentElement.classList.toggle("kay", $("mB").scrollTop > 4));
+  $("mB").addEventListener("scroll", () => $("mB").parentElement.classList.toggle("kay", $("mB").scrollTop > 4), { passive: true });
   $("mGet").onclick = () => masayaGir($("mAra").value);
   $("mAra").addEventListener("keydown", (e) => { if (e.key === "Enter") masayaGir($("mAra").value); });
   $("mTes").onclick = tesadufi;
   $("mYar").onclick = yaratModal;
-  unsubs.push(dostBolmesi($("mDost"), masayaGir, IK_O, IK_Q));
 
-  // Son masalar telefondakı siyahıdan DƏRHAL çəkilir (şəbəkəni gözləmir), canlı sayılar sonra gəlir
-  const box = $("mSiya");
-  const satirlar = new Map();
-  function masaSirasi(n, basa) {
-    n = String(n);
-    const var_ = satirlar.get(n);
-    if (var_) { if (basa) box.prepend(var_); return; }
-    const r = document.createElement("div"); r.className = "sira";
-    r.innerHTML = `<div class="mtum"><img src="images/butulka/butulka.png" alt=""></div><div class="mad"><span class="kl"></span>#${n}</div>` +
-      `<div class="say"><span>${IK_O}<b class="so">0</b></span><span>${IK_Q}<b class="sq">0</b></span></div>`;
-    const k0 = sayKesh.get(n);
-    if (k0) { r.querySelector(".so").textContent = k0.o; r.querySelector(".sq").textContent = k0.q; }
-    r.onclick = () => masayaGir(n);
-    satirlar.set(n, r);
-    if (basa) box.prepend(r); else box.appendChild(r);
-    kilidli(n).then((k) => { if (k) r.querySelector(".kl").textContent = "🔒 "; });
+  const dostBox = $("mDost"), box = $("mSiya");
+  const satirlar = new Map(), bekle = [];
+  let hazir = false;
+
+  const kilitGoster = (r, k) => { r.querySelector(".kl").textContent = k ? "🔒 " : ""; };
+  // Canlı say: ağır iş ilk çəkilişdən SONRA qoşulur
+  function canli(n, r) {
     unsubs.push(onValue(ref(rtdb, `masalar/${n}/oturacaqlar`), (s) => {
       const v = Object.values(s.val() || {}).filter(Boolean);
       const q = v.filter((x) => x.cins === "q").length, o = v.filter((x) => x.cins !== "q").length;
@@ -196,16 +210,51 @@ export async function deyisModal() {
       r.querySelector(".so").textContent = o;
     }));
   }
-  sonlar().forEach((n) => masaSirasi(n));
-  sonYenile = () => { if (box.isConnected) sonlar().forEach((n) => masaSirasi(n)); };
+  function masaSirasi(n, basa) {
+    n = String(n);
+    const var_ = satirlar.get(n);
+    if (var_) { if (basa && box.firstChild !== var_) box.prepend(var_); return; }
+    const r = document.createElement("div"); r.className = "sira";
+    r.innerHTML = `<div class="mtum"><img src="images/butulka/butulka.png" alt=""></div><div class="mad"><span class="kl"></span>#${n}</div>` +
+      `<div class="say"><span>${IK_O}<b class="so">0</b></span><span>${IK_Q}<b class="sq">0</b></span></div>`;
+    const k0 = sayKesh.get(n);
+    if (k0) { r.querySelector(".so").textContent = k0.o; r.querySelector(".sq").textContent = k0.q; }
+    kilitGoster(r, kilitOxu(n));            // telefondakı yaddaşdan: sıçrayış olmasın
+    r.onclick = () => masayaGir(n);
+    satirlar.set(n, r);
+    if (basa) box.prepend(r); else box.appendChild(r);
+    if (hazir) { canli(n, r); kilidli(n).then((k) => { if (r.isConnected) kilitGoster(r, k); }); }
+    else bekle.push([n, r]);
+  }
 
-  // Özünə məxsus (alınmış) masalar ən üstdə: bu sorğu gec gəlsə də pəncərə artıq açıqdır
-  try {
-    const q = await getDocs(query(collection(fsdb, "masalar"), where("sahib", "==", cari.docId)));
-    const sahibler = q.docs.filter((d) => d.data().bitis > Date.now()).map((d) => d.id);
+  // Son 5 masa + özünə məxsus masalar (telefondan dərhal), ən üstdə alınmış masa
+  const son5 = () => sonlar().slice(0, 5);
+  son5().forEach((n) => masaSirasi(n));
+  sahibOxu().slice().reverse().forEach((n) => masaSirasi(n, true));
+  sonYenile = () => { if (box.isConnected) son5().forEach((n) => masaSirasi(n)); };
+
+  // 2) Ağır işlər ilk çəkilişdən sonra: pəncərə dərhal açılır, donma olmur
+  requestAnimationFrame(() => setTimeout(async () => {
     if (!box.isConnected) return;
-    sahibler.slice().reverse().forEach((n) => masaSirasi(n, true));
-  } catch (e) {}
+    hazir = true;
+    unsubs.push(dostBolmesi(dostBox, masayaGir, IK_O, IK_Q));
+    bekle.splice(0).forEach(([n, r]) => {
+      canli(n, r);
+      kilidli(n).then((k) => { if (r.isConnected) kilitGoster(r, k); });
+    });
+    try {
+      const q = await getDocs(query(collection(fsdb, "masalar"), where("sahib", "==", cari.docId)));
+      const sahibler = q.docs.filter((d) => d.data().bitis > Date.now()).map((d) => d.id);
+      if (!box.isConnected) return;
+      const eski = sahibOxu();
+      sahibYaz(sahibler);
+      sahibler.slice().reverse().forEach((n) => { if (!satirlar.has(n)) masaSirasi(n, true); });
+      // artıq sənin olmayan (müddəti bitmiş) masa yalnız son 5-də deyilsə siyahıdan çıxır
+      eski.filter((n) => !sahibler.includes(n) && !son5().includes(n)).forEach((n) => {
+        const r = satirlar.get(n); if (r) { r.remove(); satirlar.delete(n); }
+      });
+    } catch (e) {}
+  }, 0));
 }
 
 async function masayaGir(v) {
@@ -214,8 +263,9 @@ async function masayaGir(v) {
   if (n === MASA_NOMRESI) {
     // Artıq bu masadayam: pəncərəni bağla və təsadüfi başqa boş yerə keç
     bagla();
+    baslatSayac();   // yer dəyişəndə düymənin üstündə 9 saniyə geri sayım
     Promise.resolve(window.yerDeyis && window.yerDeyis()).then((ok) => {
-      if (ok === false) toast("Bu masada boş yer yoxdur");
+      if (ok === false) { clearInterval(sayT); sayac = 0; goster(); toast("Bu masada boş yer yoxdur"); }
     });
     return;
   }
