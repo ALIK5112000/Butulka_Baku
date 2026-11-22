@@ -25,6 +25,8 @@ const SES_OBJ = SATIN_ALMA_SESI ? Object.assign(new Audio(SATIN_ALMA_SESI), { pr
 const JESTLER = [
   { id: "j1", img: "images/jest/j01.png", w: 12.96, q: 1, a: "pulse" },
   { id: "j2", img: "images/jest/j02.png", w: 11.85, q: 3, a: "shake" },
+  { id: "j47", img: "images/jest/j47.png", w: 14.44, q: 1, a: "shake" },
+  { id: "j48", img: "images/jest/j48.png", w: 17.87, q: 1, a: "float" },
   { id: "j3", img: "images/jest/j03.png", w: 14.81, q: 1, a: "float" },
   { id: "j4", img: "images/jest/j04.png", w: 14.81, q: 1, a: "bounce" },
   { id: "j5", img: "images/jest/j05.png", w: 14.35, q: 1, a: "zoom" },
@@ -67,8 +69,6 @@ const JESTLER = [
   { id: "j44", img: "images/jest/j44.png", w: 17.96, q: 5, a: "bounce" },
   { id: "j45", img: "images/jest/j45.png", w: 11.76, q: 2, a: "zoom" },
   { id: "j46", img: "images/jest/j46.png", w: 16.39, q: 2, a: "pulse" },
-  { id: "j47", img: "images/jest/j47.png", w: 14.44, q: 1, a: "shake" },
-  { id: "j48", img: "images/jest/j48.png", w: 17.87, q: 1, a: "float" },
   { id: "j49", img: "images/jest/j49.png", w: 11.67, q: 1, a: "bounce" },
   { id: "j50", img: "images/jest/j50.png", w: 11.85, q: 1, a: "zoom" },
   { id: "j51", img: "images/jest/j51.png", w: 11.85, q: 1, a: "pulse" },
