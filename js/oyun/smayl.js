@@ -398,18 +398,44 @@ async function jestIsle(g) {
 }
 
 /* ---------- Hərəkət: oyunçunun şəkli üstündə (hamıda görünür) ---------- */
+const AKTIV = {};                                /* uid -> hazırda oynayan jestin idarəsi */
 let oturacaqlar = {}, spin = null;
-onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => { oturacaqlar = s.val() || {}; });
+
+const yerIndeksleri = (o) => {
+  const m = {};
+  for (const k in o) if (o[k] && o[k].uid) m[o[k].uid] = k;
+  return m;
+};
+/* Oyunçu yer dəyişəndə jest onunla getsin (köhnə boş yerdə qalmasın). Qısa gecikmələr: şəkil yeni yerə çəkilənə qədər */
+function yenidenYerlesdir(uid) {
+  [60, 350, 900].forEach((ms) => setTimeout(() => { const h = AKTIV[uid]; if (h) h.pos(); }, ms));
+}
+onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => {
+  const kohne = yerIndeksleri(oturacaqlar);
+  oturacaqlar = s.val() || {};
+  const yeni = yerIndeksleri(oturacaqlar);
+  for (const uid in AKTIV) {
+    if (kohne[uid] !== yeni[uid]) yenidenYerlesdir(uid);
+  }
+});
+window.addEventListener("oyuncuYerDeyisdi", (e) => {
+  if (e.detail && e.detail.uid) yenidenYerlesdir(e.detail.uid);
+});
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/raund/spin"), s => { spin = s.val() || null; });
 
 function fotoTap(uid) {
   const ortalar = document.querySelectorAll("#masa .orta");
   if (spin && spin.qu === uid && ortalar[0] && ortalar[0].classList.contains("goster")) return ortalar[0];
   if (spin && spin.ou === uid && ortalar[1] && ortalar[1].classList.contains("goster")) return ortalar[1];
+  let ehtiyat = null;
   for (const k in oturacaqlar) {
-    if (oturacaqlar[k] && oturacaqlar[k].uid === uid) return document.querySelector("#masa .yer-" + k);
+    if (oturacaqlar[k] && oturacaqlar[k].uid === uid) {
+      const e = document.querySelector("#masa .yer-" + k);
+      if (e && e.classList.contains("dolu")) return e;   /* ekranda həqiqətən dolu görünən yer üstündür */
+      if (e && !ehtiyat) ehtiyat = e;
+    }
   }
-  return null;
+  return ehtiyat;
 }
 
 /* Videodan çıxarılmış animasiyalı jestlər: images/jest/jNN.webp. [müddət(san), sonda qalma(san)] */
@@ -430,20 +456,39 @@ function onyukle() {
   p.then(() => { if (EKSIK.length) toast("images/jest qovluğunda .webp yoxdur: " + EKSIK.join(", "), 12000); });
 }
 
-const AKTIV = {};
-function oyna(uid, g) {
+/* Oyunçunun şəklinin cari yeri (yoxdursa null) */
+function koordinat(uid) {
   const el = fotoTap(uid);
   if (!el) return null;
   const f = el.querySelector(".foto") || el;
   const r = f.getBoundingClientRect();
-  if (!r.width) return null;
+  return r.width ? { r, f } : null;
+}
+
+function oyna(uid, g) {
+  const k0 = koordinat(uid);
+  if (!k0) return null;
+  const r0 = k0.r;
   if (AKTIV[uid]) AKTIV[uid].kill();
   const d = document.createElement("div");
   d.className = "pfj";
-  d.style.cssText = "left:" + r.left + "px;top:" + r.top + "px;width:" + r.width + "px;height:" + r.height + "px;border-radius:" + getComputedStyle(f).borderRadius;
+  d.style.borderRadius = getComputedStyle(k0.f).borderRadius;
   let t1, t2, dead = false, url = null;
-  const h = { kill() { dead = true; clearTimeout(t1); clearTimeout(t2); d.remove(); if (url) URL.revokeObjectURL(url); if (AKTIV[uid] === h) delete AKTIV[uid]; } };
+  const h = {
+    kill() { dead = true; clearTimeout(t1); clearTimeout(t2); d.remove(); if (url) URL.revokeObjectURL(url); if (AKTIV[uid] === h) delete AKTIV[uid]; },
+    /* jesti oyunçunun indiki şəklinin üstünə qoy; oyunçu masadan çıxıbsa jesti sil */
+    pos() {
+      if (dead) return;
+      const k = koordinat(uid);
+      if (!k) { h.kill(); return; }
+      d.style.left = k.r.left + "px";
+      d.style.top = k.r.top + "px";
+      d.style.width = k.r.width + "px";
+      d.style.height = k.r.height + "px";
+    }
+  };
   AKTIV[uid] = h;
+  h.pos();
   const bit = ms => { t1 = setTimeout(() => d.classList.add("out"), Math.max(0, ms - 300)); t2 = setTimeout(h.kill, ms); };
   /* animasiya faylı yoxdursa: statik şəkil + yüngül hərəkət */
   const sade = () => {
@@ -451,7 +496,9 @@ function oyna(uid, g) {
     const dur = { shake: .45, bounce: .8, pulse: .7, zoom: 1, float: 1.4, spin: 1 }[g.a] || .9;
     d.innerHTML = g.img
       ? '<span class="pfj-m" style="width:' + en + '%;animation:pfj-m-' + (g.a || "pulse") + ' ' + dur + 's ease-in-out .28s infinite"><img src="' + g.img + '" alt="" draggable="false"></span>'
-      : '<span style="font-size:' + (r.width * .6) + 'px;line-height:1">' + g.e + '</span>';
+      : '<span style="font-size:' + (r0.width * .6) + 'px;line-height:1">' + g.e + '</span>';
+    h.pos();
+    if (dead) return;
     document.body.appendChild(d);
     bit(3650);
   };
@@ -462,6 +509,8 @@ function oyna(uid, g) {
     if (!b) { sade(); return; }
     url = URL.createObjectURL(b);          /* hər dəfə yeni obyekt: animasiya həmişə əvvəldən başlayır */
     d.innerHTML = '<img class="pfj-a" src="' + url + '" alt="" draggable="false">';
+    h.pos();
+    if (dead) return;
     document.body.appendChild(d);
     bit((ANIM[g.id][0] + ANIM[g.id][1]) * 1000);
   });
