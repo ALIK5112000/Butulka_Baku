@@ -19,13 +19,44 @@ for (let i = 0; i < OTURACAQ_SAYI; i++) {
 }
 
 let aktivOyuncu = null;
-let bərpaGedir = false;
 let sonData = {};
+let oturmusam = false;      // bu səhifədə bir dəfə oturmuşam (yer itərsə dərhal bərpa edək)
+let berpaTimer = null;
+
+// Əməliyyatlar növbə ilə işləyir ki, bir-birinin yerini silməsin (itib-gəlmənin əsas səbəbi bu idi)
+let zencir = Promise.resolve();
+function ardicil(fn) {
+  const p = zencir.then(fn);
+  zencir = p.catch(() => {});
+  return p;
+}
+
+// Son oturduğum yer yadda qalır: geri qayıdanda eyni yerə otursun
+const sonYerOxu = () => {
+  try {
+    const v = sessionStorage.getItem(`sonYer_${MASA_NOMRESI}_${aktivOyuncu && aktivOyuncu.uid}`);
+    return v === null ? null : Number(v);
+  } catch (e) { return null; }
+};
+const sonYerYaz = (i) => {
+  try { sessionStorage.setItem(`sonYer_${MASA_NOMRESI}_${aktivOyuncu && aktivOyuncu.uid}`, String(i)); } catch (e) {}
+};
+
+function qarish(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 function cizdir(data) {
   sonData = data || {};
+  const gorulen = new Set();   // eyni oyunçu iki yerdə görünməsin
   yerler.forEach((d, i) => {
-    const o = sonData[i];
+    let o = sonData[i];
+    if (o && gorulen.has(o.uid)) o = null;
+    if (o) gorulen.add(o.uid);
     d.classList.toggle("dolu", !!o);
     if (o) {
       d.querySelector(".ad").textContent = o.ad;
@@ -36,6 +67,36 @@ function cizdir(data) {
       d.querySelector(".foto").style.backgroundImage = "";
     }
   });
+}
+
+// Oyunçu bazanın cavabını gözləmədən dərhal görünsün
+function yerliGoster(i, oyuncu) {
+  const d = {};
+  for (const k in sonData) if (sonData[k] && sonData[k].uid !== oyuncu.uid) d[k] = sonData[k];
+  d[i] = oyuncu;
+  cizdir(d);
+}
+
+// Yer müvəqqəti itibsə (köhnə bağlantının onDisconnect-i), bərpa olunana qədər oyunçu yerində görünsün
+function gosterData(data) {
+  if (oturmusam && aktivOyuncu && !window.__masaCixir) {
+    const var_ = Object.values(data).some((o) => o && o.uid === aktivOyuncu.uid);
+    if (!var_) {
+      const i = sonYerOxu();
+      if (i !== null && !data[i]) return { ...data, [i]: aktivOyuncu };
+    }
+  }
+  return data;
+}
+
+function yerItdiYoxla(data) {
+  if (!oturmusam || !aktivOyuncu || window.__masaCixir) return;
+  clearTimeout(berpaTimer);
+  const var_ = Object.values(data).some((o) => o && o.uid === aktivOyuncu.uid);
+  if (var_) return;
+  berpaTimer = setTimeout(() => {
+    if (document.visibilityState === "visible") berpa();
+  }, 250);
 }
 
 // Eyni uid-ə aid bütün köhnə yerləri sil (yalnız saxlaDediyin indeks qalsın)
@@ -53,109 +114,142 @@ async function dublikatlariSil(uid, saxlaIndeks = null) {
   }
 }
 
-// Boş yer tapıb oturur. Uğurlu olarsa true qaytarır
-async function yerTut(oyuncu) {
-  await dublikatlariSil(oyuncu.uid, null);
+// Artıq oturduğum yeri saxla (lazım olmasa bazaya yenidən yazma)
+async function saxla(oyuncu, k, movcud) {
+  const r = ref(rtdb, `${yol}/${k}`);
+  oturmusam = true;
+  sonYerYaz(k);
+  yerliGoster(k, oyuncu);
+  const eyni = movcud && ["uid", "ad", "sekil", "vip", "cins"].every((f) => (movcud[f] || "") === (oyuncu[f] || ""));
+  if (!eyni) await set(r, oyuncu);
+  onDisconnect(r).remove().catch(() => {});
+}
+
+// Təsadüfi boş yer tapıb oturur. istisna = bu yerə oturma (yer dəyişəndə köhnə yer)
+async function yerTutIc(oyuncu, istisna) {
+  const hamisi = (await get(ref(rtdb, yol))).val() || {};
+
+  if (istisna === null) {
+    for (const k in hamisi) {
+      if (hamisi[k] && hamisi[k].uid === oyuncu.uid) {
+        await saxla(oyuncu, k, hamisi[k]);
+        return true;
+      }
+    }
+  }
+
+  const bos = [];
   for (let i = 0; i < OTURACAQ_SAYI; i++) {
+    if (!hamisi[i] && String(i) !== String(istisna)) bos.push(i);
+  }
+  qarish(bos);
+  if (istisna === null) {                       // geri qayıdanda əvvəlki yerim boşdursa ora otur
+    const ev = sonYerOxu();
+    const p = bos.indexOf(ev);
+    if (p > 0) { bos.splice(p, 1); bos.unshift(ev); }
+  }
+
+  for (const i of bos) {
     const r = ref(rtdb, `${yol}/${i}`);
     const netice = await runTransaction(r, (cur) => (cur ? undefined : oyuncu));
     if (netice.committed) {
-      await dublikatlariSil(oyuncu.uid, i);
-      onDisconnect(r).remove();
+      oturmusam = true;
+      sonYerYaz(i);
+      yerliGoster(i, oyuncu);                    // dərhal görünsün
+      onDisconnect(r).remove().catch(() => {});
+      await dublikatlariSil(oyuncu.uid, i);      // köhnə yer varsa sil
       return true;
     }
   }
   return false;
 }
+const yerTut = (oyuncu) => yerTutIc(oyuncu, null);
 
 async function oturacaqTap(oyuncu) {
   const hamisi = (await get(ref(rtdb, yol))).val() || {};
-  const ozYerleri = [];
-  for (const k in hamisi) {
-    if (hamisi[k] && hamisi[k].uid === oyuncu.uid) {
-      ozYerleri.push(String(k));
-    }
-  }
+  const oz = Object.keys(hamisi).filter((k) => hamisi[k] && hamisi[k].uid === oyuncu.uid);
 
-  if (ozYerleri.length > 0) {
-    const esasYer = ozYerleri[0];
-    await dublikatlariSil(oyuncu.uid, esasYer);
-    const r = ref(rtdb, `${yol}/${esasYer}`);
-    await set(r, oyuncu);
-    onDisconnect(r).remove();
-    cizdir({ ...sonData, [esasYer]: oyuncu });
+  if (oz.length > 0) {
+    await saxla(oyuncu, oz[0], hamisi[oz[0]]);
+    if (oz.length > 1) await dublikatlariSil(oyuncu.uid, oz[0]);
     return;
   }
 
-  if (!(await novbeBaxis(oyuncu.uid)) && (await yerTut(oyuncu))) {
-    const yenilenmis = (await get(ref(rtdb, yol))).val() || {};
-    cizdir(yenilenmis);
-    return;
-  }
+  if (!(await novbeBaxis(oyuncu.uid)) && (await yerTut(oyuncu))) return;
   novbeBaslat(oyuncu, yerTut);
 }
 
-async function oturacagiYoxlaVeBerpaEt() {
-  if (bərpaGedir) return;
-  bərpaGedir = true;
-  try {
-    if (!aktivOyuncu) {
-      let cari = null;
-      try { cari = JSON.parse(localStorage.getItem("currentUser")); } catch (e) {}
-      if (cari && cari.docId) {
-        const snap = await getDoc(doc(fsdb, "users", cari.docId));
-        if (snap.exists() && !snap.data().banned && !snap.data().gizli) {
-          const p = snap.data();
-          aktivOyuncu = {
-            uid: cari.docId,
-            ad: p.username || "Oyunçu",
-            sekil: p.avatar || "",
-            vip: vipMi(p),
-            cins: cinsTap(p.gender)
-          };
-        }
-      }
+async function aktivOyuncuHazirla() {
+  if (aktivOyuncu) return;
+  let cari = null;
+  try { cari = JSON.parse(localStorage.getItem("currentUser")); } catch (e) {}
+  if (cari && cari.docId) {
+    const snap = await getDoc(doc(fsdb, "users", cari.docId));
+    if (snap.exists() && !snap.data().banned && !snap.data().gizli) {
+      const p = snap.data();
+      aktivOyuncu = {
+        uid: cari.docId,
+        ad: p.username || "Oyunçu",
+        sekil: p.avatar || "",
+        vip: vipMi(p),
+        cins: cinsTap(p.gender)
+      };
     }
-    if (!aktivOyuncu) return;
-
-    const hamisi = (await get(ref(rtdb, yol))).val() || {};
-    const ozYerleri = Object.keys(hamisi).filter((k) => hamisi[k] && hamisi[k].uid === aktivOyuncu.uid);
-
-    if (ozYerleri.length > 0) {
-      const esasYer = ozYerleri[0];
-      await dublikatlariSil(aktivOyuncu.uid, esasYer);
-      const r = ref(rtdb, `${yol}/${esasYer}`);
-      await set(r, aktivOyuncu);
-      onDisconnect(r).remove();
-    } else {
-      await oturacaqTap(aktivOyuncu);
-    }
-
-    const son = (await get(ref(rtdb, yol))).val() || {};
-    cizdir(son);
-  } catch (e) {
-    // qısamüddətli şəbəkə kəsintisində səssiz keç
-  } finally {
-    bərpaGedir = false;
   }
 }
 
+// Yerim itibsə bərpa et (növbə ilə, başqa əməliyyatla toqquşmasın)
+function berpa() {
+  return ardicil(async () => {
+    if (window.__masaCixir) return;
+    try {
+      await aktivOyuncuHazirla();
+      if (!aktivOyuncu) return;
+      await oturacaqTap(aktivOyuncu);
+    } catch (e) {
+      // qısamüddətli şəbəkə kəsintisində səssiz keç
+    }
+  });
+}
+
+// Masada yerimi dəyiş: təsadüfi başqa boş yerə keç (dostun masasındayamsa)
+export function yerDeyis() {
+  return ardicil(async () => {
+    try {
+      await aktivOyuncuHazirla();
+      if (!aktivOyuncu) return false;
+      const hamisi = (await get(ref(rtdb, yol))).val() || {};
+      const oz = Object.keys(hamisi).filter((k) => hamisi[k] && hamisi[k].uid === aktivOyuncu.uid);
+      if (!oz.length) return await yerTutIc(aktivOyuncu, null);
+      return await yerTutIc(aktivOyuncu, oz[0]);
+    } catch (e) {
+      return false;
+    }
+  });
+}
+window.yerDeyis = yerDeyis;
+
+let yoxlaTimer = null;
 function geriQayidandaYoxla() {
-  if (document.visibilityState === "visible") {
-    oturacagiYoxlaVeBerpaEt();
-    setTimeout(() => {
-      if (document.visibilityState === "visible") oturacagiYoxlaVeBerpaEt();
-    }, 700);
-  }
+  if (document.visibilityState !== "visible") return;
+  clearTimeout(yoxlaTimer);
+  yoxlaTimer = setTimeout(() => {
+    berpa();
+    // köhnə bağlantının gecikmiş onDisconnect-i yeri silə bilər: bir də yoxla
+    setTimeout(() => { if (document.visibilityState === "visible") berpa(); }, 1500);
+  }, 150);
 }
 
 document.addEventListener("visibilitychange", geriQayidandaYoxla);
-window.addEventListener("pageshow", geriQayidandaYoxla);
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) window.__masaCixir = false;
+  geriQayidandaYoxla();
+});
 window.addEventListener("focus", geriQayidandaYoxla);
 
-async function katil(cari) {
+async function katil(cari, profilP) {
   try {
-    const snap = await getDoc(doc(fsdb, "users", cari.docId));
+    const snap = await (profilP || getDoc(doc(fsdb, "users", cari.docId)));
     if (!snap.exists()) { location.href = "index.html"; return; }
     const p = snap.data();
 
@@ -168,15 +262,14 @@ async function katil(cari) {
 
     if (p.gizli) return;
 
-    const oyuncu = {
+    aktivOyuncu = {
       uid: cari.docId,
       ad: p.username || "Oyunçu",
       sekil: p.avatar || "",
       vip: vipMi(p),
       cins: cinsTap(p.gender)
     };
-    aktivOyuncu = oyuncu;
-    await oturacaqTap(oyuncu);
+    await ardicil(() => oturacaqTap(aktivOyuncu));
   } catch (e) {
     alert("Masa xətası: " + e.message);
   }
@@ -188,14 +281,24 @@ export async function masaniBasla() {
   if (!cari || !cari.docId) { location.href = "index.html"; return; }
 
   try {
+    const profilP = getDoc(doc(fsdb, "users", cari.docId));   // profil paralel yüklənir
+    profilP.catch(() => {});
+
     if (!(await girisIcazesi(MASA_NOMRESI))) {
       alert("Bu masa parolludur");
       const g = sessionStorage.getItem("sonMasa") || "511";
       location.replace("oyun.html?masa=" + (g === MASA_NOMRESI ? "511" : g));
       return;
     }
-    await new Promise((res) => onValue(ref(rtdb, yol), (s) => { cizdir(s.val() || {}); res(); }));
-    katil(cari);
+
+    const ilk = new Promise((res) => onValue(ref(rtdb, yol), (s) => {
+      const data = s.val() || {};
+      cizdir(gosterData(data));
+      yerItdiYoxla(data);
+      res();
+    }));
+    katil(cari, profilP);      // masa məlumatını gözləmədən oturmağa başla
+    await ilk;
   } catch (e) {
     alert("Masa xətası: " + e.message);
   }
