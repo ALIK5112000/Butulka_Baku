@@ -465,6 +465,8 @@ const icinde = (el, x, y) => {
 
 window.addEventListener("click", e => {
   if (ov.classList.contains("open")) return;
+     /* Üstündə pəncərə (Masanı dəyiş, mahnı, mağaza və s.) varsa arxadakı oyunçunun profili açılmasın */
+  if (e.target && e.target.closest && !e.target.closest("#masa, #taxta")) return;
 
   /* ortadakı iki kart: birincisi qız (q), ikincisi oğlan (o) oyunçusudur */
   if (spin) {
