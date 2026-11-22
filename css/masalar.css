@@ -1,26 +1,41 @@
 #modalYer { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.42); overflow-y: auto; }
 .gerisay { font-size: 3.8vw; font-weight: 700; color: #fff; }
 
-/* Masanı dəyiş */
-.mk { position: absolute; left: 10vw; width: 80vw; top: 20vw; background: #fff; border-radius: 6vw; padding: 0 4vw 4vw; box-shadow: 0 2vw 6vw rgba(0,0,0,.3); }
-.mk h2 { text-align: center; color: #b9b9b9; font-size: 4.4vw; font-weight: 700; padding: 7vw 0 5vw; }
-.mx { position: absolute; right: -1.5vw; top: -1.5vw; width: 8.4vw; height: 8.4vw; border: 0; border-radius: 50%; background: #fff; color: #7ac143; font-size: 6vw; line-height: 8vw; box-shadow: 0 .6vw 2vw rgba(0,0,0,.25); }
-.et { color: #b0b0b0; font-size: 3.1vw; margin: 3vw 0 1.6vw; }
-.arama { display: flex; gap: 2.4vw; }
-.arama input { flex: 1; min-width: 0; height: 7.2vw; border: .4vw solid #8a8a8a; border-radius: 1vw; padding: 0 2.4vw; font-size: 3.6vw; outline: 0; }
-.btn-get { width: 10.5vw; border: 0; border-radius: 1vw; background: #f0a74b; color: #fff; font-weight: 700; font-size: 3.4vw; }
-.btn-tes, .btn-yar { display: block; width: 100%; margin-top: 3.5vw; border: 0; border-radius: 2.2vw; color: #fff; font-weight: 700; }
-.btn-tes { height: 10.6vw; background: #f2b068; font-size: 3.7vw; }
-.btn-yar { height: 11vw; background: linear-gradient(90deg, #7b5bd6, #c04aa8); font-size: 3.9vw; }
-.bolum { color: #b0b0b0; font-size: 3.1vw; margin: 5.5vw 0 1.4vw; }
-.siyahi { overflow-y: auto; max-height: 70vw; }
-.sira { display: flex; align-items: center; gap: 3vw; padding: 1.2vw 0; }
-.mtum { flex: none; width: 11vw; height: 11vw; border-radius: 1.2vw; background: #f2b068; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+/* Masanı dəyiş (ölçülər referans videodan götürülüb) */
+.mk { position: absolute; left: 10vw; width: 80vw; top: 28vw; max-height: calc(100vh - 60vw); display: flex; flex-direction: column;
+  background: #fff; border-radius: 4.4vw; padding: 0; box-shadow: 0 2vw 6vw rgba(0,0,0,.3); }
+.mk h2 { flex: none; text-align: center; color: #c4c4c4; font-size: 4.2vw; font-weight: 700; height: 11.6vw; line-height: 11.2vw;
+  border-bottom: .3vw solid transparent; border-radius: 4.4vw 4.4vw 0 0; }
+.mk.kay h2 { border-bottom-color: #ececec; }     /* siyahı sürüşəndə başlığın altında zərif xətt görünür */
+.mb { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 4vw 4vw; border-radius: 0 0 4.4vw 4.4vw; }
+.mx { position: absolute; right: -2.7vw; top: -2.7vw; width: 8.5vw; height: 8.5vw; border: 0; border-radius: 50%; background: #fff; color: #7ac143; font-size: 5.6vw; line-height: 8.5vw; padding: 0; z-index: 3; box-shadow: 0 .6vw 2vw rgba(0,0,0,.25); }
+.et { color: #b0b0b0; font-size: 3.1vw; margin: 2.2vw 0 1.8vw; }
+.arama { display: flex; gap: 2.8vw; }
+.arama input { flex: 1; min-width: 0; height: 6.7vw; border: .4vw solid #8a8a8a; border-radius: 1vw; padding: 0 2.4vw; font-size: 3.6vw; outline: 0; }
+.btn-get { position: relative; overflow: hidden; width: 9.4vw; height: 6.7vw; padding: 0; border: 0; border-radius: 1vw; background: #f0a74b; color: #fff; font-weight: 700; font-size: 3.4vw; }
+.btn-tes, .btn-yar { position: relative; overflow: hidden; display: block; width: 100%; margin-top: 2.8vw; border: 0; border-radius: 2vw; color: #fff; font-weight: 700; padding: 0; }
+.btn-tes { height: 10.7vw; font-size: 3.7vw;
+  background: linear-gradient(#f4b46c, #eda357); box-shadow: inset 0 0 0 .5vw rgba(255,255,255,.28), 0 .3vw .8vw rgba(0,0,0,.12); }
+.btn-yar { height: 10.9vw; margin-top: 4.4vw; font-size: 3.9vw; background: linear-gradient(90deg, #7b5bd6, #c04aa8); }
+.bolum { color: #b0b0b0; font-size: 3.1vw; margin: 5vw 0 1.5vw; }
+.bolum ~ .bolum { margin-top: 2.6vw; padding-top: 3.2vw; border-top: .3vw solid #e6e6e6; }   /* iki siyahı arasında nazik xətt */
+.siyahi { overflow: visible; }
+.sira { position: relative; overflow: hidden; display: flex; align-items: center; gap: 1.4vw; padding: .85vw 0; border-radius: 1.2vw; }
+.mtum { flex: none; width: 10.9vw; height: 10.9vw; border-radius: 1.4vw; background: #f2b068; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .mtum img { height: 9vw; transform: rotate(35deg); }
 .mad { flex: 1; font-size: 3.9vw; color: #222; }
-.say { display: flex; gap: 3vw; color: #9a9a9a; font-size: 3.8vw; }
+.say { display: flex; gap: 3.4vw; color: #9a9a9a; font-size: 3.7vw; }
 .say span { display: flex; align-items: center; gap: 1.2vw; }
-.say svg { width: 5vw; height: 5vw; }
+.say svg { width: 4.2vw; height: 4.2vw; }
+
+/* Toxunanda yayılan dalğa (basılma effekti) */
+.mk button, .sira { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.mk .btn-get:active, .mk .btn-tes:active, .mk .btn-yar:active { filter: brightness(1.08); }
+.mk .mx:active { transform: scale(.9); }
+.sira:active { background: #f1f1f1; }
+.rpl { position: absolute; border-radius: 50%; background: rgba(255,255,255,.5); transform: scale(0); opacity: 1; pointer-events: none; animation: rplAn .55s ease-out forwards; }
+.sira .rpl { background: rgba(0,0,0,.12); }
+@keyframes rplAn { to { transform: scale(1); opacity: 0; } }
 
 /* Masa yarat və parol pəncərələri */
 .mk2 { position: absolute; left: 3vw; right: 3vw; top: 22vw; background: #fff; border-radius: 6.5vw; overflow: hidden; box-shadow: 0 2vw 6vw rgba(0,0,0,.3); }
@@ -38,6 +53,6 @@
 .sahib { margin-top: 4vw; padding: 3vw; border: .4vw dashed #c9bdf0; border-radius: 3vw; background: #f8f5ff; color: #5a3fb3; font-size: 3.5vw; }
 .sahib button { margin-top: 2vw; height: 9vw; padding: 0 4vw; border: 0; border-radius: 4.5vw; background: #7b5bd6; color: #fff; font-weight: 700; font-size: 3.6vw; }
 .coin { width: 4.6vw; height: 4.6vw; vertical-align: -1vw; }
-.dfoto { flex: none; width: 11vw; height: 11vw; border-radius: 1.2vw; background: #ddd url("../images/avatar/nophoto.svg") center/cover no-repeat; }
+.dfoto { flex: none; width: 10.9vw; height: 10.9vw; border-radius: 1.2vw; background: #ddd url("../images/avatar/nophoto.svg") center/cover no-repeat; }
 .bos { color: #b0b0b0; font-size: 3.4vw; padding: 1vw 0 2vw; }
-#mDost { max-height: 50vw; }
+#mDost { max-height: none; }
