@@ -33,6 +33,39 @@ function mesajHedefi(m) {
   return tapilan;
 }
 
+// Yazı xanasına "Ad, " əlavə edir (həmin oyunçuya müraciət).
+// Çatda ada toxunanda da, profil kartındakı mavi məktub düyməsində də bu işləyir.
+function hedefeYaz(ad, uid) {
+  if (!ad) return;
+  if (uid) adUid.set(ad, uid); // oyunçu hələ çatda yazmasa belə mesajın kimə getdiyi bilinsin
+  const mur = ad + ", ";
+  if (!inp.value.startsWith(mur)) inp.value = mur + inp.value;
+  inp.focus();
+}
+window.CatHedef = hedefeYaz;
+
+// Kimsə mənim adıma vurub mənə yazanda çalınan səs (sesler/mesaj.mp3)
+const mesajSesi = new Audio("sesler/mesaj.mp3");
+mesajSesi.preload = "auto";
+let sesHazir = false;
+function sesHazirla() {
+  if (sesHazir) return;
+  sesHazir = true;
+  mesajSesi.muted = true;
+  mesajSesi.play().then(() => { mesajSesi.pause(); mesajSesi.currentTime = 0; mesajSesi.muted = false; }).catch(() => { mesajSesi.muted = false; sesHazir = false; });
+}
+// Brauzer icazəsi üçün ilk toxunuşda səs "hazırlanır" (raund.js-dəki növbə səsi kimi)
+["pointerdown", "touchend", "click"].forEach((o) => document.addEventListener(o, sesHazirla, { passive: true }));
+function mesajSesiCal() {
+  try {
+    mesajSesi.currentTime = 0;
+    const p = mesajSesi.play();
+    if (p && p.catch) p.catch(() => {});
+  } catch (e) {}
+}
+// Çatın ilk yüklənməsi bitənə qədər (köhnə mesajlar gələndə) səs çalınmır
+let catYuklendi = false;
+
 if (cari && cari.docId) {
   onSnapshot(doc(fsdb, "users", cari.docId), (s) => {
     men = s.data();
@@ -218,6 +251,8 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   // mesaj qalın qara yazı ilə görünür. Başqalarının öz aralarındakı yazışması sadə qalır.
   const hed = mesajHedefi(m);
   const menimle = !!(cari && cari.docId && hed && (m.uid === cari.docId || hed === cari.docId));
+  // Mənə yazılan təzə mesaj (başqasından, köhnə tarixçə deyil) → səs dərhal çalınır
+  if (catYuklendi && cari && cari.docId && hed === cari.docId && m.uid !== cari.docId && Date.now() + serverOffset - pushVaxti(s.key) <= 30000) mesajSesiCal();
   g.className = "mgovde mkart" + (m.cins === "q" ? " qiz" : "") + (menimle ? " mene" : "");
   const a = document.createElement("span");
   a.className = "mad";
@@ -226,11 +261,7 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   // Ada toxunanda yazı xanasına "Ad, " əlavə olunur (həmin oyunçuya müraciət üçün)
   if (!cari || m.uid !== cari.docId) {
     a.style.cursor = "pointer";
-    a.onclick = () => {
-      const mur = m.ad + ", ";
-      if (!inp.value.startsWith(mur)) inp.value = mur + inp.value;
-      inp.focus();
-    };
+    a.onclick = () => hedefeYaz(m.ad, m.uid);
   }
   const t = document.createElement("span");
   t.textContent = m.metn;
@@ -244,6 +275,9 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
   qutu.scrollTop = qutu.scrollHeight;
 });
+
+// Çatın ilk yükü (son mesajlar) gəlib bitəndən sonra gələn mesajlar "təzə" sayılır
+onValue(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), () => { catYuklendi = true; }, { onlyOnce: true });
 
 function gonder() {
   const metn = inp.value.trim();
