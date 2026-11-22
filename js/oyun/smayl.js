@@ -87,19 +87,21 @@ const JESTLER = [
 const CSS = `
 .sp-root{display:none}
 .sp-root.open{display:block}
+.sp-root,.sp-root *,.sp-t,.sp-fly,.sp-plus-n,.pfj,.pfj *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.sp-root img{pointer-events:none;-webkit-user-drag:none}
 .sp-top{position:fixed;left:0;right:0;z-index:9990;background:#fff;display:flex;align-items:center;padding:0 3.9vw;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
 .sp-av{width:7.4vw;height:7.4vw;border-radius:50%;background:#3b8fe0;border:0;padding:0;display:flex;align-items:center;justify-content:center;flex:none}
 .sp-av svg{width:4.4vw;height:4.4vw}
-.sp-ttl{flex:1;margin-left:3.2vw;font:400 3.9vw/1.2 Roboto,Arial,sans-serif;color:#a8a8a8}
-.sp-bal{display:flex;align-items:center;gap:1.4vw;height:8.8vw;padding:0 1.2vw 0 1.6vw;border:.3vw solid #9cc454;border-radius:5vw;background:#f4f9e8}
-.sp-bal img.sm{width:4.8vw;height:4.8vw;display:block}
+.sp-ttl{flex:1;margin-left:1.4vw;font:400 3.63vw/1.2 Roboto,Arial,sans-serif;color:#cbcbcb}
+.sp-bal{position:relative;box-sizing:border-box;display:flex;align-items:center;gap:.75vw;height:6.5vw;padding:0 2.7vw 0 1vw;margin-right:.45vw;border:.2vw solid #a9bd78;border-radius:4vw;background:#fdfef8}
+.sp-bal img.sm{width:4.5vw;height:4.5vw;display:block}
 .sp-bal{cursor:pointer}
-.sp-bal b{font:700 4.2vw/1 Roboto,Arial,sans-serif;color:#222}
-.sp-plus{width:6.4vw;height:6.4vw;border-radius:50%;background:#7cc92f;border:0;padding:0;display:flex;align-items:center;justify-content:center}
-.sp-plus svg{width:3.6vw;height:3.6vw}
+.sp-bal b{font:700 3.5vw/1 Roboto,Arial,sans-serif;color:#222}
+.sp-plus{position:absolute;right:-1.85vw;top:50%;margin-top:-1.85vw;width:3.7vw;height:3.7vw;border-radius:50%;background:#a4c751;border:0;padding:0;display:flex;align-items:center;justify-content:center}
+.sp-plus svg{width:2.2vw;height:2.2vw}
 .sp-list{position:fixed;left:0;right:0;bottom:0;z-index:9990;background:#fff;overflow-y:auto;padding:2vw 0 10vw;box-sizing:border-box;font-family:Roboto,Arial,sans-serif}
 .sp-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
-.sp-cell{display:flex;flex-direction:column;align-items:center;padding:2.2vw 0 2.6vw}
+.sp-cell{display:flex;flex-direction:column;align-items:center;padding:2.2vw 0 3.25vw}
 .sp-cell:active .sp-e{transform:scale(.9)}
 .sp-e{height:15vw;display:flex;align-items:center;justify-content:center;font-size:11.5vw;line-height:1;transition:transform .12s}
 .sp-e img{height:auto;max-width:none;display:block;-webkit-user-drag:none}
@@ -192,6 +194,7 @@ root.innerHTML =
   '<div class="sp-shop"><div class="sp-sh">' + DECO + '<button class="sp-sx" aria-label="Bağla"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#7d5fd0" stroke-width="3.200" stroke-linecap="round"/></svg></button>' +
     '<h3>Jeton mağazası</h3><p>Bonus ürək qarşılığında</p><div class="sp-pk"></div></div></div>';
 document.body.appendChild(root);
+["selectstart", "contextmenu", "dragstart"].forEach(n => root.addEventListener(n, e => e.preventDefault()));
 
 const $ = s => root.querySelector(s);
 const grid = $(".sp-grid"), shop = $(".sp-shop");
