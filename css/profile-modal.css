@@ -21,6 +21,9 @@
 .pk-row{display:flex;align-items:center;gap:2.8vw;height:6.9vw;white-space:nowrap}
 .pk-row .ic{display:flex;align-items:center;justify-content:center;width:6.4vw;margin-right:-1.1vw;font-size:5.4vw;line-height:1}
 .pk-row .ic svg{width:6vw;height:6vw}
+/* ürək şəkilləri: tək ürək 5.5vw, cüt ürək 6vw (referans şəkilə görə) */
+.pk-row .ic img{width:5.5vw!important;height:auto!important;display:block}
+.pk-row:nth-child(4) .ic img{width:6vw!important}
 .pk-row b{font:700 3.6vw/1 Roboto,Arial,sans-serif}
 .pk-row .rk{font:400 2.6vw/1 Roboto,Arial,sans-serif;color:#9a9a9a}
 .pk-k b{color:#d2381a}.pk-m b{color:#b0508f}.pk-c b{color:#f08a00}
@@ -33,7 +36,7 @@
 .pk-uinfo{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;min-width:0}
 .pk-name{font:400 3.7vw/1.1 Roboto,Arial,sans-serif;color:#555;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pk-heart{display:flex;align-items:center;gap:2vw}
-.pk-heart img{width:6.4vw;height:auto;margin-right:2.1vw}
+.pk-heart img{width:5.5vw!important;height:auto!important;margin-right:2.1vw}
 .pk-heart b{font:700 3.7vw/1 Roboto,Arial,sans-serif;color:#222}
 .pk-heart .rk{font:400 2.8vw/1 Roboto,Arial,sans-serif;color:#9a9a9a}
 .pk-follow{background:#7cc92f;color:#fff;border:0;border-radius:.5vw;width:20.8vw;height:6.3vw;font:400 3.3vw/1 Roboto,Arial,sans-serif;padding:0}
