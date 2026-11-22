@@ -29,6 +29,16 @@ const JESTLER = [
   { id: "j48", img: "images/jest/j48.png", w: 17.87, q: 1, a: "float" },
   { id: "j50", img: "images/jest/j50.png", w: 11.85, q: 1, a: "zoom" },
   { id: "j54", img: "images/jest/j54.png", w: 11.67, q: 1, a: "bounce" },
+  { id: "j57", img: "images/jest/j57.png", w: 12.13, q: 1, a: "shake" },
+  { id: "j53", img: "images/jest/j53.png", w: 11.85, q: 1, a: "float" },
+  { id: "j58", img: "images/jest/j58.png", w: 11.85, q: 1, a: "float" },
+  { id: "j49", img: "images/jest/j49.png", w: 11.67, q: 1, a: "bounce" },
+  { id: "j51", img: "images/jest/j51.png", w: 11.85, q: 1, a: "pulse" },
+  { id: "j52", img: "images/jest/j52.png", w: 11.85, q: 1, a: "shake" },
+  { id: "j59", img: "images/jest/j59.png", w: 11.76, q: 1, a: "bounce" },
+  { id: "j55", img: "images/jest/j55.png", w: 14.91, q: 1, a: "zoom" },
+  { id: "j56", img: "images/jest/j56.png", w: 14.63, q: 1, a: "pulse" },
+  { id: "j61", img: "images/jest/j61.png", w: 16.2, q: 1, a: "pulse" }
   { id: "j3", img: "images/jest/j03.png", w: 14.81, q: 1, a: "float" },
   { id: "j4", img: "images/jest/j04.png", w: 14.81, q: 1, a: "bounce" },
   { id: "j5", img: "images/jest/j05.png", w: 14.35, q: 1, a: "zoom" },
@@ -71,17 +81,7 @@ const JESTLER = [
   { id: "j44", img: "images/jest/j44.png", w: 17.96, q: 5, a: "bounce" },
   { id: "j45", img: "images/jest/j45.png", w: 11.76, q: 2, a: "zoom" },
   { id: "j46", img: "images/jest/j46.png", w: 16.39, q: 2, a: "pulse" },
-  { id: "j49", img: "images/jest/j49.png", w: 11.67, q: 1, a: "bounce" },
-  { id: "j51", img: "images/jest/j51.png", w: 11.85, q: 1, a: "pulse" },
-  { id: "j52", img: "images/jest/j52.png", w: 11.85, q: 1, a: "shake" },
-  { id: "j53", img: "images/jest/j53.png", w: 11.85, q: 1, a: "float" },
-  { id: "j55", img: "images/jest/j55.png", w: 14.91, q: 1, a: "zoom" },
-  { id: "j56", img: "images/jest/j56.png", w: 14.63, q: 1, a: "pulse" },
-  { id: "j57", img: "images/jest/j57.png", w: 12.13, q: 1, a: "shake" },
-  { id: "j58", img: "images/jest/j58.png", w: 11.85, q: 1, a: "float" },
-  { id: "j59", img: "images/jest/j59.png", w: 11.76, q: 1, a: "bounce" },
   { id: "j60", img: "images/jest/j60.png", w: 11.85, q: 1, a: "zoom" },
-  { id: "j61", img: "images/jest/j61.png", w: 16.2, q: 1, a: "pulse" }
 ];
 
 const CSS = `
