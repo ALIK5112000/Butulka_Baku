@@ -189,6 +189,9 @@ window.addEventListener("resize", () => { if (root.classList.contains("open")) y
 
 function ac(uid) {
   if (!uid || uid === MEN) return;
+  /* "Masanı dəyiş" pəncərəsi (dost/masa siyahısı) açıqkən hədiyyə paneli açılmasın */
+  const my = document.getElementById("modalYer");
+  if (my && getComputedStyle(my).display !== "none") return;
   if (uUnsub) { uUnsub(); uUnsub = null; }
   if (!root.classList.contains("open")) { isaret.clear(); tray.classList.remove("open"); }
   hedef = uid; sec = null; sendBtn.style.display = "none";
@@ -296,8 +299,15 @@ function fotoTap(uid) {
   const ortalar = document.querySelectorAll("#masa .orta");
   if (spin && spin.qu === uid && ortalar[0] && ortalar[0].classList.contains("goster")) return ortalar[0];
   if (spin && spin.ou === uid && ortalar[1] && ortalar[1].classList.contains("goster")) return ortalar[1];
-  for (const k in oturacaqlar) if (oturacaqlar[k] && oturacaqlar[k].uid === uid) return document.querySelector("#masa .yer-" + k);
-  return null;
+  let ehtiyat = null;
+  for (const k in oturacaqlar) {
+    if (oturacaqlar[k] && oturacaqlar[k].uid === uid) {
+      const e = document.querySelector("#masa .yer-" + k);
+      if (e && e.classList.contains("dolu")) return e;   /* ekranda həqiqətən dolu görünən yer üstündür */
+      if (e && !ehtiyat) ehtiyat = e;
+    }
+  }
+  return ehtiyat;
 }
 const merkez = el => {
   const r = (el.querySelector(".foto") || el).getBoundingClientRect();
