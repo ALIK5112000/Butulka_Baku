@@ -99,7 +99,7 @@ if (cari && cari.docId) {
     const gozle = !qiz || idx.length - qiz === 0;
     const yazi = $("gozleYazi");
     yazi.style.display = gozle ? "block" : "none";
-    yazi.textContent = "Oyuna başlamaq üçün " + (!qiz ? "qızları" : "oğlanları") + " gözləyirik";
+    yazi.innerHTML = "Oyuna başlamaq üçün<br>" + (!qiz ? "qızları" : "oğlanları") + " gözləyirik";
 
     const sp = raund && raund.spin;
     const spOK = raund && yerler[raund.sp] && yerler[raund.sp].uid === raund.spu;
