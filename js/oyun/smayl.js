@@ -126,10 +126,18 @@ const CSS = `
 .sp-plus-n{position:fixed;z-index:10011;pointer-events:none;font:700 5vw/1 Roboto,Arial,sans-serif;color:#ffd54a;text-shadow:0 .3vw .8vw rgba(0,0,0,.55);will-change:transform,opacity}
 .sp-t{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
 .pfj{position:fixed;z-index:9000;pointer-events:none;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.pfj img{display:block;height:auto;max-width:96%;max-height:96%;-webkit-user-drag:none;animation:pfj-in .28s cubic-bezier(.2,1.4,.4,1) both}
+.pfj-m{display:block;transform-origin:50% 60%;will-change:transform}
+.pfj-m img{display:block;width:100%;height:auto;-webkit-user-drag:none;animation:pfj-in .28s cubic-bezier(.2,1.4,.4,1) both}
 .pfj.out{animation:pfj-out .3s ease forwards}
+.pfj .pfj-a{display:block;width:100%;height:100%;object-fit:contain;-webkit-user-drag:none}
 @keyframes pfj-in{0%{transform:scale(.25);opacity:0}100%{transform:scale(1);opacity:1}}
 @keyframes pfj-out{to{opacity:0;transform:scale(.9)}}
+@keyframes pfj-m-bounce{0%,100%{transform:translateY(6%) scale(1.05,.94)}50%{transform:translateY(-8%) scale(.96,1.05)}}
+@keyframes pfj-m-shake{0%,100%{transform:rotate(0)}20%{transform:rotate(-12deg)}40%{transform:rotate(12deg)}60%{transform:rotate(-9deg)}80%{transform:rotate(9deg)}}
+@keyframes pfj-m-float{0%,100%{transform:translateY(7%) rotate(-4deg)}50%{transform:translateY(-7%) rotate(4deg)}}
+@keyframes pfj-m-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@keyframes pfj-m-zoom{0%,100%{transform:scale(.92)}50%{transform:scale(1.2)}}
+@keyframes pfj-m-spin{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg)}}
 `;
 const st = document.createElement("style");
 st.textContent = CSS;
@@ -220,6 +228,7 @@ let balUnsub = null, balNow = 0, bekle = 0;
 function ac() {
   if (!MEN) return;
   yerlesdir();
+  onyukle();
   root.classList.add("open");
   if (!balUnsub) balUnsub = onSnapshot(doc(fsdb, "users", MEN), s => {
     balNow = num((s.data() || {}).smileBal);
@@ -400,6 +409,22 @@ function fotoTap(uid) {
   return null;
 }
 
+/* Videodan çıxarılmış animasiyalı jestlər: images/jest/jNN.webp. [müddət(san), sonda qalma(san)] */
+const ANIM = {"j01":[5.2,0.15],"j02":[3.4,0.9],"j03":[3.15,0.9],"j04":[3.65,0.9],"j05":[3.05,0.9],"j06":[4.4,0.9],"j07":[2.7,0.9],"j08":[3.3,0.9],"j09":[3.7,0.9],"j10":[3.0,0.9],"j11":[3.35,0.9],"j12":[3.2,0.9],"j13":[2.85,0.9],"j14":[2.45,0.9],"j15":[3.9,0.9],"j16":[3.85,0.9],"j17":[2.85,0.9],"j18":[3.25,0.9],"j19":[4.25,0.9],"j20":[3.45,0.9],"j21":[4.1,0.9],"j22":[4.65,0.9],"j23":[5.0,0.9],"j24":[5.1,0.9],"j25":[5.15,0.9],"j26":[4.2,0.9],"j27":[3.65,0.9],"j28":[3.1,0.9],"j29":[2.7,0.9],"j32":[2.9,0.9],"j33":[2.1,0.9],"j34":[3.75,0.9],"j35":[3.0,0.9],"j36":[4.15,0.9],"j37":[3.85,0.9],"j38":[5.1,0.9],"j39":[5.2,0.9],"j40":[4.45,0.9],"j41":[5.15,0.9],"j42":[4.75,0.9],"j43":[5.15,0.15],"j44":[4.0,0.9],"j45":[2.65,0.9],"j46":[3.35,0.9],"j47":[3.25,0.9],"j48":[3.6,0.9],"j49":[3.1,0.9],"j50":[6.35,0.15],"j51":[2.85,0.9],"j52":[3.1,0.9],"j53":[3.65,0.9],"j54":[4.0,0.9],"j55":[1.8,0.9],"j56":[2.65,0.9],"j57":[4.7,0.9],"j58":[3.75,0.9],"j59":[4.75,0.15],"j60":[5.0,0.9],"j61":[3.1,0.9]};
+const BL = {};
+function animBlob(g) {
+  if (!ANIM[g.id] || !g.img) return null;
+  if (!BL[g.id]) BL[g.id] = fetch(g.img.replace(/\.png$/, ".webp")).then(r => { if (!r.ok) throw 0; return r.blob(); }).catch(() => null);
+  return BL[g.id];
+}
+let onyukluDone = false;
+function onyukle() {
+  if (onyukluDone) return;
+  onyukluDone = true;
+  let p = Promise.resolve();
+  JESTLER.forEach(g => { p = p.then(() => animBlob(g)); });
+}
+
 const AKTIV = {};
 function oyna(uid, g) {
   const el = fotoTap(uid);
@@ -411,16 +436,30 @@ function oyna(uid, g) {
   const d = document.createElement("div");
   d.className = "pfj";
   d.style.cssText = "left:" + r.left + "px;top:" + r.top + "px;width:" + r.width + "px;height:" + r.height + "px;border-radius:" + getComputedStyle(f).borderRadius;
-  const en = Math.min(96, 62 * (g.w || 11.85) / 11.85);
-  d.innerHTML = g.img
-    ? '<img src="' + g.img + '" alt="" draggable="false" style="width:' + en + '%">'
-    : '<span style="font-size:' + (r.width * .6) + 'px;line-height:1">' + g.e + '</span>';
-  document.body.appendChild(d);
-  let t1, t2;
-  const h = { kill() { clearTimeout(t1); clearTimeout(t2); d.remove(); if (AKTIV[uid] === h) delete AKTIV[uid]; } };
+  let t1, t2, dead = false, url = null;
+  const h = { kill() { dead = true; clearTimeout(t1); clearTimeout(t2); d.remove(); if (url) URL.revokeObjectURL(url); if (AKTIV[uid] === h) delete AKTIV[uid]; } };
   AKTIV[uid] = h;
-  t1 = setTimeout(() => d.classList.add("out"), 3300);
-  t2 = setTimeout(h.kill, 3650);
+  const bit = ms => { t1 = setTimeout(() => d.classList.add("out"), Math.max(0, ms - 300)); t2 = setTimeout(h.kill, ms); };
+  /* animasiya faylı yoxdursa: statik şəkil + yüngül hərəkət */
+  const sade = () => {
+    const en = Math.min(80, 62 * (g.w || 11.85) / 11.85);
+    const dur = { shake: .45, bounce: .8, pulse: .7, zoom: 1, float: 1.4, spin: 1 }[g.a] || .9;
+    d.innerHTML = g.img
+      ? '<span class="pfj-m" style="width:' + en + '%;animation:pfj-m-' + (g.a || "pulse") + ' ' + dur + 's ease-in-out .28s infinite"><img src="' + g.img + '" alt="" draggable="false"></span>'
+      : '<span style="font-size:' + (r.width * .6) + 'px;line-height:1">' + g.e + '</span>';
+    document.body.appendChild(d);
+    bit(3650);
+  };
+  const bp = animBlob(g);
+  if (!bp) { sade(); return h; }
+  bp.then(b => {
+    if (dead) return;
+    if (!b) { sade(); return; }
+    url = URL.createObjectURL(b);          /* hər dəfə yeni obyekt: animasiya həmişə əvvəldən başlayır */
+    d.innerHTML = '<img class="pfj-a" src="' + url + '" alt="" draggable="false">';
+    document.body.appendChild(d);
+    bit((ANIM[g.id][0] + ANIM[g.id][1]) * 1000);
+  });
   return h;
 }
 
