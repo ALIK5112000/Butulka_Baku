@@ -86,3 +86,8 @@
 .yer-9  { left: 14.5vw; top: 99vw; }
 .yer-10 { left: 13.5vw; top: 75vw; }
 .yer-11 { left: 13.5vw; top: 50.5vw; }
+
+/* Aşağı sıranın adı chat panelinin altında qalmasın */
+#masa { z-index: 2; }
+.yer-6, .yer-9 { top: 97.5vw; }
+.yer-7, .yer-8 { top: 100vw; }
