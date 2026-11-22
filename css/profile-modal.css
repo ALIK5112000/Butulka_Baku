@@ -51,4 +51,7 @@
 /* tam ekran şəkil */
 .pk-full{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:10001;display:flex;align-items:center;justify-content:center}
 .pk-full img{max-width:100%;max-height:100%}
-.pf-vipimg{position:absolute;top:4.26vw;left:-3.9vw;width:14.9vw;height:auto;z-index:2;pointer-events:none;-webkit-user-select:none;user-select:none}
+
+/* VIP lent şəkli: şəklin sol yuxarı küncündə üzür, kartda boş yer tutmur.
+   Həm pf-vipimg, həm pk-vipimg adı üçün (JS-də hansı yazılıbsa işləsin) */
+.pf-vipimg,.pk-vipimg{position:absolute!important;top:4.26vw;left:-3.9vw;width:14.9vw!important;max-width:14.9vw;height:auto!important;margin:0;z-index:2;pointer-events:none;-webkit-user-select:none;user-select:none}
