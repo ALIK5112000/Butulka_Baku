@@ -274,6 +274,9 @@ function mesajYaz() {
   const uid = ownerUid, ad = sonD ? pick(sonD, ["username"]) : null;
   if (!uid || uid === MEN || !ad) return;
   bagla();
+  /* kartın arxasında açıq qalan hədiyyə / smaylik paneli də bağlanır ki, çat görünsün */
+  if (window.HediyyePanel) window.HediyyePanel.bagla();
+  if (window.SmaylPanel) window.SmaylPanel.bagla();
   if (typeof window.CatHedef === "function") window.CatHedef(ad, uid);
   else {
     const inp = document.getElementById("mesajInput");
