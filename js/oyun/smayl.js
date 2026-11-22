@@ -38,7 +38,7 @@ const JESTLER = [
   { id: "j59", img: "images/jest/j59.png", w: 11.76, q: 1, a: "bounce" },
   { id: "j55", img: "images/jest/j55.png", w: 14.91, q: 1, a: "zoom" },
   { id: "j56", img: "images/jest/j56.png", w: 14.63, q: 1, a: "pulse" },
-  { id: "j61", img: "images/jest/j61.png", w: 16.2,  q: 1, a: "pulse" }
+  { id: "j61", img: "images/jest/j61.png", w: 16.2,  q: 1, a: "pulse" },
   { id: "j3",  img: "images/jest/j03.png", w: 14.81, q: 1, a: "float" },
   { id: "j4",  img: "images/jest/j04.png", w: 14.81, q: 1, a: "bounce" },
   { id: "j5",  img: "images/jest/j05.png", w: 14.35, q: 1, a: "zoom" },
