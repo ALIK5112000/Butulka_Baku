@@ -68,8 +68,10 @@ if (cari && cari.docId) {
   const DUDAQ = '<svg viewBox="0 0 100 88"><path d="M4 48C14 30 30 18 42 24C46 26 48 28 50 28C52 28 54 26 58 24C70 18 86 30 96 48C84 70 66 82 50 82C34 82 16 70 4 48Z" fill="#e8452c"/><path d="M7 48C26 57 40 52 50 54C60 52 74 57 93 48" fill="none" stroke="#b32612" stroke-width="3" stroke-linecap="round"/></svg>';
   function nishan(foto, n) {
     let b = foto.querySelector(".opus");
+    if (!b && !n) return;
+    if (b && b._n === n) return;
     if (n && !b) { foto.insertAdjacentHTML("beforeend", '<span class="opus">' + DUDAQ + "<b></b></span>"); b = foto.querySelector(".opus"); }
-    if (b) { b.style.display = n ? "flex" : "none"; b.querySelector("b").textContent = n; }
+    if (b) { b._n = n; b.style.display = n ? "flex" : "none"; b.querySelector("b").textContent = n; }
   }
 
   function yarat() {
@@ -108,7 +110,8 @@ if (cari && cari.docId) {
     const gozle = !qiz || idx.length - qiz === 0;
     const yazi = $("gozleYazi");
     yazi.style.display = gozle ? "block" : "none";
-    yazi.innerHTML = "Oyuna başlamaq üçün<br>" + (!qiz ? "qızları" : "oğlanları") + " gözləyirik";
+    const yt = "Oyuna başlamaq üçün<br>" + (!qiz ? "qızları" : "oğlanları") + " gözləyirik";
+    if (yazi._t !== yt) { yazi._t = yt; yazi.innerHTML = yt; }
 
     const sp = raund && raund.spin;
     const spOK = raund && yerler[raund.sp] && yerler[raund.sp].uid === raund.spu;
