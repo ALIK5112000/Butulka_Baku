@@ -64,6 +64,23 @@ const CSS = `
 .pf-full{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:10001;display:flex;align-items:center;justify-content:center}
 .pf-full img{max-width:100%;max-height:100%}
 .pf-toast{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
+/* referans karta görə ölçü düzəlişləri */
+.pf-vip{font:900 5.65vw/7.7vw Roboto,Arial,sans-serif;padding:0 3.4vw 0 2.6vw}
+.pf-zoom{right:2.4vw;bottom:2.1vw;width:5.85vw;height:5.85vw}
+.pf-stats{padding-top:1.2vw}
+.pf-row{height:7vw}
+.pf-trophy{width:17.8vw;height:18.9vw;transform:scaleX(.93);transform-origin:right center}
+.pf-dv{margin-top:1.5vw}
+.pf-act{padding-top:2.35vw}
+.pf-btn.t{font:700 2.9vw/1 Roboto,Arial,sans-serif}
+.pf-act .pf-btn:nth-child(1) svg{width:10.2vw;height:10.2vw}
+.pf-act .pf-btn:nth-child(3) svg{width:7.6vw;height:7.6vw}
+.pf-act .pf-btn:nth-child(4) svg{width:8.9vw;height:8.9vw}
+.pf-act .pf-btn:nth-child(5) svg{width:8.6vw;height:8.6vw}
+/* status sətri (şəklin altında) */
+.pf-st{height:9.33vw;box-sizing:border-box;padding:0 4vw;display:flex;align-items:center;justify-content:center;text-align:center;font:italic 400 3.7vw/1.2 Roboto,Arial,sans-serif;color:#111}
+.pf-st span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.pf-stl{height:.3vw;background:#e6e6e6;margin:0 3.9vw}
 `;
 const st = document.createElement("style");
 st.textContent = CSS;
@@ -264,6 +281,7 @@ function qur() {
     '<div class="pf-card">' +
       '<button class="pf-close" aria-label="Bağla"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#7cc92f" stroke-width="3.2" stroke-linecap="round"/></svg></button>' +
       '<div class="pf-topw"></div>' +
+      '<div class="pf-stw"></div>' +
       '<div class="pf-stats"><div class="pf-rowsw"></div>' + IC.kubok + "</div>" +
       '<div class="pf-dv"><i></i><span>' + IC.chev + "</span><i></i></div>" +
       '<div class="pf-userw"></div>' +
@@ -307,6 +325,13 @@ function ciz(d) {
       f.onclick = () => f.remove();
       document.body.appendChild(f);
     };
+  }
+
+  /* 1b) status (profildə yazılan status, real vaxtda dəyişir) */
+  const stat = String(pick(d, ["status"]) || "").trim();
+  if (sig.st !== stat) {
+    sig.st = stat;
+    ov.querySelector(".pf-stw").innerHTML = stat ? '<div class="pf-st"><span>' + esc(stat) + "</span></div><div class=\"pf-stl\"></div>" : "";
   }
 
   /* 2) xal sətirləri */
