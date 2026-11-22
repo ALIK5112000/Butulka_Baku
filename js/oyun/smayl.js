@@ -127,7 +127,7 @@ const CSS = `
 .sp-fly img.sm{width:5vw;height:5vw;display:block}
 .sp-plus-n{position:fixed;z-index:10011;pointer-events:none;font:700 5vw/1 Roboto,Arial,sans-serif;color:#ffd54a;text-shadow:0 .3vw .8vw rgba(0,0,0,.55);will-change:transform,opacity}
 .sp-t{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
-.pfj{position:fixed;z-index:9000;pointer-events:none;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.pfj{position:fixed;z-index:10005;pointer-events:none;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .pfj-m{display:block;transform-origin:50% 60%;will-change:transform}
 .pfj-m img{display:block;width:100%;height:auto;-webkit-user-drag:none;animation:pfj-in .28s cubic-bezier(.2,1.4,.4,1) both}
 .pfj.out{animation:pfj-out .3s ease forwards}
