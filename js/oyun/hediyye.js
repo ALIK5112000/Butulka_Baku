@@ -5,15 +5,10 @@ import { doc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/f
 import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 /* ADDIM 3: Hədiyyə paneli. Başqa oyunçunun şəklinə toxunanda açılır.
-   Hədiyyənin qiyməti bonus ürəkdən (users/{uid}.hearts) çıxır.
-   - Öpüş hədiyyəsi: alanın öpüş xalı və masadakı öpüş sayğacı hədiyyə sayı qədər artır.
-   - Hədiyyə alan oyunçunun musiqisi hazırda çalırsa: onun musiqi xalı hədiyyə sayı qədər artır.
-   - YALNIZ şəklə düşən hədiyyələrdən (g1 öpüş, g3 pomidor, g15 tac) biri atılanda
-     əvvəlki şəklə düşmüş hədiyyə tədricən solub silinir. Adi hədiyyələr (gül, maşın və s.)
-     şəklin üstündəki hədiyyəyə toxunmur.
-   - Oyunçu masada həqiqətən yer dəyişəndə və ya 3.5 saniyədən çox qalxanda üstündəki hədiyyələr silinir
-     (2 saniyəlik başqa səhifəyə keçib qayıdanda silinmir).
-   - Hər hansı pəncərə açılanda şəklin üstündəki hədiyyələr gizlənir. */
+   - Yalnız şəklə düşən hədiyyələrdən (g1 öpüş, g3 pomidor, g15 tac) biri profil şəklinə DÜŞƏNDƏ
+     əvvəlki şəklə düşmüş hədiyyə tədricən (3 san) solub silinir.
+   - Hər hansı pəncərə açılanda (Masanı dəyiş, Profil, Musiqi, Mağaza və s.) həm uçan, həm də
+     şəklin üstündəki hədiyyələr pəncərənin üstündən görünmür. */
 
 /* ---------- AYARLAR ---------- */
 const SEKIL_PAPKA = "images/hediyye/";
@@ -89,18 +84,19 @@ const CSS = `
 .hd-tb{background:#3b8fe0}.hd-tg{background:#f26aa6}.hd-tx{background:#e03d1c;font:700 5vw/1 Roboto,Arial,sans-serif}
 .yer.hd-mk .foto{outline:.9vw solid #7cc92f;outline-offset:.2vw;box-shadow:0 0 3vw #7cc92f}
 .hd-t{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
-.hd-fly{position:fixed;z-index:9000;pointer-events:none;line-height:1;will-change:transform,opacity;font-size:11vw}
+.hd-fxLayer{position:fixed;left:0;top:0;width:0;height:0;z-index:120;pointer-events:none}
+.hd-fly{position:fixed;pointer-events:none;line-height:1;will-change:transform,opacity;font-size:11vw}
 .hd-fly img{height:1em;width:auto;display:block}
 .hd-fly i{position:absolute;right:-3vw;bottom:-2vw;font:700 4vw/1 Roboto,Arial,sans-serif;font-style:normal;color:#fff;background:#6c4fd6;border-radius:3vw;padding:.8vw 1.8vw}
-.hd-stkLayer{position:fixed;left:0;top:0;width:0;height:0;z-index:150;pointer-events:none}
+.hd-stkLayer{position:fixed;left:0;top:0;width:0;height:0;z-index:110;pointer-events:none}
 .hd-stk{position:fixed;pointer-events:none;line-height:1;will-change:transform;filter:drop-shadow(0 .5vw 1vw rgba(0,0,0,.35))}
 .hd-stk img{height:1em;width:auto;display:block}
-.hd-spark{position:fixed;z-index:9001;pointer-events:none;font-size:3.8vw;line-height:1;margin:-1.9vw 0 0 -1.9vw}
-.hd-yf{position:fixed;z-index:9000;pointer-events:none;will-change:transform}
+.hd-spark{position:fixed;pointer-events:none;font-size:3.8vw;line-height:1;margin:-1.9vw 0 0 -1.9vw}
+.hd-yf{position:fixed;pointer-events:none;will-change:transform}
 .hd-yf-r,.hd-yf-s{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;line-height:1;will-change:transform}
 .hd-yf img,.hd-yig img{width:100%;height:100%;object-fit:contain;display:block}
 .hd-yf i{position:absolute;right:-3vw;bottom:-2vw;font:700 4vw/1 Roboto,Arial,sans-serif;font-style:normal;color:#fff;background:#6c4fd6;border-radius:3vw;padding:.8vw 1.8vw}
-.hd-yigQat{position:fixed;left:0;top:0;width:0;height:0;z-index:150;pointer-events:none}
+.hd-yigQat{position:fixed;left:0;top:0;width:0;height:0;z-index:110;pointer-events:none}
 .hd-yig{position:fixed;pointer-events:none;display:flex;align-items:center;justify-content:center;line-height:1;will-change:transform,opacity}
 `;
 const st = document.createElement("style");
@@ -122,19 +118,41 @@ function gorselStk(g) {
 const num = v => Number(v) || 0;
 const MEN = (cariOyuncu() || {}).docId || null;
 
+/* Bütün uçan və oturan hədiyyələrin konteyneri (pəncərə açılanda tək komanda ilə gizlənir) */
+let fxQat = null;
+function fxLayer() {
+  if (!fxQat) {
+    fxQat = document.createElement("div");
+    fxQat.className = "hd-fxLayer";
+    (document.getElementById("masa") || document.body).appendChild(fxQat);
+  }
+  return fxQat;
+}
+
 /* Hər hansı pəncərə/modal açıqdırsa true qaytarır */
 function pencereAciqdir() {
   const my = document.getElementById("modalYer");
-  if (my && getComputedStyle(my).display !== "none") return true;
+  if (my && getComputedStyle(my).display !== "none" && my.offsetWidth > 0) return true;
   const kp = document.getElementById("klipPenceresi");
   if (kp && !kp.hidden && getComputedStyle(kp).display !== "none") return true;
-  const diger = document.querySelectorAll(".modal, .pencere, .overlay, [role='dialog'], [id$='Penceresi'], [id$='Modal']");
+  const diger = document.querySelectorAll(".modal, .pencere, .overlay, [role='dialog'], [id$='Penceresi'], [id$='Modal'], [id*='modal'], [id*='Modal']");
   for (const el of diger) {
     if (el.id === "hdToast" || el.id === "hdDbg") continue;
-    if (!el.hidden && getComputedStyle(el).display !== "none" && getComputedStyle(el).visibility !== "hidden" && el.offsetWidth > 0) return true;
+    const cs = getComputedStyle(el);
+    if (!el.hidden && cs.display !== "none" && cs.visibility !== "hidden" && Number(cs.opacity) > 0 && el.offsetWidth > 0 && el.offsetHeight > 0) return true;
   }
   return false;
 }
+
+function qatGorunurlukYenile() {
+  const gizli = pencereAciqdir();
+  const d = gizli ? "none" : "block";
+  if (fxQat) fxQat.style.display = d;
+  if (yapQat) yapQat.style.display = d;
+  if (yigQat) yigQat.style.display = d;
+  return gizli;
+}
+setInterval(qatGorunurlukYenile, 80);
 
 let tT = null;
 function toast(msg) {
@@ -343,7 +361,6 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => {
     if (o && o.uid) indikiYer[o.uid] = k;
   }
 
-  /* Əgər oyunçu eyni oturacaqda görünürsə, gözləyən silmə taymerini ləğv et (2 san səhifə dəyişib qayıtma halı) */
   for (const uid in indikiYer) {
     if (silmeTaymer[uid] && evvelkiYer[uid] === indikiYer[uid]) {
       clearTimeout(silmeTaymer[uid]);
@@ -356,13 +373,11 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => {
     const yeni = indikiYer[uid];
 
     if (yeni && yeni !== kohne) {
-      /* Oyunçu başqa oturacağa keçib -> dərhal sil */
       if (silmeTaymer[uid]) { clearTimeout(silmeTaymer[uid]); delete silmeTaymer[uid]; }
       remove(ref(rtdb, YAP_YOL + uid)).catch(() => {});
       remove(ref(rtdb, YIG_YOL + uid)).catch(() => {});
       evvelkiYer[uid] = yeni;
     } else if (!yeni && !silmeTaymer[uid]) {
-      /* Oyunçu oturacaqdan ayrılıb -> 3.5 san gözlə; eyni yerə qayıtmasa sil */
       silmeTaymer[uid] = setTimeout(() => {
         delete silmeTaymer[uid];
         if (!indikiYer[uid]) {
@@ -412,18 +427,22 @@ async function gonder(g, c) {
   const n = Date.now() + "-" + Math.random().toString(36).slice(2, 7);
   const payload = { to: alanlar, i: g.id, c, n };
   const t = Date.now() + offset;
+  const ucusSuresi = g.ucusMs || 900;
+  const dusmeVaxti = t + ucusSuresi;
   const yigUpd = {};
   let yigVar = false;
 
-  /* Yalnız şəklə oturan/yapışan hədiyyələrdən (g1 öpüş, g3 pomidor, g15 tac) biri atılanda köhnə oturan silinir. */
+  /* Yalnız şəklə oturan/yapışan hədiyyələrdən (g1 öpüş, g3 pomidor, g15 tac) biri atılanda,
+     yeni hədiyyə profil şəklinə DÜŞƏN ANDA (dusmeVaxti) köhnə oturan tədricən solub silinir. */
   const sekileOturur = !!(g.yapis || g.yigim);
 
   if (sekileOturur) {
     if (g.yapis) {
+      /* Pomidor / tac profil şəklinə düşən anda (dusmeVaxti) əvvəlki öpüşlər tədricən solmağa başlayır */
       alanlar.forEach(k => {
         const aktiv = Object.entries(yigData[k] || {}).filter(([, e]) => e && !e.sol);
         aktiv.forEach(([key, e]) => {
-          yigUpd[k + "/" + key + "/sol"] = Math.max(t, num(e.t) + 900);
+          yigUpd[k + "/" + key + "/sol"] = Math.max(dusmeVaxti, num(e.t) + 900);
           yigVar = true;
         });
       });
@@ -435,9 +454,10 @@ async function gonder(g, c) {
       });
       payload.p = p;
     } else if (g.yigim) {
+      /* Öpüş profil şəklinə düşən anda (dusmeVaxti) əvvəlki pomidor/tac tədricən solmağa başlayır */
       alanlar.forEach(k => {
         if (yapData[k] && !yapData[k].sol) {
-          update(ref(rtdb, YAP_YOL + k), { sol: t }).catch(() => {});
+          update(ref(rtdb, YAP_YOL + k), { sol: dusmeVaxti }).catch(() => {});
         }
       });
 
@@ -448,7 +468,7 @@ async function gonder(g, c) {
         const aktiv = Object.entries(yigData[k] || {}).filter(([, e]) => e && !e.sol).sort((a, b) => num(a[1].t) - num(b[1].t));
         while (aktiv.length >= Math.max(1, OPUS.MAX)) {
           const [key, e] = aktiv.shift();
-          yigUpd[k + "/" + key + "/sol"] = Math.max(t, num(e.t) + (g.ucusMs || 900));
+          yigUpd[k + "/" + key + "/sol"] = Math.max(dusmeVaxti, num(e.t) + ucusSuresi);
         }
         yigUpd[k + "/" + n] = { i: g.id, x: q.x, y: q.y, r: q.r, n, from: MEN, t };
         yigVar = true;
@@ -525,7 +545,7 @@ function ulduz(x, y) {
   s.textContent = ["✦", "★", "✧"][Math.floor(Math.random() * 3)];
   s.style.left = x + "px"; s.style.top = y + "px";
   s.style.color = ["#ffe34d", "#ff5fa2", "#7dff6a"][Math.floor(Math.random() * 3)];
-  document.body.appendChild(s);
+  fxLayer().appendChild(s);
   s.animate([{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(.2) translateY(3vw)" }], { duration: 600 }).onfinish = () => s.remove();
 }
 
@@ -540,10 +560,10 @@ function ucurYapis(g, x, to, pa, b, p) {
   d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
   d.style.fontSize = olcu(hed, r) + "px";
   d.innerHTML = (g.ucusAdi ? gorsel(g) : gorselStk(g)) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
-  document.body.appendChild(d);
+  fxLayer().appendChild(d);
   const iz = setInterval(() => {
     const q = d.getBoundingClientRect();
-    ulduz(q.left + q.width / 2 + (Math.random() * 16 - 8), q.top + q.height / 2 + (Math.random() * 16 - 8));
+    if (q.width) ulduz(q.left + q.width / 2 + (Math.random() * 16 - 8), q.top + q.height / 2 + (Math.random() * 16 - 8));
   }, 45);
   const an = d.animate([
     { transform: "translate(-50%,-50%) scale(.4) rotate(0deg)", opacity: 0 },
@@ -555,6 +575,7 @@ function ucurYapis(g, x, to, pa, b, p) {
     sesCal(g.sl);
     gelen.add(x.n + "|" + to);
     yapisanCiz();
+    yigimCiz();
     d.remove();
   };
 }
@@ -573,7 +594,7 @@ function oynaBir(kimden, x, to) {
   d.className = "hd-fly";
   d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
   d.innerHTML = gorsel(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
-  document.body.appendChild(d);
+  fxLayer().appendChild(d);
   const dx = pb[0] - pa[0], dy = pb[1] - pa[1];
   const an = d.animate([
     { transform: "translate(-50%,-50%) scale(.4)", opacity: 0 },
@@ -626,9 +647,8 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyyeYapisan"), s => {
 });
 
 function yapisanCiz() {
-  if (!yapQat) { yapQat = document.createElement("div"); yapQat.className = "hd-stkLayer"; document.body.appendChild(yapQat); }
-  const gizli = pencereAciqdir();
-  yapQat.style.display = gizli ? "none" : "block";
+  if (!yapQat) { yapQat = document.createElement("div"); yapQat.className = "hd-stkLayer"; (document.getElementById("masa") || document.body).appendChild(yapQat); }
+  const gizli = qatGorunurlukYenile();
 
   const simdi = Date.now();
   const srv = simdi + offset;
@@ -677,10 +697,11 @@ function yapisanCiz() {
     rec.el.style.left = px + "px"; rec.el.style.top = py + "px";
     rec.el.style.transform = "translate(-50%,-50%) rotate(" + rot + "deg)";
 
-    if (d.sol && !rec.sol) {
+    /* Yalnız solma vaxtı (d.sol) çatanda solmanı başlat */
+    if (d.sol && srv >= d.sol && !rec.sol) {
       rec.sol = true;
       const an = rec.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: OPUS.SOLMA_MS, easing: "linear", fill: "both" });
-      an.currentTime = srv - d.sol;
+      an.currentTime = Math.max(0, srv - d.sol);
     }
   }
 }
@@ -717,7 +738,7 @@ function ucurYigim(g, x, to, pa, b, p) {
   a.className = "hd-yf";
   a.style.cssText = "left:" + (pa[0] - L / 2) + "px;top:" + (pa[1] - L / 2) + "px;width:" + L + "px;height:" + L + "px;font-size:" + (L * 0.8) + "px";
   a.innerHTML = '<div class="hd-yf-r"><div class="hd-yf-s">' + gorsel(g) + "</div></div>" + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
-  document.body.appendChild(a);
+  fxLayer().appendChild(a);
   const rot = a.firstChild, olc = rot.firstChild;
   a.animate([{ transform: "translate(0px,0px)" }, { transform: "translate(" + dx + "px," + dy + "px)" }], { duration: ms, easing: YAVASLA, fill: "both" });
   rot.animate([{ transform: "rotate(" + (p.r - 90 * dir) + "deg)" }, { transform: "rotate(" + p.r + "deg)" }], { duration: ms, easing: YAVASLA, fill: "both" });
@@ -726,14 +747,14 @@ function ucurYigim(g, x, to, pa, b, p) {
     sesCal(g.sl);
     ogelen.add(x.n + "|" + to);
     yigimCiz();
+    yapisanCiz();
     a.remove();
   };
 }
 
 function yigimCiz() {
-  if (!yigQat) { yigQat = document.createElement("div"); yigQat.className = "hd-yigQat"; document.body.appendChild(yigQat); }
-  const gizli = pencereAciqdir();
-  yigQat.style.display = gizli ? "none" : "block";
+  if (!yigQat) { yigQat = document.createElement("div"); yigQat.className = "hd-yigQat"; (document.getElementById("masa") || document.body).appendChild(yigQat); }
+  const gizli = qatGorunurlukYenile();
 
   const srv = Date.now() + offset;
   for (const kk in yigEl) {
@@ -773,10 +794,12 @@ function yigimCiz() {
       el.style.left = (r.left + r.width * e.x / 100 - L / 2) + "px";
       el.style.top = (r.top + r.height * e.y / 100 - L / 2) + "px";
       el.style.transform = "rotate(" + e.r + "deg)";
-      if (e.sol && !rec.sol) {
+
+      /* Yalnız solma vaxtı (e.sol — yəni yeni hədiyyə profil şəklinə düşəndə) çatanda solmanı başlat */
+      if (e.sol && srv >= e.sol && !rec.sol) {
         rec.sol = true;
         const an = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: OPUS.SOLMA_MS, easing: "linear", fill: "both" });
-        an.currentTime = srv - e.sol;
+        an.currentTime = Math.max(0, srv - e.sol);
       }
     }
   }
