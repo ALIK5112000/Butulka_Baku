@@ -43,8 +43,8 @@ if (cari && cari.docId) {
   // Oxlar (videodakı ölçülərlə, koordinatlar vw): gövdə + açıq (L şəkilli) ox ucu
   const OXU = "M41.04 12.3Q49.62 5.28 59.72 13.14M59.72 10.74L59.72 13.14L57.32 13.14";
   const OXA = "M58.7 29.96Q50.55 36.67 40.2 29.03M42.6 29.03L40.2 29.03L40.2 31.43";
-  const DODAQ = '<svg viewBox="0 0 44 30"><path d="M2 15C8 5 15 4 22 9C29 4 36 5 42 15C36 26 8 26 2 15Z" fill="#e03d1c"/><path d="M9 14.5Q22 10.5 35 14.5Q22 18.5 9 14.5Z" fill="#fff"/></svg>';
-  const IKS = '<svg viewBox="0 0 20 20"><path d="M3.5 3.5L16.5 16.5M16.5 3.5L3.5 16.5" stroke="#fff" stroke-width="3.6" stroke-linecap="round" fill="none"/></svg>';
+  const DODAQ = '<svg viewBox="-2 -2 104 64"><path d="M1 29C8 18 22 4 33 4C40 4 45 6 50 8C55 6 60 4 67 4C78 4 92 18 99 28C90 46 70 59 50 59C30 59 10 46 1 29Z" fill="#d94a2b" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/><path d="M25 29Q50 23.5 75 29Q50 37 25 29Z" fill="#fff"/></svg>';
+  const IKS = '<svg viewBox="0 0 20 20"><path d="M3.2 3.2L16.8 16.8M16.8 3.2L3.2 16.8" stroke="#fff" stroke-width="3.2" stroke-linecap="round" fill="none"/></svg>';
   masa.insertAdjacentHTML("beforeend",
     '<div id="oxlar"><svg viewBox="0 0 100 42">' +
     '<g id="oxU"><path class="ow" d="' + OXU + '"/><path class="oc" d="' + OXU + '"/></g>' +
