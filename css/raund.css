@@ -76,8 +76,8 @@
   display: none; position: absolute; left: 0; top: 40vw; width: 100vw; height: 42vw;
   z-index: 6; pointer-events: none;
 }
-#oxlar svg { display: block; width: 100%; height: 100%; }
-#oxlar path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+#oxlar > svg { display: block; width: 100%; height: 100%; }
+#oxlar .ow, #oxlar .oc { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 #oxlar .ow { stroke: #fff; stroke-width: 2.1; }
 #oxlar .oc { stroke-width: 1.4; }
 .bd {
