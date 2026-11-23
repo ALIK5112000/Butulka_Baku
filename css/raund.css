@@ -87,9 +87,9 @@
 }
 .bd svg { display: block; }
 .bd.op { background: #9bcc34; }
-.bd.op svg { width: 3.5vw; height: 2.4vw; }
+.bd.op svg { width: 3.85vw; height: 2.4vw; }
 .bd.yox { background: #e03d1c; }
-.bd.yox svg { width: 2.2vw; height: 2.2vw; }
+.bd.yox svg { width: 2.4vw; height: 2.4vw; }
 #bdU { left: 50vw; top: 9vw; }
 #bdA { left: 50vw; top: 33.1vw; }
 
