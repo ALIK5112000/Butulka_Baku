@@ -40,11 +40,15 @@ if (cari && cari.docId) {
   onDisconnect(ref(rtdb, B + "/opus/" + cari.docId)).remove();
 
   const OK = 'stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  // Oxlar (videodakı ölçülərlə, koordinatlar vw): gövdə + açıq (L şəkilli) ox ucu
+  const OXU = "M41.04 12.3Q49.62 5.28 59.72 13.14M59.72 10.74L59.72 13.14L57.32 13.14";
+  const OXA = "M58.7 29.96Q50.55 36.67 40.2 29.03M42.6 29.03L40.2 29.03L40.2 31.43";
+  const DODAQ = '<svg viewBox="0 0 44 30"><path d="M2 15C8 5 15 4 22 9C29 4 36 5 42 15C36 26 8 26 2 15Z" fill="#e03d1c"/><path d="M9 14.5Q22 10.5 35 14.5Q22 18.5 9 14.5Z" fill="#fff"/></svg>';
+  const IKS = '<svg viewBox="0 0 20 20"><path d="M3.5 3.5L16.5 16.5M16.5 3.5L3.5 16.5" stroke="#fff" stroke-width="3.6" stroke-linecap="round" fill="none"/></svg>';
   masa.insertAdjacentHTML("beforeend",
-    '<div id="oxlar"><svg viewBox="0 0 44 42"><defs>' +
-    '<marker id="mK" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="2" markerHeight="2" orient="auto"><path d="M0 0L10 5L0 10z" fill="#e03d1c"/></marker>' +
-    '<marker id="mY" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="2" markerHeight="2" orient="auto"><path d="M0 0L10 5L0 10z" fill="#9bcc34"/></marker>' +
-    '</defs><path id="oxU" class="xett" d="M9.6 11 Q22 -3 34.4 11"/><path id="oxA" class="xett" d="M34.4 31 Q22 40 9.6 31"/></svg>' +
+    '<div id="oxlar"><svg viewBox="0 0 100 42">' +
+    '<g id="oxU"><path class="ow" d="' + OXU + '"/><path class="oc" d="' + OXU + '"/></g>' +
+    '<g id="oxA"><path class="ow" d="' + OXA + '"/><path class="oc" d="' + OXA + '"/></g></svg>' +
     '<div id="bdU" class="bd"></div><div id="bdA" class="bd"></div></div>' +
     // Yazılar yalnız masanın ORTA boş hissəsində dayanır (oyunçu kartlarının üstünə düşmür)
     '<style>' +
@@ -65,10 +69,9 @@ if (cari && cari.docId) {
     const key = v || ""; if (p._k === key) return; p._k = key;
     if (!v) { p.style.display = "none"; b.style.display = "none"; return; }
     p.style.display = "";
-    p.setAttribute("stroke", v === "op" ? "#9bcc34" : "#e03d1c");
-    p.setAttribute("marker-end", v === "op" ? "url(#mY)" : "url(#mK)");
+    p.querySelector(".oc").setAttribute("stroke", v === "op" ? "#9bcc34" : "#e03d1c");
     b.style.display = "flex"; b.className = "bd " + v;
-    b.textContent = v === "op" ? "💋" : "✖";
+    b.innerHTML = v === "op" ? DODAQ : IKS;
   }
 
   const DUDAQ = '<svg viewBox="0 0 100 88"><path d="M4 48C14 30 30 18 42 24C46 26 48 28 50 28C52 28 54 26 58 24C70 18 86 30 96 48C84 70 66 82 50 82C34 82 16 70 4 48Z" fill="#e8452c"/><path d="M7 48C26 57 40 52 50 54C60 52 74 57 93 48" fill="none" stroke="#b32612" stroke-width="3" stroke-linecap="round"/></svg>';
@@ -86,7 +89,7 @@ if (cari && cari.docId) {
     masa.appendChild(d); return d;
   }
   const oQ = yarat(), oO = yarat();
-  const MQ = [37.6, 61], MO = [62.4, 61]; // sol və sağ mərkəz
+  const MQ = [38.8, 61], MO = [61.2, 61]; // sol və sağ mərkəz (videodakı nisbətlə)
   const gizle = (i, b) => { const e = document.querySelector(".yer-" + i); if (e) e.classList.toggle("gizli", b); };
 
   // Kart masadakı yerindən başlayır, ortaya uçur (ölçü dəyişmir)
@@ -211,7 +214,18 @@ if (cari && cari.docId) {
       else if (sq || so) metn = "öpüşə\nöpüşlə cavab verəcək?";
       else if (oynayan) metn = "Sənin\nseçimin";
       else metn = "Onlar öpəcəklər\nya yox?";
-      yz($("sizinSecim"), metn);
+      // Yazı nişanın (ox) üstündə dayanır; üst sıradakı oyunçuya toxunursa 1 sətirə keçir
+      let lim = 0;
+      for (const k in yerler) {
+        const i = +k; if (i === sp.q || i === sp.o || !YER_XY[i]) continue;
+        const [px, py] = YER_XY[i];
+        if (py < 46 && Math.abs(px - 50) < 30) lim = Math.max(lim, py + 11.6);   // foto yarısı + ad
+      }
+      const iki = metn.indexOf("\n") >= 0 && 45.3 - lim >= 8.8;
+      const mt = iki ? metn : metn.replace("\n", " ");
+      yz($("sizinSecim"), mt);
+      const tp = (45.3 - (iki ? 8.7 : 4.4)) + "vw", szEl = $("sizinSecim");
+      if (szEl._tp !== tp) { szEl._tp = tp; szEl.style.top = tp; }
       if (sq && so) $("sayac").style.display = "none";
       goster = sayDa && oynayan && !sec[ben] && secildi !== sp.t;
       ox("oxU", "bdU", sol ? sq : so);   // yuxarı ox: soldakının seçimi
