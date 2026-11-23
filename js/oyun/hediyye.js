@@ -2,14 +2,16 @@ import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { ref, onValue, set, onDisconnect, runTransaction as rtTx } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 /* ADDIM 3: Hədiyyə paneli. Başqa oyunçunun şəklinə toxunanda açılır.
    Hədiyyənin qiyməti bonus ürəkdən (users/{uid}.hearts) çıxır.
    - Öpüş hədiyyəsi: alanın öpüş xalı və masadakı öpüş sayğacı hədiyyə sayı qədər artır.
    - Hədiyyə alan oyunçunun musiqisi hazırda çalırsa: onun musiqi xalı hədiyyə sayı qədər artır.
    YENİ: öpüş / pomidor / tac atılanda səs çıxır, uçur (ulduz izi ilə) və alanın şəklinin üstünə
-   oturur. Oyunçuya yeni hədiyyə atılanda köhnəsi silinir. */
+   oturur. Oyunçuya yeni hədiyyə atılanda köhnəsi silinir.
+   ÖPÜŞ (g1) istisnadır: ulduz izi yoxdur, videodakı kimi yavaş uçur, şəklə düşəndə ayrıca səs çalır,
+   yeni öpüş atılanda köhnəsi tədricən yox olur (ayarlar: OPUS). */
 
 /* ---------- AYARLAR ---------- */
 /* Şəkillər: images/hediyye/ papkasında. Hədiyyənin şəklini dəyişmək üçün
@@ -18,11 +20,12 @@ import { ref, onValue, set, onDisconnect, runTransaction as rtTx } from "https:/
    q = qiymət (bonus ürək), opus:true = öpüş hədiyyəsi, k = bölmə (ozel | yeni)
    s = atılanda çıxan səs, sl = oyunçunun şəklinə düşəndə çıxan səs (sounds/ papkasında), ucusMs = uçuş müddəti (ms, yoxdursa 900),
    yapis:true = alanın şəklinin üstünə oturur
-   (köhnə oturan hədiyyə silinir). Başqa hədiyyəni də oturan etmək üçün yapis:true yaz. */
+   (köhnə oturan hədiyyə silinir). Başqa hədiyyəni də oturan etmək üçün yapis:true yaz.
+   yigim:true = öpüş tipli oturma: videodan ölçülmüş uçuş/düşmə effekti (aşağıda "ÖPÜŞ YIĞIMI" bölməsi) */
 const SEKIL_PAPKA = "images/hediyye/";
 const SES_PAPKA = "sounds/";
 const HEDIYYELER = [
-  { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   yapis: true },
+  { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true },
   { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5000, yapis: true },
   { id: "g7",  e: "🐸", img: SEKIL_PAPKA + "qurbaga.png", q: 2 },
   { id: "g2",  e: "🍓", img: SEKIL_PAPKA + "cilek.png",   q: 1, k: "yeni" },
@@ -46,6 +49,12 @@ const HEDIYYELER = [
 /* Alanın şəklinin üstündə oturan hədiyyənin şəkli panel şəklindən fərqli ola bilər.
    Tac üçün tac2.png istifadə olunur (yoxdursa tac.png götürülür). */
 const OTURAN_SEKIL = { g15: SEKIL_PAPKA + "tac2.png" };
+/* ÖPÜŞ effektinin ayarları (videodan ölçülüb).
+   OLCU  = öpüşün uzun tərəfi, alanın şəkil enindən neçə faiz (0.28 = 28%). Şəkil böyük/kiçik görünsə bunu dəyiş.
+   MAX   = bir oyunçunun şəklində eyni anda neçə öpüş qala bilər.
+           1 = yeni öpüş atılanda köhnəsi tədricən yox olur; 3 = öpüşlər yığılır (videoda ikisi qalırdı).
+   SOLMA_MS = köhnə öpüşün tam yox olma müddəti (ms). Yeni öpüş atılan an solmağa başlayır. */
+const OPUS = { OLCU: 0.28, MAX: 1, SOLMA_MS: 3000 };
 /* "Klip qoş" və "Mahnı qoş" kafellərinin qiyməti (yazı üçündür; real ödəniş mövcud musiqi sistemində olur) */
 const KLIP_QIYMETI = 9, MAHNI_QIYMETI = 5;
 
@@ -96,6 +105,12 @@ const CSS = `
 .hd-stk{position:fixed;pointer-events:none;line-height:1;will-change:transform;filter:drop-shadow(0 .5vw 1vw rgba(0,0,0,.35))}
 .hd-stk img{height:1em;width:auto;display:block}
 .hd-spark{position:fixed;z-index:9001;pointer-events:none;font-size:3.8vw;line-height:1;margin:-1.9vw 0 0 -1.9vw}
+.hd-yf{position:fixed;z-index:9000;pointer-events:none;will-change:transform}
+.hd-yf-r,.hd-yf-s{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;line-height:1;will-change:transform}
+.hd-yf img,.hd-yig img{width:100%;height:100%;object-fit:contain;display:block}
+.hd-yf i{position:absolute;right:-3vw;bottom:-2vw;font:700 4vw/1 Roboto,Arial,sans-serif;font-style:normal;color:#fff;background:#6c4fd6;border-radius:3vw;padding:.8vw 1.8vw}
+.hd-yigQat{position:fixed;left:0;top:0;width:0;height:0;z-index:4000;pointer-events:none}
+.hd-yig{position:fixed;pointer-events:none;display:flex;align-items:center;justify-content:center;line-height:1;will-change:transform,opacity}
 `;
 const st = document.createElement("style");
 st.textContent = CSS;
@@ -322,6 +337,9 @@ function djUid() {
 const YAP_YOL = "masalar/" + MASA_NOMRESI + "/hediyyeYapisan/";
 /* Oyunçu çıxanda (bağlantı kəsiləndə) onun şəklinə oturmuş hədiyyələr də silinir */
 if (MEN) onDisconnect(ref(rtdb, YAP_YOL + MEN)).remove();
+/* Öpüş yığımı: bazada masalar/<masa>/yigim/<alanUid>/<n> = { i, x, y, r, d, n, from, t, sol? } */
+const YIG_YOL = "masalar/" + MASA_NOMRESI + "/yigim/";
+if (MEN) onDisconnect(ref(rtdb, YIG_YOL + MEN)).remove();
 
 async function gonder(g, c) {
   if (mesgul || !MEN) return;
@@ -352,6 +370,22 @@ async function gonder(g, c) {
         p[k] = { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) };
         set(ref(rtdb, YAP_YOL + k), { i: g.id, x: p[k].x, y: p[k].y, r: p[k].r, n, from: MEN });
       });
+      payload.p = p;
+    } else if (g.yigim) {
+      /* öpüş: hər alan üçün təsadüfi yer (şəklin 15–85%-i), son bucaq (±100°) və fırlanma istiqaməti.
+         Yer qalmayanda (OPUS.MAX) ən köhnə öpüşlərə "sol" vaxtı yazılır, hamının ekranında tədricən yox olur. */
+      const t = Date.now() + offset, p = {}, upd = {};
+      alanlar.forEach(k => {
+        const q = { x: 15 + Math.round(Math.random() * 70), y: 15 + Math.round(Math.random() * 70), r: Math.round(Math.random() * 200 - 100), d: Math.random() < 0.5 ? -1 : 1 };
+        p[k] = q;
+        const aktiv = Object.entries(yigData[k] || {}).filter(([, e]) => e && !e.sol).sort((a, b) => num(a[1].t) - num(b[1].t));
+        while (aktiv.length >= Math.max(1, OPUS.MAX)) {
+          const [key, e] = aktiv.shift();
+          upd[k + "/" + key + "/sol"] = Math.max(t, num(e.t) + (g.ucusMs || 900));   /* hələ enməyibsə, endikdən sonra solmağa başlayır */
+        }
+        upd[k + "/" + n] = { i: g.id, x: q.x, y: q.y, r: q.r, d: q.d, n, from: MEN, t };
+      });
+      update(ref(rtdb, YIG_YOL), upd);
       payload.p = p;
     }
     const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye/" + MEN);
@@ -444,6 +478,8 @@ function oynaBir(kimden, x, to) {
   if (!g || !b) return;
   const pb = merkez(b), pa = (a && merkez(a)) || [innerWidth / 2, innerHeight * 0.6];
   if (!pb) return;
+  const py = g.yigim && x.p && x.p[to];
+  if (py) { ucurYigim(g, x, to, pa, b, py); return; }
   const p = g.yapis && x.p && x.p[to];
   if (p) { ucurYapis(g, x, to, pa, b, p); return; }
   const d = document.createElement("div");
@@ -510,6 +546,8 @@ function yapisanCiz() {
   for (const uid in yapData) {
     const d = yapData[uid];
     if (!d) continue;
+    const gh = HEDIYYELER.find(h => h.id === d.i);
+    if (gh && gh.yigim) continue;                      /* öpüşlər ayrıca "yığım" bölməsində çəkilir */
     const key = d.n + "|" + uid;
     const ok = gelen.has(key) || (simdi - (gorulen[key] || simdi) > 8000);
     let rec = elmap[uid];
@@ -534,3 +572,105 @@ function yapisanCiz() {
   }
 }
 setInterval(yapisanCiz, 120);
+
+/* ======================= ÖPÜŞ YIĞIMI (g.yigim) =======================
+   Videodan kadr-kadr ölçülüb (1080x2340 ekran yazısı):
+   - Öpüş atanın şəklinin MƏRKƏZİNDƏN çıxır və alanın şəklində təsadüfi yerə enir. Uçuş ~4,9 san.
+   - Yer və fırlanma: yavaşlayan əyri (easeOutQuad: əvvəl sürətli, sonda yavaş). Fırlanma cəmi 90°.
+   - Ölçü: ilk anda ~1,2x, uçuşun ortasında ~1,55x-ə qədər böyüyür, enəndə 1x-ə kiçilir (şəklə "oturur").
+   - Ulduz izi yoxdur. Atılanda g.s səsi, şəklə oturanda g.sl səsi çalır.
+   - Oturan öpüşlər bazadan oxunur (hamı eyni yeri görür); OPUS.MAX aşılanda köhnə tədricən yox olur. */
+const OLCU_EYRISI = [[0, .7], [.012, 1.17], [.05, 1.32], [.11, 1.28], [.16, 1.27], [.22, 1.28], [.28, 1.37], [.36, 1.48],
+                     [.42, 1.55], [.49, 1.55], [.57, 1.51], [.63, 1.45], [.69, 1.41], [.77, 1.24], [.86, 1.09], [.93, 1.02], [1, 1]];
+const YAVASLA = "cubic-bezier(0.5,1,0.89,1)";      /* easeOutQuad */
+
+let yigData = {}, yigIlk = true, yigQat = null;
+const ogelen = new Set();      /* uçuşu bitmiş (və ya səhifə açılanda artıq oturmuş) öpüşlər: "n|uid" */
+const ogorulen = {};           /* "n|uid" -> ilk görünmə vaxtı (uçuş alınmasa 8 san sonra özü oturur) */
+const yigEl = {};              /* "n|uid" -> { el, sol } */
+const yigSilinir = new Set();
+
+onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/yigim"), s => {
+  yigData = s.val() || {};
+  for (const uid in yigData) for (const key in (yigData[uid] || {})) {
+    if (!yigData[uid][key]) continue;
+    const kk = key + "|" + uid;
+    if (!(kk in ogorulen)) { ogorulen[kk] = Date.now(); if (yigIlk) ogelen.add(kk); }
+  }
+  yigIlk = false;
+  yigimCiz();
+});
+
+/* Uçuş: göndərənin şəklindən alanın şəklinə. 3 qat: yer (translate) > fırlanma > ölçü; hamısı ucusMs davam edir. */
+function ucurYigim(g, x, to, pa, b, p) {
+  const r = fotoRect(b);
+  if (!r) return;
+  const ms = g.ucusMs || 4900, L = r.width * OPUS.OLCU, dir = p.d < 0 ? -1 : 1;
+  const dx = r.left + r.width * p.x / 100 - pa[0], dy = r.top + r.height * p.y / 100 - pa[1];
+  const a = document.createElement("div");
+  a.className = "hd-yf";
+  a.style.cssText = "left:" + (pa[0] - L / 2) + "px;top:" + (pa[1] - L / 2) + "px;width:" + L + "px;height:" + L + "px;font-size:" + (L * 0.8) + "px";
+  a.innerHTML = '<div class="hd-yf-r"><div class="hd-yf-s">' + gorsel(g) + "</div></div>" + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  document.body.appendChild(a);
+  const rot = a.firstChild, olc = rot.firstChild;
+  a.animate([{ transform: "translate(0px,0px)" }, { transform: "translate(" + dx + "px," + dy + "px)" }], { duration: ms, easing: YAVASLA, fill: "both" });
+  rot.animate([{ transform: "rotate(" + (p.r - 90 * dir) + "deg)" }, { transform: "rotate(" + p.r + "deg)" }], { duration: ms, easing: YAVASLA, fill: "both" });
+  const an = olc.animate(OLCU_EYRISI.map(([o, s]) => ({ offset: o, transform: "scale(" + s + ")", opacity: o === 0 ? 0 : 1 })), { duration: ms, easing: "linear", fill: "both" });
+  an.onfinish = () => {
+    sesCal(g.sl);                       /* şəklə düşən an səs */
+    ogelen.add(x.n + "|" + to);         /* indi oturmasına icazə var */
+    yigimCiz();
+    a.remove();
+  };
+}
+
+/* Oturan öpüşləri çəkir: yer/ölçü/bucaq hər 120 ms yenilənir (şəkil yerini dəyişsə izləyir). */
+function yigimCiz() {
+  if (!yigQat) { yigQat = document.createElement("div"); yigQat.className = "hd-yigQat"; document.body.appendChild(yigQat); }
+  const srv = Date.now() + offset;
+  for (const kk in yigEl) {                               /* bazadan silinənləri ekrandan götür */
+    const [key, uid] = kk.split("|");
+    if (!(yigData[uid] && yigData[uid][key])) { yigEl[kk].el.remove(); delete yigEl[kk]; yigSilinir.delete(kk); }
+  }
+  for (const uid in yigData) {
+    const col = yigData[uid];
+    if (!col) continue;
+    for (const key in col) {
+      const e = col[key];
+      if (!e) continue;
+      const kk = key + "|" + uid;
+      if (e.sol && srv - e.sol >= OPUS.SOLMA_MS) {        /* tam yox olub: bazadan təmizlə */
+        if (yigEl[kk]) { yigEl[kk].el.remove(); delete yigEl[kk]; }
+        if (!yigSilinir.has(kk)) { yigSilinir.add(kk); remove(ref(rtdb, YIG_YOL + uid + "/" + key)).catch(() => {}); }
+        continue;
+      }
+      const ok = ogelen.has(kk) || (Date.now() - (ogorulen[kk] || Date.now()) > 8000);
+      if (!ok) continue;                                  /* uçub çatana qədər gözləyir */
+      let rec = yigEl[kk];
+      const f = fotoTap(uid), r = f && fotoRect(f);
+      if (!r) { if (rec) rec.el.style.display = "none"; continue; }
+      if (!rec) {
+        const g = HEDIYYELER.find(h => h.id === e.i);
+        if (!g) continue;
+        const el = document.createElement("div");
+        el.className = "hd-yig";
+        el.innerHTML = gorsel(g);
+        yigQat.appendChild(el);
+        rec = yigEl[kk] = { el, sol: false };
+      }
+      const L = r.width * OPUS.OLCU, el = rec.el;
+      el.style.display = "flex";
+      el.style.width = el.style.height = L + "px";
+      el.style.fontSize = (L * 0.8) + "px";
+      el.style.left = (r.left + r.width * e.x / 100 - L / 2) + "px";
+      el.style.top = (r.top + r.height * e.y / 100 - L / 2) + "px";
+      el.style.transform = "rotate(" + e.r + "deg)";
+      if (e.sol && !rec.sol) {                            /* tədricən yox olma: hamı üçün eyni anda (server vaxtı ilə) */
+        rec.sol = true;
+        const an = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: OPUS.SOLMA_MS, easing: "linear", fill: "both" });
+        an.currentTime = srv - e.sol;                     /* artıq keçən hissədən davam edir (mənfi olarsa gözləyir) */
+      }
+    }
+  }
+}
+setInterval(yigimCiz, 120);
