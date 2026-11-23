@@ -54,7 +54,7 @@
 
 /* Ortaya gələn kart: masadakı ilə EYNİ ölçü (17vw) */
 .orta {
-  position: absolute; width: 17vw; height: 17vw; transform: translate(-50%, -50%);
+  position: absolute; width: 16.9vw; height: 16.9vw;
   opacity: 0; z-index: 4;
   transition: left .85s cubic-bezier(.4, 0, .2, 1), top .85s cubic-bezier(.4, 0, .2, 1), opacity .3s;
 }
