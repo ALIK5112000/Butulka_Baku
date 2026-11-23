@@ -7,8 +7,11 @@
   position: absolute; left: 85.1%; top: 3.5%; width: .24em; height: .213em;
   display: none; align-items: center; justify-content: center; pointer-events: none;
 }
-.opus svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
-.opus b { position: relative; color: #fff; font-size: .125em; font-weight: 700; line-height: 1; }
+.opus svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
+.opus b {
+  position: relative; color: #fff; font-size: .115em; font-weight: 700; line-height: 1;
+  text-shadow: 0 .05em .1em rgba(90, 15, 5, .45);
+}
 
 #gozleYazi {
   display: none; position: absolute; left: 0; width: 100%; top: 53.5vw; z-index: 4;
