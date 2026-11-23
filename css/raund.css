@@ -23,9 +23,9 @@
   pointer-events: none;
 }
 #sayac {
-  display: none; position: absolute; left: 50%; top: 61vw; z-index: 4;
-  transform: translate(-50%, -50%); font-size: 8vw; font-weight: 700;
-  color: rgba(255,255,255,.92); text-shadow: 0 .3vw 1vw rgba(0,0,0,.35);
+  display: none; position: absolute; left: 50%; top: 61.5vw; z-index: 4;
+  transform: translate(-50%, -50%); font-size: 5.7vw; font-weight: 700; line-height: 1;
+  color: #fff; text-shadow: 0 .3vw 1vw rgba(0,0,0,.35);
 }
 #sizinSecim {
   display: none; position: absolute; left: 50%; top: 38.6vw; width: 60vw; z-index: 4;
@@ -96,13 +96,13 @@
 #bdU { left: 50vw; top: 9vw; }
 #bdA { left: 50vw; top: 33.1vw; }
 
-#dugmeler { display: none; position: absolute; left: 0; top: 75.5vw; width: 100%; z-index: 5; }
+#dugmeler { display: none; position: absolute; left: 0; top: 74.75vw; width: 100%; z-index: 5; }
 #dugmeler button {
-  position: absolute; top: 0; width: 20.4vw; height: 9.5vw; border: 0; border-radius: 2vw;
-  color: #fff; font: 700 3.9vw Roboto, Arial, sans-serif; box-shadow: 0 .5vw 1vw rgba(0,0,0,.25);
+  position: absolute; top: 0; width: 18.4vw; height: 8.3vw; border: 0; border-radius: 2vw; padding: 0;
+  color: #fff; font: 700 2.5vw/1 Roboto, Arial, sans-serif; box-shadow: 0 .5vw 1vw rgba(0,0,0,.25);
 }
-#btnImtina { left: 28vw; background: #e03d1c; }
-#btnOp { left: 51.4vw; background: #9bcc34; }
+#btnImtina { left: 30.1vw; background: #e03d1c; }
+#btnOp { left: 51.5vw; background: #9bcc34; }
 
 /* Raund bitəndən sonra: növbəti fırlanmanı gözləmə yazısı */
 #araYazi {
