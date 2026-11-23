@@ -100,3 +100,138 @@ if (cari && cari.docId) {
   });
   window.addEventListener("resize", () => { if (menyu.style.display === "block") yerlesdir(); });
 })();
+
+// ===== Ayarlar düyməsi (dişli çarx) + Parametrlər pəncərəsi =====
+(function ayarQur() {
+  const panel = document.getElementById("ustPanel") || document.getElementById("cixisBtn").parentNode;
+
+  // Köhnə ayarlar düyməsi varsa onu istifadə edirik (id: ayarBtn), yoxdursa yenisini yaradırıq
+  let ayarBtn = document.getElementById("ayarBtn");
+  if (!ayarBtn) {
+    ayarBtn = document.createElement("button");
+    ayarBtn.id = "ayarBtn";
+    ayarBtn.type = "button";
+    panel.appendChild(ayarBtn);
+  }
+  ayarBtn.className = "ub";
+  ayarBtn.style.left = "64.5vw";
+  ayarBtn.innerHTML =
+    '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/>' +
+    '<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+
+  // Səs səviyyələri (yadda qalır)
+  function oxu(acar, ilk) {
+    try { const v = localStorage.getItem(acar); return v === null ? ilk : Number(v); } catch (e) { return ilk; }
+  }
+  window.__sesSeviyyesi = oxu("sesSeviyyesi", 100);       // chat + hədiyyə səsləri (0-100)
+  window.__musiqiSeviyyesi = oxu("musiqiSeviyyesi", 0);   // musiqi + klip səsləri (0-100)
+
+  // Slider üçün stil
+  if (!document.getElementById("ayarStil")) {
+    const st = document.createElement("style");
+    st.id = "ayarStil";
+    st.textContent =
+      "#ayarOverlay .sl{-webkit-appearance:none;appearance:none;width:100%;height:.6vw;border-radius:1vw;outline:none;margin:0;" +
+      "background:linear-gradient(to right,#8cc63f var(--d,0%),#e6e6e6 var(--d,0%));}" +
+      "#ayarOverlay .sl::-webkit-slider-thumb{-webkit-appearance:none;width:6.2vw;height:6.2vw;border-radius:50%;background:#fff;" +
+      "box-shadow:0 .4vw 1.2vw rgba(0,0,0,.35);border:.2vw solid #eee;}" +
+      "#ayarOverlay .sl::-moz-range-thumb{width:6.2vw;height:6.2vw;border-radius:50%;background:#fff;" +
+      "box-shadow:0 .4vw 1.2vw rgba(0,0,0,.35);border:.2vw solid #eee;}";
+    document.head.appendChild(st);
+  }
+
+  // Pəncərə
+  const overlay = document.createElement("div");
+  overlay.id = "ayarOverlay";
+  overlay.style.cssText =
+    "position:fixed;inset:0;display:none;z-index:10000;background:rgba(0,0,0,.35);" +
+    "align-items:center;justify-content:center;font-family:Roboto,Arial,sans-serif;";
+
+  const kart = document.createElement("div");
+  kart.style.cssText =
+    "position:relative;width:80vw;background:#fff;border-radius:5vw;padding:4vw 3vw 4vw;" +
+    "box-shadow:0 1vw 5vw rgba(0,0,0,.3);";
+
+  const baslig = document.createElement("div");
+  baslig.textContent = "Parametrlər";
+  baslig.style.cssText = "text-align:center;color:#a9a9a9;font-size:4.2vw;font-weight:700;margin-bottom:3vw;";
+  kart.appendChild(baslig);
+
+  // X düyməsi
+  const baglaBtn = document.createElement("button");
+  baglaBtn.type = "button";
+  baglaBtn.style.cssText =
+    "position:absolute;top:-3.5vw;right:-3.5vw;width:8.4vw;height:8.4vw;border-radius:50%;border:0;padding:0;" +
+    "background:#fff;box-shadow:0 .6vw 2vw rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;";
+  baglaBtn.innerHTML =
+    '<svg viewBox="0 0 24 24" width="62%" height="62%" fill="none" stroke="#8cc63f" stroke-width="3" stroke-linecap="round">' +
+    '<line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>';
+  kart.appendChild(baglaBtn);
+
+  const IK_SES =
+    '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M3 9v6h4l5 4V5L7 9H3z" fill="#8cc63f"/>' +
+    '<path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="#c7c7c7" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  const IK_MUSIQI =
+    '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M9 18V6l11-2v12" fill="none" stroke="#c0489d" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>' +
+    '<circle cx="6.5" cy="18" r="3" fill="#c0489d"/><circle cx="17.5" cy="16" r="3" fill="#c0489d"/></svg>';
+  const IK_BLOK =
+    '<svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#e5383b" stroke-width="2.6" stroke-linecap="round">' +
+    '<circle cx="12" cy="12" r="9"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/></svg>';
+  const IK_ADMIN =
+    '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M12 2.5l8 3v6c0 4.8-3.3 8.6-8 10-4.7-1.4-8-5.2-8-10v-6l8-3z" fill="#6a5acd"/>' +
+    '<rect x="8" y="9.5" width="8" height="1.8" rx=".9" fill="#fff"/><rect x="8" y="12.6" width="5.5" height="1.8" rx=".9" fill="#fff"/></svg>';
+
+  const SATIR = "display:flex;align-items:center;gap:3.4vw;height:11vw;padding:0 3vw;font-size:4.4vw;color:#222;";
+  const IKON = "width:7vw;height:7vw;flex:none;display:flex;";
+
+  function sliderSatiri(ikon, ad, acar, ilk, hadise) {
+    const row = document.createElement("div");
+    row.style.cssText = SATIR;
+    row.innerHTML =
+      '<span style="' + IKON + '">' + ikon + "</span>" +
+      '<span style="flex:1;">' + ad + "</span>" +
+      '<div style="width:30vw;flex:none;display:flex;align-items:center;">' +
+      '<input class="sl" type="range" min="0" max="100" step="1" value="' + ilk + '"></div>';
+    const inp = row.querySelector("input");
+    const yenile = () => inp.style.setProperty("--d", inp.value + "%");
+    yenile();
+    inp.addEventListener("input", () => {
+      yenile();
+      const v = Number(inp.value);
+      window[acar] = v;
+      try { localStorage.setItem(acar === "__sesSeviyyesi" ? "sesSeviyyesi" : "musiqiSeviyyesi", String(v)); } catch (e) {}
+      document.dispatchEvent(new CustomEvent("ses-deyisdi", { detail: { tip: hadise, deyer: v } }));
+    });
+    return row;
+  }
+
+  function dokunSatiri(ikon, ad, key) {
+    const row = document.createElement("div");
+    row.style.cssText = SATIR + "cursor:pointer;";
+    row.innerHTML = '<span style="' + IKON + '">' + ikon + "</span><span style=\"flex:1;\">" + ad + "</span>";
+    row.onclick = () => {
+      bagla();
+      document.dispatchEvent(new CustomEvent("ayar-sec", { detail: key }));
+    };
+    return row;
+  }
+
+  // 1) Səslər: chat və hədiyyə səsləri
+  kart.appendChild(sliderSatiri(IK_SES, "Səslər", "__sesSeviyyesi", window.__sesSeviyyesi, "ses"));
+  // 2) Musiqi: musiqi və klip səsləri
+  kart.appendChild(sliderSatiri(IK_MUSIQI, "Musiqi", "__musiqiSeviyyesi", window.__musiqiSeviyyesi, "musiqi"));
+  // 3) Bloklanmış oyunçular
+  kart.appendChild(dokunSatiri(IK_BLOK, "Bloklanmış oyunçular", "bloklanmis"));
+  // 4) Adminə mesaj yaz
+  kart.appendChild(dokunSatiri(IK_ADMIN, "Adminə mesaj yaz", "admin-mesaj"));
+
+  overlay.appendChild(kart);
+  document.body.appendChild(overlay);
+
+  function ac() { overlay.style.display = "flex"; }
+  function bagla() { overlay.style.display = "none"; }
+
+  ayarBtn.onclick = (e) => { e.stopPropagation(); ac(); };
+  baglaBtn.onclick = bagla;
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) bagla(); });
+})();
