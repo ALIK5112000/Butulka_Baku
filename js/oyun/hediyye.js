@@ -11,7 +11,8 @@ import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx
    - YALNIZ şəklə düşən hədiyyələrdən (g1 öpüş, g3 pomidor, g15 tac) biri atılanda
      əvvəlki şəklə düşmüş hədiyyə tədricən solub silinir. Adi hədiyyələr (gül, maşın və s.)
      şəklin üstündəki hədiyyəyə toxunmur.
-   - Oyunçu masada yer dəyişəndə və ya qalxanda üstündəki hədiyyələr silinir.
+   - Oyunçu masada həqiqətən yer dəyişəndə və ya 3.5 saniyədən çox qalxanda üstündəki hədiyyələr silinir
+     (2 saniyəlik başqa səhifəyə keçib qayıdanda silinmir).
    - Hər hansı pəncərə açılanda şəklin üstündəki hədiyyələr gizlənir. */
 
 /* ---------- AYARLAR ---------- */
@@ -329,11 +330,10 @@ window.HediyyePanel = { ac, bagla, hedef: () => hedef, modu: () => root.classLis
 /* ---------- Oturacaqlar və Yer Dəyişmə İzləməsi ---------- */
 const YAP_YOL = "masalar/" + MASA_NOMRESI + "/hediyyeYapisan/";
 const YIG_YOL = "masalar/" + MASA_NOMRESI + "/yigim/";
-if (MEN) onDisconnect(ref(rtdb, YAP_YOL + MEN)).remove();
-if (MEN) onDisconnect(ref(rtdb, YIG_YOL + MEN)).remove();
 
 let oturacaqlar = {}, spin = null, offset = 0, aktivKlip = null;
 const evvelkiYer = {};
+const silmeTaymer = {};
 
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => {
   oturacaqlar = s.val() || {};
@@ -342,15 +342,41 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => {
     const o = oturacaqlar[k];
     if (o && o.uid) indikiYer[o.uid] = k;
   }
-  /* Oyunçu masadan qalxıbsa və ya yerini dəyişibsə, üstündəki bütün hədiyyələri sil */
-  for (const uid in evvelkiYer) {
-    if (indikiYer[uid] !== evvelkiYer[uid]) {
-      remove(ref(rtdb, YAP_YOL + uid)).catch(() => {});
-      remove(ref(rtdb, YIG_YOL + uid)).catch(() => {});
+
+  /* Əgər oyunçu eyni oturacaqda görünürsə, gözləyən silmə taymerini ləğv et (2 san səhifə dəyişib qayıtma halı) */
+  for (const uid in indikiYer) {
+    if (silmeTaymer[uid] && evvelkiYer[uid] === indikiYer[uid]) {
+      clearTimeout(silmeTaymer[uid]);
+      delete silmeTaymer[uid];
     }
   }
-  for (const uid in evvelkiYer) delete evvelkiYer[uid];
-  for (const uid in indikiYer) evvelkiYer[uid] = indikiYer[uid];
+
+  for (const uid in evvelkiYer) {
+    const kohne = evvelkiYer[uid];
+    const yeni = indikiYer[uid];
+
+    if (yeni && yeni !== kohne) {
+      /* Oyunçu başqa oturacağa keçib -> dərhal sil */
+      if (silmeTaymer[uid]) { clearTimeout(silmeTaymer[uid]); delete silmeTaymer[uid]; }
+      remove(ref(rtdb, YAP_YOL + uid)).catch(() => {});
+      remove(ref(rtdb, YIG_YOL + uid)).catch(() => {});
+      evvelkiYer[uid] = yeni;
+    } else if (!yeni && !silmeTaymer[uid]) {
+      /* Oyunçu oturacaqdan ayrılıb -> 3.5 san gözlə; eyni yerə qayıtmasa sil */
+      silmeTaymer[uid] = setTimeout(() => {
+        delete silmeTaymer[uid];
+        if (!indikiYer[uid]) {
+          remove(ref(rtdb, YAP_YOL + uid)).catch(() => {});
+          remove(ref(rtdb, YIG_YOL + uid)).catch(() => {});
+          delete evvelkiYer[uid];
+        }
+      }, 3500);
+    }
+  }
+
+  for (const uid in indikiYer) {
+    if (!evvelkiYer[uid]) evvelkiYer[uid] = indikiYer[uid];
+  }
 });
 
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/raund/spin"), s => { spin = s.val() || null; });
