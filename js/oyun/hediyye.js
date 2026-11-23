@@ -388,10 +388,10 @@ async function gonder(g, c) {
 
   /* ödəniş nəticəsi */
   odenis.then(() => {
+    /* öpüş hədiyyəsi: masadakı sayğac artır, alan oyunçunun öz klienti "kisses" xalını eyni qədər artırır */
     if (g.opus) {
       alanlar.forEach(k => {
         rtTx(ref(rtdb, "masalar/" + MASA_NOMRESI + "/opus/" + k), v => num(v) + c).catch(() => {});
-        updateDoc(doc(fsdb, "users", k), { kisses: increment(c) }).catch(() => {});
       });
     }
     const dj = djUid();
