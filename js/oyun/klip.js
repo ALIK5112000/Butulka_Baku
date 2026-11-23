@@ -158,7 +158,24 @@ document.addEventListener("pointerdown", () => {
   if (!sesliGozle) return;
   sesliGozle = false;
   kart.classList.remove("klik-gozle");
-  sesiTetbiqEt();
+  // Ayarlardakı "Musiqi" slayderi (0-100). Hələ təyin olunmayıbsa 100 sayılır
+const musiqiSeviyyesi = () => {
+  const v = window.__musiqiSeviyyesi;
+  return v === undefined || v === null ? 100 : Number(v);
+};
+
+function sesiTetbiqEt() {
+  if (!oynatici || !oynatici.mute) return;
+  try {
+    const m = musiqiSeviyyesi();
+    if (sessiz || secimAcik || m <= 0) oynatici.mute();
+    else {
+      oynatici.unMute();
+      // klipin öz slayderi × ayarlardakı Musiqi slayderi
+      oynatici.setVolume(Math.max(1, Math.round(ses * m / 100)));
+    }
+  } catch (e) {}
+}
   try { oynatici.playVideo(); } catch (e) {}
 }, true);
 
