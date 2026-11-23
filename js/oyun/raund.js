@@ -110,7 +110,7 @@ if (cari && cari.docId) {
     masa.appendChild(d); return d;
   }
   const oQ = yarat(), oO = yarat();
-  const MQ = [38.8, 61], MO = [61.2, 61]; // sol və sağ mərkəz (videodakı nisbətlə)
+  const MQ = [38.3, 61], MO = [61.7, 61]; // sol və sağ mərkəz (videodakı nisbətlə)
   const gizle = (i, b) => { const e = document.querySelector(".yer-" + i); if (e) e.classList.toggle("gizli", b); };
 
   // Kart masadakı yerindən başlayır, ortaya uçur (ölçü dəyişmir)
