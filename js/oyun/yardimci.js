@@ -1,3 +1,17 @@
+/* Performans: bu fayl digər modullardan ƏVVƏL yüklənir (hamısı onu import edir).
+   - 60 ms-dən sürətli dövrlər (məs. ürək düyməsini gizlədən 50 ms yoxlama) 250 ms-ə endirilir
+   - profil kartındakı sıra sorğusu (saniyədə 5 server sorğusu) 10 saniyəyə endirilir */
+if (!window.__siQoru) {
+  window.__siQoru = true;
+  const _si = window.setInterval.bind(window);
+  window.setInterval = (fn, ms, ...a) => {
+    if (typeof fn === "function") {
+      if (ms <= 60) ms = 250;
+      else if (ms === 1000 && String(fn).includes("siraYenile")) ms = 10000;
+    }
+    return _si(fn, ms, ...a);
+  };
+}
 export function cariOyuncu() {
   try { return JSON.parse(localStorage.getItem("currentUser")); } catch (e) { return null; }
 }
