@@ -16,13 +16,14 @@ import { ref, onValue, set, onDisconnect, runTransaction as rtTx } from "https:/
    həmin faylı eyni adla əvəz et (və ya img yolunu dəyiş).
    Şəkil tapılmasa e (emoji) göstərilir.
    q = qiymət (bonus ürək), opus:true = öpüş hədiyyəsi, k = bölmə (ozel | yeni)
-   s = atılanda çıxan səs (sounds/ papkasında), yapis:true = alanın şəklinin üstünə oturur
+   s = atılanda çıxan səs, sl = oyunçunun şəklinə düşəndə çıxan səs (sounds/ papkasında), ucusMs = uçuş müddəti (ms, yoxdursa 900),
+   yapis:true = alanın şəklinin üstünə oturur
    (köhnə oturan hədiyyə silinir). Başqa hədiyyəni də oturan etmək üçün yapis:true yaz. */
 const SEKIL_PAPKA = "images/hediyye/";
 const SES_PAPKA = "sounds/";
 const HEDIYYELER = [
   { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   yapis: true },
-  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", yapis: true },
+  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5000, yapis: true },
   { id: "g7",  e: "🐸", img: SEKIL_PAPKA + "qurbaga.png", q: 2 },
   { id: "g2",  e: "🍓", img: SEKIL_PAPKA + "cilek.png",   q: 1, k: "yeni" },
   { id: "g4",  e: "🪨", img: SEKIL_PAPKA + "dash.png",    q: 1 },
@@ -427,9 +428,10 @@ function ucurYapis(g, x, to, pa, b, p) {
     { transform: "translate(-50%,-50%) scale(.4) rotate(0deg)", opacity: 0 },
     { transform: "translate(-50%,-50%) scale(1.1) rotate(0deg)", opacity: 1, offset: .12 },
     { transform: "translate(calc(-50% + " + dx + "px),calc(-50% + " + dy + "px)) scale(1) rotate(" + rot + "deg)", opacity: 1 }
-  ], { duration: 900, easing: "cubic-bezier(.2,.7,.3,1)", fill: "both" });
+  ], { duration: g.ucusMs || 900, easing: "cubic-bezier(.2,.7,.3,1)", fill: "both" });
   an.onfinish = () => {
     clearInterval(iz);
+    sesCal(g.sl);                  /* şəklə düşən an səs */
     gelen.add(x.n + "|" + to);     /* indi oturmasına icazə var */
     yapisanCiz();
     d.remove();
@@ -486,7 +488,7 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye"), s => {
    ekranda köhnə silinir. Şəkillər fikslənmiş qatda çəkilir (şəklin kənarına çıxa bilir, seat yenilənəndə itmir). */
 let yapData = {}, yapIlk = true, yapQat = null;
 const gelen = new Set();    /* uçuşu bitmiş (və ya səhifə açılanda artıq oturmuş) hədiyyələr: "n|uid" */
-const gorulen = {};         /* "n|uid" -> ilk görünmə vaxtı (uçuş animasiyası alınmasa 2.5 san sonra özü oturur) */
+const gorulen = {};         /* "n|uid" -> ilk görünmə vaxtı (uçuş animasiyası alınmasa 8 san sonra özü oturur) */
 const elmap = {};           /* uid -> { n, el } */
 
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyyeYapisan"), s => {
@@ -509,7 +511,7 @@ function yapisanCiz() {
     const d = yapData[uid];
     if (!d) continue;
     const key = d.n + "|" + uid;
-    const ok = gelen.has(key) || (simdi - (gorulen[key] || simdi) > 2500);
+    const ok = gelen.has(key) || (simdi - (gorulen[key] || simdi) > 8000);
     let rec = elmap[uid];
     if (rec && (rec.n !== d.n || !ok)) { rec.el.remove(); delete elmap[uid]; rec = null; }   /* köhnə silinir */
     if (!ok) continue;                                                                       /* yenisi uçub çatana qədər gözləyir */
