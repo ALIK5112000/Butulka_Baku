@@ -3,12 +3,17 @@ import { MASA_NOMRESI, OTURACAQ_SAYI } from "../core/config.js";
 import { cinsTap, vipMi } from "./yardimci.js";
 import { girisIcazesi } from "./masalar.js";
 import { novbeBaxis, novbeBaslat } from "./novbe.js";
-import { ref, get, set, remove, onValue, onDisconnect, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, get, set, remove, onValue, onDisconnect, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const yol = `masalar/${MASA_NOMRESI}/oturacaqlar`;
+const ayrYol = `masalar/${MASA_NOMRESI}/ayrilma`;      // bağlantısı kəsilənlərin vaxtı (yer dərhal silinmir)
+const opusYol = `masalar/${MASA_NOMRESI}/opus`;
 const masa = document.getElementById("masa");
 const yerler = [];
+
+// Bağlantı kəsiləndən sonra oyunçunun yeri nə qədər saxlanılsın (ms). Qısa çıxış-giriş oyunçunu atmır.
+const GRACE = 15000;
 
 // Aşağı sıradakı yerlərin (6,7,8,9) adı chat panelinin altında qalıb kəsilir: hələlik adlar gizlədilir.
 // Adları qaytarmaq üçün siyahını boş yaz: const ALT_YERLER = [];
@@ -25,12 +30,18 @@ for (let i = 0; i < OTURACAQ_SAYI; i++) {
 
 let aktivOyuncu = null;
 let sonData = {};
+let xamData = {};           // bazadan gələn ilkin oturacaq məlumatı
+let ayrilma = {};           // uid -> bağlantının kəsildiyi server vaxtı
+let offset = 0;
 let oturmusam = false;      // bu səhifədə bir dəfə oturmuşam (yer itərsə dərhal bərpa edək)
 let berpaTimer = null;
 // Oyundan çıxış edibsə (currentUser silinibsə) yer bərpa olunmasın
 const girisVar = () => {
   try { const c = JSON.parse(localStorage.getItem("currentUser")); return !!(c && c.docId); } catch (e) { return false; }
 };
+
+onValue(ref(rtdb, ".info/serverTimeOffset"), (s) => { offset = s.val() || 0; });
+onValue(ref(rtdb, ayrYol), (s) => { ayrilma = s.val() || {}; });
 
 // Əməliyyatlar növbə ilə işləyir ki, bir-birinin yerini silməsin (itib-gəlmənin əsas səbəbi bu idi)
 let zencir = Promise.resolve();
@@ -50,6 +61,43 @@ const sonYerOxu = () => {
 const sonYerYaz = (i) => {
   try { sessionStorage.setItem(`sonYer_${MASA_NOMRESI}_${aktivOyuncu && aktivOyuncu.uid}`, String(i)); } catch (e) {}
 };
+
+// Bağlantı kəsiləndə yer SİLİNMİR, yalnız "ayrılma vaxtı" yazılır. Qayıdanda bu qeyd silinir.
+// Yer yalnız GRACE-dən uzun müddət qayıtmayanda silinir (aşağıdakı təmizləyici).
+function presenceKur(uid) {
+  const r = ref(rtdb, `${ayrYol}/${uid}`);
+  remove(r).catch(() => {});
+  onDisconnect(r).set(serverTimestamp()).catch(() => {});
+}
+
+// Bağlantı yenidən qurulanda (2 san çıxıb qayıdanda): ayrılma qeydini sil, yer yoxdursa bərpa et
+async function tazele() {
+  if (!oturmusam || !aktivOyuncu || window.__masaCixir || !girisVar()) return;
+  presenceKur(aktivOyuncu.uid);
+  const i = sonYerOxu();
+  if (i === null) return;
+  const cur = (await get(ref(rtdb, `${yol}/${i}`))).val();
+  if (!cur || cur.uid !== aktivOyuncu.uid) berpa();
+}
+onValue(ref(rtdb, ".info/connected"), (s) => { if (s.val()) tazele().catch(() => {}); });
+
+// Uzun müddət qayıtmayanların yerini və öpüş sayğacını sil (hər kəs işlədə bilər, tranzaksiya təhlükəsizdir)
+setInterval(() => {
+  const indi = Date.now() + offset;
+  for (const k in xamData) {
+    const o = xamData[k];
+    if (!o || !o.uid) continue;
+    const t = ayrilma[o.uid];
+    if (!t || indi - t < GRACE) continue;
+    runTransaction(ref(rtdb, `${yol}/${k}`), (cur) => (cur && cur.uid === o.uid ? null : undefined))
+      .then((n) => {
+        if (n.committed) {
+          remove(ref(rtdb, `${ayrYol}/${o.uid}`)).catch(() => {});
+          remove(ref(rtdb, `${opusYol}/${o.uid}`)).catch(() => {});
+        }
+      }).catch(() => {});
+  }
+}, 3000);
 
 function qarish(a) {
   for (let i = a.length - 1; i > 0; i--) {
@@ -89,7 +137,7 @@ function yerliGoster(i, oyuncu) {
   cizdir(d);
 }
 
-// Yer müvəqqəti itibsə (köhnə bağlantının onDisconnect-i), bərpa olunana qədər oyunçu yerində görünsün
+// Yer müvəqqəti itibsə, bərpa olunana qədər oyunçu yerində görünsün
 function gosterData(data) {
   if (oturmusam && aktivOyuncu && !window.__masaCixir && girisVar()) {
     const var_ = Object.values(data).some((o) => o && o.uid === aktivOyuncu.uid);
@@ -127,9 +175,7 @@ async function dublikatlariSil(uid, saxlaIndeks = null) {
   const silinecekler = [];
   for (const k in hamisi) {
     if (hamisi[k] && hamisi[k].uid === uid && String(k) !== String(saxlaIndeks)) {
-      const rk = ref(rtdb, `${yol}/${k}`);
-      onDisconnect(rk).cancel().catch(() => {});   // köhnə yerdə qalan "çıxanda sil" başqasının yerini silməsin
-      silinecekler.push(remove(rk));
+      silinecekler.push(remove(ref(rtdb, `${yol}/${k}`)));
     }
   }
   if (silinecekler.length) {
@@ -145,7 +191,7 @@ async function saxla(oyuncu, k, movcud) {
   yerliGoster(k, oyuncu);
   const eyni = movcud && ["uid", "ad", "sekil", "vip", "cins"].every((f) => (movcud[f] || "") === (oyuncu[f] || ""));
   if (!eyni) await set(r, oyuncu);
-  onDisconnect(r).remove().catch(() => {});
+  presenceKur(oyuncu.uid);
 }
 
 // Təsadüfi boş yer tapıb oturur. istisna = bu yerə oturma (yer dəyişəndə köhnə yer)
@@ -179,12 +225,13 @@ async function yerTutIc(oyuncu, istisna) {
       oturmusam = true;
       sonYerYaz(i);
       yerliGoster(i, oyuncu);                    // dərhal görünsün
-      onDisconnect(r).remove().catch(() => {});
+      presenceKur(oyuncu.uid);
       if (istisna !== null) {
         // Yer dəyişmə: köhnə yeri dərhal boşalt (başqasının yerini silməsin deyə yalnız öz yazımı)
         const eski = ref(rtdb, `${yol}/${istisna}`);
-        onDisconnect(eski).cancel().catch(() => {});
         runTransaction(eski, (cur) => (cur && cur.uid === oyuncu.uid ? null : undefined)).catch(() => {});
+        // Yer dəyişəndə öpüş sayğacı silinir
+        remove(ref(rtdb, `${opusYol}/${oyuncu.uid}`)).catch(() => {});
         window.dispatchEvent(new CustomEvent("oyuncuYerDeyisdi", { detail: { uid: oyuncu.uid, kohne: Number(istisna), yeni: i } }));
       }
       await dublikatlariSil(oyuncu.uid, i);      // köhnə yer varsa sil
@@ -267,18 +314,20 @@ export async function masadanCix() {
     let uid = aktivOyuncu && aktivOyuncu.uid;
     if (!uid) { try { uid = (JSON.parse(localStorage.getItem("currentUser")) || {}).docId; } catch (e) {} }
     if (!uid) return;
+    onDisconnect(ref(rtdb, `${ayrYol}/${uid}`)).cancel().catch(() => {});
     const hamisi = (await get(ref(rtdb, yol))).val() || {};
     await Promise.all(Object.keys(hamisi)
       .filter((k) => hamisi[k] && hamisi[k].uid === uid)
       .map((k) => remove(ref(rtdb, `${yol}/${k}`))));
-    await remove(ref(rtdb, `masalar/${MASA_NOMRESI}/opus/${uid}`));
+    await remove(ref(rtdb, `${opusYol}/${uid}`));
+    await remove(ref(rtdb, `${ayrYol}/${uid}`));
     await remove(ref(rtdb, "prezans/" + uid));
   } catch (e) {}
 }
 window.masadanCix = masadanCix;
 
-// Səhifədən ayrılanda yer bərpa olunmasın (geri qayıdanda pageshow bunu sıfırlayır)
-window.addEventListener("pagehide", () => { window.__masaCixir = true; });
+// QEYD: əvvəlki "pagehide -> __masaCixir = true" ləğv edildi. Səhifə yalnız gizlənəndə (başqa tətbiqə keçəndə)
+// bayraq qalıb bərpanı həmişəlik dayandırırdı və oyunçu oyundan atılırdı.
 
 // Çıxış düyməsi (#cixisBtn): yeri dərhal sil, bərpa etmə. Səhifədən getməsə (ləğv edilsə) 4 san sonra yenidən otur
 document.addEventListener("click", (e) => {
@@ -294,8 +343,8 @@ function geriQayidandaYoxla() {
   if (document.visibilityState !== "visible") return;
   clearTimeout(yoxlaTimer);
   yoxlaTimer = setTimeout(() => {
+    tazele().catch(() => {});
     berpa();
-    // köhnə bağlantının gecikmiş onDisconnect-i yeri silə bilər: bir də yoxla
     setTimeout(() => { if (document.visibilityState === "visible") berpa(); }, 1500);
   }, 150);
 }
@@ -376,6 +425,7 @@ export async function masaniBasla() {
 
     const ilk = new Promise((res) => onValue(ref(rtdb, yol), (s) => {
       const data = s.val() || {};
+      xamData = data;
       cizdir(gosterData(data));
       yerItdiYoxla(data);
       res();
