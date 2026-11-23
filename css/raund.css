@@ -71,23 +71,27 @@
 /* Şəkil qoymayanlar üçün standart avatar */
 .yer .foto, .orta .foto { background-image: url("../images/avatar/nophoto.svg"); }
 
-/* Oxlar: kimin kimə nə verdiyi (ağ haşiyəli) */
+/* Oxlar: kimin kimə nə verdiyi (videodakı ölçülərlə; 1 vahid = 1vw) */
 #oxlar {
-  display: none; position: absolute; left: 28vw; top: 40vw; width: 44vw; height: 42vw;
-  z-index: 3; pointer-events: none;
+  display: none; position: absolute; left: 0; top: 40vw; width: 100vw; height: 42vw;
+  z-index: 6; pointer-events: none;
 }
-#oxlar svg { width: 100%; height: 100%; fill: none; filter: drop-shadow(.3vw 0 0 #fff) drop-shadow(-.3vw 0 0 #fff) drop-shadow(0 .3vw 0 #fff) drop-shadow(0 -.3vw 0 #fff); }
-#oxlar path.xett { stroke-width: 2; stroke-linecap: round; }
+#oxlar svg { display: block; width: 100%; height: 100%; }
+#oxlar path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+#oxlar .ow { stroke: #fff; stroke-width: 2.1; }
+#oxlar .oc { stroke-width: 1.4; }
 .bd {
-  position: absolute; width: 4.4vw; height: 4.4vw; transform: translate(-50%, -50%);
+  position: absolute; width: 4.8vw; height: 4.8vw; transform: translate(-50%, -50%);
   display: none; align-items: center; justify-content: center; border-radius: 50%;
-  border: .4vw solid #fff; color: #fff; font-size: 2.6vw; line-height: 1;
-  box-shadow: 0 .3vw .8vw rgba(0,0,0,.3);
+  border: .3vw solid #fff; box-sizing: content-box;
 }
-.bd.op { background: #fff; width: 5.4vw; height: 4.2vw; }
+.bd svg { display: block; }
+.bd.op { background: #9bcc34; }
+.bd.op svg { width: 3.5vw; height: 2.4vw; }
 .bd.yox { background: #e03d1c; }
-#bdU { left: 22vw; top: 4vw; }
-#bdA { left: 22vw; top: 35.2vw; }
+.bd.yox svg { width: 2.2vw; height: 2.2vw; }
+#bdU { left: 50vw; top: 9vw; }
+#bdA { left: 50vw; top: 33.1vw; }
 
 #dugmeler { display: none; position: absolute; left: 0; top: 75.5vw; width: 100%; z-index: 5; }
 #dugmeler button {
