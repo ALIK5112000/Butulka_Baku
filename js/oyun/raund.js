@@ -1,7 +1,7 @@
 import { rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI, YER_XY } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
-import { ref, onValue, set, runTransaction, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, onValue, set, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 const cari = cariOyuncu();
 if (cari && cari.docId) {
@@ -12,12 +12,14 @@ if (cari && cari.docId) {
   const UCUS = 950;            // cütün ortaya uçma müddəti
   const QAYIT = 600;           // yerinə qayıtma müddəti
   const CUT = 9000 + UCUS;     // 9 san sayğac + uçuş
+  const GRACE = 20000;         // oyunçu masada yoxdursa, öpüş sayğacı bu müddətdən sonra silinir
   const EASE = "cubic-bezier(.25,.46,.45,.94)"; // orijinaldakı kimi: sürətli başlayır, yavaş dayanır
   const $ = (id) => document.getElementById(id);
   const butulka = $("butulka"), masa = $("masa");
   const OPAC = ", opacity .9s";
   let yerler = {}, raund = null, opus = {}, offset = 0, hazir = 0;
   let bucaq = 0, sonSpin = 0, ortada = false, ortaIdx = null, secildi = 0, sesBas = 0;
+  let benYer = null;           // mənim son oturduğum yer (yer dəyişəni tapmaq üçün)
   const indi = () => Date.now() + offset;
   const temiz = (v) => { const o = {}; Object.entries(v || {}).forEach(([k, x]) => { if (x) o[k] = x; }); return o; };
   const rnd = (a) => a[Math.floor(Math.random() * a.length)];
@@ -33,11 +35,21 @@ if (cari && cari.docId) {
     novbeSes.play().then(() => { novbeSes.pause(); novbeSes.currentTime = 0; novbeSes.muted = false; }).catch(() => { novbeSes.muted = false; });
   }, { once: true });
 
+  // Öz yerim dəyişibsə (başqa yerə keçib) öz öpüş sayğacımı sıfırla.
+  // Qısa müddət çıxıb eyni yerə qayıdanda benYer dəyişmir, sayğac qalır.
+  function menimYer() {
+    const k = Object.keys(yerler).find((i) => yerler[i].uid === cari.docId);
+    if (k === undefined) return;
+    const n = +k;
+    if (benYer !== null && benYer !== n) set(ref(rtdb, B + "/opus/" + cari.docId), null).catch(() => {});
+    benYer = n;
+  }
+
   onValue(ref(rtdb, ".info/serverTimeOffset"), (s) => { offset = s.val() || 0; });
-  onValue(ref(rtdb, B + "/oturacaqlar"), (s) => { yerler = temiz(s.val()); hazir |= 1; });
+  onValue(ref(rtdb, B + "/oturacaqlar"), (s) => { yerler = temiz(s.val()); hazir |= 1; menimYer(); });
   onValue(ref(rtdb, B + "/raund"), (s) => { raund = s.val(); hazir |= 2; });
   onValue(ref(rtdb, B + "/opus"), (s) => { opus = s.val() || {}; });
-  onDisconnect(ref(rtdb, B + "/opus/" + cari.docId)).remove();
+  // QEYD: əvvəlki onDisconnect(.../opus/uid).remove() ləğv edildi. Səhifədən 2 san çıxanda sayğac silinirdi.
 
   const OK = 'stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"';
   // Oxlar (videodakı ölçülərlə, koordinatlar vw): gövdə + açıq (L şəkilli) ox ucu
@@ -45,6 +57,14 @@ if (cari && cari.docId) {
   const OXA = "M58.7 29.96Q50.55 36.67 40.2 29.03M42.6 29.03L40.2 29.03L40.2 31.43";
   const DODAQ = '<svg viewBox="-2 -2 104 64" style="width:3.85vw;height:2.4vw;display:block"><path d="M1 29C8 18 22 4 33 4C40 4 45 6 50 8C55 6 60 4 67 4C78 4 92 18 99 28C90 46 70 59 50 59C30 59 10 46 1 29Z" fill="#d94a2b" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/><path d="M25 29Q50 23.5 75 29Q50 37 25 29Z" fill="#fff"/></svg>';
   const IKS = '<svg viewBox="0 0 20 20" style="width:2.4vw;height:2.4vw;display:block"><path d="M3.2 3.2L16.8 16.8M16.8 3.2L3.2 16.8" stroke="#fff" stroke-width="3.2" stroke-linecap="round" fill="none"/></svg>';
+  // Dodaq izi üçün kələ-kötür kənar filtri (bir dəfə əlavə olunur)
+  masa.insertAdjacentHTML("beforeend",
+    '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>' +
+    '<filter id="kissRough" x="-8%" y="-8%" width="116%" height="116%">' +
+    '<feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4" result="n"/>' +
+    '<feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G" result="d"/>' +
+    '<feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  6 0 0 0 -1.5" result="m"/>' +
+    '<feComposite in="d" in2="m" operator="in"/></filter></defs></svg>');
   masa.insertAdjacentHTML("beforeend",
     '<div id="oxlar"><svg viewBox="0 0 100 42">' +
     '<g id="oxU"><path class="ow" d="' + OXU + '"/><path class="oc" d="' + OXU + '"/></g>' +
@@ -74,7 +94,8 @@ if (cari && cari.docId) {
     b.innerHTML = v === "op" ? DODAQ : IKS;
   }
 
-  const DUDAQ = '<svg viewBox="0 0 100 88"><path d="M4 48C14 30 30 18 42 24C46 26 48 28 50 28C52 28 54 26 58 24C70 18 86 30 96 48C84 70 66 82 50 82C34 82 16 70 4 48Z" fill="#e8452c"/><path d="M7 48C26 57 40 52 50 54C60 52 74 57 93 48" fill="none" stroke="#b32612" stroke-width="3" stroke-linecap="round"/></svg>';
+  // Öpüş izi (kələ-kötür kənarlı qırmızı dodaq + ortada tünd xətt)
+  const DUDAQ = '<svg viewBox="0 0 100 88" style="transform:rotate(-6deg)"><g filter="url(#kissRough)"><path d="M4 48C14 28 30 16 42 24C46 27 48 29 50 29C52 29 54 27 58 24C70 16 86 28 96 48C84 72 66 82 50 82C34 82 16 72 4 48Z" fill="#ec4a2c"/><path d="M8 49C28 40 40 46 50 47C60 46 72 40 92 49" fill="none" stroke="#7a1a0c" stroke-opacity=".75" stroke-width="2.6" stroke-linecap="round"/></g></svg>';
   function nishan(foto, n) {
     let b = foto.querySelector(".opus");
     if (!b && !n) return;
@@ -269,11 +290,33 @@ if (cari && cari.docId) {
   $("butulkaDokun").onclick = toxun;
   butulka.onclick = toxun;
 
+  // Öpüş sayğaclarının təmizlənməsi (yalnız idarəedən oyunçu işlədir):
+  // - oyunçu başqa yerə keçibsə, sayğac silinir
+  // - oyunçu GRACE-dən uzun müddət masada yoxdursa, sayğac silinir (qısa çıxış sayılmır)
+  const sonYer = {}, yoxdan = {};
+  function opusTemizle(idx) {
+    const indiki = Date.now(), var_ = {};
+    idx.forEach((i) => { var_[yerler[i].uid] = i; });
+    for (const u in var_) {
+      if (sonYer[u] !== undefined && sonYer[u] !== var_[u] && opus[u]) set(ref(rtdb, B + "/opus/" + u), null).catch(() => {});
+      sonYer[u] = var_[u]; delete yoxdan[u];
+    }
+    for (const u in opus) {
+      if (var_[u] !== undefined) continue;
+      if (!yoxdan[u]) yoxdan[u] = indiki;
+      else if (indiki - yoxdan[u] > GRACE) {
+        set(ref(rtdb, B + "/opus/" + u), null).catch(() => {});
+        delete yoxdan[u]; delete sonYer[u];
+      }
+    }
+  }
+
   // Raundları yalnız masadakı ən kiçik nömrəli oyunçu idarə edir
   setInterval(() => {
     if (hazir < 3) return;
     const idx = Object.keys(yerler).map(Number).sort((a, b) => a - b);
     if (!idx.length || yerler[idx[0]].uid !== cari.docId) return;
+    opusTemizle(idx);
     const qiz = idx.filter((i) => yerler[i].cins === "q").length;
     if (!qiz || idx.length - qiz === 0) { if (raund) set(ref(rtdb, B + "/raund"), null); return; }
 
