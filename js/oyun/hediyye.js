@@ -146,7 +146,7 @@ function toast(msg) {
 /* ---------- SINAQ REJİMİ ----------
    true olanda ekranın sol üstündə hədiyyənin hansı mərhələdə dayandığı yazılır (9 san görünür).
    Hər şey işləyəndə false et. */
-const HD_DEBUG = true;
+const HD_DEBUG = false;
 function dbg(m) {
   if (!HD_DEBUG) return;
   console.log("[hediyye]", m);
