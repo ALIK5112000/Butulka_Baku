@@ -86,3 +86,15 @@
 .yer-9  { left: 17.2vw; top: 96.2vw; }
 .yer-10 { left: 13.1vw; top: 74.4vw; }
 .yer-11 { left: 13.1vw; top: 52.7vw; }
+/* Ortaya çıxan kartlar masadakı ilə eyni ölçüdə olsun */
+#masa .orta .foto {
+  width: 16.9vw;
+  height: 16.9vw;
+  border-radius: 1.8vw;
+}
+#masa .orta .ad {
+  margin-top: 0.3vw;
+  font-size: 2.2vw;
+  line-height: 1.15;
+  font-weight: 400;
+}
