@@ -445,7 +445,7 @@ async function gonder(g, c) {
     if (g.yapis) alanlar.forEach(k => remove(ref(rtdb, YAP_YOL + k)).catch(() => {}));
     if (g.yigim) alanlar.forEach(k => remove(ref(rtdb, YIG_YOL + k + "/" + n)).catch(() => {}));
     if (e.message === "YETMIR") { toast("Bonus ürəyiniz çatmır"); if (window.HeartShop) window.HeartShop.open(); }
-    else { console.error(e); toast("Xəta baş verdi, yenidən cəhd edin"); }
+    else { console.error("[hediyye] xeta:", e); toast("Xəta: " + (e.code || e.message)); }
   });
 }
 
