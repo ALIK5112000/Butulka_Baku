@@ -64,8 +64,9 @@
   box-shadow: 0 .6vw 1.6vw rgba(0,0,0,.3);
 }
 .orta .ad {
-  position: absolute; left: -3vw; right: -3vw; top: 17.8vw; text-align: center;
-  font-size: 2.7vw; color: #fff; text-shadow: 0 .2vw .6vw rgba(0,0,0,.55); white-space: nowrap;
+  position: absolute; left: -3vw; right: -3vw; top: 17.2vw; text-align: center;
+  font-size: 2.2vw; line-height: 1.15; color: #fff;
+  text-shadow: 0 .2vw .6vw rgba(0,0,0,.7); white-space: nowrap;
 }
 /* Şəkil qoymayanlar üçün standart avatar */
 .yer .foto, .orta .foto { background-image: url("../images/avatar/nophoto.svg"); }
