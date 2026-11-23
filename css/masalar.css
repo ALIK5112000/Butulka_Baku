@@ -57,11 +57,6 @@
 .bos { color: #b0b0b0; font-size: 3.4vw; padding: 1vw 0 2vw; }
 #mDost { max-height: none; }
 
-/* Masa dəyiş düyməsi: ikon yerində, geri sayım üstündə */
-#ustPanel .ub .ikw { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
-#ustPanel .ub .ikw img { transition: opacity .2s; }
-#ustPanel .ub .ikw.sol img { opacity: .3; }
-#ustPanel .ub .gerisay { position: absolute; left: 0; right: 0; top: 0; bottom: 0; align-items: center; justify-content: center; text-shadow: 0 0 1vw rgba(0,0,0,.35); pointer-events: none; }
 /* Pəncərə: sıçrayış olmasın, sürüşmə arxaya keçməsin */
 #modalYer { overscroll-behavior: contain; -webkit-tap-highlight-color: transparent; }
 #mDost { min-height: 13.5vw; }
