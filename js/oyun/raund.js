@@ -8,7 +8,7 @@ if (cari && cari.docId) {
   const B = `masalar/${MASA_NOMRESI}`;
   // ---- Zamanlar (ms). Sürəti buradan tənzimlə ----
   const GOZLE = 8000, SPIN = 5000, ARA = 2200;
-  const HOLD = 2200;            // ikisi də seçəndən sonra ortada qalma müddəti
+  const HOLD = 2200;           // ikisi də seçəndən sonra ortada qalma müddəti
   const UCUS = 950;            // cütün ortaya uçma müddəti
   const QAYIT = 600;           // yerinə qayıtma müddəti
   const CUT = 9000 + UCUS;     // 9 san sayğac + uçuş
@@ -21,6 +21,9 @@ if (cari && cari.docId) {
   const indi = () => Date.now() + offset;
   const temiz = (v) => { const o = {}; Object.entries(v || {}).forEach(([k, x]) => { if (x) o[k] = x; }); return o; };
   const rnd = (a) => a[Math.floor(Math.random() * a.length)];
+  // Ortadakı mərhələnin bitmə vaxtı (sp.t-dən ms): ikisi də seçibsə tez bitir
+  const cutSon = (r) => (r && r.spin && r.bt) ? Math.min(SPIN + CUT, r.bt - r.spin.t + HOLD) : SPIN + CUT;
+  const bitisYaz = () => runTransaction(ref(rtdb, B + "/raund/bt"), (c) => c ? undefined : serverTimestamp()).catch(() => {});
 
   // Növbə səsi (brauzer icazəsi üçün ilk toxunuşda "hazırlanır")
   const novbeSes = new Audio("sesler/novbe.mp3");
@@ -54,7 +57,7 @@ if (cari && cari.docId) {
     `<div id="novbeYazi"></div>` +
     `<div id="novbeYan"><svg id="novbeOk" viewBox="0 0 40 24"><path d="M38 12C26 8 18 16 4 12M12 4L3 12L12 20" ${OK}/></svg><div id="novbeMetn">Butulkanı<br>fırladır</div></div>` +
     `<div id="firlatYazi"><svg viewBox="0 0 40 24"><path d="M38 12C26 8 18 16 4 12M12 4L3 12L12 20" ${OK}/></svg><div>Butulkanı<br>fırlat</div></div>` +
-    '<div id="butulkaDokun"></div>');
+    '<div id="butulkaDokun"></div><div id="araYazi">Növbəti fırlanmanı<br>gözləyirlər</div>');
 
   const yz = (el, v) => { v = String(v); if (el._v !== v) { el._v = v; el.textContent = v; } };   // yalnız dəyişəndə yaz (lazımsız yenidən çəkilmə olmasın)
   function ox(pid, bid, v) {
@@ -121,8 +124,9 @@ if (cari && cari.docId) {
     const cutOK = sp && yerler[sp.q] && yerler[sp.o] && yerler[sp.q].uid === sp.qu && yerler[sp.o].uid === sp.ou;
     const t = sp ? indi() - sp.t : -1;
     const faza = gozle || !spOK ? "yox" : !sp ? "gozle" : !cutOK ? "yox"
-      : t < SPIN ? "spin" : t < SPIN + CUT ? "cut" : "ara";
+      : t < SPIN ? "spin" : t < cutSon(raund) ? "cut" : "ara";
     const cut = faza === "cut";
+    $("araYazi").style.display = faza === "ara" ? "block" : "none";
 
     // Şüşə (5 san yavaşıyaraq fırlanır, uçuş zamanı solur)
     if (faza === "spin" && sp.t !== sonSpin) {
@@ -203,12 +207,12 @@ if (cari && cari.docId) {
       const sq = sec[sp.qu], so = sec[sp.ou];
       const oynayan = ben === sp.qu || ben === sp.ou;
       let metn;
-      if (sq && so) metn = sq === "op" && so === "op" ? "Öpüşdülər!" : "Öpüşmədilər";
-      else if (oynayan && !sec[ben]) metn = "Sənin seçimin";
-      else if (sq === "op" || so === "op") metn = "Öpüşə öpüşlə cavab verəcək?";
-      else if (sq === "yox" || so === "yox") metn = "Biri imtina etdi";
-      else metn = "Onlar öpəcəklər ya yox?";
+      if (sq && so) metn = "";
+      else if (sq || so) metn = "öpüşə\nöpüşlə cavab verəcək?";
+      else if (oynayan) metn = "Sənin\nseçimin";
+      else metn = "Onlar öpəcəklər\nya yox?";
       yz($("sizinSecim"), metn);
+      if (sq && so) $("sayac").style.display = "none";
       goster = sayDa && oynayan && !sec[ben] && secildi !== sp.t;
       ox("oxU", "bdU", sol ? sq : so);   // yuxarı ox: soldakının seçimi
       ox("oxA", "bdA", sol ? so : sq);   // aşağı ox: sağdakının seçimi
@@ -230,6 +234,7 @@ if (cari && cari.docId) {
     secildi = s.t;
     const o = cari.docId === s.qu ? s.ou : s.qu;
     set(ref(rtdb, B + "/raund/sec/" + cari.docId), n);
+    if (raund.sec && raund.sec[o]) bitisYaz();
     if (n === "op") runTransaction(ref(rtdb, B + "/opus/" + o), (v) => (v || 0) + 1);
   }
   $("btnOp").onclick = () => secimYaz("op");
@@ -261,7 +266,8 @@ if (cari && cari.docId) {
     const sp = raund && raund.spin;
     const spOK = raund && yerler[raund.sp] && yerler[raund.sp].uid === raund.spu;
     const cutOK = !sp || (yerler[sp.q] && yerler[sp.o] && yerler[sp.q].uid === sp.qu && yerler[sp.o].uid === sp.ou);
-    const bitdi = sp && indi() - sp.t > SPIN + CUT + ARA;
+    if (sp && raund.sec && raund.sec[sp.qu] && raund.sec[sp.ou] && !raund.bt) bitisYaz();
+    const bitdi = sp && indi() - sp.t > cutSon(raund) + ARA;
     if (!raund || !spOK || !cutOK || bitdi) {
       const prev = raund && raund.sp !== undefined ? raund.sp : -1;
       const n = idx.find((i) => i > prev);
