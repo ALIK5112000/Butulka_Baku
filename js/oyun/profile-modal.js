@@ -1,7 +1,7 @@
 import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
-import { doc, onSnapshot, updateDoc, increment, runTransaction, collection, query, where, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { doc, onSnapshot, updateDoc, increment, runTransaction, collection, query, where, getCountFromServer, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { ref, onValue, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 /* ADDIM 1: Profil kartı (reytinqlər + Məftun sistemi). Bu fayl təkbaşınadır, CSS də içindədir. */
@@ -222,38 +222,68 @@ ov.className = "pf-ov";
 document.body.appendChild(ov);
 
 const SIRA_SAHELERI = ["kisses", "music", "smiles", "meftunQiymet", "cutUrek"];
-let tok = 0, sonD = null, unsub = null, mesgul = false, acik = false, ownerUid = null;
-const kesh = {};
+let sonD = null, unsub = null, acik = false, ownerUid = null;
 
-async function siraYenile(d) {
-  if (mesgul) return;
-  mesgul = true;
-  const t = ++tok;
-  await Promise.all(SIRA_SAHELERI.map(async k => {
-    const v = k === "meftunQiymet" ? Math.max(1, num(d[k])) : num(d[k]);
-    let n = null;
-    if (v > 0) {
-      try { n = (await getCountFromServer(query(collection(fsdb, "users"), where(k, ">", v)))).data().count + 1; }
-      catch (e) { console.error("Sıra xətası:", e); }
-    }
-    if (t !== tok) return;
-    kesh[k] = n ? fmt(n) + " sıra" : "";
-    ov.querySelectorAll('[data-r="' + k + '"]').forEach(el => { el.textContent = kesh[k]; });
-  }));
-  mesgul = false;
+/* Sıra nömrələri HƏR OYUNÇU üçün ayrıca yadda saxlanılır (uid -> {sahə: nömrə}).
+   Kart açılanda köhnə dəyər dərhal görünür, təzəsi hesablananda səssizcə dəyişir:
+   "sıra" yazıları artıq boşalıb sonra gəlmir. */
+const rkN = {};
+const rkTxt = (uid, k) => (rkN[uid] && rkN[uid][k] ? fmt(rkN[uid][k]) + " sıra" : "");
+
+function siraYaz(uid, k) {
+  if (uid !== ownerUid) return;
+  const t = rkTxt(uid, k);
+  ov.querySelectorAll('[data-r="' + k + '"]').forEach(el => { if (el.textContent !== t) el.textContent = t; });
 }
-setInterval(() => { if (ov.classList.contains("open") && sonD) siraYenile(sonD); }, 1000);
+
+const taym = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("vaxt bitdi")), ms))]);
+const isde = {}, gozle = {};
+async function siraYenile(uid, d) {
+  if (!uid || !d) return;
+  /* hesablama gedirsə yeni məlumat itmir: bitən kimi dərhal təkrar hesablanır */
+  if (isde[uid]) { gozle[uid] = d; return; }
+  isde[uid] = true;
+  try {
+    const rk = rkN[uid] || (rkN[uid] = {});
+    await Promise.all(SIRA_SAHELERI.map(async k => {
+      const v = k === "meftunQiymet" ? Math.max(1, num(d[k])) : num(d[k]);
+      if (v <= 0) { rk[k] = 0; siraYaz(uid, k); return; }
+      try {
+        const snap = await taym(getCountFromServer(query(collection(fsdb, "users"), where(k, ">", v))), 8000);
+        rk[k] = snap.data().count + 1;
+        siraYaz(uid, k);
+      } catch (e) { console.error("Sıra xətası:", e); /* xəta olsa köhnə sıra qalır, boşalmır */ }
+    }));
+  } finally {
+    isde[uid] = false;
+    const d2 = gozle[uid];
+    if (d2) { delete gozle[uid]; siraYenile(uid, d2); }
+  }
+}
+setInterval(() => { if (ov.classList.contains("open") && sonD && ownerUid) siraYenile(ownerUid, sonD); }, 1000);
+
+/* ================= KEŞ (oyunçu məlumatı, şəkillər) ================= */
+const udata = {};
+function azalt(obj, max) {
+  const ks = Object.keys(obj);
+  for (let i = 0; i < ks.length - max; i++) if (ks[i] !== ownerUid) delete obj[ks[i]];
+}
+const sekilIsit = u => { if (u) { try { const im = new Image(); im.src = u; } catch (e) {} } };
+/* kartdakı sabit şəkillər əvvəlcədən yüklənir ki, ilk açılışda gec çıxmasın */
+["images/profil/opucuk.png", "images/profil/mahni.png", "images/profil/smaylik.png", "images/profil/vip.png", NOPHOTO].forEach(sekilIsit);
 
 /* ================= MƏFTUNUN CANLI MƏLUMATI ================= */
 let mUid = null, mUnsub = null, mD = null;
+const mKesh = {};
+const mYarat = (uid, x) => ({ uid, ad: x.username || "Oyunçu", avatar: x.avatar || "", qiz: x.gender === "Qadın", vip: vipMi(x) });
 function izleMeftun(uid) {
   if (uid === mUid) return;
   if (mUnsub) { mUnsub(); mUnsub = null; }
-  mUid = uid; mD = null;
+  /* əvvəl görülmüş məftunun adı/şəkli dərhal çıxır ("Məftun ..." yanıb-sönmür) */
+  mUid = uid; mD = uid ? (mKesh[uid] || null) : null;
   if (!uid) return;
   mUnsub = onSnapshot(doc(fsdb, "users", uid), s => {
-    const x = s.data() || {};
-    mD = { uid, ad: x.username || "Oyunçu", avatar: x.avatar || "", qiz: x.gender === "Qadın", vip: vipMi(x) };
+    mD = mKesh[uid] = mYarat(uid, s.data() || {});
     if (sonD) ciz(sonD);
   }, () => {});
 }
@@ -261,7 +291,7 @@ function izleMeftun(uid) {
 /* ================= KART ================= */
 let gurulu = false, sig = {};
 function bagla() {
-  tok++; sonD = null; mesgul = false; ownerUid = null; gurulu = false; sig = {};
+  sonD = null; ownerUid = null; gurulu = false; sig = {};
   if (mUnsub) { mUnsub(); mUnsub = null; } mUid = null; mD = null;
   ov.classList.remove("open");
   if (unsub) { unsub(); unsub = null; }
@@ -288,7 +318,7 @@ function mesajYaz() {
 const adRengi = m => (m.vip ? (m.qiz ? "#e0201c" : "#1f5fd6") : (m.qiz ? "#f26aa6" : "#3aa0e0"));
 
 const onerr = "this.onerror=null;this.src='" + NOPHOTO + "'";
-const R = k => '<span class="pf-rk" data-r="' + k + '">' + esc(kesh[k] || "") + "</span>";
+const R = k => '<span class="pf-rk" data-r="' + k + '">' + esc(rkTxt(ownerUid, k)) + "</span>";
 const row = (cls, ic, val, k) => '<div class="pf-row ' + cls + '"><span class="pf-ic">' + ic + "</span><b>" + fmt(val) + "</b>" + R(k) + "</div>";
 
 /* Kartın karkası bir dəfə qurulur; sonra yalnız dəyişən hissələr yenilənir */
@@ -418,29 +448,73 @@ window.ProfilKart = {
     if (!docId) return;
     if (unsub) unsub();
     if (ownerUid !== docId) {
-      /* başqa oyunçunun kartına keçid: köhnə məlumat qalmasın */
-      tok++; mesgul = false; gurulu = false; sig = {}; sonD = null; ov.innerHTML = "";
-      for (const k in kesh) delete kesh[k];
+      /* başqa oyunçunun kartına keçid: köhnə oyunçunun məlumatı qalmasın */
+      gurulu = false; sig = {}; sonD = null; ov.innerHTML = "";
       if (mUnsub) { mUnsub(); mUnsub = null; } mUid = null; mD = null;
     }
     ownerUid = docId;
     ov.classList.add("open");
+    /* oyunçu əvvəl görülübsə və ya öncədən yüklənibsə kart boş açılmır:
+       məlumat + sıralar keşdən dərhal çəkilir, canlı məlumat gələndə səssizcə yenilənir */
+    if (!sonD && udata[docId]) {
+      sonD = udata[docId];
+      izleMeftun(sonD.meftunUid || null);
+      ciz(sonD);
+      siraYenile(docId, sonD);
+    }
     unsub = onSnapshot(doc(fsdb, "users", docId), snap => {
       if (!snap.exists()) { bagla(); return; }
       sonD = snap.data();
+      udata[docId] = sonD;
       izleMeftun(sonD.meftunUid || null);
       ciz(sonD);
-      siraYenile(sonD);
+      siraYenile(docId, sonD);
     }, err => { console.error("ProfilKart:", err); bagla(); });
   },
   bagla
 };
 
+/* ================= ÖNCƏDƏN YÜKLƏ =================
+   Masadakı oyunçuların məlumatı, məftunu, sıraları və şəkli kart açılmazdan əvvəl arxa planda yüklənir:
+   toxunanda kart dərhal tam halda görünür. Eyni oyunçu 2 dəqiqədən tez təkrar yüklənmir. */
+const hazir = {};
+async function onYukle(uid) {
+  if (!uid) return;
+  const indi = Date.now();
+  if (hazir[uid] && indi - hazir[uid] < 120000) return;
+  hazir[uid] = indi;
+  try {
+    const s = await getDoc(doc(fsdb, "users", uid));
+    if (!s.exists() || uid === ownerUid) return; /* kart artıq açıqdırsa canlı məlumat özü gəlir */
+    const d = s.data();
+    udata[uid] = d;
+    azalt(udata, 60);
+    sekilIsit(d.avatar);
+    if (d.meftunUid) {
+      const m = await getDoc(doc(fsdb, "users", d.meftunUid));
+      if (m.exists()) {
+        const x = m.data();
+        mKesh[d.meftunUid] = mYarat(d.meftunUid, x);
+        azalt(mKesh, 60);
+        sekilIsit(x.avatar);
+      }
+    }
+    azalt(rkN, 60);
+    siraYenile(uid, d);
+  } catch (e) { delete hazir[uid]; }
+}
+
 /* Oturacağa və ya fırlanma zamanı ortaya gələn kartlara toxunanda aç
    (üstünü qat örtsə belə, koordinatla tapır) */
 let oturacaqlar = {}, spin = null;
-onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => { oturacaqlar = s.val() || {}; });
-onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/raund/spin"), s => { spin = s.val() || null; });
+onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => {
+  oturacaqlar = s.val() || {};
+  Object.values(oturacaqlar).forEach(o => { if (o && o.uid) onYukle(o.uid); });
+});
+onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/raund/spin"), s => {
+  spin = s.val() || null;
+  if (spin) { onYukle(spin.qu); onYukle(spin.ou); }
+});
 
 /* Öz şəklinə ilk toxunuş: smaylik paneli, panel açıqkən yenə toxunsan: profil kartı.
    Başqasının şəklinə ilk toxunuş: hədiyyə paneli, yenə toxunsan: profil kartı. */
