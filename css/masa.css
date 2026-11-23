@@ -1,88 +1,113 @@
-/* --olcu: masanın kiçilmə əmsalı (1 = tam ölçü). js/oyun/olcu.js hesablayıb yazır */
-#taxta {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: calc(114vw * var(--olcu, 1));
-  background: url("../images/masa/fon.jpg") center/cover no-repeat, #d9964a;
+.yer .foto { position: relative; font-size: 17vw; }
+.orta .foto { position: relative; font-size: 17vw; }
+.yer.gizli { visibility: hidden !important; }
+
+/* Öpüş nişanı: şəklə nisbətən (orijinalla eyni yer və ölçü) */
+.opus {
+  position: absolute; left: 85.1%; top: 3.5%; width: .24em; height: .213em;
+  display: none; align-items: center; justify-content: center; pointer-events: none;
+}
+.opus svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
+.opus b {
+  position: relative; color: #fff; font-size: .115em; font-weight: 700; line-height: 1;
+  text-shadow: 0 .05em .1em rgba(90, 15, 5, .45);
 }
 
-#masa {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 114vw;
-  transform: scale(var(--olcu, 1));
-  transform-origin: 50% 0;
+#gozleYazi {
+  display: none; position: absolute; left: 0; width: 100%; top: 53.5vw; z-index: 4;
+  box-sizing: border-box; padding: 0 4vw; white-space: nowrap;
+  text-align: center; color: #fbf8f4;
+  font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 5.15vw; font-weight: 700; line-height: 1.12; letter-spacing: -0.025em;
+  text-shadow: 0 .35vw 1.1vw rgba(35, 18, 5, 0.55), 0 .1vw .35vw rgba(35, 18, 5, 0.45);
+  pointer-events: none;
+}
+#sayac {
+  display: none; position: absolute; left: 50%; top: 61.5vw; z-index: 4;
+  transform: translate(-50%, -50%); font-size: 5.7vw; font-weight: 700; line-height: 1;
+  color: #fff; text-shadow: 0 .3vw 1vw rgba(0,0,0,.35);
+}
+#sizinSecim {
+  display: none; position: absolute; left: 50%; top: 38.6vw; width: 60vw; z-index: 4;
+  transform: translateX(-50%); text-align: center; color: #fff; white-space: pre-line;
+  font-size: 3.6vw; line-height: 1.2; font-weight: 700; text-shadow: 0 .3vw 1.2vw rgba(0,0,0,.5);
 }
 
-#chatYeri {
-  position: absolute;
-  top: calc(114vw * var(--olcu, 1));
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #f3f2f0;
+/* Növbə: başqalarının gördüyü (oyunçunun altında) */
+#novbeYazi {
+  display: none; position: absolute; transform: translateX(-50%); z-index: 3;
+  flex-direction: column; align-items: center; text-align: center; color: #fff;
+  font-size: 2.8vw; line-height: 1.15; text-shadow: 0 .2vw .8vw rgba(0,0,0,.5); pointer-events: none;
+}
+#novbeYazi svg { width: 2.6vw; height: 4.3vw; margin-bottom: .4vw; }
+#novbeYazi.ust { flex-direction: column-reverse; }
+#novbeYazi.ust svg { transform: rotate(180deg); margin: .4vw 0 0; }
+
+/* Növbə: fırladanın gördüyü (şüşənin yanında) */
+#firlatYazi {
+  display: none; position: absolute; left: 18vw; top: 57vw; z-index: 4; align-items: center; gap: 1vw;
+  color: #fff; font-size: 3.4vw; font-weight: 700; line-height: 1.15; text-align: right;
+  text-shadow: 0 .3vw 1vw rgba(0,0,0,.5); pointer-events: none;
+}
+#firlatYazi svg { width: 7vw; height: 4.2vw; }
+#butulkaDokun {
+  display: none; position: absolute; left: 50%; top: 61.6vw; width: 34vw; height: 34vw;
+  transform: translate(-50%, -50%); z-index: 3;
 }
 
-/* Şüşə: ölçü üçün height */
-#butulka {
-  position: absolute;
-  left: 50%;
-  top: 60.5vw;
-  height: 34vw;
-  width: auto;
-  transform: translate(-50%, -50%) rotate(0deg);
-  filter: drop-shadow(0 1.5vw 1.5vw rgba(0, 0, 0, 0.35));
-  transition: transform 3s cubic-bezier(0.15, 0.8, 0.2, 1), opacity 0.3s;
+/* Ortaya gələn kart: masadakı ilə EYNİ ölçü (17vw) */
+.orta {
+    position: absolute; width: 16.9vw; height: 16.9vw; transform: translate(-50%, -50%);
+  opacity: 0; z-index: 4;
+  transition: left .85s cubic-bezier(.4, 0, .2, 1), top .85s cubic-bezier(.4, 0, .2, 1), opacity .3s;
 }
-
-/* Oyunçu kartı: left/top şəklin MƏRKƏZİDİR */
-.yer {
-  position: absolute;
-  width: 20vw;
-  text-align: center;
-  transform: translate(-50%, -8.45vw);
-  opacity: 0;
-  transition: opacity 0.3s;
+.orta.goster { opacity: 1; }
+.orta .foto {
+  width: 100%; height: 100%; border-radius: 2vw; background: #777 center/cover no-repeat;
+  box-shadow: 0 .6vw 1.6vw rgba(0,0,0,.3);
 }
-
-.yer.dolu {
-  opacity: 1;
+.orta .ad {
+  position: absolute; left: -3vw; right: -3vw; top: 17.2vw; text-align: center;
+  font-size: 2.2vw; line-height: 1.15; color: #fff;
+  text-shadow: 0 .2vw .6vw rgba(0,0,0,.7); white-space: nowrap;
 }
+/* Şəkil qoymayanlar üçün standart avatar */
+.yer .foto, .orta .foto { background-image: url("../images/avatar/nophoto.svg"); }
 
-.yer .foto {
-  width: 16.9vw;
-  height: 16.9vw;
-  margin: 0 auto;
-  border-radius: 1.8vw;
-  background: #777 center/cover no-repeat;
-  box-shadow: 0 0.6vw 1.6vw rgba(0, 0, 0, 0.32);
+/* Oxlar: kimin kimə nə verdiyi (videodakı ölçülərlə; 1 vahid = 1vw) */
+#oxlar {
+  display: none; position: absolute; left: 0; top: 40vw; width: 100vw; height: 42vw;
+  z-index: 6; pointer-events: none;
 }
-
-.yer .ad {
-  margin-top: 0.3vw;
-  font-size: 2.2vw;
-  line-height: 1.15;
-  color: #fff;
-  text-shadow: 0 0.2vw 0.6vw rgba(0, 0, 0, 0.7);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+#oxlar > svg { display: block; width: 100%; height: 100%; }
+#oxlar .ow, #oxlar .oc { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+#oxlar .ow { stroke: #fff; stroke-width: 2.1; }
+#oxlar .oc { stroke-width: 1.4; }
+.bd {
+  position: absolute; width: 4.8vw; height: 4.8vw; transform: translate(-50%, -50%);
+  display: none; align-items: center; justify-content: center; border-radius: 50%;
+  border: .3vw solid #fff; box-sizing: content-box;
 }
+.bd svg { display: block; }
+.bd.op { background: #9bcc34; }
+.bd.op svg { width: 3.85vw; height: 2.4vw; }
+.bd.yox { background: #e03d1c; }
+.bd.yox svg { width: 2.4vw; height: 2.4vw; }
+#bdU { left: 50vw; top: 9vw; }
+#bdA { left: 50vw; top: 33.1vw; }
 
-/* 12 nəfərlik masa ətrafı düzülüş (nümunə şəkildən ölçülüb; left/top = şəklin mərkəzi) */
-.yer-0  { left: 17.2vw; top: 30.6vw; }
-.yer-1  { left: 39.2vw; top: 25.5vw; }
-.yer-2  { left: 61vw;   top: 25.5vw; }
-.yer-3  { left: 82.8vw; top: 30.6vw; }
-.yer-4  { left: 86.9vw; top: 52.7vw; }
-.yer-5  { left: 86.9vw; top: 74.4vw; }
-.yer-6  { left: 82.8vw; top: 96.2vw; }
-.yer-7  { left: 61vw;   top: 101.3vw; }
-.yer-8  { left: 39.2vw; top: 101.3vw; }
-.yer-9  { left: 17.2vw; top: 96.2vw; }
-.yer-10 { left: 13.1vw; top: 74.4vw; }
-.yer-11 { left: 13.1vw; top: 52.7vw; }
+#dugmeler { display: none; position: absolute; left: 0; top: 74.75vw; width: 100%; z-index: 5; }
+#dugmeler button {
+  position: absolute; top: 0; width: 18.4vw; height: 8.3vw; border: 0; border-radius: 2vw; padding: 0;
+  color: #fff; font: 700 2.5vw/1 Roboto, Arial, sans-serif; box-shadow: 0 .5vw 1vw rgba(0,0,0,.25);
+}
+#btnImtina { left: 30.1vw; background: #e03d1c; }
+#btnOp { left: 51.5vw; background: #9bcc34; }
+
+/* Raund bitəndən sonra: növbəti fırlanmanı gözləmə yazısı */
+#araYazi {
+  display: none; position: absolute; left: 50%; top: 65vw; width: 50vw; z-index: 5;
+  transform: translate(-50%, -50%); text-align: center; color: #fff;
+  font-size: 3.7vw; font-weight: 700; line-height: 1.15;
+  text-shadow: 0 .3vw 1.2vw rgba(0,0,0,.5); pointer-events: none;
+}
