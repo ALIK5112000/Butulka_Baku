@@ -154,7 +154,7 @@ setInterval(() => {
   if (acik === urekGizli) return;
   urekGizli = acik;
   ["urekBtn", "urekSayi"].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = acik ? "none" : ""; });
-}, 50);
+}, 300);
 
 /* ================= MƏFTUN ƏMƏLİYYATLARI (tranzaksiya) ================= */
 function meftunTx(isle) {
