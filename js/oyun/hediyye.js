@@ -1,7 +1,7 @@
 import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
-import { doc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { doc, onSnapshot, runTransaction, increment } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 /* ADDIM 3: Hədiyyə paneli. Başqa oyunçunun şəklinə toxunanda açılır.
@@ -381,11 +381,13 @@ async function gonder(g, c) {
   if (meHearts !== null && meHearts < cost) { toast("Bonus ürəyiniz çatmır"); if (window.HeartShop) window.HeartShop.open(); return; }
   if (meHearts !== null) meHearts -= cost;
 
-  /* ödəniş arxa planda gedir, hədiyyə gözləmir */
+  /* ödəniş arxa planda gedir, hədiyyə gözləmir (tx.set merge:true ilə FAILED_PRECONDITION olmur) */
   const odenis = runTransaction(fsdb, async tx => {
-    const r = doc(fsdb, "users", MEN), s = await tx.get(r), d = s.data() || {};
+    const r = doc(fsdb, "users", MEN), s = await tx.get(r);
+    if (!s.exists()) throw new Error("PROFIL_YOXDUR");
+    const d = s.data() || {};
     if (num(d.hearts) < cost) throw new Error("YETMIR");
-    tx.update(r, { hearts: num(d.hearts) - cost });
+    tx.set(r, { hearts: num(d.hearts) - cost }, { merge: true });
   });
 
   /* hamıya göstər */
@@ -433,8 +435,19 @@ async function gonder(g, c) {
 
   /* ödəniş nəticəsi */
   odenis.then(() => {
-    /* öpüş hədiyyəsi: masadakı sayğac artır, alan oyunçunun öz klienti "kisses" xalını eyni qədər artırır */
-    if (g.opus) alanlar.forEach(k => rtTx(ref(rtdb, "masalar/" + MASA_NOMRESI + "/opus/" + k), v => num(v) + c));
+    /* öpüş hədiyyəsi: həm masadakı sayğac artır, həm də alan oyunçunun Firestore profilində kisses xalı artır */
+    if (g.opus) {
+      alanlar.forEach(k => {
+        rtTx(ref(rtdb, "masalar/" + MASA_NOMRESI + "/opus/" + k), v => num(v) + c).catch(() => {});
+        runTransaction(fsdb, async tx => {
+          const uRef = doc(fsdb, "users", k);
+          const uSnap = await tx.get(uRef);
+          if (uSnap.exists()) {
+            tx.set(uRef, { kisses: increment(c) }, { merge: true });
+          }
+        }).catch(() => {});
+      });
+    }
     /* hədiyyə alanlardan musiqisi çalan varsa: hər hədiyyəyə +1 musiqi xalı */
     const dj = djUid();
     if (dj && alanlar.includes(dj) && window.Xallar) window.Xallar.musiqiHediyye(dj, c);
@@ -445,7 +458,7 @@ async function gonder(g, c) {
     if (g.yapis) alanlar.forEach(k => remove(ref(rtdb, YAP_YOL + k)).catch(() => {}));
     if (g.yigim) alanlar.forEach(k => remove(ref(rtdb, YIG_YOL + k + "/" + n)).catch(() => {}));
     if (e.message === "YETMIR") { toast("Bonus ürəyiniz çatmır"); if (window.HeartShop) window.HeartShop.open(); }
-    else { console.error(e); toast("Xəta baş verdi, yenidən cəhd edin"); }
+    else { console.error(e); toast("Xəta: " + (e.code || e.message)); }
   });
 }
 
