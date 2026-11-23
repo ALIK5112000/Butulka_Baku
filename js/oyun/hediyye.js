@@ -8,10 +8,11 @@ import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx
    Hədiyyənin qiyməti bonus ürəkdən (users/{uid}.hearts) çıxır.
    - Öpüş hədiyyəsi: alanın öpüş xalı və masadakı öpüş sayğacı hədiyyə sayı qədər artır.
    - Hədiyyə alan oyunçunun musiqisi hazırda çalırsa: onun musiqi xalı hədiyyə sayı qədər artır.
-   YENİ: öpüş / pomidor / tac atılanda səs çıxır, uçur (ulduz izi ilə) və alanın şəklinin üstünə
-   oturur. Oyunçuya yeni hədiyyə atılanda köhnəsi silinir.
-   ÖPÜŞ (g1) istisnadır: ulduz izi yoxdur, videodakı kimi yavaş uçur, şəklə düşəndə ayrıca səs çalır,
-   yeni öpüş atılanda köhnəsi tədricən yox olur (ayarlar: OPUS). */
+   - YALNIZ şəklə düşən hədiyyələrdən (g1 öpüş, g3 pomidor, g15 tac) biri atılanda
+     əvvəlki şəklə düşmüş hədiyyə tədricən solub silinir. Adi hədiyyələr (gül, maşın və s.)
+     şəklin üstündəki hədiyyəyə toxunmur.
+   - Oyunçu masada yer dəyişəndə və ya qalxanda üstündəki hədiyyələr silinir.
+   - Hər hansı pəncərə açılanda şəklin üstündəki hədiyyələr gizlənir. */
 
 /* ---------- AYARLAR ---------- */
 const SEKIL_PAPKA = "images/hediyye/";
@@ -90,7 +91,7 @@ const CSS = `
 .hd-fly{position:fixed;z-index:9000;pointer-events:none;line-height:1;will-change:transform,opacity;font-size:11vw}
 .hd-fly img{height:1em;width:auto;display:block}
 .hd-fly i{position:absolute;right:-3vw;bottom:-2vw;font:700 4vw/1 Roboto,Arial,sans-serif;font-style:normal;color:#fff;background:#6c4fd6;border-radius:3vw;padding:.8vw 1.8vw}
-.hd-stkLayer{position:fixed;left:0;top:0;width:0;height:0;z-index:4000;pointer-events:none}
+.hd-stkLayer{position:fixed;left:0;top:0;width:0;height:0;z-index:150;pointer-events:none}
 .hd-stk{position:fixed;pointer-events:none;line-height:1;will-change:transform;filter:drop-shadow(0 .5vw 1vw rgba(0,0,0,.35))}
 .hd-stk img{height:1em;width:auto;display:block}
 .hd-spark{position:fixed;z-index:9001;pointer-events:none;font-size:3.8vw;line-height:1;margin:-1.9vw 0 0 -1.9vw}
@@ -98,7 +99,7 @@ const CSS = `
 .hd-yf-r,.hd-yf-s{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;line-height:1;will-change:transform}
 .hd-yf img,.hd-yig img{width:100%;height:100%;object-fit:contain;display:block}
 .hd-yf i{position:absolute;right:-3vw;bottom:-2vw;font:700 4vw/1 Roboto,Arial,sans-serif;font-style:normal;color:#fff;background:#6c4fd6;border-radius:3vw;padding:.8vw 1.8vw}
-.hd-yigQat{position:fixed;left:0;top:0;width:0;height:0;z-index:4000;pointer-events:none}
+.hd-yigQat{position:fixed;left:0;top:0;width:0;height:0;z-index:150;pointer-events:none}
 .hd-yig{position:fixed;pointer-events:none;display:flex;align-items:center;justify-content:center;line-height:1;will-change:transform,opacity}
 `;
 const st = document.createElement("style");
@@ -119,6 +120,20 @@ function gorselStk(g) {
 
 const num = v => Number(v) || 0;
 const MEN = (cariOyuncu() || {}).docId || null;
+
+/* Hər hansı pəncərə/modal açıqdırsa true qaytarır */
+function pencereAciqdir() {
+  const my = document.getElementById("modalYer");
+  if (my && getComputedStyle(my).display !== "none") return true;
+  const kp = document.getElementById("klipPenceresi");
+  if (kp && !kp.hidden && getComputedStyle(kp).display !== "none") return true;
+  const diger = document.querySelectorAll(".modal, .pencere, .overlay, [role='dialog'], [id$='Penceresi'], [id$='Modal']");
+  for (const el of diger) {
+    if (el.id === "hdToast" || el.id === "hdDbg") continue;
+    if (!el.hidden && getComputedStyle(el).display !== "none" && getComputedStyle(el).visibility !== "hidden" && el.offsetWidth > 0) return true;
+  }
+  return false;
+}
 
 let tT = null;
 function toast(msg) {
@@ -311,9 +326,33 @@ $(".hd-tx").onclick = () => { isaret.clear(); tray.classList.remove("open"); mar
 
 window.HediyyePanel = { ac, bagla, hedef: () => hedef, modu: () => root.classList.contains("open") && tray.classList.contains("open"), isaretle };
 
-/* ---------- Hazırda kimin musiqisi çalır? ---------- */
+/* ---------- Oturacaqlar və Yer Dəyişmə İzləməsi ---------- */
+const YAP_YOL = "masalar/" + MASA_NOMRESI + "/hediyyeYapisan/";
+const YIG_YOL = "masalar/" + MASA_NOMRESI + "/yigim/";
+if (MEN) onDisconnect(ref(rtdb, YAP_YOL + MEN)).remove();
+if (MEN) onDisconnect(ref(rtdb, YIG_YOL + MEN)).remove();
+
 let oturacaqlar = {}, spin = null, offset = 0, aktivKlip = null;
-onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => { oturacaqlar = s.val() || {}; });
+const evvelkiYer = {};
+
+onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => {
+  oturacaqlar = s.val() || {};
+  const indikiYer = {};
+  for (const k in oturacaqlar) {
+    const o = oturacaqlar[k];
+    if (o && o.uid) indikiYer[o.uid] = k;
+  }
+  /* Oyunçu masadan qalxıbsa və ya yerini dəyişibsə, üstündəki bütün hədiyyələri sil */
+  for (const uid in evvelkiYer) {
+    if (indikiYer[uid] !== evvelkiYer[uid]) {
+      remove(ref(rtdb, YAP_YOL + uid)).catch(() => {});
+      remove(ref(rtdb, YIG_YOL + uid)).catch(() => {});
+    }
+  }
+  for (const uid in evvelkiYer) delete evvelkiYer[uid];
+  for (const uid in indikiYer) evvelkiYer[uid] = indikiYer[uid];
+});
+
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/raund/spin"), s => { spin = s.val() || null; });
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/aktivKlip"), s => { aktivKlip = s.val() || null; });
 onValue(ref(rtdb, ".info/serverTimeOffset"), s => { offset = s.val() || 0; });
@@ -327,11 +366,6 @@ function djUid() {
 }
 
 /* ---------- Hədiyyə göndərmək ---------- */
-const YAP_YOL = "masalar/" + MASA_NOMRESI + "/hediyyeYapisan/";
-if (MEN) onDisconnect(ref(rtdb, YAP_YOL + MEN)).remove();
-const YIG_YOL = "masalar/" + MASA_NOMRESI + "/yigim/";
-if (MEN) onDisconnect(ref(rtdb, YIG_YOL + MEN)).remove();
-
 let meHearts = null;
 if (MEN) onSnapshot(doc(fsdb, "users", MEN), s => { meHearts = num((s.data() || {}).hearts); }, () => {});
 
@@ -346,39 +380,62 @@ async function gonder(g, c) {
   if (meHearts !== null && meHearts < cost) { toast("Bonus ürəyiniz çatmır"); if (window.HeartShop) window.HeartShop.open(); return; }
   if (meHearts !== null) meHearts -= cost;
 
-  /* Sürətli basanda toqquşma (failed-precondition) olmaması üçün atomik increment(-cost) işlədirik */
   const odenis = updateDoc(doc(fsdb, "users", MEN), { hearts: increment(-cost) });
 
   /* hamıya göstər */
   const n = Date.now() + "-" + Math.random().toString(36).slice(2, 7);
   const payload = { to: alanlar, i: g.id, c, n };
-  let yigUpd = null;
-  if (g.yapis) {
-    const p = {};
-    alanlar.forEach(k => {
-      p[k] = { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) };
-      set(ref(rtdb, YAP_YOL + k), { i: g.id, x: p[k].x, y: p[k].y, r: p[k].r, n, from: MEN });
-    });
-    payload.p = p;
-  } else if (g.yigim) {
-    const t = Date.now() + offset, p = {}, upd = {};
-    yigUpd = upd;
-    alanlar.forEach(k => {
-      const q = { x: 15 + Math.round(Math.random() * 70), y: 15 + Math.round(Math.random() * 70), r: Math.round(Math.random() * 200 - 100) };
-      p[k] = q;
-      const aktiv = Object.entries(yigData[k] || {}).filter(([, e]) => e && !e.sol).sort((a, b) => num(a[1].t) - num(b[1].t));
-      while (aktiv.length >= Math.max(1, OPUS.MAX)) {
-        const [key, e] = aktiv.shift();
-        upd[k + "/" + key + "/sol"] = Math.max(t, num(e.t) + (g.ucusMs || 900));
-      }
-      upd[k + "/" + n] = { i: g.id, x: q.x, y: q.y, r: q.r, n, from: MEN, t };
-    });
-    payload.p = p;
+  const t = Date.now() + offset;
+  const yigUpd = {};
+  let yigVar = false;
+
+  /* Yalnız şəklə oturan/yapışan hədiyyələrdən (g1 öpüş, g3 pomidor, g15 tac) biri atılanda köhnə oturan silinir. */
+  const sekileOturur = !!(g.yapis || g.yigim);
+
+  if (sekileOturur) {
+    if (g.yapis) {
+      alanlar.forEach(k => {
+        const aktiv = Object.entries(yigData[k] || {}).filter(([, e]) => e && !e.sol);
+        aktiv.forEach(([key, e]) => {
+          yigUpd[k + "/" + key + "/sol"] = Math.max(t, num(e.t) + 900);
+          yigVar = true;
+        });
+      });
+
+      const p = {};
+      alanlar.forEach(k => {
+        p[k] = { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) };
+        set(ref(rtdb, YAP_YOL + k), { i: g.id, x: p[k].x, y: p[k].y, r: p[k].r, n, from: MEN, t });
+      });
+      payload.p = p;
+    } else if (g.yigim) {
+      alanlar.forEach(k => {
+        if (yapData[k] && !yapData[k].sol) {
+          update(ref(rtdb, YAP_YOL + k), { sol: t }).catch(() => {});
+        }
+      });
+
+      const p = {};
+      alanlar.forEach(k => {
+        const q = { x: 15 + Math.round(Math.random() * 70), y: 15 + Math.round(Math.random() * 70), r: Math.round(Math.random() * 200 - 100) };
+        p[k] = q;
+        const aktiv = Object.entries(yigData[k] || {}).filter(([, e]) => e && !e.sol).sort((a, b) => num(a[1].t) - num(b[1].t));
+        while (aktiv.length >= Math.max(1, OPUS.MAX)) {
+          const [key, e] = aktiv.shift();
+          yigUpd[k + "/" + key + "/sol"] = Math.max(t, num(e.t) + (g.ucusMs || 900));
+        }
+        yigUpd[k + "/" + n] = { i: g.id, x: q.x, y: q.y, r: q.r, n, from: MEN, t };
+        yigVar = true;
+      });
+      payload.p = p;
+    }
   }
+
   const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye/" + MEN);
   onDisconnect(r).remove();
   set(r, payload).then(() => dbg("hədiyyə bazaya yazıldı")).catch(e => dbg("HƏDİYYƏ YAZILMADI: " + (e.code || e.message)));
-  if (yigUpd) {
+
+  if (yigVar) {
     try { update(ref(rtdb, YIG_YOL), yigUpd).catch(e => dbg("ÖPÜŞ YIĞIMI YAZILMADI: " + (e.code || e.message))); }
     catch (e) { dbg("ÖPÜŞ YIĞIMI XƏTASI: " + e.message); }
   }
@@ -388,7 +445,6 @@ async function gonder(g, c) {
 
   /* ödəniş nəticəsi */
   odenis.then(() => {
-    /* öpüş hədiyyəsi: masadakı sayğac artır, alan oyunçunun öz klienti "kisses" xalını eyni qədər artırır */
     if (g.opus) {
       alanlar.forEach(k => {
         rtTx(ref(rtdb, "masalar/" + MASA_NOMRESI + "/opus/" + k), v => num(v) + c).catch(() => {});
@@ -430,7 +486,8 @@ const fotoRect = el => {
   return r.width ? r : null;
 };
 
-const olcu = (d, r) => r.width * (d.i === "g15" ? 0.5 : d.i === "g3" ? 0.5 : 0.4);
+/* Şəklə düşəndə ölçülər: g15 (tac) = 0.5, g3 (əzik pomidor) = 0.42 */
+const olcu = (d, r) => r.width * (d.i === "g15" ? 0.5 : d.i === "g3" ? 0.42 : 0.4);
 function noqte(d, r) {
   if (d.i === "g15") return [r.left + r.width * 0.12, r.top + r.height * 0.02, -20];
   return [r.left + r.width * d.x / 100, r.top + r.height * d.y / 100, d.r || 0];
@@ -523,11 +580,12 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye"), s => {
   ilk = false;
 });
 
-/* ---------- Oyunçunun şəklinin üstündə oturan hədiyyələr ---------- */
+/* ---------- Oyunçunun şəklinin üstündə oturan hədiyyələr (Pomidor / Tac) ---------- */
 let yapData = {}, yapIlk = true, yapQat = null;
 const gelen = new Set();
 const gorulen = {};
 const elmap = {};
+const yapSilinir = new Set();
 
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyyeYapisan"), s => {
   yapData = s.val() || {};
@@ -543,20 +601,40 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyyeYapisan"), s => {
 
 function yapisanCiz() {
   if (!yapQat) { yapQat = document.createElement("div"); yapQat.className = "hd-stkLayer"; document.body.appendChild(yapQat); }
+  const gizli = pencereAciqdir();
+  yapQat.style.display = gizli ? "none" : "block";
+
   const simdi = Date.now();
-  for (const uid in elmap) if (!yapData[uid]) { elmap[uid].el.remove(); delete elmap[uid]; }
+  const srv = simdi + offset;
+
+  for (const uid in elmap) {
+    if (!yapData[uid]) { elmap[uid].el.remove(); delete elmap[uid]; yapSilinir.delete(uid); }
+  }
+
   for (const uid in yapData) {
     const d = yapData[uid];
     if (!d) continue;
     const gh = HEDIYYELER.find(h => h.id === d.i);
     if (gh && gh.yigim) continue;
+
+    if (d.sol && srv - d.sol >= OPUS.SOLMA_MS) {
+      if (elmap[uid]) { elmap[uid].el.remove(); delete elmap[uid]; }
+      if (!yapSilinir.has(uid)) {
+        yapSilinir.add(uid);
+        remove(ref(rtdb, YAP_YOL + uid)).catch(() => {});
+      }
+      continue;
+    }
+
     const key = d.n + "|" + uid;
     const ok = gelen.has(key) || (simdi - (gorulen[key] || simdi) > 8000);
     let rec = elmap[uid];
-    if (rec && (rec.n !== d.n || !ok)) { rec.el.remove(); delete elmap[uid]; rec = null; }
+    if (rec && (rec.n !== d.n || !ok)) { rec.el.remove(); delete elmap[uid]; rec = null; yapSilinir.delete(uid); }
     if (!ok) continue;
+
     const f = fotoTap(uid), r = f && fotoRect(f);
-    if (!r) { if (rec) rec.el.style.display = "none"; continue; }
+    if (!r || gizli) { if (rec) rec.el.style.display = "none"; continue; }
+
     if (!rec) {
       const g = HEDIYYELER.find(h => h.id === d.i);
       if (!g) continue;
@@ -564,13 +642,20 @@ function yapisanCiz() {
       el.className = "hd-stk";
       el.innerHTML = gorselStk(g);
       yapQat.appendChild(el);
-      rec = elmap[uid] = { n: d.n, el };
+      rec = elmap[uid] = { n: d.n, el, sol: false };
     }
+
     const [px, py, rot] = noqte(d, r);
     rec.el.style.display = "block";
     rec.el.style.fontSize = olcu(d, r) + "px";
     rec.el.style.left = px + "px"; rec.el.style.top = py + "px";
     rec.el.style.transform = "translate(-50%,-50%) rotate(" + rot + "deg)";
+
+    if (d.sol && !rec.sol) {
+      rec.sol = true;
+      const an = rec.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: OPUS.SOLMA_MS, easing: "linear", fill: "both" });
+      an.currentTime = srv - d.sol;
+    }
   }
 }
 setInterval(yapisanCiz, 120);
@@ -621,6 +706,9 @@ function ucurYigim(g, x, to, pa, b, p) {
 
 function yigimCiz() {
   if (!yigQat) { yigQat = document.createElement("div"); yigQat.className = "hd-yigQat"; document.body.appendChild(yigQat); }
+  const gizli = pencereAciqdir();
+  yigQat.style.display = gizli ? "none" : "block";
+
   const srv = Date.now() + offset;
   for (const kk in yigEl) {
     const [key, uid] = kk.split("|");
@@ -642,7 +730,7 @@ function yigimCiz() {
       if (!ok) continue;
       let rec = yigEl[kk];
       const f = fotoTap(uid), r = f && fotoRect(f);
-      if (!r) { if (rec) rec.el.style.display = "none"; continue; }
+      if (!r || gizli) { if (rec) rec.el.style.display = "none"; continue; }
       if (!rec) {
         const g = HEDIYYELER.find(h => h.id === e.i);
         if (!g) continue;
