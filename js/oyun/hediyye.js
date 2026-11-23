@@ -21,12 +21,13 @@ import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx
    s = atılanda çıxan səs, sl = oyunçunun şəklinə düşəndə çıxan səs (sounds/ papkasında), ucusMs = uçuş müddəti (ms, yoxdursa 900),
    yapis:true = alanın şəklinin üstünə oturur
    (köhnə oturan hədiyyə silinir). Başqa hədiyyəni də oturan etmək üçün yapis:true yaz.
+   ucusAdi:true = uçanda adi şəkil (img) göstərilir, şəklə oturandan sonra OTURAN_SEKIL şəkli (məs. əzilmiş pomidor) görünür.
    yigim:true = öpüş tipli oturma: videodan ölçülmüş uçuş/düşmə effekti (aşağıda "ÖPÜŞ YIĞIMI" bölməsi) */
 const SEKIL_PAPKA = "images/hediyye/";
 const SES_PAPKA = "sesler/";
 const HEDIYYELER = [
   { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true },
-  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5000, yapis: true },
+  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5000, yapis: true, ucusAdi: true },
   { id: "g7",  e: "🐸", img: SEKIL_PAPKA + "qurbaga.png", q: 2 },
   { id: "g2",  e: "🍓", img: SEKIL_PAPKA + "cilek.png",   q: 1, k: "yeni" },
   { id: "g4",  e: "🪨", img: SEKIL_PAPKA + "dash.png",    q: 1 },
@@ -47,14 +48,18 @@ const HEDIYYELER = [
   { id: "g20", e: "🏰", img: SEKIL_PAPKA + "qala.png",    q: 9, k: "ozel" }
 ];
 /* Alanın şəklinin üstündə oturan hədiyyənin şəkli panel şəklindən fərqli ola bilər.
-   Tac üçün tac2.png istifadə olunur (yoxdursa tac.png götürülür). */
-const OTURAN_SEKIL = { g15: SEKIL_PAPKA + "tac2.png" };
+   Tac üçün tac2.png, pomidor üçün əzilmiş pomidor (pomidor_ezik.png) istifadə olunur
+   (yoxdursa adi şəkil götürülür). */
+const OTURAN_SEKIL = {
+  g15: SEKIL_PAPKA + "tac2.png",
+  g3: SEKIL_PAPKA + "pomidor_ezik.png"
+};
 /* ÖPÜŞ effektinin ayarları (videodan ölçülüb).
-   OLCU  = öpüşün uzun tərəfi, alanın şəkil enindən neçə faiz (0.28 = 28%). Şəkil böyük/kiçik görünsə bunu dəyiş.
+   OLCU  = öpüşün uzun tərəfi, alanın şəkil enindən neçə faiz (0.34 = 34%). Şəkil böyük/kiçik görünsə bunu dəyiş.
    MAX   = bir oyunçunun şəklində eyni anda neçə öpüş qala bilər.
            1 = yeni öpüş atılanda köhnəsi tədricən yox olur; 3 = öpüşlər yığılır (videoda ikisi qalırdı).
    SOLMA_MS = köhnə öpüşün tam yox olma müddəti (ms). Yeni öpüş atılan an solmağa başlayır. */
-const OPUS = { OLCU: 0.28, MAX: 1, SOLMA_MS: 3000 };
+const OPUS = { OLCU: 0.34, MAX: 1, SOLMA_MS: 3000 };
 /* "Klip qoş" və "Mahnı qoş" kafellərinin qiyməti (yazı üçündür; real ödəniş mövcud musiqi sistemində olur) */
 const KLIP_QIYMETI = 9, MAHNI_QIYMETI = 5;
 
@@ -360,73 +365,88 @@ if (MEN) onDisconnect(ref(rtdb, YAP_YOL + MEN)).remove();
 const YIG_YOL = "masalar/" + MASA_NOMRESI + "/yigim/";
 if (MEN) onDisconnect(ref(rtdb, YIG_YOL + MEN)).remove();
 
+/* Öz ürək sayım (canlı): hədiyyə göndərməzdən əvvəl gözləmədən yoxlanır */
+let meHearts = null;
+if (MEN) onSnapshot(doc(fsdb, "users", MEN), s => { meHearts = num((s.data() || {}).hearts); }, () => {});
+
 async function gonder(g, c) {
   if (!MEN) { dbg("MEN yoxdur: cariOyuncu() boşdur, hədiyyə göndərilmir"); return; }
-  if (mesgul) return;
-  dbg("göndərilir: " + g.id);
   /* alanlar: işarələnmişlər, işarə yoxdursa toxunulan oyunçu */
   const alanlar = isaret.size ? [...isaret].filter(u => u !== MEN) : (hedef ? [hedef] : []);
   if (!alanlar.length) { toast("Oyunçu seçilməyib"); return; }
-  mesgul = true;
   const cost = g.q * c * alanlar.length;
-  try {
-    await runTransaction(fsdb, async tx => {
-      const r = doc(fsdb, "users", MEN), s = await tx.get(r), d = s.data() || {};
-      if (num(d.hearts) < cost) throw new Error("YETMIR");
-      tx.update(r, { hearts: num(d.hearts) - cost });
+  dbg("göndərilir: " + g.id);
+
+  /* sürətli lokal yoxlama */
+  if (meHearts !== null && meHearts < cost) { toast("Bonus ürəyiniz çatmır"); if (window.HeartShop) window.HeartShop.open(); return; }
+  if (meHearts !== null) meHearts -= cost;
+
+  /* ödəniş arxa planda gedir, hədiyyə gözləmir */
+  const odenis = runTransaction(fsdb, async tx => {
+    const r = doc(fsdb, "users", MEN), s = await tx.get(r), d = s.data() || {};
+    if (num(d.hearts) < cost) throw new Error("YETMIR");
+    tx.update(r, { hearts: num(d.hearts) - cost });
+  });
+
+  /* hamıya göstər */
+  const n = Date.now() + "-" + Math.random().toString(36).slice(2, 7);
+  const payload = { to: alanlar, i: g.id, c, n };
+  let yigUpd = null;
+  if (g.yapis) {
+    /* hər alan üçün təsadüfi yer (şəklin üstündə, %-lə) və əyilmə; hamı eyni yeri görsün deyə bazaya yazılır.
+       Alanın köhnə oturan hədiyyəsinin üstünə yazılır, yəni köhnəsi silinir. */
+    const p = {};
+    alanlar.forEach(k => {
+      p[k] = { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) };
+      set(ref(rtdb, YAP_YOL + k), { i: g.id, x: p[k].x, y: p[k].y, r: p[k].r, n, from: MEN });
     });
+    payload.p = p;
+  } else if (g.yigim) {
+    /* öpüş: hər alan üçün təsadüfi yer (şəklin 15–85%-i) və son bucaq (±100°).
+       Yer qalmayanda (OPUS.MAX) ən köhnə öpüşlərə "sol" vaxtı yazılır, hamının ekranında tədricən yox olur. */
+    const t = Date.now() + offset, p = {}, upd = {};
+    yigUpd = upd;
+    alanlar.forEach(k => {
+      const q = { x: 15 + Math.round(Math.random() * 70), y: 15 + Math.round(Math.random() * 70), r: Math.round(Math.random() * 200 - 100) };
+      p[k] = q;
+      const aktiv = Object.entries(yigData[k] || {}).filter(([, e]) => e && !e.sol).sort((a, b) => num(a[1].t) - num(b[1].t));
+      while (aktiv.length >= Math.max(1, OPUS.MAX)) {
+        const [key, e] = aktiv.shift();
+        upd[k + "/" + key + "/sol"] = Math.max(t, num(e.t) + (g.ucusMs || 900));   /* hələ enməyibsə, endikdən sonra solmağa başlayır */
+      }
+      upd[k + "/" + n] = { i: g.id, x: q.x, y: q.y, r: q.r, n, from: MEN, t };
+    });
+    payload.p = p;
+  }
+  const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye/" + MEN);
+  onDisconnect(r).remove();
+  /* 1) hamıya "hədiyyə atıldı" siqnalı (səs + uçuş bundan başlayır) */
+  set(r, payload).then(() => dbg("hədiyyə bazaya yazıldı")).catch(e => dbg("HƏDİYYƏ YAZILMADI: " + (e.code || e.message)));
+  /* 2) öpüşün şəklə oturması üçün yığım bazaya yazılır */
+  if (yigUpd) {
+    try { update(ref(rtdb, YIG_YOL), yigUpd).catch(e => dbg("ÖPÜŞ YIĞIMI YAZILMADI: " + (e.code || e.message))); }
+    catch (e) { dbg("ÖPÜŞ YIĞIMI XƏTASI: " + e.message); }
+  }
+
+  /* interfeys dərhal təmizlənir */
+  isaret.clear(); tray.classList.remove("open"); sec = null; sendBtn.style.display = "none"; ciz(); markYenile();
+
+  /* ödəniş nəticəsi */
+  odenis.then(() => {
     /* öpüş hədiyyəsi: masadakı sayğac artır, alan oyunçunun öz klienti "kisses" xalını eyni qədər artırır */
     if (g.opus) alanlar.forEach(k => rtTx(ref(rtdb, "masalar/" + MASA_NOMRESI + "/opus/" + k), v => num(v) + c));
     /* hədiyyə alanlardan musiqisi çalan varsa: hər hədiyyəyə +1 musiqi xalı */
     const dj = djUid();
     if (dj && alanlar.includes(dj) && window.Xallar) window.Xallar.musiqiHediyye(dj, c);
-    /* hamıya göstər */
-    const n = Date.now() + "-" + Math.random().toString(36).slice(2, 7);
-    const payload = { to: alanlar, i: g.id, c, n };
-    let yigUpd = null;
-    if (g.yapis) {
-      /* hər alan üçün təsadüfi yer (şəklin üstündə, %-lə) və əyilmə; hamı eyni yeri görsün deyə bazaya yazılır.
-         Alanın köhnə oturan hədiyyəsinin üstünə yazılır, yəni köhnəsi silinir. */
-      const p = {};
-      alanlar.forEach(k => {
-        p[k] = { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) };
-        set(ref(rtdb, YAP_YOL + k), { i: g.id, x: p[k].x, y: p[k].y, r: p[k].r, n, from: MEN });
-      });
-      payload.p = p;
-    } else if (g.yigim) {
-      /* öpüş: hər alan üçün təsadüfi yer (şəklin 15–85%-i) və son bucaq (±100°). Fırlanma istiqaməti x+y-dən çıxır
-         (bazaya əlavə sahə yazılmır). Yer qalmayanda (OPUS.MAX) ən köhnə öpüşlərə "sol" vaxtı yazılır,
-         hamının ekranında tədricən yox olur. Bazaya yazma aşağıda, uçuş/səs siqnalından SONRA edilir. */
-      const t = Date.now() + offset, p = {}, upd = {};
-      yigUpd = upd;
-      alanlar.forEach(k => {
-        const q = { x: 15 + Math.round(Math.random() * 70), y: 15 + Math.round(Math.random() * 70), r: Math.round(Math.random() * 200 - 100) };
-        p[k] = q;
-        const aktiv = Object.entries(yigData[k] || {}).filter(([, e]) => e && !e.sol).sort((a, b) => num(a[1].t) - num(b[1].t));
-        while (aktiv.length >= Math.max(1, OPUS.MAX)) {
-          const [key, e] = aktiv.shift();
-          upd[k + "/" + key + "/sol"] = Math.max(t, num(e.t) + (g.ucusMs || 900));   /* hələ enməyibsə, endikdən sonra solmağa başlayır */
-        }
-        upd[k + "/" + n] = { i: g.id, x: q.x, y: q.y, r: q.r, n, from: MEN, t };
-      });
-      payload.p = p;
-    }
-    const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye/" + MEN);
-    onDisconnect(r).remove();
-    /* 1) hamıya "hədiyyə atıldı" siqnalı (səs + uçuş bundan başlayır) */
-    set(r, payload).then(() => dbg("hədiyyə bazaya yazıldı")).catch(e => dbg("HƏDİYYƏ YAZILMADI: " + (e.code || e.message)));
-    /* 2) öpüşün şəklə oturması üçün yığım bazaya yazılır (alınmasa belə uçuş və səs işləyir) */
-    if (yigUpd) {
-      try { update(ref(rtdb, YIG_YOL), yigUpd).catch(e => dbg("ÖPÜŞ YIĞIMI YAZILMADI: " + (e.code || e.message))); }
-      catch (e) { dbg("ÖPÜŞ YIĞIMI XƏTASI: " + e.message); }
-    }
-    /* hədiyyə atılandan sonra işarələr sıfırlanır */
-    isaret.clear(); tray.classList.remove("open"); sec = null; sendBtn.style.display = "none"; ciz(); markYenile();
-  } catch (e) {
+  }).catch(e => {
+    /* ödəniş alınmadı: hədiyyəni geri götür */
+    meHearts = null;
+    remove(r).catch(() => {});
+    if (g.yapis) alanlar.forEach(k => remove(ref(rtdb, YAP_YOL + k)).catch(() => {}));
+    if (g.yigim) alanlar.forEach(k => remove(ref(rtdb, YIG_YOL + k + "/" + n)).catch(() => {}));
     if (e.message === "YETMIR") { toast("Bonus ürəyiniz çatmır"); if (window.HeartShop) window.HeartShop.open(); }
     else { console.error(e); toast("Xəta baş verdi, yenidən cəhd edin"); }
-  }
-  mesgul = false;
+  });
 }
 
 /* ---------- Animasiya: göndərənin şəklindən alanın şəklinə uçur ---------- */
@@ -454,7 +474,7 @@ const fotoRect = el => {
 };
 
 /* Oturan hədiyyənin ölçüsü və yeri (r = şəklin düzbucağı, d = {i,x,y,r}) */
-const olcu = (d, r) => r.width * (d.i === "g15" ? 0.5 : 0.4);
+const olcu = (d, r) => r.width * (d.i === "g15" ? 0.5 : d.i === "g3" ? 0.5 : 0.4);
 function noqte(d, r) {
   if (d.i === "g15") return [r.left + r.width * 0.12, r.top + r.height * 0.02, -20];   /* tac: sol üst künc */
   return [r.left + r.width * d.x / 100, r.top + r.height * d.y / 100, d.r || 0];       /* öpüş/pomidor: təsadüfi yer */
@@ -470,7 +490,7 @@ function ulduz(x, y) {
   s.animate([{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(.2) translateY(3vw)" }], { duration: 600 }).onfinish = () => s.remove();
 }
 
-/* Oturan hədiyyə (tac / öpüş / pomidor): ulduz izi ilə uçur, sonra alanın şəklinin üstünə oturur */
+/* Oturan hədiyyə (tac / pomidor): ulduz izi ilə uçur, sonra alanın şəklinin üstünə oturur */
 function ucurYapis(g, x, to, pa, b, p) {
   const r = fotoRect(b);
   if (!r) return;
@@ -481,7 +501,8 @@ function ucurYapis(g, x, to, pa, b, p) {
   d.className = "hd-fly";
   d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
   d.style.fontSize = olcu(hed, r) + "px";
-  d.innerHTML = gorselStk(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  /* ucusAdi: uçanda adi şəkil (məs. bütöv pomidor), oturanda OTURAN_SEKIL (əzilmiş pomidor) */
+  d.innerHTML = (g.ucusAdi ? gorsel(g) : gorselStk(g)) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
   document.body.appendChild(d);
   const iz = setInterval(() => {
     const q = d.getBoundingClientRect();
