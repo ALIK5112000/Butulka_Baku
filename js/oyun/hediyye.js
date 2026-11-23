@@ -7,17 +7,22 @@ import { ref, onValue, set, onDisconnect, runTransaction as rtTx } from "https:/
 /* ADDIM 3: Hədiyyə paneli. Başqa oyunçunun şəklinə toxunanda açılır.
    Hədiyyənin qiyməti bonus ürəkdən (users/{uid}.hearts) çıxır.
    - Öpüş hədiyyəsi: alanın öpüş xalı və masadakı öpüş sayğacı hədiyyə sayı qədər artır.
-   - Hədiyyə alan oyunçunun musiqisi hazırda çalırsa: onun musiqi xalı hədiyyə sayı qədər artır. */
+   - Hədiyyə alan oyunçunun musiqisi hazırda çalırsa: onun musiqi xalı hədiyyə sayı qədər artır.
+   YENİ: öpüş / pomidor / tac atılanda səs çıxır, uçur (ulduz izi ilə) və alanın şəklinin üstünə
+   oturur. Oyunçuya yeni hədiyyə atılanda köhnəsi silinir. */
 
 /* ---------- AYARLAR ---------- */
 /* Şəkillər: images/hediyye/ papkasında. Hədiyyənin şəklini dəyişmək üçün
    həmin faylı eyni adla əvəz et (və ya img yolunu dəyiş).
    Şəkil tapılmasa e (emoji) göstərilir.
-   q = qiymət (bonus ürək), opus:true = öpüş hədiyyəsi, k = bölmə (ozel | yeni) */
+   q = qiymət (bonus ürək), opus:true = öpüş hədiyyəsi, k = bölmə (ozel | yeni)
+   s = atılanda çıxan səs (sounds/ papkasında), yapis:true = alanın şəklinin üstünə oturur
+   (köhnə oturan hədiyyə silinir). Başqa hədiyyəni də oturan etmək üçün yapis:true yaz. */
 const SEKIL_PAPKA = "images/hediyye/";
+const SES_PAPKA = "sounds/";
 const HEDIYYELER = [
-  { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel" },
-  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni" },
+  { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   yapis: true },
+  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", yapis: true },
   { id: "g7",  e: "🐸", img: SEKIL_PAPKA + "qurbaga.png", q: 2 },
   { id: "g2",  e: "🍓", img: SEKIL_PAPKA + "cilek.png",   q: 1, k: "yeni" },
   { id: "g4",  e: "🪨", img: SEKIL_PAPKA + "dash.png",    q: 1 },
@@ -30,13 +35,16 @@ const HEDIYYELER = [
   { id: "g12", e: "🍫", img: SEKIL_PAPKA + "sokolad.png", q: 2 },
   { id: "g13", e: "🍷", img: SEKIL_PAPKA + "sarab.png",   q: 2 },
   { id: "g14", e: "💍", img: SEKIL_PAPKA + "uzuk.png",    q: 3, k: "ozel" },
-  { id: "g15", e: "👑", img: SEKIL_PAPKA + "tac.png",     q: 3, k: "ozel" },
+  { id: "g15", e: "👑", img: SEKIL_PAPKA + "tac.png",     q: 3, k: "ozel",            s: SES_PAPKA + "crown.mp3",  yapis: true },
   { id: "g16", e: "🎩", img: SEKIL_PAPKA + "sapka.png",   q: 2 },
   { id: "g17", e: "🧸", img: SEKIL_PAPKA + "ayicik.png",  q: 3, k: "yeni" },
   { id: "g18", e: "🚗", img: SEKIL_PAPKA + "masin.png",   q: 5, k: "yeni" },
   { id: "g19", e: "💎", img: SEKIL_PAPKA + "almaz.png",   q: 5, k: "ozel" },
   { id: "g20", e: "🏰", img: SEKIL_PAPKA + "qala.png",    q: 9, k: "ozel" }
 ];
+/* Alanın şəklinin üstündə oturan hədiyyənin şəkli panel şəklindən fərqli ola bilər.
+   Tac üçün tac2.png istifadə olunur (yoxdursa tac.png götürülür). */
+const OTURAN_SEKIL = { g15: SEKIL_PAPKA + "tac2.png" };
 /* "Klip qoş" və "Mahnı qoş" kafellərinin qiyməti (yazı üçündür; real ödəniş mövcud musiqi sistemində olur) */
 const KLIP_QIYMETI = 9, MAHNI_QIYMETI = 5;
 
@@ -83,6 +91,10 @@ const CSS = `
 .hd-fly{position:fixed;z-index:9000;pointer-events:none;line-height:1;will-change:transform,opacity;font-size:11vw}
 .hd-fly img{height:1em;width:auto;display:block}
 .hd-fly i{position:absolute;right:-3vw;bottom:-2vw;font:700 4vw/1 Roboto,Arial,sans-serif;font-style:normal;color:#fff;background:#6c4fd6;border-radius:3vw;padding:.8vw 1.8vw}
+.hd-stkLayer{position:fixed;left:0;top:0;width:0;height:0;z-index:4000;pointer-events:none}
+.hd-stk{position:fixed;pointer-events:none;line-height:1;will-change:transform;filter:drop-shadow(0 .5vw 1vw rgba(0,0,0,.35))}
+.hd-stk img{height:1em;width:auto;display:block}
+.hd-spark{position:fixed;z-index:9001;pointer-events:none;font-size:3.8vw;line-height:1;margin:-1.9vw 0 0 -1.9vw}
 `;
 const st = document.createElement("style");
 st.textContent = CSS;
@@ -97,6 +109,13 @@ const gorsel = g => g.img
   ? '<img src="' + g.img + '" alt="" onerror="this.replaceWith(document.createTextNode(\'' + g.e + '\'))">'
   : g.e;
 
+/* Alanın şəklinin üstündə oturan şəkil: OTURAN_SEKIL varsa o, yüklənməsə adi şəkil, o da yoxdursa emoji */
+function gorselStk(g) {
+  const src = OTURAN_SEKIL[g.id];
+  if (!src) return gorsel(g);
+  return '<img src="' + src + '" alt="" onerror="this.onerror=function(){this.replaceWith(document.createTextNode(\'' + g.e + '\'))};this.src=\'' + g.img + '\'">';
+}
+
 const num = v => Number(v) || 0;
 const MEN = (cariOyuncu() || {}).docId || null;
 
@@ -106,6 +125,17 @@ function toast(msg) {
   if (!t) { t = document.createElement("div"); t.id = "hdToast"; t.className = "hd-t"; document.body.appendChild(t); }
   t.textContent = msg; t.style.display = "block";
   clearTimeout(tT); tT = setTimeout(() => { t.style.display = "none"; }, 2600);
+}
+
+/* ---------- Səs ---------- */
+const sesKes = {};
+function sesCal(url) {
+  if (!url) return;
+  try {
+    const a = sesKes[url] || (sesKes[url] = new Audio(url));
+    const c = a.cloneNode();
+    c.play().catch(() => {});
+  } catch (e) {}
 }
 
 /* ---------- Panel ---------- */
@@ -288,6 +318,10 @@ function djUid() {
 }
 
 /* ---------- Hədiyyə göndərmək ---------- */
+const YAP_YOL = "masalar/" + MASA_NOMRESI + "/hediyyeYapisan/";
+/* Oyunçu çıxanda (bağlantı kəsiləndə) onun şəklinə oturmuş hədiyyələr də silinir */
+if (MEN) onDisconnect(ref(rtdb, YAP_YOL + MEN)).remove();
+
 async function gonder(g, c) {
   if (mesgul || !MEN) return;
   /* alanlar: işarələnmişlər, işarə yoxdursa toxunulan oyunçu */
@@ -307,9 +341,21 @@ async function gonder(g, c) {
     const dj = djUid();
     if (dj && alanlar.includes(dj) && window.Xallar) window.Xallar.musiqiHediyye(dj, c);
     /* hamıya göstər */
+    const n = Date.now() + "-" + Math.random().toString(36).slice(2, 7);
+    const payload = { to: alanlar, i: g.id, c, n };
+    if (g.yapis) {
+      /* hər alan üçün təsadüfi yer (şəklin üstündə, %-lə) və əyilmə; hamı eyni yeri görsün deyə bazaya yazılır.
+         Alanın köhnə oturan hədiyyəsinin üstünə yazılır, yəni köhnəsi silinir. */
+      const p = {};
+      alanlar.forEach(k => {
+        p[k] = { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) };
+        set(ref(rtdb, YAP_YOL + k), { i: g.id, x: p[k].x, y: p[k].y, r: p[k].r, n, from: MEN });
+      });
+      payload.p = p;
+    }
     const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye/" + MEN);
     onDisconnect(r).remove();
-    set(r, { to: alanlar, i: g.id, c, n: Date.now() + "-" + Math.random().toString(36).slice(2, 7) });
+    set(r, payload);
     /* hədiyyə atılandan sonra işarələr sıfırlanır */
     isaret.clear(); tray.classList.remove("open"); sec = null; sendBtn.style.display = "none"; ciz(); markYenile();
   } catch (e) {
@@ -338,6 +384,57 @@ const merkez = el => {
   const r = (el.querySelector(".foto") || el).getBoundingClientRect();
   return r.width ? [r.left + r.width / 2, r.top + r.height / 2] : null;
 };
+const fotoRect = el => {
+  const r = (el.querySelector(".foto") || el).getBoundingClientRect();
+  return r.width ? r : null;
+};
+
+/* Oturan hədiyyənin ölçüsü və yeri (r = şəklin düzbucağı, d = {i,x,y,r}) */
+const olcu = (d, r) => r.width * (d.i === "g15" ? 0.5 : 0.4);
+function noqte(d, r) {
+  if (d.i === "g15") return [r.left + r.width * 0.12, r.top + r.height * 0.02, -20];   /* tac: sol üst künc */
+  return [r.left + r.width * d.x / 100, r.top + r.height * d.y / 100, d.r || 0];       /* öpüş/pomidor: təsadüfi yer */
+}
+
+function ulduz(x, y) {
+  const s = document.createElement("div");
+  s.className = "hd-spark";
+  s.textContent = ["✦", "★", "✧"][Math.floor(Math.random() * 3)];
+  s.style.left = x + "px"; s.style.top = y + "px";
+  s.style.color = ["#ffe34d", "#ff5fa2", "#7dff6a"][Math.floor(Math.random() * 3)];
+  document.body.appendChild(s);
+  s.animate([{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(.2) translateY(3vw)" }], { duration: 600 }).onfinish = () => s.remove();
+}
+
+/* Oturan hədiyyə (tac / öpüş / pomidor): ulduz izi ilə uçur, sonra alanın şəklinin üstünə oturur */
+function ucurYapis(g, x, to, pa, b, p) {
+  const r = fotoRect(b);
+  if (!r) return;
+  const hed = { i: g.id, x: p.x, y: p.y, r: p.r };
+  const [tx, ty, rot] = noqte(hed, r);
+  const dx = tx - pa[0], dy = ty - pa[1];
+  const d = document.createElement("div");
+  d.className = "hd-fly";
+  d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
+  d.style.fontSize = olcu(hed, r) + "px";
+  d.innerHTML = gorselStk(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  document.body.appendChild(d);
+  const iz = setInterval(() => {
+    const q = d.getBoundingClientRect();
+    ulduz(q.left + q.width / 2 + (Math.random() * 16 - 8), q.top + q.height / 2 + (Math.random() * 16 - 8));
+  }, 45);
+  const an = d.animate([
+    { transform: "translate(-50%,-50%) scale(.4) rotate(0deg)", opacity: 0 },
+    { transform: "translate(-50%,-50%) scale(1.1) rotate(0deg)", opacity: 1, offset: .12 },
+    { transform: "translate(calc(-50% + " + dx + "px),calc(-50% + " + dy + "px)) scale(1) rotate(" + rot + "deg)", opacity: 1 }
+  ], { duration: 900, easing: "cubic-bezier(.2,.7,.3,1)", fill: "both" });
+  an.onfinish = () => {
+    clearInterval(iz);
+    gelen.add(x.n + "|" + to);     /* indi oturmasına icazə var */
+    yapisanCiz();
+    d.remove();
+  };
+}
 
 function oynaBir(kimden, x, to) {
   const g = HEDIYYELER.find(h => h.id === x.i);
@@ -345,6 +442,8 @@ function oynaBir(kimden, x, to) {
   if (!g || !b) return;
   const pb = merkez(b), pa = (a && merkez(a)) || [innerWidth / 2, innerHeight * 0.6];
   if (!pb) return;
+  const p = g.yapis && x.p && x.p[to];
+  if (p) { ucurYapis(g, x, to, pa, b, p); return; }
   const d = document.createElement("div");
   d.className = "hd-fly";
   d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
@@ -362,6 +461,8 @@ function oynaBir(kimden, x, to) {
 }
 
 function oyna(kimden, x) {
+  const g = HEDIYYELER.find(h => h.id === x.i);
+  if (g) sesCal(g.s);                       /* atılan an səs çıxır */
   const l = Array.isArray(x.to) ? x.to : [x.to];
   l.forEach((to, i) => setTimeout(() => oynaBir(kimden, x, to), i * 120));
 }
@@ -379,3 +480,55 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye"), s => {
   for (const uid in sonN) if (!v[uid]) delete sonN[uid];
   ilk = false;
 });
+
+/* ---------- Oyunçunun şəklinin üstündə oturan hədiyyələr ---------- */
+/* Hər oyunçunun bazada yalnız bir yeri var (hediyyeYapisan/<uid>): yeni hədiyyə köhnənin üstünə yazılır,
+   ekranda köhnə silinir. Şəkillər fikslənmiş qatda çəkilir (şəklin kənarına çıxa bilir, seat yenilənəndə itmir). */
+let yapData = {}, yapIlk = true, yapQat = null;
+const gelen = new Set();    /* uçuşu bitmiş (və ya səhifə açılanda artıq oturmuş) hədiyyələr: "n|uid" */
+const gorulen = {};         /* "n|uid" -> ilk görünmə vaxtı (uçuş animasiyası alınmasa 2.5 san sonra özü oturur) */
+const elmap = {};           /* uid -> { n, el } */
+
+onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyyeYapisan"), s => {
+  yapData = s.val() || {};
+  for (const uid in yapData) {
+    const d = yapData[uid];
+    if (!d) continue;
+    const key = d.n + "|" + uid;
+    if (!(key in gorulen)) { gorulen[key] = Date.now(); if (yapIlk) gelen.add(key); }
+  }
+  yapIlk = false;
+  yapisanCiz();
+});
+
+function yapisanCiz() {
+  if (!yapQat) { yapQat = document.createElement("div"); yapQat.className = "hd-stkLayer"; document.body.appendChild(yapQat); }
+  const simdi = Date.now();
+  for (const uid in elmap) if (!yapData[uid]) { elmap[uid].el.remove(); delete elmap[uid]; }
+  for (const uid in yapData) {
+    const d = yapData[uid];
+    if (!d) continue;
+    const key = d.n + "|" + uid;
+    const ok = gelen.has(key) || (simdi - (gorulen[key] || simdi) > 2500);
+    let rec = elmap[uid];
+    if (rec && (rec.n !== d.n || !ok)) { rec.el.remove(); delete elmap[uid]; rec = null; }   /* köhnə silinir */
+    if (!ok) continue;                                                                       /* yenisi uçub çatana qədər gözləyir */
+    const f = fotoTap(uid), r = f && fotoRect(f);
+    if (!r) { if (rec) rec.el.style.display = "none"; continue; }
+    if (!rec) {
+      const g = HEDIYYELER.find(h => h.id === d.i);
+      if (!g) continue;
+      const el = document.createElement("div");
+      el.className = "hd-stk";
+      el.innerHTML = gorselStk(g);
+      yapQat.appendChild(el);
+      rec = elmap[uid] = { n: d.n, el };
+    }
+    const [px, py, rot] = noqte(d, r);
+    rec.el.style.display = "block";
+    rec.el.style.fontSize = olcu(d, r) + "px";
+    rec.el.style.left = px + "px"; rec.el.style.top = py + "px";
+    rec.el.style.transform = "translate(-50%,-50%) rotate(" + rot + "deg)";
+  }
+}
+setInterval(yapisanCiz, 120);
