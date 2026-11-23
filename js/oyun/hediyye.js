@@ -23,7 +23,7 @@ import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx
    (köhnə oturan hədiyyə silinir). Başqa hədiyyəni də oturan etmək üçün yapis:true yaz.
    yigim:true = öpüş tipli oturma: videodan ölçülmüş uçuş/düşmə effekti (aşağıda "ÖPÜŞ YIĞIMI" bölməsi) */
 const SEKIL_PAPKA = "images/hediyye/";
-const SES_PAPKA = "sounds/";
+const SES_PAPKA = "sesler/";
 const HEDIYYELER = [
   { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true },
   { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5000, yapis: true },
