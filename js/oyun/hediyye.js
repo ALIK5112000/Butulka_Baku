@@ -10,31 +10,35 @@ import { ref, onValue, set, onDisconnect, runTransaction as rtTx } from "https:/
    - Hədiyyə alan oyunçunun musiqisi hazırda çalırsa: onun musiqi xalı hədiyyə sayı qədər artır. */
 
 /* ---------- AYARLAR ---------- */
-/* e = emoji (öz şəkliniz olsa img: "images/hediyye/1.png" yazın), q = qiymət (bonus ürək),
-   opus:true = öpüş hədiyyəsi, k = bölmə (ozel | yeni) */
+/* Şəkillər: images/hediyye/ papkasında. Hədiyyənin şəklini dəyişmək üçün
+   həmin faylı eyni adla əvəz et (və ya img yolunu dəyiş).
+   Şəkil tapılmasa e (emoji) göstərilir.
+   q = qiymət (bonus ürək), opus:true = öpüş hədiyyəsi, k = bölmə (ozel | yeni) */
+const SEKIL_PAPKA = "images/hediyye/";
 const HEDIYYELER = [
-  { id: "g1",  e: "💋", q: 1, opus: true, k: "ozel" },
-  { id: "g2",  e: "🍓", q: 1, k: "yeni" },
-  { id: "g3",  e: "🍅", q: 1, k: "yeni" },
-  { id: "g4",  e: "🪨", q: 1 },
-  { id: "g5",  e: "🌹", q: 1, k: "ozel" },
-  { id: "g6",  e: "🍬", q: 1 },
-  { id: "g7",  e: "🐸", q: 2 },
-  { id: "g8",  e: "🐧", q: 1 },
-  { id: "g9",  e: "🐥", q: 1, k: "yeni" },
-  { id: "g10", e: "🌷", q: 1 },
-  { id: "g11", e: "💐", q: 2, k: "ozel" },
-  { id: "g12", e: "🍫", q: 2 },
-  { id: "g13", e: "🍷", q: 2 },
-  { id: "g14", e: "💍", q: 3, k: "ozel" },
-  { id: "g15", e: "👑", q: 3, k: "ozel" },
-  { id: "g16", e: "🎩", q: 2 },
-  { id: "g17", e: "🧸", q: 3, k: "yeni" },
-  { id: "g18", e: "🚗", q: 5, k: "yeni" },
-  { id: "g19", e: "💎", q: 5, k: "ozel" },
-  { id: "g20", e: "🏰", q: 9, k: "ozel" }
+  { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel" },
+  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni" },
+  { id: "g7",  e: "🐸", img: SEKIL_PAPKA + "qurbaga.png", q: 2 },
+  { id: "g2",  e: "🍓", img: SEKIL_PAPKA + "cilek.png",   q: 1, k: "yeni" },
+  { id: "g4",  e: "🪨", img: SEKIL_PAPKA + "dash.png",    q: 1 },
+  { id: "g5",  e: "🌹", img: SEKIL_PAPKA + "gul.png",     q: 1, k: "ozel" },
+  { id: "g6",  e: "🍬", img: SEKIL_PAPKA + "konfet.png",  q: 1 },
+  { id: "g8",  e: "🐧", img: SEKIL_PAPKA + "pinqvin.png", q: 1 },
+  { id: "g9",  e: "🐥", img: SEKIL_PAPKA + "cuce.png",    q: 1, k: "yeni" },
+  { id: "g10", e: "🌷", img: SEKIL_PAPKA + "lale.png",    q: 1 },
+  { id: "g11", e: "💐", img: SEKIL_PAPKA + "buket.png",   q: 2, k: "ozel" },
+  { id: "g12", e: "🍫", img: SEKIL_PAPKA + "sokolad.png", q: 2 },
+  { id: "g13", e: "🍷", img: SEKIL_PAPKA + "sarab.png",   q: 2 },
+  { id: "g14", e: "💍", img: SEKIL_PAPKA + "uzuk.png",    q: 3, k: "ozel" },
+  { id: "g15", e: "👑", img: SEKIL_PAPKA + "tac.png",     q: 3, k: "ozel" },
+  { id: "g16", e: "🎩", img: SEKIL_PAPKA + "sapka.png",   q: 2 },
+  { id: "g17", e: "🧸", img: SEKIL_PAPKA + "ayicik.png",  q: 3, k: "yeni" },
+  { id: "g18", e: "🚗", img: SEKIL_PAPKA + "masin.png",   q: 5, k: "yeni" },
+  { id: "g19", e: "💎", img: SEKIL_PAPKA + "almaz.png",   q: 5, k: "ozel" },
+  { id: "g20", e: "🏰", img: SEKIL_PAPKA + "qala.png",    q: 9, k: "ozel" }
 ];
-const MUSIQI_QIYMETI = 9; /* "Musiqi qoş" kafelinin yazısı; real ödəniş mövcud musiqi sistemində olur */
+/* "Klip qoş" və "Mahnı qoş" kafellərinin qiyməti (yazı üçündür; real ödəniş mövcud musiqi sistemində olur) */
+const KLIP_QIYMETI = 9, MAHNI_QIYMETI = 5;
 
 const CSS = `
 .hd-root{display:none}
@@ -63,8 +67,8 @@ const CSS = `
 .hd-cell{display:flex;flex-direction:column;align-items:center;padding:2.4vw 0 2.4vw;border-radius:2vw;margin:.4vw}
 .hd-cell.sel{background:#efe9ff;box-shadow:inset 0 0 0 .4vw #6c4fd6}
 .hd-cell:active .hd-e{transform:scale(.9)}
-.hd-e{height:14vw;display:flex;align-items:center;justify-content:center;font-size:11.5vw;line-height:1;transition:transform .12s}
-.hd-e img{height:13vw;width:auto}
+.hd-e{width:15vw;height:14vw;display:flex;align-items:center;justify-content:center;font-size:11.5vw;line-height:1;transition:transform .12s}
+.hd-e img{max-width:14vw;max-height:13vw;width:auto;height:auto;object-fit:contain;display:block}
 .hd-pr{display:flex;align-items:center;gap:1.2vw;margin-top:1.4vw;font:700 4.4vw/1 Roboto,Arial,sans-serif;color:#333}
 .hd-pr svg{width:5.2vw;height:5vw}
 .hd-send{position:fixed;left:50%;bottom:3vw;transform:translateX(-50%);z-index:9991;display:none;height:8.6vw;padding:0 8vw;border:0;border-radius:5vw;background:#7cc92f;color:#fff;font:700 4vw/1 Roboto,Arial,sans-serif;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3)}
@@ -84,7 +88,15 @@ const st = document.createElement("style");
 st.textContent = CSS;
 document.head.appendChild(st);
 
-const UREK = '<svg viewBox="0 0 24 22"><defs><linearGradient id="hdh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6a3d"/><stop offset="1" stop-color="#e5391a"/></linearGradient></defs><path d="M12 21C5 16 1 12 1 7.2A5.2 5.2 0 0 1 12 4.5 5.2 5.2 0 0 1 23 7.2C23 12 19 16 12 21z" fill="url(#hdh)"/></svg>';
+/* Ürək stikeri: bütün qiymətlərdə eynidir (gradient yoxdur, ID təkrarı problemi olmur).
+   Öz şəklini istəsən: '<img src="images/hediyye/urek.png" alt="">' yaz. */
+const UREK = '<svg viewBox="0 0 24 22"><path d="M12 21C5 16 1 12 1 7.2A5.2 5.2 0 0 1 12 4.5 5.2 5.2 0 0 1 23 7.2C23 12 19 16 12 21z" fill="#dc5a22"/></svg>';
+
+/* Şəkil varsa onu, yoxdursa (və ya yüklənməsə) emojini göstərir */
+const gorsel = g => g.img
+  ? '<img src="' + g.img + '" alt="" onerror="this.replaceWith(document.createTextNode(\'' + g.e + '\'))">'
+  : g.e;
+
 const num = v => Number(v) || 0;
 const MEN = (cariOyuncu() || {}).docId || null;
 
@@ -123,12 +135,17 @@ const say = () => Math.min(99, Math.max(1, parseInt(sayInp.value, 10) || 1));
 
 function ciz() {
   grid.innerHTML = "";
-  /* ilk kafel: musiqi qoşmaq */
+  /* ilk iki kafel: klip və mahnı qoşmaq */
   if (tab === "hamisi") {
-    const m = document.createElement("div");
-    m.className = "hd-cell";
-    m.innerHTML = '<div class="hd-e">🎬</div><div class="hd-pr">' + UREK + MUSIQI_QIYMETI + "</div>";
-    m.onclick = () => {
+    const musiqiKafel = (img, emoji, qiymet, ac) => {
+      const m = document.createElement("div");
+      m.className = "hd-cell";
+      m.innerHTML = '<div class="hd-e">' + gorsel({ img, e: emoji }) + '</div><div class="hd-pr">' + UREK + qiymet + "</div>";
+      m.onclick = ac;
+      grid.appendChild(m);
+    };
+    /* 1) Klip */
+    musiqiKafel(SEKIL_PAPKA + "klip.png", "🎬", KLIP_QIYMETI, () => {
       const kimin = hedef;                      /* musiqi bu oyunçunun adına qoşulur */
       bagla();
       const bt = document.getElementById("musiqiBtn1");
@@ -136,13 +153,21 @@ function ciz() {
       window.__klipHedef = kimin || null;       /* klip.js çata yazanda bunu da əlavə edir */
       bt.click();
       klipHedefIzle();
-    };
-    grid.appendChild(m);
+    });
+    /* 2) Mahnı */
+    musiqiKafel(SEKIL_PAPKA + "mahni.png", "🎵", MAHNI_QIYMETI, () => {
+      const kimin = hedef;
+      bagla();
+      const bt = document.getElementById("musiqiBtn2");   /* mahnı düyməsinin id-si fərqlidirsə bunu dəyiş */
+      window.__klipHedef = kimin || null;
+      if (bt) { bt.click(); klipHedefIzle(); }
+      else if (window.MusiqiPanel) window.MusiqiPanel.open("popular");
+    });
   }
   HEDIYYELER.filter(g => tab === "hamisi" || g.k === tab).forEach(g => {
     const c = document.createElement("div");
     c.className = "hd-cell" + (sec && sec.id === g.id ? " sel" : "");
-    c.innerHTML = '<div class="hd-e">' + (g.img ? '<img src="' + g.img + '" alt="">' : g.e) + '</div><div class="hd-pr">' + UREK + g.q + "</div>";
+    c.innerHTML = '<div class="hd-e">' + gorsel(g) + '</div><div class="hd-pr">' + UREK + g.q + "</div>";
     c.onclick = () => {
       if (mod === "avto") { gonder(g, say()); return; }
       sec = g; sendBtn.style.display = "block"; ciz();
@@ -323,7 +348,7 @@ function oynaBir(kimden, x, to) {
   const d = document.createElement("div");
   d.className = "hd-fly";
   d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
-  d.innerHTML = (g.img ? '<img src="' + g.img + '" alt="">' : g.e) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  d.innerHTML = gorsel(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
   document.body.appendChild(d);
   const dx = pb[0] - pa[0], dy = pb[1] - pa[1];
   const an = d.animate([
