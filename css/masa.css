@@ -86,12 +86,12 @@
 .yer-9  { left: 17.2vw; top: 96.2vw; }
 .yer-10 { left: 13.1vw; top: 74.4vw; }
 .yer-11 { left: 13.1vw; top: 52.7vw; }
-#masa .orta .foto {
+ html body #taxta #masa .orta .foto {
   width: 16.9vw !important;
   height: 16.9vw !important;
   border-radius: 1.8vw !important;
 }
-#masa .orta .ad {
+html body #taxta #masa .orta .ad {
   margin-top: 0.3vw !important;
   font-size: 2.2vw !important;
   line-height: 1.15 !important;
