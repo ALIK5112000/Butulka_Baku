@@ -1,7 +1,7 @@
 import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
-import { doc, onSnapshot, runTransaction, increment } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { doc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 /* ADDIM 3: Hədiyyə paneli. Başqa oyunçunun şəklinə toxunanda açılır.
@@ -14,15 +14,6 @@ import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx
    yeni öpüş atılanda köhnəsi tədricən yox olur (ayarlar: OPUS). */
 
 /* ---------- AYARLAR ---------- */
-/* Şəkillər: images/hediyye/ papkasında. Hədiyyənin şəklini dəyişmək üçün
-   həmin faylı eyni adla əvəz et (və ya img yolunu dəyiş).
-   Şəkil tapılmasa e (emoji) göstərilir.
-   q = qiymət (bonus ürək), opus:true = öpüş hədiyyəsi, k = bölmə (ozel | yeni)
-   s = atılanda çıxan səs, sl = oyunçunun şəklinə düşəndə çıxan səs (sounds/ papkasında), ucusMs = uçuş müddəti (ms, yoxdursa 900),
-   yapis:true = alanın şəklinin üstünə oturur
-   (köhnə oturan hədiyyə silinir). Başqa hədiyyəni də oturan etmək üçün yapis:true yaz.
-   ucusAdi:true = uçanda adi şəkil (img) göstərilir, şəklə oturandan sonra OTURAN_SEKIL şəkli (məs. əzilmiş pomidor) görünür.
-   yigim:true = öpüş tipli oturma: videodan ölçülmüş uçuş/düşmə effekti (aşağıda "ÖPÜŞ YIĞIMI" bölməsi) */
 const SEKIL_PAPKA = "images/hediyye/";
 const SES_PAPKA = "sesler/";
 const HEDIYYELER = [
@@ -47,20 +38,13 @@ const HEDIYYELER = [
   { id: "g19", e: "💎", img: SEKIL_PAPKA + "almaz.png",   q: 5, k: "ozel" },
   { id: "g20", e: "🏰", img: SEKIL_PAPKA + "qala.png",    q: 9, k: "ozel" }
 ];
-/* Alanın şəklinin üstündə oturan hədiyyənin şəkli panel şəklindən fərqli ola bilər.
-   Tac üçün tac2.png, pomidor üçün əzilmiş pomidor (pomidor_ezik.png) istifadə olunur
-   (yoxdursa adi şəkil götürülür). */
+
 const OTURAN_SEKIL = {
   g15: SEKIL_PAPKA + "tac2.png",
   g3: SEKIL_PAPKA + "pomidor_ezik.png"
 };
-/* ÖPÜŞ effektinin ayarları (videodan ölçülüb).
-   OLCU  = öpüşün uzun tərəfi, alanın şəkil enindən neçə faiz (0.34 = 34%). Şəkil böyük/kiçik görünsə bunu dəyiş.
-   MAX   = bir oyunçunun şəklində eyni anda neçə öpüş qala bilər.
-           1 = yeni öpüş atılanda köhnəsi tədricən yox olur; 3 = öpüşlər yığılır (videoda ikisi qalırdı).
-   SOLMA_MS = köhnə öpüşün tam yox olma müddəti (ms). Yeni öpüş atılan an solmağa başlayır. */
+
 const OPUS = { OLCU: 0.34, MAX: 1, SOLMA_MS: 3000 };
-/* "Klip qoş" və "Mahnı qoş" kafellərinin qiyməti (yazı üçündür; real ödəniş mövcud musiqi sistemində olur) */
 const KLIP_QIYMETI = 9, MAHNI_QIYMETI = 5;
 
 const CSS = `
@@ -121,16 +105,12 @@ const st = document.createElement("style");
 st.textContent = CSS;
 document.head.appendChild(st);
 
-/* Ürək stikeri: bütün qiymətlərdə eynidir (gradient yoxdur, ID təkrarı problemi olmur).
-   Öz şəklini istəsən: '<img src="images/hediyye/urek.png" alt="">' yaz. */
 const UREK = '<svg viewBox="0 0 24 22"><path d="M12 21C5 16 1 12 1 7.2A5.2 5.2 0 0 1 12 4.5 5.2 5.2 0 0 1 23 7.2C23 12 19 16 12 21z" fill="#dc5a22"/></svg>';
 
-/* Şəkil varsa onu, yoxdursa (və ya yüklənməsə) emojini göstərir */
 const gorsel = g => g.img
   ? '<img src="' + g.img + '" alt="" onerror="this.replaceWith(document.createTextNode(\'' + g.e + '\'))">'
   : g.e;
 
-/* Alanın şəklinin üstündə oturan şəkil: OTURAN_SEKIL varsa o, yüklənməsə adi şəkil, o da yoxdursa emoji */
 function gorselStk(g) {
   const src = OTURAN_SEKIL[g.id];
   if (!src) return gorsel(g);
@@ -148,9 +128,6 @@ function toast(msg) {
   clearTimeout(tT); tT = setTimeout(() => { t.style.display = "none"; }, 2600);
 }
 
-/* ---------- SINAQ REJİMİ ----------
-   true olanda ekranın sol üstündə hədiyyənin hansı mərhələdə dayandığı yazılır (9 san görünür).
-   Hər şey işləyəndə false et. */
 const HD_DEBUG = false;
 function dbg(m) {
   if (!HD_DEBUG) return;
@@ -205,7 +182,6 @@ const say = () => Math.min(99, Math.max(1, parseInt(sayInp.value, 10) || 1));
 
 function ciz() {
   grid.innerHTML = "";
-  /* ilk iki kafel: klip və mahnı qoşmaq */
   if (tab === "hamisi") {
     const musiqiKafel = (img, emoji, qiymet, ac) => {
       const m = document.createElement("div");
@@ -214,21 +190,19 @@ function ciz() {
       m.onclick = ac;
       grid.appendChild(m);
     };
-    /* 1) Klip */
     musiqiKafel(SEKIL_PAPKA + "klip.png", "🎬", KLIP_QIYMETI, () => {
-      const kimin = hedef;                      /* musiqi bu oyunçunun adına qoşulur */
+      const kimin = hedef;
       bagla();
       const bt = document.getElementById("musiqiBtn1");
       if (!bt) { if (window.MusiqiPanel) window.MusiqiPanel.open("popular"); return; }
-      window.__klipHedef = kimin || null;       /* klip.js çata yazanda bunu da əlavə edir */
+      window.__klipHedef = kimin || null;
       bt.click();
       klipHedefIzle();
     });
-    /* 2) Mahnı */
     musiqiKafel(SEKIL_PAPKA + "mahni.png", "🎵", MAHNI_QIYMETI, () => {
       const kimin = hedef;
       bagla();
-      const bt = document.getElementById("musiqiBtn2");   /* mahnı düyməsinin id-si fərqlidirsə bunu dəyiş */
+      const bt = document.getElementById("musiqiBtn2");
       window.__klipHedef = kimin || null;
       if (bt) { bt.click(); klipHedefIzle(); }
       else if (window.MusiqiPanel) window.MusiqiPanel.open("popular");
@@ -261,12 +235,9 @@ sayInp.oninput = () => { sayInp.value = sayInp.value.replace(/\D/g, ""); };
 sayInp.onblur = () => { sayInp.value = say(); };
 sendBtn.onclick = () => { if (sec) gonder(sec, say()); };
 
-/* Musiqi pəncərəsi bağlananda "kimin adına" qeydi silinir (sonrakı adi musiqi qoşma təsirlənməsin) */
 function klipHedefIzle() {
   const pen = document.getElementById("klipPenceresi");
   if (!pen) { setTimeout(() => { window.__klipHedef = null; }, 120000); return; }
-  // Pəncərə bağlanan kimi hədəfi silmirik: klip.js klipi seçib çata yazana qədər vaxt lazımdır.
-  // (klip.js çata yazandan sonra özü də sıfırlayır.)
   const mo = new MutationObserver(() => { if (pen.hidden) { mo.disconnect(); setTimeout(() => { window.__klipHedef = null; }, 10000); } });
   mo.observe(pen, { attributes: true, attributeFilter: ["hidden"] });
 }
@@ -284,7 +255,6 @@ window.addEventListener("resize", () => { if (root.classList.contains("open")) y
 
 function ac(uid) {
   if (!uid || uid === MEN) return;
-  /* "Masanı dəyiş" pəncərəsi (dost/masa siyahısı) açıqkən hədiyyə paneli açılmasın */
   const my = document.getElementById("modalYer");
   if (my && getComputedStyle(my).display !== "none") return;
   if (uUnsub) { uUnsub(); uUnsub = null; }
@@ -342,7 +312,6 @@ $(".hd-tx").onclick = () => { isaret.clear(); tray.classList.remove("open"); mar
 window.HediyyePanel = { ac, bagla, hedef: () => hedef, modu: () => root.classList.contains("open") && tray.classList.contains("open"), isaretle };
 
 /* ---------- Hazırda kimin musiqisi çalır? ---------- */
-/* klip.js klipi bazada saxlayır: masalar/<masa>/aktivKlip (djUid = klipi qoşan oyunçu) */
 let oturacaqlar = {}, spin = null, offset = 0, aktivKlip = null;
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => { oturacaqlar = s.val() || {}; });
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/raund/spin"), s => { spin = s.val() || null; });
@@ -353,25 +322,21 @@ function djUid() {
   const d = aktivKlip;
   if (!d || !d.djUid) return null;
   const bas = num(d.startedAt), dur = num(d.durationSec);
-  if (bas && dur && Date.now() + offset > bas + dur * 1000 + 3000) return null;   /* klip bitib */
+  if (bas && dur && Date.now() + offset > bas + dur * 1000 + 3000) return null;
   return d.djUid;
 }
 
 /* ---------- Hədiyyə göndərmək ---------- */
 const YAP_YOL = "masalar/" + MASA_NOMRESI + "/hediyyeYapisan/";
-/* Oyunçu çıxanda (bağlantı kəsiləndə) onun şəklinə oturmuş hədiyyələr də silinir */
 if (MEN) onDisconnect(ref(rtdb, YAP_YOL + MEN)).remove();
-/* Öpüş yığımı: bazada masalar/<masa>/yigim/<alanUid>/<n> = { i, x, y, r, d, n, from, t, sol? } */
 const YIG_YOL = "masalar/" + MASA_NOMRESI + "/yigim/";
 if (MEN) onDisconnect(ref(rtdb, YIG_YOL + MEN)).remove();
 
-/* Öz ürək sayım (canlı): hədiyyə göndərməzdən əvvəl gözləmədən yoxlanır */
 let meHearts = null;
 if (MEN) onSnapshot(doc(fsdb, "users", MEN), s => { meHearts = num((s.data() || {}).hearts); }, () => {});
 
 async function gonder(g, c) {
   if (!MEN) { dbg("MEN yoxdur: cariOyuncu() boşdur, hədiyyə göndərilmir"); return; }
-  /* alanlar: işarələnmişlər, işarə yoxdursa toxunulan oyunçu */
   const alanlar = isaret.size ? [...isaret].filter(u => u !== MEN) : (hedef ? [hedef] : []);
   if (!alanlar.length) { toast("Oyunçu seçilməyib"); return; }
   const cost = g.q * c * alanlar.length;
@@ -381,22 +346,14 @@ async function gonder(g, c) {
   if (meHearts !== null && meHearts < cost) { toast("Bonus ürəyiniz çatmır"); if (window.HeartShop) window.HeartShop.open(); return; }
   if (meHearts !== null) meHearts -= cost;
 
-  /* ödəniş arxa planda gedir, hədiyyə gözləmir (tx.set merge:true ilə FAILED_PRECONDITION olmur) */
-  const odenis = runTransaction(fsdb, async tx => {
-    const r = doc(fsdb, "users", MEN), s = await tx.get(r);
-    if (!s.exists()) throw new Error("PROFIL_YOXDUR");
-    const d = s.data() || {};
-    if (num(d.hearts) < cost) throw new Error("YETMIR");
-    tx.set(r, { hearts: num(d.hearts) - cost }, { merge: true });
-  });
+  /* Sürətli basanda toqquşma (failed-precondition) olmaması üçün atomik increment(-cost) işlədirik */
+  const odenis = updateDoc(doc(fsdb, "users", MEN), { hearts: increment(-cost) });
 
   /* hamıya göstər */
   const n = Date.now() + "-" + Math.random().toString(36).slice(2, 7);
   const payload = { to: alanlar, i: g.id, c, n };
   let yigUpd = null;
   if (g.yapis) {
-    /* hər alan üçün təsadüfi yer (şəklin üstündə, %-lə) və əyilmə; hamı eyni yeri görsün deyə bazaya yazılır.
-       Alanın köhnə oturan hədiyyəsinin üstünə yazılır, yəni köhnəsi silinir. */
     const p = {};
     alanlar.forEach(k => {
       p[k] = { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) };
@@ -404,8 +361,6 @@ async function gonder(g, c) {
     });
     payload.p = p;
   } else if (g.yigim) {
-    /* öpüş: hər alan üçün təsadüfi yer (şəklin 15–85%-i) və son bucaq (±100°).
-       Yer qalmayanda (OPUS.MAX) ən köhnə öpüşlərə "sol" vaxtı yazılır, hamının ekranında tədricən yox olur. */
     const t = Date.now() + offset, p = {}, upd = {};
     yigUpd = upd;
     alanlar.forEach(k => {
@@ -414,7 +369,7 @@ async function gonder(g, c) {
       const aktiv = Object.entries(yigData[k] || {}).filter(([, e]) => e && !e.sol).sort((a, b) => num(a[1].t) - num(b[1].t));
       while (aktiv.length >= Math.max(1, OPUS.MAX)) {
         const [key, e] = aktiv.shift();
-        upd[k + "/" + key + "/sol"] = Math.max(t, num(e.t) + (g.ucusMs || 900));   /* hələ enməyibsə, endikdən sonra solmağa başlayır */
+        upd[k + "/" + key + "/sol"] = Math.max(t, num(e.t) + (g.ucusMs || 900));
       }
       upd[k + "/" + n] = { i: g.id, x: q.x, y: q.y, r: q.r, n, from: MEN, t };
     });
@@ -422,9 +377,7 @@ async function gonder(g, c) {
   }
   const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye/" + MEN);
   onDisconnect(r).remove();
-  /* 1) hamıya "hədiyyə atıldı" siqnalı (səs + uçuş bundan başlayır) */
   set(r, payload).then(() => dbg("hədiyyə bazaya yazıldı")).catch(e => dbg("HƏDİYYƏ YAZILMADI: " + (e.code || e.message)));
-  /* 2) öpüşün şəklə oturması üçün yığım bazaya yazılır */
   if (yigUpd) {
     try { update(ref(rtdb, YIG_YOL), yigUpd).catch(e => dbg("ÖPÜŞ YIĞIMI YAZILMADI: " + (e.code || e.message))); }
     catch (e) { dbg("ÖPÜŞ YIĞIMI XƏTASI: " + e.message); }
@@ -435,30 +388,21 @@ async function gonder(g, c) {
 
   /* ödəniş nəticəsi */
   odenis.then(() => {
-    /* öpüş hədiyyəsi: həm masadakı sayğac artır, həm də alan oyunçunun Firestore profilində kisses xalı artır */
     if (g.opus) {
       alanlar.forEach(k => {
         rtTx(ref(rtdb, "masalar/" + MASA_NOMRESI + "/opus/" + k), v => num(v) + c).catch(() => {});
-        runTransaction(fsdb, async tx => {
-          const uRef = doc(fsdb, "users", k);
-          const uSnap = await tx.get(uRef);
-          if (uSnap.exists()) {
-            tx.set(uRef, { kisses: increment(c) }, { merge: true });
-          }
-        }).catch(() => {});
+        updateDoc(doc(fsdb, "users", k), { kisses: increment(c) }).catch(() => {});
       });
     }
-    /* hədiyyə alanlardan musiqisi çalan varsa: hər hədiyyəyə +1 musiqi xalı */
     const dj = djUid();
     if (dj && alanlar.includes(dj) && window.Xallar) window.Xallar.musiqiHediyye(dj, c);
   }).catch(e => {
-    /* ödəniş alınmadı: hədiyyəni geri götür */
     meHearts = null;
     remove(r).catch(() => {});
     if (g.yapis) alanlar.forEach(k => remove(ref(rtdb, YAP_YOL + k)).catch(() => {}));
     if (g.yigim) alanlar.forEach(k => remove(ref(rtdb, YIG_YOL + k + "/" + n)).catch(() => {}));
-    if (e.message === "YETMIR") { toast("Bonus ürəyiniz çatmır"); if (window.HeartShop) window.HeartShop.open(); }
-    else { console.error(e); toast("Xəta: " + (e.code || e.message)); }
+    console.error(e);
+    toast("Xəta: " + (e.code || e.message));
   });
 }
 
@@ -471,7 +415,7 @@ function fotoTap(uid) {
   for (const k in oturacaqlar) {
     if (oturacaqlar[k] && oturacaqlar[k].uid === uid) {
       const e = document.querySelector("#masa .yer-" + k);
-      if (e && e.classList.contains("dolu")) return e;   /* ekranda həqiqətən dolu görünən yer üstündür */
+      if (e && e.classList.contains("dolu")) return e;
       if (e && !ehtiyat) ehtiyat = e;
     }
   }
@@ -486,11 +430,10 @@ const fotoRect = el => {
   return r.width ? r : null;
 };
 
-/* Oturan hədiyyənin ölçüsü və yeri (r = şəklin düzbucağı, d = {i,x,y,r}) */
 const olcu = (d, r) => r.width * (d.i === "g15" ? 0.5 : d.i === "g3" ? 0.5 : 0.4);
 function noqte(d, r) {
-  if (d.i === "g15") return [r.left + r.width * 0.12, r.top + r.height * 0.02, -20];   /* tac: sol üst künc */
-  return [r.left + r.width * d.x / 100, r.top + r.height * d.y / 100, d.r || 0];       /* öpüş/pomidor: təsadüfi yer */
+  if (d.i === "g15") return [r.left + r.width * 0.12, r.top + r.height * 0.02, -20];
+  return [r.left + r.width * d.x / 100, r.top + r.height * d.y / 100, d.r || 0];
 }
 
 function ulduz(x, y) {
@@ -503,7 +446,6 @@ function ulduz(x, y) {
   s.animate([{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(.2) translateY(3vw)" }], { duration: 600 }).onfinish = () => s.remove();
 }
 
-/* Oturan hədiyyə (tac / pomidor): ulduz izi ilə uçur, sonra alanın şəklinin üstünə oturur */
 function ucurYapis(g, x, to, pa, b, p) {
   const r = fotoRect(b);
   if (!r) return;
@@ -514,7 +456,6 @@ function ucurYapis(g, x, to, pa, b, p) {
   d.className = "hd-fly";
   d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
   d.style.fontSize = olcu(hed, r) + "px";
-  /* ucusAdi: uçanda adi şəkil (məs. bütöv pomidor), oturanda OTURAN_SEKIL (əzilmiş pomidor) */
   d.innerHTML = (g.ucusAdi ? gorsel(g) : gorselStk(g)) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
   document.body.appendChild(d);
   const iz = setInterval(() => {
@@ -528,8 +469,8 @@ function ucurYapis(g, x, to, pa, b, p) {
   ], { duration: g.ucusMs || 900, easing: "cubic-bezier(.2,.7,.3,1)", fill: "both" });
   an.onfinish = () => {
     clearInterval(iz);
-    sesCal(g.sl);                  /* şəklə düşən an səs */
-    gelen.add(x.n + "|" + to);     /* indi oturmasına icazə var */
+    sesCal(g.sl);
+    gelen.add(x.n + "|" + to);
     yapisanCiz();
     d.remove();
   };
@@ -563,7 +504,7 @@ function oynaBir(kimden, x, to) {
 
 function oyna(kimden, x) {
   const g = HEDIYYELER.find(h => h.id === x.i);
-  if (g) sesCal(g.s);                       /* atılan an səs çıxır */
+  if (g) sesCal(g.s);
   const l = Array.isArray(x.to) ? x.to : [x.to];
   l.forEach((to, i) => setTimeout(() => oynaBir(kimden, x, to), i * 120));
 }
@@ -583,12 +524,10 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye"), s => {
 });
 
 /* ---------- Oyunçunun şəklinin üstündə oturan hədiyyələr ---------- */
-/* Hər oyunçunun bazada yalnız bir yeri var (hediyyeYapisan/<uid>): yeni hədiyyə köhnənin üstünə yazılır,
-   ekranda köhnə silinir. Şəkillər fikslənmiş qatda çəkilir (şəklin kənarına çıxa bilir, seat yenilənəndə itmir). */
 let yapData = {}, yapIlk = true, yapQat = null;
-const gelen = new Set();    /* uçuşu bitmiş (və ya səhifə açılanda artıq oturmuş) hədiyyələr: "n|uid" */
-const gorulen = {};         /* "n|uid" -> ilk görünmə vaxtı (uçuş animasiyası alınmasa 8 san sonra özü oturur) */
-const elmap = {};           /* uid -> { n, el } */
+const gelen = new Set();
+const gorulen = {};
+const elmap = {};
 
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyyeYapisan"), s => {
   yapData = s.val() || {};
@@ -610,12 +549,12 @@ function yapisanCiz() {
     const d = yapData[uid];
     if (!d) continue;
     const gh = HEDIYYELER.find(h => h.id === d.i);
-    if (gh && gh.yigim) continue;                      /* öpüşlər ayrıca "yığım" bölməsində çəkilir */
+    if (gh && gh.yigim) continue;
     const key = d.n + "|" + uid;
     const ok = gelen.has(key) || (simdi - (gorulen[key] || simdi) > 8000);
     let rec = elmap[uid];
-    if (rec && (rec.n !== d.n || !ok)) { rec.el.remove(); delete elmap[uid]; rec = null; }   /* köhnə silinir */
-    if (!ok) continue;                                                                       /* yenisi uçub çatana qədər gözləyir */
+    if (rec && (rec.n !== d.n || !ok)) { rec.el.remove(); delete elmap[uid]; rec = null; }
+    if (!ok) continue;
     const f = fotoTap(uid), r = f && fotoRect(f);
     if (!r) { if (rec) rec.el.style.display = "none"; continue; }
     if (!rec) {
@@ -636,21 +575,15 @@ function yapisanCiz() {
 }
 setInterval(yapisanCiz, 120);
 
-/* ======================= ÖPÜŞ YIĞIMI (g.yigim) =======================
-   Videodan kadr-kadr ölçülüb (1080x2340 ekran yazısı):
-   - Öpüş atanın şəklinin MƏRKƏZİNDƏN çıxır və alanın şəklində təsadüfi yerə enir. Uçuş ~4,9 san.
-   - Yer və fırlanma: yavaşlayan əyri (easeOutQuad: əvvəl sürətli, sonda yavaş). Fırlanma cəmi 90°.
-   - Ölçü: ilk anda ~1,2x, uçuşun ortasında ~1,55x-ə qədər böyüyür, enəndə 1x-ə kiçilir (şəklə "oturur").
-   - Ulduz izi yoxdur. Atılanda g.s səsi, şəklə oturanda g.sl səsi çalır.
-   - Oturan öpüşlər bazadan oxunur (hamı eyni yeri görür); OPUS.MAX aşılanda köhnə tədricən yox olur. */
+/* ======================= ÖPÜŞ YIĞIMI (g.yigim) ======================= */
 const OLCU_EYRISI = [[0, .7], [.012, 1.17], [.05, 1.32], [.11, 1.28], [.16, 1.27], [.22, 1.28], [.28, 1.37], [.36, 1.48],
                      [.42, 1.55], [.49, 1.55], [.57, 1.51], [.63, 1.45], [.69, 1.41], [.77, 1.24], [.86, 1.09], [.93, 1.02], [1, 1]];
-const YAVASLA = "cubic-bezier(0.5,1,0.89,1)";      /* easeOutQuad */
+const YAVASLA = "cubic-bezier(0.5,1,0.89,1)";
 
 let yigData = {}, yigIlk = true, yigQat = null;
-const ogelen = new Set();      /* uçuşu bitmiş (və ya səhifə açılanda artıq oturmuş) öpüşlər: "n|uid" */
-const ogorulen = {};           /* "n|uid" -> ilk görünmə vaxtı (uçuş alınmasa 8 san sonra özü oturur) */
-const yigEl = {};              /* "n|uid" -> { el, sol } */
+const ogelen = new Set();
+const ogorulen = {};
+const yigEl = {};
 const yigSilinir = new Set();
 
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/yigim"), s => {
@@ -664,7 +597,6 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/yigim"), s => {
   yigimCiz();
 });
 
-/* Uçuş: göndərənin şəklindən alanın şəklinə. 3 qat: yer (translate) > fırlanma > ölçü; hamısı ucusMs davam edir. */
 function ucurYigim(g, x, to, pa, b, p) {
   const r = fotoRect(b);
   if (!r) return;
@@ -680,18 +612,17 @@ function ucurYigim(g, x, to, pa, b, p) {
   rot.animate([{ transform: "rotate(" + (p.r - 90 * dir) + "deg)" }, { transform: "rotate(" + p.r + "deg)" }], { duration: ms, easing: YAVASLA, fill: "both" });
   const an = olc.animate(OLCU_EYRISI.map(([o, s]) => ({ offset: o, transform: "scale(" + s + ")", opacity: o === 0 ? 0 : 1 })), { duration: ms, easing: "linear", fill: "both" });
   an.onfinish = () => {
-    sesCal(g.sl);                       /* şəklə düşən an səs */
-    ogelen.add(x.n + "|" + to);         /* indi oturmasına icazə var */
+    sesCal(g.sl);
+    ogelen.add(x.n + "|" + to);
     yigimCiz();
     a.remove();
   };
 }
 
-/* Oturan öpüşləri çəkir: yer/ölçü/bucaq hər 120 ms yenilənir (şəkil yerini dəyişsə izləyir). */
 function yigimCiz() {
   if (!yigQat) { yigQat = document.createElement("div"); yigQat.className = "hd-yigQat"; document.body.appendChild(yigQat); }
   const srv = Date.now() + offset;
-  for (const kk in yigEl) {                               /* bazadan silinənləri ekrandan götür */
+  for (const kk in yigEl) {
     const [key, uid] = kk.split("|");
     if (!(yigData[uid] && yigData[uid][key])) { yigEl[kk].el.remove(); delete yigEl[kk]; yigSilinir.delete(kk); }
   }
@@ -702,13 +633,13 @@ function yigimCiz() {
       const e = col[key];
       if (!e) continue;
       const kk = key + "|" + uid;
-      if (e.sol && srv - e.sol >= OPUS.SOLMA_MS) {        /* tam yox olub: bazadan təmizlə */
+      if (e.sol && srv - e.sol >= OPUS.SOLMA_MS) {
         if (yigEl[kk]) { yigEl[kk].el.remove(); delete yigEl[kk]; }
         if (!yigSilinir.has(kk)) { yigSilinir.add(kk); remove(ref(rtdb, YIG_YOL + uid + "/" + key)).catch(() => {}); }
         continue;
       }
       const ok = ogelen.has(kk) || (Date.now() - (ogorulen[kk] || Date.now()) > 8000);
-      if (!ok) continue;                                  /* uçub çatana qədər gözləyir */
+      if (!ok) continue;
       let rec = yigEl[kk];
       const f = fotoTap(uid), r = f && fotoRect(f);
       if (!r) { if (rec) rec.el.style.display = "none"; continue; }
@@ -728,10 +659,10 @@ function yigimCiz() {
       el.style.left = (r.left + r.width * e.x / 100 - L / 2) + "px";
       el.style.top = (r.top + r.height * e.y / 100 - L / 2) + "px";
       el.style.transform = "rotate(" + e.r + "deg)";
-      if (e.sol && !rec.sol) {                            /* tədricən yox olma: hamı üçün eyni anda (server vaxtı ilə) */
+      if (e.sol && !rec.sol) {
         rec.sol = true;
         const an = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: OPUS.SOLMA_MS, easing: "linear", fill: "both" });
-        an.currentTime = srv - e.sol;                     /* artıq keçən hissədən davam edir (mənfi olarsa gözləyir) */
+        an.currentTime = srv - e.sol;
       }
     }
   }
