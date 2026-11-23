@@ -12,7 +12,7 @@ const yerler = [];
 
 // Aşağı sıradakı yerlərin (6,7,8,9) adı chat panelinin altında qalıb kəsilir: hələlik adlar gizlədilir.
 // Adları qaytarmaq üçün siyahını boş yaz: const ALT_YERLER = [];
-const ALT_YERLER = [6, 7, 8, 9];
+const ALT_YERLER = [];
 document.head.insertAdjacentHTML("beforeend", "<style>.yer.alt-yer .ad{display:none!important}</style>");
 
 for (let i = 0; i < OTURACAQ_SAYI; i++) {
