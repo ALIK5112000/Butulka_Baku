@@ -55,8 +55,10 @@ if (cari && cari.docId) {
     `<div id="firlatYazi"><svg viewBox="0 0 40 24"><path d="M38 12C26 8 18 16 4 12M12 4L3 12L12 20" ${OK}/></svg><div>Butulkanı<br>fırlat</div></div>` +
     '<div id="butulkaDokun"></div>');
 
+  const yz = (el, v) => { v = String(v); if (el._v !== v) { el._v = v; el.textContent = v; } };   // yalnız dəyişəndə yaz (lazımsız yenidən çəkilmə olmasın)
   function ox(pid, bid, v) {
     const p = $(pid), b = $(bid);
+    const key = v || ""; if (p._k === key) return; p._k = key;
     if (!v) { p.style.display = "none"; b.style.display = "none"; return; }
     p.style.display = "";
     p.setAttribute("stroke", v === "op" ? "#9bcc34" : "#e03d1c");
@@ -103,7 +105,7 @@ if (cari && cari.docId) {
   }
 
   function kadr() {
-    if (hazir < 3) return;
+    if (hazir < 3 || document.hidden) return;
     const ben = cari.docId;
     const idx = Object.keys(yerler).map(Number);
     const qiz = idx.filter((i) => yerler[i].cins === "q").length;
@@ -134,7 +136,7 @@ if (cari && cari.docId) {
       butulka.style.transition = "transform .6s" + OPAC;
       butulka.style.transform = "translate(-50%,-50%) rotate(0deg)";
     }
-    butulka.style.opacity = cut ? 0 : 1;
+    const opN = cut ? 0 : 1; if (butulka._op !== opN) { butulka._op = opN; butulka.style.opacity = opN; }
 
     // Sol/sağ: masada solda oturan solda, sağda oturan sağda dayanır (kartlar keçmir)
     const sol = sp && yerler[sp.q] ? YER_XY[sp.q][0] <= YER_XY[sp.o][0] : true;
@@ -196,7 +198,7 @@ if (cari && cari.docId) {
     $("oxlar").style.display = sayDa ? "block" : "none";
     let goster = false;
     if (cut) {
-      if (sayDa) $("sayac").textContent = Math.ceil((SPIN + CUT - t) / 1000);
+      if (sayDa) yz($("sayac"), Math.ceil((SPIN + CUT - t) / 1000));
       const sq = sec[sp.qu], so = sec[sp.ou];
       const oynayan = ben === sp.qu || ben === sp.ou;
       let metn;
@@ -205,7 +207,7 @@ if (cari && cari.docId) {
       else if (sq === "op" || so === "op") metn = "Öpüşə öpüşlə cavab verəcək?";
       else if (sq === "yox" || so === "yox") metn = "Biri imtina etdi";
       else metn = "Onlar öpəcəklər ya yox?";
-      $("sizinSecim").textContent = metn;
+      yz($("sizinSecim"), metn);
       goster = sayDa && oynayan && !sec[ben] && secildi !== sp.t;
       ox("oxU", "bdU", sol ? sq : so);   // yuxarı ox: soldakının seçimi
       ox("oxA", "bdA", sol ? so : sq);   // aşağı ox: sağdakının seçimi
