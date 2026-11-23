@@ -7,7 +7,8 @@ const cari = cariOyuncu();
 if (cari && cari.docId) {
   const B = `masalar/${MASA_NOMRESI}`;
   // ---- Zamanlar (ms). Sürəti buradan tənzimlə ----
-  const GOZLE = 8000, SPIN = 5000, ARA = 1500;
+  const GOZLE = 8000, SPIN = 5000, ARA = 2200;
+  const HOLD = 2200;            // ikisi də seçəndən sonra ortada qalma müddəti
   const UCUS = 950;            // cütün ortaya uçma müddəti
   const QAYIT = 600;           // yerinə qayıtma müddəti
   const CUT = 9000 + UCUS;     // 9 san sayğac + uçuş
