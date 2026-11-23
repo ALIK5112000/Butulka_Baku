@@ -143,6 +143,24 @@ function toast(msg) {
   clearTimeout(tT); tT = setTimeout(() => { t.style.display = "none"; }, 2600);
 }
 
+/* ---------- SINAQ REJİMİ ----------
+   true olanda ekranın sol üstündə hədiyyənin hansı mərhələdə dayandığı yazılır (9 san görünür).
+   Hər şey işləyəndə false et. */
+const HD_DEBUG = true;
+function dbg(m) {
+  if (!HD_DEBUG) return;
+  console.log("[hediyye]", m);
+  let b = document.getElementById("hdDbg");
+  if (!b) {
+    b = document.createElement("div"); b.id = "hdDbg";
+    b.style.cssText = "position:fixed;left:1vw;top:13vw;z-index:20001;max-width:74vw;pointer-events:none;font:600 2.9vw/1.25 monospace;color:#fff;background:rgba(0,0,0,.75);padding:1vw 1.6vw;border-radius:1.4vw;display:none";
+    document.body.appendChild(b);
+  }
+  const l = document.createElement("div"); l.textContent = m; b.appendChild(l); b.style.display = "block";
+  while (b.childNodes.length > 8) b.removeChild(b.firstChild);
+  setTimeout(() => { l.remove(); if (!b.childNodes.length) b.style.display = "none"; }, 9000);
+}
+
 /* ---------- Səs ---------- */
 const sesKes = {};
 function sesCal(url) {
@@ -150,8 +168,9 @@ function sesCal(url) {
   try {
     const a = sesKes[url] || (sesKes[url] = new Audio(url));
     const c = a.cloneNode();
-    c.play().catch(() => {});
-  } catch (e) {}
+    const pr = c.play();
+    if (pr && pr.then) pr.then(() => dbg("səs çalır: " + url)).catch(e => dbg("SƏS XƏTASI: " + url + " → " + e.name));
+  } catch (e) { dbg("SƏS XƏTASI: " + url + " → " + e.name); }
 }
 
 /* ---------- Panel ---------- */
@@ -342,7 +361,9 @@ const YIG_YOL = "masalar/" + MASA_NOMRESI + "/yigim/";
 if (MEN) onDisconnect(ref(rtdb, YIG_YOL + MEN)).remove();
 
 async function gonder(g, c) {
-  if (mesgul || !MEN) return;
+  if (!MEN) { dbg("MEN yoxdur: cariOyuncu() boşdur, hədiyyə göndərilmir"); return; }
+  if (mesgul) return;
+  dbg("göndərilir: " + g.id);
   /* alanlar: işarələnmişlər, işarə yoxdursa toxunulan oyunçu */
   const alanlar = isaret.size ? [...isaret].filter(u => u !== MEN) : (hedef ? [hedef] : []);
   if (!alanlar.length) { toast("Oyunçu seçilməyib"); return; }
@@ -362,6 +383,7 @@ async function gonder(g, c) {
     /* hamıya göstər */
     const n = Date.now() + "-" + Math.random().toString(36).slice(2, 7);
     const payload = { to: alanlar, i: g.id, c, n };
+    let yigUpd = null;
     if (g.yapis) {
       /* hər alan üçün təsadüfi yer (şəklin üstündə, %-lə) və əyilmə; hamı eyni yeri görsün deyə bazaya yazılır.
          Alanın köhnə oturan hədiyyəsinin üstünə yazılır, yəni köhnəsi silinir. */
@@ -372,25 +394,32 @@ async function gonder(g, c) {
       });
       payload.p = p;
     } else if (g.yigim) {
-      /* öpüş: hər alan üçün təsadüfi yer (şəklin 15–85%-i), son bucaq (±100°) və fırlanma istiqaməti.
-         Yer qalmayanda (OPUS.MAX) ən köhnə öpüşlərə "sol" vaxtı yazılır, hamının ekranında tədricən yox olur. */
+      /* öpüş: hər alan üçün təsadüfi yer (şəklin 15–85%-i) və son bucaq (±100°). Fırlanma istiqaməti x+y-dən çıxır
+         (bazaya əlavə sahə yazılmır). Yer qalmayanda (OPUS.MAX) ən köhnə öpüşlərə "sol" vaxtı yazılır,
+         hamının ekranında tədricən yox olur. Bazaya yazma aşağıda, uçuş/səs siqnalından SONRA edilir. */
       const t = Date.now() + offset, p = {}, upd = {};
+      yigUpd = upd;
       alanlar.forEach(k => {
-        const q = { x: 15 + Math.round(Math.random() * 70), y: 15 + Math.round(Math.random() * 70), r: Math.round(Math.random() * 200 - 100), d: Math.random() < 0.5 ? -1 : 1 };
+        const q = { x: 15 + Math.round(Math.random() * 70), y: 15 + Math.round(Math.random() * 70), r: Math.round(Math.random() * 200 - 100) };
         p[k] = q;
         const aktiv = Object.entries(yigData[k] || {}).filter(([, e]) => e && !e.sol).sort((a, b) => num(a[1].t) - num(b[1].t));
         while (aktiv.length >= Math.max(1, OPUS.MAX)) {
           const [key, e] = aktiv.shift();
           upd[k + "/" + key + "/sol"] = Math.max(t, num(e.t) + (g.ucusMs || 900));   /* hələ enməyibsə, endikdən sonra solmağa başlayır */
         }
-        upd[k + "/" + n] = { i: g.id, x: q.x, y: q.y, r: q.r, d: q.d, n, from: MEN, t };
+        upd[k + "/" + n] = { i: g.id, x: q.x, y: q.y, r: q.r, n, from: MEN, t };
       });
-      update(ref(rtdb, YIG_YOL), upd);
       payload.p = p;
     }
     const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye/" + MEN);
     onDisconnect(r).remove();
-    set(r, payload);
+    /* 1) hamıya "hədiyyə atıldı" siqnalı (səs + uçuş bundan başlayır) */
+    set(r, payload).then(() => dbg("hədiyyə bazaya yazıldı")).catch(e => dbg("HƏDİYYƏ YAZILMADI: " + (e.code || e.message)));
+    /* 2) öpüşün şəklə oturması üçün yığım bazaya yazılır (alınmasa belə uçuş və səs işləyir) */
+    if (yigUpd) {
+      try { update(ref(rtdb, YIG_YOL), yigUpd).catch(e => dbg("ÖPÜŞ YIĞIMI YAZILMADI: " + (e.code || e.message))); }
+      catch (e) { dbg("ÖPÜŞ YIĞIMI XƏTASI: " + e.message); }
+    }
     /* hədiyyə atılandan sonra işarələr sıfırlanır */
     isaret.clear(); tray.classList.remove("open"); sec = null; sendBtn.style.display = "none"; ciz(); markYenile();
   } catch (e) {
