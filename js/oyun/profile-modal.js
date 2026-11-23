@@ -81,6 +81,8 @@ const CSS = `
 .pf-st{height:9.33vw;box-sizing:border-box;padding:0 4vw;display:flex;align-items:center;justify-content:center;text-align:center;font:italic 400 3.7vw/1.2 Roboto,Arial,sans-serif;color:#111}
 .pf-st span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
 .pf-stl{height:.3vw;background:#e6e6e6;margin:0 3.9vw}
+/* kart hazır olana qədər gizli qalır (yarımçıq görünməsin) */
+.pf-ov.pf-bekle .pf-card{visibility:hidden}
 `;
 const st = document.createElement("style");
 st.textContent = CSS;
@@ -234,6 +236,7 @@ function siraYaz(uid, k) {
   if (uid !== ownerUid) return;
   const t = rkTxt(uid, k);
   ov.querySelectorAll('[data-r="' + k + '"]').forEach(el => { if (el.textContent !== t) el.textContent = t; });
+  hazirsaGoster();
 }
 
 const taym = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("vaxt bitdi")), ms))]);
@@ -290,9 +293,33 @@ function izleMeftun(uid) {
 
 /* ================= KART ================= */
 let gurulu = false, sig = {};
+
+/* Kart YARIMÇIQ göstərilmir: yeni açılan kart hər şey hazır olana qədər gizli qalır
+   (oyunçu məlumatı + Məftunun adı/şəkli + bütün sıralar), sonra bir dəfəyə açılır.
+   Keş hazırdırsa dərhal açılır; hazır deyilsə ən çox 0,7 saniyə gözləyir. */
+let bekleT = null;
+function hazirMi() {
+  if (!sonD || !ownerUid) return false;
+  if (sonD.meftunUid && !(mD && mD.uid === sonD.meftunUid)) return false;
+  const rk = rkN[ownerUid];
+  return !!rk && SIRA_SAHELERI.every(k => rk[k] !== undefined);
+}
+function kartiGoster() {
+  clearTimeout(bekleT); bekleT = null;
+  if (!ov.classList.contains("pf-bekle")) return;
+  ov.classList.remove("pf-bekle");
+  const c = ov.querySelector(".pf-card");
+  if (c) { c.style.animation = "none"; void c.offsetWidth; c.style.animation = ""; } /* açılış animasiyası indi başlasın */
+}
+function hazirsaGoster() {
+  if (ov.classList.contains("pf-bekle") && hazirMi()) kartiGoster();
+}
+
 function bagla() {
   sonD = null; ownerUid = null; gurulu = false; sig = {};
   if (mUnsub) { mUnsub(); mUnsub = null; } mUid = null; mD = null;
+  clearTimeout(bekleT); bekleT = null;
+  ov.classList.remove("pf-bekle");
   ov.classList.remove("open");
   if (unsub) { unsub(); unsub = null; }
   ov.innerHTML = "";
@@ -440,6 +467,7 @@ function ciz(d) {
   }
   const hv = ov.querySelector(".pf-hv");
   if (hv) hv.textContent = fmt(qiymet);
+  hazirsaGoster();
 }
 
 /* ProfilKart.ac("istifadəçi_docId") */
@@ -451,6 +479,9 @@ window.ProfilKart = {
       /* başqa oyunçunun kartına keçid: köhnə oyunçunun məlumatı qalmasın */
       gurulu = false; sig = {}; sonD = null; ov.innerHTML = "";
       if (mUnsub) { mUnsub(); mUnsub = null; } mUid = null; mD = null;
+      /* yeni kart: hazır olana qədər gizli (keş varsa dərhal açılır, yoxsa ən çox 0,7 san) */
+      ov.classList.add("pf-bekle");
+      clearTimeout(bekleT); bekleT = setTimeout(kartiGoster, 700);
     }
     ownerUid = docId;
     ov.classList.add("open");
@@ -466,9 +497,12 @@ window.ProfilKart = {
       if (!snap.exists()) { bagla(); return; }
       sonD = snap.data();
       udata[docId] = sonD;
+      mKesh[docId] = mYarat(docId, sonD); /* bu oyunçu başqasının kartında Məftun kimi çıxanda dərhal görünsün */
       izleMeftun(sonD.meftunUid || null);
       ciz(sonD);
       siraYenile(docId, sonD);
+      /* Məftunun kartı da öncədən yüklənir: ona toxunanda dərhal açılsın */
+      if (sonD.meftunUid) onYukle(sonD.meftunUid, 1);
     }, err => { console.error("ProfilKart:", err); bagla(); });
   },
   bagla
@@ -478,7 +512,7 @@ window.ProfilKart = {
    Masadakı oyunçuların məlumatı, məftunu, sıraları və şəkli kart açılmazdan əvvəl arxa planda yüklənir:
    toxunanda kart dərhal tam halda görünür. Eyni oyunçu 2 dəqiqədən tez təkrar yüklənmir. */
 const hazir = {};
-async function onYukle(uid) {
+async function onYukle(uid, derinlik = 0) {
   if (!uid) return;
   const indi = Date.now();
   if (hazir[uid] && indi - hazir[uid] < 120000) return;
@@ -488,19 +522,12 @@ async function onYukle(uid) {
     if (!s.exists() || uid === ownerUid) return; /* kart artıq açıqdırsa canlı məlumat özü gəlir */
     const d = s.data();
     udata[uid] = d;
-    azalt(udata, 60);
+    mKesh[uid] = mYarat(uid, d); /* hər yüklənən oyunçu başqasının kartında Məftun kimi də görünə bilər */
+    azalt(udata, 60); azalt(mKesh, 60); azalt(rkN, 60);
     sekilIsit(d.avatar);
-    if (d.meftunUid) {
-      const m = await getDoc(doc(fsdb, "users", d.meftunUid));
-      if (m.exists()) {
-        const x = m.data();
-        mKesh[d.meftunUid] = mYarat(d.meftunUid, x);
-        azalt(mKesh, 60);
-        sekilIsit(x.avatar);
-      }
-    }
-    azalt(rkN, 60);
     siraYenile(uid, d);
+    /* oyunçunun Məftunu da yüklənir (yalnız 1 pillə, zəncir davam etmir) */
+    if (d.meftunUid && derinlik < 1) onYukle(d.meftunUid, derinlik + 1);
   } catch (e) { delete hazir[uid]; }
 }
 
