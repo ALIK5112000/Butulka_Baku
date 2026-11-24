@@ -33,7 +33,7 @@ const TABS = [
 const state = { tab: "kiss" };
 let root, unsubList = null, unsubMe = null, meData = null, listDocs = [], loggedKeys = false;
 
-const fmt = (n) => Number(n || 0).toLocaleString("fr-FR");
+const fmt = (n) => Number(n || 0).toLocaleString("fr-FR").replace(/\u202f/g, " ");
 
 function ilk(p, secilen, alt) {
   for (const k of [secilen, ...alt]) {
@@ -46,11 +46,12 @@ function ilk(p, secilen, alt) {
 // Stiker şəkli; fayl yoxdursa emoji göstərir
 function ikon(t) {
   const img = document.createElement("img");
-  img.alt = "";
+  img.alt = t.title || t.id;
   img.src = IMG_QOVLUQ + t.id + ".png";
   img.onerror = () => {
     const s = document.createElement("span");
-    s.className = "emo"; s.textContent = t.emo;
+    s.className = "emo";
+    s.textContent = t.emo;
     img.replaceWith(s);
   };
   return img;
@@ -113,13 +114,22 @@ async function cizMe() {
   box.appendChild(sira(yer, meData, xal, true));
 }
 
+function yenileTabGorunusu() {
+  if (!root) return;
+  const activeTab = TABS.find(t => t.id === state.tab) || TABS[0];
+  root.querySelector("#rtq-title").textContent = activeTab.title;
+  root.querySelectorAll(".rtq-tab").forEach((el) => {
+    const isActive = el.dataset.id === state.tab;
+    el.classList.toggle("active", isActive);
+    el.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+}
+
 function dinle() {
   if (unsubList) unsubList();
   if (unsubMe) unsubMe();
   const f = XAL_FIELD[state.tab];
-  root.querySelector("#rtq-title").textContent = TABS.find(t => t.id === state.tab).title;
-  root.querySelectorAll(".rtq-tab").forEach(el =>
-    el.classList.toggle("active", el.dataset.id === state.tab));
+  yenileTabGorunusu();
   root.querySelector("#rtq-list").scrollTop = 0;
 
   unsubList = onSnapshot(
@@ -152,7 +162,7 @@ function qur() {
     '<div id="rtq-box">' +
       '<button id="rtq-close" type="button">' + X_SVG + "</button>" +
       '<div id="rtq-head">' +
-        '<div id="rtq-tabs"></div>' +
+        '<div id="rtq-tabs" role="tablist"></div>' +
         '<div id="rtq-sub"><span id="rtq-title"></span>' +
           '<select id="rtq-period"><option>hər zaman</option></select></div>' +
       "</div>" +
@@ -164,11 +174,20 @@ function qur() {
   const tabs = root.querySelector("#rtq-tabs");
   TABS.forEach(t => {
     const el = document.createElement("div");
-    el.className = "rtq-tab"; el.dataset.id = t.id;
+    el.className = "rtq-tab" + (t.id === state.tab ? " active" : "");
+    el.dataset.id = t.id;
+    el.setAttribute("role", "tab");
     el.appendChild(ikon(t));
-    el.onclick = () => { state.tab = t.id; dinle(); };
+    el.onclick = () => {
+      if (state.tab === t.id) return;
+      state.tab = t.id;
+      yenileTabGorunusu();
+      dinle();
+    };
     tabs.appendChild(el);
   });
+
+  yenileTabGorunusu();
 
   root.querySelector("#rtq-close").onclick = bagla;
   root.addEventListener("click", (e) => { if (e.target === root) bagla(); });
