@@ -111,6 +111,14 @@
             border-radius: 10px; padding: 10px; text-align: center;
         }
         .rate-card b { display: block; font-size: 17px; color: #fbbf24; margin: 4px 0; }
+        .rate-inp {
+            width: 100%; padding: 6px; background: #171b33; border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 7px; color: #fff; font-size: 12px; text-align: center; margin-bottom: 5px;
+        }
+        .freeze-info {
+            font-size: 10px; color: #38bdf8; background: rgba(56, 189, 248, 0.12);
+            padding: 4px; border-radius: 6px; margin-bottom: 6px; line-height: 1.3;
+        }
     </style>
 </head>
 <body>
@@ -144,7 +152,6 @@
                     <span class="arrow">▼</span>
                 </button>
                 <div class="acc-body">
-                    <!-- Üst: Jeton Göndərmək -->
                     <div class="sub-box">
                         <div class="sub-title">🪙 Jeton Göndər</div>
                         <input type="text" id="jetonTargetInp" class="inp" placeholder="İstifadəçinin ID-si və ya adı..." oninput="previewTarget('jetonTargetInp', 'jetonPreview')">
@@ -153,7 +160,6 @@
                         <button class="btn c-green w-100" onclick="sendCurrency('jetons', 'jetonTargetInp', 'jetonAmountInp', 'Jeton')">✅ Jeton Göndər</button>
                     </div>
 
-                    <!-- Alt: Bonus (Ürək) Göndərmək -->
                     <div class="sub-box">
                         <div class="sub-title">🎁 Bonus (Ürək) Göndər</div>
                         <input type="text" id="bonusTargetInp" class="inp" placeholder="İstifadəçinin ID-si və ya adı..." oninput="previewTarget('bonusTargetInp', 'bonusPreview')">
@@ -162,7 +168,6 @@
                         <button class="btn c-blue w-100" onclick="sendCurrency('hearts', 'bonusTargetInp', 'bonusAmountInp', 'Bonus')">🎁 Bonus Göndər</button>
                     </div>
 
-                    <!-- Yalnız Baş Admin görür: Kim kimə nə göndərib -->
                     <div class="sub-box" id="transferLogsBox" style="display:none; margin-bottom:0;">
                         <div class="sub-title">📜 Kim Kimə Nə Qədər Göndərib (Canlı Nəzarət)</div>
                         <div id="logsContainer" style="max-height:200px; overflow-y:auto;">Yüklənir...</div>
@@ -170,13 +175,14 @@
                 </div>
             </div>
 
-            <!-- 2. REYTİNQLƏR (ÖPÜŞ, MUSİQİ, SMAYLİK + 30 GÜNLÜK 0-DA DONDURMA) -->
+            <!-- 2. REYTİNQLƏR (ÖPÜŞ, MUSİQİ, SMAYLİK + 30 GÜNLÜK 0-DA DONDURMA VƏ BƏRPA) -->
             <div class="acc-item" data-roles="admin,adminka">
                 <button class="acc-btn" onclick="toggleAcc(this)">
                     <span>🏆 2. Reytinqlər (Öpüş, Musiqi, Smaylik)</span>
                     <span class="arrow">▼</span>
                 </button>
                 <div class="acc-body">
+                    <p class="hint">Oyunçunu ID və ya adı ilə real vaxtda tap, xalını dəyiş və ya 30 günlük 0-da dondur (30 gün sonra köhnə xalı avtomatik qayıdır).</p>
                     <input type="text" id="rateSearchInp" class="inp" placeholder="Oyunçunun adını və ya ID-sini yaz..." oninput="searchRatingUser()">
                     <div id="ratingUserPanel"></div>
                 </div>
@@ -204,7 +210,6 @@
                     <span class="arrow">▼</span>
                 </button>
                 <div class="acc-body">
-                    <!-- Ban Bölməsi (Admin və Adminka) -->
                     <div class="sub-box" data-subroles="admin,adminka">
                         <div class="sub-title">🚫 Oyundan Ban Et / Banı Aç</div>
                         <input type="text" id="banIdInp" class="inp" placeholder="Oyunçunun ID nömrəsi və ya adı..." oninput="previewTarget('banIdInp', 'banPreview')">
@@ -215,7 +220,6 @@
                         </div>
                     </div>
 
-                    <!-- Çatda Susdurmaq Bölməsi (Admin, Adminka, Mod) -->
                     <div class="sub-box" style="margin-bottom:0;">
                         <div class="sub-title">🔇 Çatda Susdur (Günlük / Aylıq)</div>
                         <input type="text" id="muteIdInp" class="inp" placeholder="Oyunçunun ID nömrəsi və ya adı..." oninput="previewTarget('muteIdInp', 'mutePreview')">
@@ -289,7 +293,7 @@
                 </div>
             </div>
 
-            <!-- 8. OYUNA YENİLƏMƏ VER (BÜTÜN OYUNÇULARI ÇIXARIB YENİDƏN SAL) -->
+            <!-- 8. OYUNA YENİLƏMƏ VER -->
             <div class="acc-item" data-roles="admin">
                 <button class="acc-btn" onclick="toggleAcc(this)">
                     <span>🔄 8. Oyuna Yeniləmə Ver</span>
@@ -350,11 +354,9 @@
         let allUsers = [];
         let tableUnsub = null;
 
-        // Baş Admin giriş məlumatları (bazada dəyişdirilə bilir)
         let savedAdminLogin = "Alik511";
         let savedAdminPass = "ALIYEV511#";
 
-        // Accordion açılıb-bağlanma
         window.toggleAcc = function(btn) {
             const item = btn.parentElement;
             const wasOpen = item.classList.contains("open");
@@ -418,7 +420,6 @@
                 listenLogs();
             }
 
-            // Rütbəyə uyğun bölmələri göstər
             document.querySelectorAll(".acc-item").forEach(item => {
                 const allowed = (item.getAttribute("data-roles") || "").split(",");
                 if (!allowed.includes(myRole)) item.style.display = "none";
@@ -430,12 +431,10 @@
 
             document.getElementById("panelRoot").style.display = "block";
 
-            // Bütün istifadəçiləri real vaxtda dinlə
             onSnapshot(collection(fsdb, "users"), (s) => {
                 allUsers = [];
                 s.forEach(d => allUsers.push({ docId: d.id, ...d.data() }));
                 searchRatingUser();
-                // Əgər ID axtarış xanasında yazı varsa, önizləməni canlı yenilə
                 if (document.getElementById("idFindInp").value.trim()) {
                     previewTarget("idFindInp", "idFindPreview");
                 }
@@ -491,7 +490,7 @@
             }
         };
 
-        // 1. JETON VƏ BONUS GÖNDƏRMƏ + LOG YAZMAQ
+        // 1. JETON VƏ BONUS GÖNDƏRMƏ
         window.sendCurrency = async function(field, targetInpId, amountInpId, label) {
             const targetVal = document.getElementById(targetInpId).value.trim();
             const amount = parseInt(document.getElementById(amountInpId).value, 10);
@@ -500,7 +499,6 @@
             if (!u) return alert("Oyunçu tapılmadı!");
             if (isNaN(amount) || amount <= 0) return alert("Düzgün miqdar yazın!");
 
-            // Satıcı və Mod özünə göndərə bilməz; Baş Admin və Adminka özünə də göndərə bilər
             if ((myRole === "dealer" || myRole === "mod") && u.docId === sessionUser.docId) {
                 return alert("Öz hesabınıza göndərə bilməzsiniz!");
             }
@@ -509,7 +507,6 @@
                 [field]: increment(amount)
             });
 
-            // Log bazasına yaz (Admin nəzarəti üçün)
             await addDoc(collection(fsdb, "transfer_logs"), {
                 fromName: me.username,
                 fromRole: myRole,
@@ -539,8 +536,8 @@
             });
         }
 
-        // 2. REYTİNQLƏR VƏ 30 GÜNLÜK 0-DA DONDURMAQ
-        window.searchRatingUser = function() {
+        // 2. REYTİNQLƏR, XAL DƏYİŞMƏ VƏ 30 GÜNLÜK 0-DA DONDURMAQ (KÖHNƏ XALI BƏRPA İLƏ)
+        window.searchRatingUser = async function() {
             const val = document.getElementById("rateSearchInp").value;
             const box = document.getElementById("ratingUserPanel");
             const u = findUser(val);
@@ -550,55 +547,107 @@
             }
 
             const now = Date.now();
-            const kissFrozen = u.freeze_kisses && Number(u.freeze_kisses) > now;
-            const musicFrozen = u.freeze_music && Number(u.freeze_music) > now;
-            const smileFrozen = u.freeze_smileys && Number(u.freeze_smileys) > now;
+
+            // Əgər 30 gün vaxtı artıq bitibsə, bazada avtomatik bərpa et
+            const autoRestore = {};
+            let needAutoRestore = false;
+            const configs = [
+                { stat: "kisses", freeze: "freeze_kisses", saved: "saved_kisses" },
+                { stat: "musicPoints", freeze: "freeze_music", saved: "saved_musicPoints" },
+                { stat: "smileys", freeze: "freeze_smileys", saved: "saved_smileys" }
+            ];
+
+            for (const c of configs) {
+                const fTime = Number(u[c.freeze] || 0);
+                if (fTime > 0 && fTime <= now) {
+                    autoRestore[c.stat] = Number(u[c.saved] || 0);
+                    autoRestore[c.freeze] = 0;
+                    autoRestore[c.saved] = 0;
+                    needAutoRestore = true;
+                }
+            }
+            if (needAutoRestore) {
+                await updateDoc(doc(fsdb, "users", u.docId), autoRestore);
+                return;
+            }
+
+            const renderCard = (title, statField, freezeField, savedField, inpId) => {
+                const fUntil = Number(u[freezeField] || 0);
+                const isFrozen = fUntil > now;
+                const currentScore = Number(u[statField] || 0);
+                const savedScore = Number(u[savedField] || 0);
+                const daysLeft = isFrozen ? Math.ceil((fUntil - now) / (1000 * 60 * 60 * 24)) : 0;
+
+                return `
+                    <div class="rate-card">
+                        <span style="font-size:11px;">${title}</span>
+                        <b>${isFrozen ? "0 ❄️" : currentScore}</b>
+                        ${isFrozen ? `<div class="freeze-info">Ehtiyat xal: <b>${savedScore}</b><br>${daysLeft} gün qalıb</div>` : ""}
+                        
+                        ${!isFrozen ? `
+                            <input type="number" id="${inpId}" class="rate-inp" placeholder="Yeni xal yaz">
+                            <button class="btn c-blue" style="width:100%; margin-bottom:4px; font-size:10px;" onclick="setExactRate('${u.docId}', '${statField}', '${inpId}')">💾 Xalı Təyin Et</button>
+                            <div class="g-2" style="margin-bottom:4px;">
+                                <button class="btn c-green" style="padding:6px; font-size:10px;" onclick="editRate('${u.docId}', '${statField}', 10)">+10</button>
+                                <button class="btn c-yellow" style="padding:6px; font-size:10px;" onclick="editRate('${u.docId}', '${statField}', -10)">-10</button>
+                            </div>
+                        ` : ""}
+
+                        <button class="btn ${isFrozen ? 'c-green' : 'c-red'}" style="width:100%; font-size:10px;" 
+                            onclick="toggleFreeze30('${u.docId}', '${statField}', '${freezeField}', '${savedField}', ${!isFrozen}, ${currentScore}, ${savedScore})">
+                            ${isFrozen ? "🔓 Donu Aç (" + savedScore + ")" : "❄️ 30g 0 Dondur"}
+                        </button>
+                    </div>
+                `;
+            };
 
             box.innerHTML = `
                 <div class="found-badge">👤 <b>${u.username}</b> (ID: ${u.customId || u.id})</div>
                 <div class="g-3">
-                    <div class="rate-card">
-                        <span style="font-size:11px;">💋 Öpüş</span>
-                        <b>${kissFrozen ? "0 ❄️" : (u.kisses || 0)}</b>
-                        <button class="btn c-green" style="width:100%; margin-bottom:4px;" onclick="editRate('${u.docId}', 'kisses', 10)">+10</button>
-                        <button class="btn ${kissFrozen ? 'c-blue' : 'c-red'}" style="width:100%; font-size:10px;" onclick="toggleFreeze30('${u.docId}', 'kisses', 'freeze_kisses', ${!kissFrozen})">
-                            ${kissFrozen ? "Donu Aç" : "30g 0 Dondur"}
-                        </button>
-                    </div>
-                    <div class="rate-card">
-                        <span style="font-size:11px;">🎵 Musiqi</span>
-                        <b>${musicFrozen ? "0 ❄️" : (u.musicPoints || 0)}</b>
-                        <button class="btn c-green" style="width:100%; margin-bottom:4px;" onclick="editRate('${u.docId}', 'musicPoints', 10)">+10</button>
-                        <button class="btn ${musicFrozen ? 'c-blue' : 'c-red'}" style="width:100%; font-size:10px;" onclick="toggleFreeze30('${u.docId}', 'musicPoints', 'freeze_music', ${!musicFrozen})">
-                            ${musicFrozen ? "Donu Aç" : "30g 0 Dondur"}
-                        </button>
-                    </div>
-                    <div class="rate-card">
-                        <span style="font-size:11px;">😀 Smaylik</span>
-                        <b>${smileFrozen ? "0 ❄️" : (u.smileys || 0)}</b>
-                        <button class="btn c-green" style="width:100%; margin-bottom:4px;" onclick="editRate('${u.docId}', 'smileys', 10)">+10</button>
-                        <button class="btn ${smileFrozen ? 'c-blue' : 'c-red'}" style="width:100%; font-size:10px;" onclick="toggleFreeze30('${u.docId}', 'smileys', 'freeze_smileys', ${!smileFrozen})">
-                            ${smileFrozen ? "Donu Aç" : "30g 0 Dondur"}
-                        </button>
-                    </div>
+                    ${renderCard("💋 Öpüş", "kisses", "freeze_kisses", "saved_kisses", "inp_kiss")}
+                    ${renderCard("🎵 Musiqi", "musicPoints", "freeze_music", "saved_musicPoints", "inp_music")}
+                    ${renderCard("😀 Smaylik", "smileys", "freeze_smileys", "saved_smileys", "inp_smile")}
                 </div>
             `;
         };
 
         window.editRate = async function(docId, field, delta) {
-            await updateDoc(doc(fsdb, "users", docId), { [field]: increment(delta) });
+            const u = allUsers.find(x => x.docId === docId);
+            const cur = Number((u && u[field]) || 0);
+            const next = Math.max(0, cur + delta);
+            await updateDoc(doc(fsdb, "users", docId), { [field]: next });
         };
 
-        window.toggleFreeze30 = async function(docId, statField, freezeField, shouldFreeze) {
+        window.setExactRate = async function(docId, field, inpId) {
+            const raw = document.getElementById(inpId).value;
+            const val = parseInt(raw, 10);
+            if (isNaN(val) || val < 0) return alert("Düzgün xal yazın (0 və ya müsbət rəqəm)!");
+            await updateDoc(doc(fsdb, "users", docId), { [field]: val });
+            alert(`✅ Reytinq xalı ${val} olaraq yeniləndi!`);
+        };
+
+        window.toggleFreeze30 = async function(docId, statField, freezeField, savedField, shouldFreeze, currentScore, savedScore) {
             const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-            await updateDoc(doc(fsdb, "users", docId), {
-                [statField]: 0,
-                [freezeField]: shouldFreeze ? Date.now() + thirtyDays : 0
-            });
-            alert(shouldFreeze ? "❄️ Reytinq 0-a salındı və 30 günlük donduruldu!" : "✅ 30 günlük dondurma ləğv edildi!");
+            if (shouldFreeze) {
+                // Köhnə xalı ehtiyata yaz, aktiv xalı 0 et və 30 gün dondur
+                await updateDoc(doc(fsdb, "users", docId), {
+                    [savedField]: currentScore,
+                    [statField]: 0,
+                    [freezeField]: Date.now() + thirtyDays
+                });
+                alert(`❄️ Reytinq 30 günlük donduruldu! Köhnə xal (${currentScore}) yadda saxlanıldı, 30 gün boyunca 0 görünəcək.`);
+            } else {
+                // Donu aç: ehtiyatda olan köhnə xalı yerinə qaytar
+                await updateDoc(doc(fsdb, "users", docId), {
+                    [statField]: savedScore,
+                    [savedField]: 0,
+                    [freezeField]: 0
+                });
+                alert(`✅ Don açıldı! Köhnə xal (${savedScore}) geri qaytarıldı və normal işləməyə davam edir.`);
+            }
         };
 
-        // 3. ID DƏYİŞMƏK VƏ YA AD YAZMAQ (REAL-VAXT BAZA + MASA YENİLƏNMƏSİ)
+        // 3. ID DƏYİŞMƏK VƏ YA AD YAZMAQ
         window.updateUserCustomId = async function() {
             try {
                 const u = findUser(document.getElementById("idFindInp").value);
@@ -606,7 +655,6 @@
                 if (!u) return alert("İstifadəçi tapılmadı!");
                 if (!newVal) return alert("Yeni ID nömrəsi və ya ad yazın!");
 
-                // Eyni ID və ya customId artıq başqa istifadəçidə varsa xəbərdarlıq et
                 const duplicate = allUsers.find(other =>
                     other.docId !== u.docId && (
                         String(other.customId || "").toLowerCase() === newVal.toLowerCase() ||
@@ -617,9 +665,7 @@
                     return alert(`❌ Bu ID ("${newVal}") artıq "${duplicate.username}" adlı oyunçuda mövcuddur!`);
                 }
 
-                const payload = {
-                    customId: newVal
-                };
+                const payload = { customId: newVal };
 
                 if (u.docId === sessionUser.docId || u.docId === MAIN_ADMIN_DOC) {
                     payload.isAdmin = true;
@@ -628,10 +674,8 @@
                     localStorage.setItem("currentUser", JSON.stringify(sessionUser));
                 }
 
-                // 1) Firestore bazasında yenilə (profil.html onSnapshot ilə dərhal görəcək)
                 await updateDoc(doc(fsdb, "users", u.docId), payload);
 
-                // 2) Əgər oyunçu hazırda oyunda masada oturubsa, masadakı ID-ni də real-vaxt yenilə
                 try {
                     const mSnap = await get(ref(rtdb, "masalar"));
                     const masalar = mSnap.val() || {};
@@ -675,7 +719,7 @@
             alert(days > 0 ? `🔇 ${u.username} ${days} günlük çatda susduruldu!` : `🔊 ${u.username} çat səsi açıldı!`);
         };
 
-        // 5. MASADAN ATMA (ÇATA BİLDİRİŞ İLƏ) VƏ ÇATI SİLMƏ
+        // 5. MASADAN ATMA VƏ ÇATI SİLMƏ
         window.loadTableSeats = function() {
             const masa = document.getElementById("kickTableInp").value.trim() || "511";
             if (tableUnsub) tableUnsub();
@@ -700,7 +744,6 @@
         window.kickFromTable = async function(masa, idx, uid, playerName) {
             await remove(ref(rtdb, `masalar/${masa}/oturacaqlar/${idx}`));
             await set(ref(rtdb, `sistem/kick/${uid}`), Date.now());
-            // Hamıya görünəcək şəkildə çata bildiriş yaz
             await push(ref(rtdb, `masalar/${masa}/chat`), {
                 isAdminBroadcast: true,
                 ad: "Admin",
@@ -727,7 +770,7 @@
             alert("👁️ Görünən rejimə qayıtdınız.");
         };
 
-        // 7. SATICI / MOD / ADMİNKA TƏYİN ET VƏ YA GERİ AL
+        // 7. SATICI / MOD / ADMİNKA TƏYİN ET
         window.assignRole = async function(newRole) {
             try {
                 const u = findUser(document.getElementById("roleTargetInp").value);
