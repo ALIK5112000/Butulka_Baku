@@ -33,7 +33,11 @@ const HEDIYYELER = [
   { id: "g17", e: "🧸", img: SEKIL_PAPKA + "ayicik.png",  q: 3, k: "yeni" },
   { id: "g18", e: "🚗", img: SEKIL_PAPKA + "masin.png",   q: 5, k: "yeni" },
   { id: "g19", e: "💎", img: SEKIL_PAPKA + "almaz.png",   q: 5, k: "ozel" },
-  { id: "g20", e: "🏰", img: SEKIL_PAPKA + "qala.png",    q: 9, k: "ozel" }
+  { id: "g20", e: "🏰", img: SEKIL_PAPKA + "qala.png",    q: 9, k: "ozel" },
+  /* KOKTEYL (g21): videodan ölçülüb. Uçuş 5.0 san, sona doğru yavaşlayan (ease-out) düz xətt; göndərənin şəklinin
+     yuxarı-ortasından başlayır, alanın şəklinin yanında (sağ-aşağı) qalır. 1 kokteyl = 1 bonus ürək (alanın balansına düşür).
+     Əvvəlki qalan kokteyl yeni göndərilən anda 1.95 san ərzində tədricən solur. */
+  { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 1, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: 1, solMs: 1950 }
 ];
 
 const OTURAN_SEKIL = {
@@ -109,6 +113,7 @@ const CSS = `
 .hd-stkLayer{position:fixed;left:0;top:0;width:0;height:0;z-index:110;pointer-events:none}
 .hd-stk{position:fixed;pointer-events:none;line-height:1;will-change:transform;filter:drop-shadow(0 .5vw 1vw rgba(0,0,0,.35))}
 .hd-stk img{height:1em;width:auto;display:block}
+.hd-stk.hd-nosh{filter:none}
 .hd-spark{position:fixed;pointer-events:none;font-size:3.8vw;line-height:1;margin:-1.9vw 0 0 -1.9vw}
 .hd-yf{position:fixed;pointer-events:none;will-change:transform}
 .hd-yf-r,.hd-yf-s{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;line-height:1;will-change:transform}
@@ -453,7 +458,7 @@ async function gonder(g, c) {
 
   /* Yalnız şəklə oturan/yapışan hədiyyələrdən (g1 öpüş, g3 pomidor, g15 tac) biri atılanda,
      yeni hədiyyə profil şəklinə DÜŞƏN ANDA (dusmeVaxti) köhnə oturan tədricən solub silinir. */
-  const sekileOturur = !!(g.yapis || g.yigim);
+  const sekileOturur = !!(g.yapis || g.yigim || g.koktel);
 
   /* Hər atılan öpüş / pomidor / tac yığımda ÖZ AYRI qeydi kimi saxlanılır (l = şəklə düşmə vaxtı).
      Eyni növdən sonrakı hədiyyə düşəndə əvvəlkilər tək-tək (3 san ərzində tədricən) solur, axırda sonuncu qalır.
@@ -462,7 +467,9 @@ async function gonder(g, c) {
   if (sekileOturur) {
     const p = {};
     alanlar.forEach(k => {
-      const q = g.yapis
+      const q = g.koktel
+        ? { x: 50, y: 50, r: 0 }
+        : g.yapis
         ? { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) }
         : { x: 15 + Math.round(Math.random() * 70), y: 15 + Math.round(Math.random() * 70), r: Math.round(Math.random() * 200 - 100) };
       p[k] = q;
@@ -527,10 +534,12 @@ const fotoRect = el => {
 };
 
 /* Şəklə düşəndə ölçülər: g15 (tac) = 0.38, g3 (əzik pomidor) = 0.42 */
-const olcu = (d, r) => r.width * (d.i === "g15" ? 0.38 : d.i === "g3" ? 0.42 : 0.4);
+const olcu = (d, r) => r.width * (d.i === "g15" ? 0.38 : d.i === "g3" ? 0.42 : d.i === "g21" ? 0.478 : 0.4);
 /* Tac: şəklin sol-yuxarı küncündə, bir az içəridə, -44° əyilmiş */
 function noqte(d, r) {
   if (d.i === "g15") return [r.left + r.width * 0.005, r.top + r.height * 0.05, -44];
+  /* Kokteyl: şəklin sağ kənarında, aşağıda (videodan: eninin 1.079, hündürlüyünün 0.77 nöqtəsi mərkəz) */
+  if (d.i === "g21") return [r.left + r.width * 1.079, r.top + r.height * 0.77, 0];
   return [r.left + r.width * d.x / 100, r.top + r.height * d.y / 100, d.r || 0];
 }
 
@@ -659,12 +668,89 @@ function ucurTac(g, x, to, pa, b, p) {
     });
 }
 
+/* ---------- KOKTEYL (g21) ---------- */
+/* Uçuş boyu ölçü əyrisi [vaxt 0..1, miqyas]: ~55%-ə qədər tam ölçü, sonra şəklin yanında dayanacağı ölçüyə (0.765) kiçilir */
+const KOKTEL_OLCU = [[0, 1], [.55, 1], [.675, .95], [.775, .855], [.875, .795], [.975, .765], [1, .765]];
+const KOKTEL_UCUS_H = 0.625;  /* uçan kokteylin hündürlüyü = şəklin eninin 0.625-i; qalanda 0.478 */
+
+function ucurKoktel(g, x, to, pa, b) {
+  const r0 = fotoRect(b);
+  if (!r0) return;
+  const hed = { i: g.id };
+  const d = document.createElement("div");
+  d.className = "hd-fly";
+  d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
+  d.style.fontSize = (r0.width * KOKTEL_UCUS_H) + "px";
+  d.style.opacity = "0";
+  d.innerHTML = gorsel(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  fxLayer().appendChild(d);
+  canli(to, g.ucusMs || 5000,
+    r => { const n = noqte(hed, r); return [n[0], n[1], 0, r.width * KOKTEL_UCUS_H]; },
+    (u, h) => {
+      const pr = 1 - (1 - u) * (1 - u);
+      d.style.fontSize = h[3] + "px";
+      d.style.opacity = Math.min(1, u / 0.025);
+      d.style.transform = tr((h[0] - pa[0]) * pr, (h[1] - pa[1]) * pr, egri(KOKTEL_OLCU, u).toFixed(3), 0);
+    },
+    () => {
+      sesCal(g.sl);
+      ogelen.add(x.n + "|" + to);
+      yigimCiz();
+      d.remove();
+      urekEffekti(to);
+      bonusVer(g, x, to);
+    });
+}
+
+/* Kokteyl şəklin yanına düşəndə: şüşənin üstündən kiçik bonus ürək qalxıb tədricən itir (videodan) */
+function urekEffekti(to) {
+  const d = document.createElement("div");
+  d.className = "hd-fly";
+  d.style.opacity = "0";
+  d.innerHTML = UREK;
+  const sv = d.firstChild;
+  sv.style.display = "block"; sv.style.height = "auto";
+  fxLayer().appendChild(d);
+  const OM = 1170, GEC = 70;
+  canli(to, OM,
+    r => [r.left + r.width * 1.079, r.top + r.height * 0.77 - r.width * 0.239, 0, r.width],
+    (u, h) => {
+      const tt = u * OM - GEC;
+      if (tt < 0) { d.style.opacity = "0"; return; }
+      const op = tt < 300 ? 1 : Math.max(0, 1 - (tt - 300) / 800);
+      const sc = Math.min(1, 0.6 + 0.4 * (tt / 100));
+      sv.style.width = (h[3] * 0.16) + "px";
+      d.style.left = h[0] + "px";
+      d.style.top = (h[1] - 0.54 * h[3] * (tt / 1000)) + "px";
+      d.style.opacity = op;
+      d.style.transform = "translate(-50%,-50%) scale(" + sc.toFixed(3) + ")";
+    },
+    () => d.remove());
+}
+
+/* Kokteyl kimə gedibsə, 1 kokteyl = 1 bonus ürək onun balansına düşür (alan öz hesabına yazır, hər hədiyyə yalnız 1 dəfə) */
+const bonusVerilen = new Set();
+function bonusVer(g, x, to) {
+  if (!MEN || to !== MEN || !g.bonus) return;
+  const key = x.n + "|" + to;
+  if (bonusVerilen.has(key)) return;
+  bonusVerilen.add(key);
+  const m = g.bonus * Math.max(1, num(x.c));
+  if (meHearts !== null) meHearts += m;
+  updateDoc(doc(fsdb, "users", MEN), { hearts: increment(m) }).catch(e => { bonusVerilen.delete(key); console.error(e); });
+}
+
 function oynaBir(kimden, x, to) {
   const g = HEDIYYELER.find(h => h.id === x.i);
   const a = fotoTap(kimden), b = fotoTap(to);
   if (!g || !b) return;
   const pb = merkez(b), pa = (a && merkez(a)) || [innerWidth / 2, innerHeight * 0.6];
   if (!pb) return;
+  if (g.koktel && x.p && x.p[to]) {
+    const ra = a && fotoRect(a);
+    ucurKoktel(g, x, to, ra ? [ra.left + ra.width * 0.5, ra.top + ra.height * 0.2] : pa, b);
+    return;
+  }
   const py = g.yigim && x.p && x.p[to];
   if (py) { ucurYigim(g, x, to, pa, b, py); return; }
   const p = g.yapis && x.p && x.p[to];
@@ -792,10 +878,11 @@ function yigimCiz() {
       for (let idx = 0; idx < L.length; idx++) {
         const [key, e, , g] = L[idx];
         const kk = key + "|" + uid;
+        const solMs = g.solMs || OPUS.SOLMA_MS;
         /* növbəti eyni növ hədiyyə şəklə düşən anda bu tədricən solmağa başlayır; sonuncu qalır */
-        const sol = idx < L.length - 1 ? L[idx + 1][2] : 0;
+        const sol = idx < L.length - 1 ? (g.koktel ? num(L[idx + 1][1].t) : L[idx + 1][2]) : 0;
 
-        if (sol && srv - sol >= OPUS.SOLMA_MS) {
+        if (sol && srv - sol >= solMs) {
           if (yigEl[kk]) { yigEl[kk].el.remove(); delete yigEl[kk]; }
           if (!yigSilinir.has(kk)) { yigSilinir.add(kk); remove(ref(rtdb, YIG_YOL + uid + "/" + key)).catch(() => {}); }
           continue;
@@ -807,7 +894,7 @@ function yigimCiz() {
         if (!gor) { if (rec) rec.el.style.display = "none"; continue; }
         if (!rec) {
           const el = document.createElement("div");
-          el.className = g.yapis ? "hd-stk" : "hd-yig";
+          el.className = (g.yapis || g.koktel) ? ("hd-stk" + (g.koktel ? " hd-nosh" : "")) : "hd-yig";
           el.style.zIndex = g.tacUcus ? "2" : "1";
           el.innerHTML = g.yapis ? gorselStk(g) : gorsel(g);
           yigQat.appendChild(el);
@@ -815,7 +902,7 @@ function yigimCiz() {
         }
         const el = rec.el;
         let k, stil;
-        if (g.yapis) {
+        if (g.yapis || g.koktel) {
           const [px, py, rot] = noqte(e, r);
           const fs = olcu(e, r);
           k = [px, py, rot, fs].join("|");
@@ -842,7 +929,7 @@ function yigimCiz() {
         /* Solma vaxtı (növbəti eyni növ hədiyyənin düşmə anı) çatanda tədricən solmanı başlat */
         if (sol && srv >= sol && !rec.sol) {
           rec.sol = true;
-          const an = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: OPUS.SOLMA_MS, easing: "linear", fill: "both" });
+          const an = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: solMs, easing: "linear", fill: "both" });
           an.currentTime = Math.max(0, srv - sol);
         }
       }
