@@ -1,5 +1,4 @@
-/* reytinq.js - Reytinqlər pəncərəsi (ayrıca fayl, real vaxt, ilk 50)
-   Panel faylına yaz:  import "./reytinq.js";   (panel faylı ilə eyni qovluqda) */
+/* reytinq.js - Reytinqlər pəncərəsi (ayrıca fayl, real vaxt, ilk 50, 30 günlük tarixçə yoxlaması) */
 import { fsdb } from "../core/firebase.js";
 import { cariOyuncu } from "./yardimci.js";
 import {
@@ -14,7 +13,6 @@ const XAL_FIELD = {
   kiss: "kisses", music: "music", heart: "likes", hearts: "couples",
   smile: "smiles", crown: "gifts", time: "playTime"
 };
-// Ad / şəkil field-i yuxarıdakı tapılmasa bunlar da yoxlanır
 const AD_ALT = ["name", "ad", "username", "nick", "nickname", "displayName", "login", "isim", "adi"];
 const SEKIL_ALT = ["photo", "sekil", "avatar", "photoURL", "photoUrl", "avatarUrl", "img", "image", "imageUrl", "pp", "foto", "pic", "picture", "profilePhoto"];
 const LIMIT = 50;
@@ -32,6 +30,7 @@ const TABS = [
 
 const state = { tab: "kiss" };
 let root, unsubList = null, unsubMe = null, meData = null, listDocs = [], loggedKeys = false;
+const yoxlananUidler = {};
 
 const fmt = (n) => Number(n || 0).toLocaleString("fr-FR").replace(/\u202f/g, " ");
 
@@ -43,7 +42,6 @@ function ilk(p, secilen, alt) {
   return "";
 }
 
-// Stiker şəkli; fayl yoxdursa emoji göstərir
 function ikon(t) {
   const img = document.createElement("img");
   img.alt = t.title || t.id;
@@ -89,6 +87,13 @@ function cizList() {
   const f = XAL_FIELD[state.tab];
   listDocs.forEach((s, i) => {
     const p = s.data();
+    // 30 günlük tarixçəsi varsa və vaxtı bitibsə arxa planda köhnə xalı geri qaytar
+    if (Array.isArray(p.xalTarixce) && p.xalTarixce.length && !yoxlananUidler[s.id]) {
+      yoxlananUidler[s.id] = true;
+      if (window.Xallar && typeof window.Xallar.tarixceYoxla === "function") {
+        window.Xallar.tarixceYoxla(s.id);
+      }
+    }
     list.appendChild(sira(i + 1, p, p[f], false));
   });
   list.scrollTop = st;
@@ -101,7 +106,6 @@ async function cizMe() {
   const f = XAL_FIELD[state.tab];
   const xal = Number(meData[f] || 0);
   let yer = null;
-  // İlk 50-dəyəmsə siyahıdakı sıra ilə eyni olsun
   const idx = cari && cari.docId ? listDocs.findIndex(s => s.id === cari.docId) : -1;
   if (idx >= 0) yer = idx + 1;
   else {
@@ -147,6 +151,9 @@ function dinle() {
 
   const cari = cariOyuncu();
   if (cari && cari.docId) {
+    if (window.Xallar && typeof window.Xallar.tarixceYoxla === "function") {
+      window.Xallar.tarixceYoxla(cari.docId);
+    }
     unsubMe = onSnapshot(doc(fsdb, KOLLEKSIYA, cari.docId), (s) => {
       meData = s.data() || null; cizMe();
     });
@@ -164,7 +171,7 @@ function qur() {
       '<div id="rtq-head">' +
         '<div id="rtq-tabs" role="tablist"></div>' +
         '<div id="rtq-sub"><span id="rtq-title"></span>' +
-          '<select id="rtq-period"><option>hər zaman</option></select></div>' +
+          '<select id="rtq-period"><option>son 30 gün</option></select></div>' +
       "</div>" +
       '<div id="rtq-list"></div>' +
       '<div id="rtq-me"></div>' +
