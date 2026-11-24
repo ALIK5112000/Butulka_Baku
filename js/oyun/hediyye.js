@@ -28,7 +28,7 @@ const HEDIYYELER = [
   { id: "g12", e: "🍫", img: SEKIL_PAPKA + "sokolad.png", q: 2 },
   { id: "g13", e: "🍷", img: SEKIL_PAPKA + "sarab.png",   q: 2 },
   { id: "g14", e: "💍", img: SEKIL_PAPKA + "uzuk.png",    q: 3, k: "ozel" },
-  { id: "g15", e: "👑", img: SEKIL_PAPKA + "tac.png",     q: 3, k: "ozel",            s: SES_PAPKA + "crown.mp3",  yapis: true },
+  { id: "g15", e: "👑", img: SEKIL_PAPKA + "tac.png",     q: 3, k: "ozel",            s: SES_PAPKA + "crown.mp3",  sl: SES_PAPKA + "crown_dusme.mp3", ucusMs: 5000, tacUcus: true, yapis: true },
   { id: "g16", e: "🎩", img: SEKIL_PAPKA + "sapka.png",   q: 2 },
   { id: "g17", e: "🧸", img: SEKIL_PAPKA + "ayicik.png",  q: 3, k: "yeni" },
   { id: "g18", e: "🚗", img: SEKIL_PAPKA + "masin.png",   q: 5, k: "yeni" },
@@ -42,6 +42,24 @@ const OTURAN_SEKIL = {
 };
 
 const OPUS = { OLCU: 0.34, MAX: 1, SOLMA_MS: 3000 };
+
+/* TAC (g15) UÇUŞU — referans videodan kadr-kadr ölçülüb:
+   - müddət 5.0 san (ucusMs: 5000), hərəkət düz xətlə, sona doğru yavaşlayır (ease-out kvadratik: p = 1-(1-u)^2)
+   - fırlanma da eyni əyri ilə 0-dan son bucağa qədər artır
+   - tac göndərənin şəklinin ortasında birdən görünür, ilk ~0.2 san-də 0.81-dən tam ölçüyə (1) çatır
+   [vaxt (0..1), miqyas] cütləri: */
+const TAC_OLCU_EYRISI = [[0, 0.81], [0.014, 0.85], [0.024, 0.92], [0.044, 1], [1, 1]];
+const TAC_ADDIM = 60;
+function tacOlcu(u) {
+  const e = TAC_OLCU_EYRISI;
+  for (let i = 1; i < e.length; i++) {
+    if (u <= e[i][0]) {
+      const a = e[i - 1], b = e[i];
+      return a[1] + (b[1] - a[1]) * ((u - a[0]) / ((b[0] - a[0]) || 1));
+    }
+  }
+  return e[e.length - 1][1];
+}
 const KLIP_QIYMETI = 9, MAHNI_QIYMETI = 5;
 
 const CSS = `
@@ -580,6 +598,48 @@ function ucurYapis(g, x, to, pa, b, p) {
   };
 }
 
+/* Tac (g15) uçuşu: videodakı kimi 5 san, sona doğru yavaşlayan ease-out, bucaq və ölçü əyrisi ilə.
+   Sonda tam olaraq oturan tacın yerinə (noqte) çatır — sonra yapisanCiz oturan tacı göstərir. */
+function ucurTac(g, x, to, pa, b, p) {
+  const r = fotoRect(b);
+  if (!r) return;
+  const hed = { i: g.id, x: p.x, y: p.y, r: p.r };
+  const [tx, ty, rot] = noqte(hed, r);
+  const dx = tx - pa[0], dy = ty - pa[1];
+  const ms = g.ucusMs || 5000;
+  const d = document.createElement("div");
+  d.className = "hd-fly";
+  d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
+  d.style.fontSize = olcu(hed, r) + "px";
+  d.innerHTML = gorsel(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  fxLayer().appendChild(d);
+  const iz = setInterval(() => {
+    const q = d.getBoundingClientRect();
+    if (q.width) ulduz(q.left + q.width / 2 + (Math.random() * 16 - 8), q.top + q.height / 2 + (Math.random() * 16 - 8));
+  }, 45);
+
+  /* kadrlar: vaxt xətti (linear), hərəkət/fırlanma p = 1-(1-u)^2, ölçü tacOlcu(u) */
+  const us = new Set();
+  for (let i = 0; i <= TAC_ADDIM; i++) us.add(i / TAC_ADDIM);
+  TAC_OLCU_EYRISI.forEach(n => us.add(n[0]));
+  const kf = [...us].sort((a, c) => a - c).map(u => {
+    const pr = 1 - (1 - u) * (1 - u);
+    return {
+      offset: u, opacity: 1,
+      transform: "translate(calc(-50% + " + (dx * pr).toFixed(2) + "px),calc(-50% + " + (dy * pr).toFixed(2) + "px)) scale(" + tacOlcu(u).toFixed(3) + ") rotate(" + (rot * pr).toFixed(2) + "deg)"
+    };
+  });
+  const an = d.animate(kf, { duration: ms, easing: "linear", fill: "both" });
+  an.onfinish = () => {
+    clearInterval(iz);
+    sesCal(g.sl);
+    gelen.add(x.n + "|" + to);
+    yapisanCiz();
+    yigimCiz();
+    d.remove();
+  };
+}
+
 function oynaBir(kimden, x, to) {
   const g = HEDIYYELER.find(h => h.id === x.i);
   const a = fotoTap(kimden), b = fotoTap(to);
@@ -589,6 +649,7 @@ function oynaBir(kimden, x, to) {
   const py = g.yigim && x.p && x.p[to];
   if (py) { ucurYigim(g, x, to, pa, b, py); return; }
   const p = g.yapis && x.p && x.p[to];
+  if (p && g.tacUcus) { ucurTac(g, x, to, pa, b, p); return; }
   if (p) { ucurYapis(g, x, to, pa, b, p); return; }
   const d = document.createElement("div");
   d.className = "hd-fly";
