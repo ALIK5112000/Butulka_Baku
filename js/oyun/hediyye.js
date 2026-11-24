@@ -90,11 +90,11 @@ const CSS = `
 .hd-n{width:11.8vw;height:8vw;border:.3vw solid #c9bfe6;border-radius:2.4vw;text-align:center;font:700 4vw/1 Roboto,Arial,sans-serif;color:#333;background:#fff;padding:0;box-sizing:border-box}
 .hd-list{flex:1;overflow-y:auto;padding:1vw 0 22vw}
 .hd-grid{display:grid;grid-template-columns:repeat(5,1fr)}
-.hd-cell{display:flex;flex-direction:column;align-items:center;padding:2.4vw 0 2.4vw;border-radius:2vw;margin:.4vw}
+.hd-cell{display:flex;flex-direction:column;align-items:center;padding:2.4vw 0 2.4vw;border-radius:2vw;margin:.4vw;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 .hd-cell.sel{background:#efe9ff;box-shadow:inset 0 0 0 .4vw #6c4fd6}
-.hd-cell:active .hd-e{transform:scale(.9)}
-.hd-e{width:15vw;height:14vw;display:flex;align-items:center;justify-content:center;font-size:11.5vw;line-height:1;transition:transform .12s}
-.hd-e img{max-width:14vw;max-height:13vw;width:auto;height:auto;object-fit:contain;display:block}
+.hd-cell:active{background:#efe9ff}
+.hd-e{width:15vw;height:14vw;display:flex;align-items:center;justify-content:center;font-size:11.5vw;line-height:1}
+.hd-e img{max-width:14vw;max-height:13vw;width:auto;height:auto;object-fit:contain;display:block;pointer-events:none;-webkit-user-drag:none}
 .hd-pr{display:flex;align-items:center;gap:1.2vw;margin-top:1.4vw;font:700 4.4vw/1 Roboto,Arial,sans-serif;color:#333}
 .hd-pr svg{width:5.2vw;height:5vw}
 .hd-send{position:fixed;left:50%;bottom:3vw;transform:translateX(-50%);z-index:9991;display:none;height:8.6vw;padding:0 8vw;border:0;border-radius:5vw;background:#7cc92f;color:#fff;font:700 4vw/1 Roboto,Arial,sans-serif;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3)}
@@ -431,6 +431,26 @@ window.HediyyePanel = { ac, bagla, hedef: () => hedef, modu: () => root.classLis
 /* ---------- Oturacaqlar və Yer Dəyişmə İzləməsi ---------- */
 const YAP_YOL = "masalar/" + MASA_NOMRESI + "/hediyyeYapisan/";
 const YIG_YOL = "masalar/" + MASA_NOMRESI + "/yigim/";
+
+/* Oyuna YENİDƏN girəndə köhnə hədiyyələrin silinməsi: masadan çıxıb (səhifəni bağlayıb) sonra qayıdanda
+   əvvəlki hədiyyələr oyunçunun şəklində qalmasın. Telefonda "son görünmə" vaxtı hər saniyə yazılır;
+   səhifə 4 san-dən tez qayıdırsa (səhifə keçidi, yenilənmə) toxunulmur, daha uzun müddət yox idisə
+   bazadakı öz hədiyyələrim (öpüş/pomidor/tac/kokteyl yığımı) silinir. */
+const GORULME_KEY = "hdSon_" + MASA_NOMRESI + "_" + MEN;
+const GORULME_TOLER = 4000;
+function gorulmeYaz() { try { localStorage.setItem(GORULME_KEY, String(Date.now())); } catch (e) {} }
+if (MEN) {
+  let sonGorulme = 0;
+  try { sonGorulme = Number(localStorage.getItem(GORULME_KEY)) || 0; } catch (e) {}
+  if (!sonGorulme || Date.now() - sonGorulme > GORULME_TOLER) {
+    remove(ref(rtdb, YAP_YOL + MEN)).catch(() => {});
+    remove(ref(rtdb, YIG_YOL + MEN)).catch(() => {});
+  }
+  gorulmeYaz();
+  setInterval(gorulmeYaz, 1000);
+  addEventListener("pagehide", gorulmeYaz);
+  document.addEventListener("visibilitychange", gorulmeYaz);
+}
 
 let oturacaqlar = {}, spin = null, offset = 0, aktivKlip = null;
 const evvelkiYer = {};
