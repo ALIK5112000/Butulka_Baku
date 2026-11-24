@@ -168,7 +168,6 @@ function qatGorunurlukYenile() {
   gizliKes = gizli;
   const d = gizli ? "none" : "block";
   if (fxQat) fxQat.style.display = d;
-  if (yapQat) yapQat.style.display = d;
   if (yigQat) yigQat.style.display = d;
   return gizli;
 }
@@ -456,45 +455,21 @@ async function gonder(g, c) {
      yeni hədiyyə profil şəklinə DÜŞƏN ANDA (dusmeVaxti) köhnə oturan tədricən solub silinir. */
   const sekileOturur = !!(g.yapis || g.yigim);
 
+  /* Hər atılan öpüş / pomidor / tac yığımda ÖZ AYRI qeydi kimi saxlanılır (l = şəklə düşmə vaxtı).
+     Eyni növdən sonrakı hədiyyə düşəndə əvvəlkilər tək-tək (3 san ərzində tədricən) solur, axırda sonuncu qalır.
+     Pomidor tacı silmir: hər növ (g1 / g3 / g15) öz qrupunda ayrıca idarə olunur. Solma vaxtını hamı
+     eyni qaydayla hesablayır, ona görə sürətli atmada da heç bir hədiyyə qalıb yığılmır. */
   if (sekileOturur) {
-    if (g.yapis) {
-      /* Pomidor / tac profil şəklinə düşən anda (dusmeVaxti) əvvəlki öpüşlər tədricən solmağa başlayır */
-      alanlar.forEach(k => {
-        const aktiv = Object.entries(yigData[k] || {}).filter(([, e]) => e && !e.sol);
-        aktiv.forEach(([key, e]) => {
-          yigUpd[k + "/" + key + "/sol"] = Math.max(dusmeVaxti, num(e.t) + 900);
-          yigVar = true;
-        });
-      });
-
-      const p = {};
-      alanlar.forEach(k => {
-        p[k] = { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) };
-        set(ref(rtdb, YAP_YOL + k), { i: g.id, x: p[k].x, y: p[k].y, r: p[k].r, n, from: MEN, t });
-      });
-      payload.p = p;
-    } else if (g.yigim) {
-      /* Öpüş profil şəklinə düşən anda (dusmeVaxti) əvvəlki pomidor/tac tədricən solmağa başlayır */
-      alanlar.forEach(k => {
-        if (yapData[k] && !yapData[k].sol) {
-          update(ref(rtdb, YAP_YOL + k), { sol: dusmeVaxti }).catch(() => {});
-        }
-      });
-
-      const p = {};
-      alanlar.forEach(k => {
-        const q = { x: 15 + Math.round(Math.random() * 70), y: 15 + Math.round(Math.random() * 70), r: Math.round(Math.random() * 200 - 100) };
-        p[k] = q;
-        const aktiv = Object.entries(yigData[k] || {}).filter(([, e]) => e && !e.sol).sort((a, b) => num(a[1].t) - num(b[1].t));
-        while (aktiv.length >= Math.max(1, OPUS.MAX)) {
-          const [key, e] = aktiv.shift();
-          yigUpd[k + "/" + key + "/sol"] = Math.max(dusmeVaxti, num(e.t) + ucusSuresi);
-        }
-        yigUpd[k + "/" + n] = { i: g.id, x: q.x, y: q.y, r: q.r, n, from: MEN, t };
-        yigVar = true;
-      });
-      payload.p = p;
-    }
+    const p = {};
+    alanlar.forEach(k => {
+      const q = g.yapis
+        ? { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) }
+        : { x: 15 + Math.round(Math.random() * 70), y: 15 + Math.round(Math.random() * 70), r: Math.round(Math.random() * 200 - 100) };
+      p[k] = q;
+      yigUpd[k + "/" + n] = { i: g.id, x: q.x, y: q.y, r: q.r, n, from: MEN, t, l: dusmeVaxti };
+      yigVar = true;
+    });
+    payload.p = p;
   }
 
   const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye/" + MEN);
@@ -521,8 +496,7 @@ async function gonder(g, c) {
   }).catch(e => {
     meHearts = null;
     remove(r).catch(() => {});
-    if (g.yapis) alanlar.forEach(k => remove(ref(rtdb, YAP_YOL + k)).catch(() => {}));
-    if (g.yigim) alanlar.forEach(k => remove(ref(rtdb, YIG_YOL + k + "/" + n)).catch(() => {}));
+    if (sekileOturur) alanlar.forEach(k => remove(ref(rtdb, YIG_YOL + k + "/" + n)).catch(() => {}));
     console.error(e);
     toast("Xəta: " + (e.code || e.message));
   });
@@ -648,15 +622,14 @@ function ucurYapis(g, x, to, pa, b, p) {
     () => {
       clearInterval(iz);
       sesCal(g.sl);
-      gelen.add(x.n + "|" + to);
-      yapisanCiz();
+      ogelen.add(x.n + "|" + to);
       yigimCiz();
       d.remove();
     });
 }
 
 /* Tac (g15) uçuşu: videodakı kimi 5 san, sona doğru yavaşlayan ease-out, bucaq və ölçü əyrisi ilə.
-   Sonda alanın CARİ şəkil yerindəki oturan tacın nöqtəsinə (noqte) çatır — sonra yapisanCiz oturan tacı göstərir. */
+   Sonda alanın CARİ şəkil yerindəki oturan tacın nöqtəsinə (noqte) çatır — sonra yigimCiz oturan tacı göstərir. */
 function ucurTac(g, x, to, pa, b, p) {
   const r0 = fotoRect(b);
   if (!r0) return;
@@ -680,8 +653,7 @@ function ucurTac(g, x, to, pa, b, p) {
     () => {
       clearInterval(iz);
       sesCal(g.sl);
-      gelen.add(x.n + "|" + to);
-      yapisanCiz();
+      ogelen.add(x.n + "|" + to);
       yigimCiz();
       d.remove();
     });
@@ -738,85 +710,6 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye"), s => {
   ilk = false;
 });
 
-/* ---------- Oyunçunun şəklinin üstündə oturan hədiyyələr (Pomidor / Tac) ---------- */
-let yapData = {}, yapIlk = true, yapQat = null;
-const gelen = new Set();
-const gorulen = {};
-const elmap = {};
-const yapSilinir = new Set();
-
-onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyyeYapisan"), s => {
-  yapData = s.val() || {};
-  for (const uid in yapData) {
-    const d = yapData[uid];
-    if (!d) continue;
-    const key = d.n + "|" + uid;
-    if (!(key in gorulen)) { gorulen[key] = Date.now(); if (yapIlk) gelen.add(key); }
-  }
-  yapIlk = false;
-  yapisanCiz();
-});
-
-function yapisanCiz() {
-  if (!yapQat) { yapQat = document.createElement("div"); yapQat.className = "hd-stkLayer"; (document.getElementById("masa") || document.body).appendChild(yapQat); qatGorunurlukYenile(); }
-  const gizli = gizliKes;
-
-  const simdi = Date.now();
-  const srv = simdi + offset;
-
-  for (const uid in elmap) {
-    if (!yapData[uid]) { elmap[uid].el.remove(); delete elmap[uid]; yapSilinir.delete(uid); }
-  }
-
-  for (const uid in yapData) {
-    const d = yapData[uid];
-    if (!d) continue;
-    const gh = HEDIYYELER.find(h => h.id === d.i);
-    if (gh && gh.yigim) continue;
-
-    if (d.sol && srv - d.sol >= OPUS.SOLMA_MS) {
-      if (elmap[uid]) { elmap[uid].el.remove(); delete elmap[uid]; }
-      if (!yapSilinir.has(uid)) {
-        yapSilinir.add(uid);
-        remove(ref(rtdb, YAP_YOL + uid)).catch(() => {});
-      }
-      continue;
-    }
-
-    const key = d.n + "|" + uid;
-    const ok = gelen.has(key) || (simdi - (gorulen[key] || simdi) > 8000);
-    let rec = elmap[uid];
-    if (rec && (rec.n !== d.n || !ok)) { rec.el.remove(); delete elmap[uid]; rec = null; yapSilinir.delete(uid); }
-    if (!ok) continue;
-
-    const f = fotoTap(uid), r = f && fotoRect(f);
-    if (!r || gizli) { if (rec) rec.el.style.display = "none"; continue; }
-
-    if (!rec) {
-      const g = HEDIYYELER.find(h => h.id === d.i);
-      if (!g) continue;
-      const el = document.createElement("div");
-      el.className = "hd-stk";
-      el.innerHTML = gorselStk(g);
-      yapQat.appendChild(el);
-      rec = elmap[uid] = { n: d.n, el, sol: false };
-    }
-
-    const [px, py, rot] = noqte(d, r);
-    rec.el.style.display = "block";
-    rec.el.style.fontSize = olcu(d, r) + "px";
-    rec.el.style.left = px + "px"; rec.el.style.top = py + "px";
-    rec.el.style.transform = "translate(-50%,-50%) rotate(" + rot + "deg)";
-
-    /* Yalnız solma vaxtı (d.sol) çatanda solmanı başlat */
-    if (d.sol && srv >= d.sol && !rec.sol) {
-      rec.sol = true;
-      const an = rec.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: OPUS.SOLMA_MS, easing: "linear", fill: "both" });
-      an.currentTime = Math.max(0, srv - d.sol);
-    }
-  }
-}
-
 /* ======================= ÖPÜŞ YIĞIMI (g.yigim) ======================= */
 const OLCU_EYRISI = [[0, .7], [.012, 1.17], [.05, 1.32], [.11, 1.28], [.16, 1.27], [.22, 1.28], [.28, 1.37], [.36, 1.48],
                      [.42, 1.55], [.49, 1.55], [.57, 1.51], [.63, 1.45], [.69, 1.41], [.77, 1.24], [.86, 1.09], [.93, 1.02], [1, 1]];
@@ -864,7 +757,6 @@ function ucurYigim(g, x, to, pa, b, p) {
       sesCal(g.sl);
       ogelen.add(x.n + "|" + to);
       yigimCiz();
-      yapisanCiz();
       a.remove();
     });
 }
@@ -881,48 +773,84 @@ function yigimCiz() {
   for (const uid in yigData) {
     const col = yigData[uid];
     if (!col) continue;
+    const f = fotoTap(uid), r = f && fotoRect(f);
+    const gor = !!r && !gizli;
+
+    /* hədiyyə növünə görə qruplaşdır: öpüşlər öz aralarında, pomidorlar öz aralarında, tac ayrıca */
+    const qruplar = {};
     for (const key in col) {
       const e = col[key];
       if (!e) continue;
-      const kk = key + "|" + uid;
-      if (e.sol && srv - e.sol >= OPUS.SOLMA_MS) {
-        if (yigEl[kk]) { yigEl[kk].el.remove(); delete yigEl[kk]; }
-        if (!yigSilinir.has(kk)) { yigSilinir.add(kk); remove(ref(rtdb, YIG_YOL + uid + "/" + key)).catch(() => {}); }
-        continue;
-      }
-      const ok = ogelen.has(kk) || (Date.now() - (ogorulen[kk] || Date.now()) > 8000);
-      if (!ok) continue;
-      let rec = yigEl[kk];
-      const f = fotoTap(uid), r = f && fotoRect(f);
-      if (!r || gizli) { if (rec) rec.el.style.display = "none"; continue; }
-      if (!rec) {
-        const g = HEDIYYELER.find(h => h.id === e.i);
-        if (!g) continue;
-        const el = document.createElement("div");
-        el.className = "hd-yig";
-        el.innerHTML = gorsel(g);
-        yigQat.appendChild(el);
-        rec = yigEl[kk] = { el, sol: false };
-      }
-      const L = r.width * OPUS.OLCU, el = rec.el;
-      el.style.display = "flex";
-      el.style.width = el.style.height = L + "px";
-      el.style.fontSize = (L * 0.8) + "px";
-      el.style.left = (r.left + r.width * e.x / 100 - L / 2) + "px";
-      el.style.top = (r.top + r.height * e.y / 100 - L / 2) + "px";
-      el.style.transform = "rotate(" + e.r + "deg)";
+      const gh = HEDIYYELER.find(h => h.id === e.i);
+      if (!gh) continue;
+      const land = num(e.l) || (num(e.t) + (gh.ucusMs || 4900));
+      (qruplar[e.i] = qruplar[e.i] || []).push([key, e, land, gh]);
+    }
 
-      /* Yalnız solma vaxtı (e.sol — yəni yeni hədiyyə profil şəklinə düşəndə) çatanda solmanı başlat */
-      if (e.sol && srv >= e.sol && !rec.sol) {
-        rec.sol = true;
-        const an = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: OPUS.SOLMA_MS, easing: "linear", fill: "both" });
-        an.currentTime = Math.max(0, srv - e.sol);
+    for (const gid in qruplar) {
+      const L = qruplar[gid].sort((a, b) => a[2] - b[2]);
+      for (let idx = 0; idx < L.length; idx++) {
+        const [key, e, , g] = L[idx];
+        const kk = key + "|" + uid;
+        /* növbəti eyni növ hədiyyə şəklə düşən anda bu tədricən solmağa başlayır; sonuncu qalır */
+        const sol = idx < L.length - 1 ? L[idx + 1][2] : 0;
+
+        if (sol && srv - sol >= OPUS.SOLMA_MS) {
+          if (yigEl[kk]) { yigEl[kk].el.remove(); delete yigEl[kk]; }
+          if (!yigSilinir.has(kk)) { yigSilinir.add(kk); remove(ref(rtdb, YIG_YOL + uid + "/" + key)).catch(() => {}); }
+          continue;
+        }
+        const ok = ogelen.has(kk) || (Date.now() - (ogorulen[kk] || Date.now()) > 8000);
+        if (!ok) continue;
+
+        let rec = yigEl[kk];
+        if (!gor) { if (rec) rec.el.style.display = "none"; continue; }
+        if (!rec) {
+          const el = document.createElement("div");
+          el.className = g.yapis ? "hd-stk" : "hd-yig";
+          el.style.zIndex = g.tacUcus ? "2" : "1";
+          el.innerHTML = g.yapis ? gorselStk(g) : gorsel(g);
+          yigQat.appendChild(el);
+          rec = yigEl[kk] = { el, sol: false, k: "" };
+        }
+        const el = rec.el;
+        let k, stil;
+        if (g.yapis) {
+          const [px, py, rot] = noqte(e, r);
+          const fs = olcu(e, r);
+          k = [px, py, rot, fs].join("|");
+          stil = () => {
+            el.style.display = "block";
+            el.style.fontSize = fs + "px";
+            el.style.left = px + "px"; el.style.top = py + "px";
+            el.style.transform = "translate(-50%,-50%) rotate(" + rot + "deg)";
+          };
+        } else {
+          const L2 = r.width * OPUS.OLCU;
+          const lx = r.left + r.width * e.x / 100 - L2 / 2, ly = r.top + r.height * e.y / 100 - L2 / 2;
+          k = [lx, ly, L2, e.r].join("|");
+          stil = () => {
+            el.style.display = "flex";
+            el.style.width = el.style.height = L2 + "px";
+            el.style.fontSize = (L2 * 0.8) + "px";
+            el.style.left = lx + "px"; el.style.top = ly + "px";
+            el.style.transform = "rotate(" + e.r + "deg)";
+          };
+        }
+        if (rec.k !== k || el.style.display === "none") { rec.k = k; stil(); }
+
+        /* Solma vaxtı (növbəti eyni növ hədiyyənin düşmə anı) çatanda tədricən solmanı başlat */
+        if (sol && srv >= sol && !rec.sol) {
+          rec.sol = true;
+          const an = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: OPUS.SOLMA_MS, easing: "linear", fill: "both" });
+          an.currentTime = Math.max(0, srv - sol);
+        }
       }
     }
   }
 }
 /* Oturan hədiyyələrin yeri HƏR KADRDA yenilənir: şəkil yerini dəyişəndə (masa/mərkəz) hədiyyə onunla bərabər gedir */
 (function kadrDongusu() {
-  try { yapisanCiz(); yigimCiz(); } catch (e) { dbg("KADR XƏTASI: " + e.message); }
+  try { yigimCiz(); } catch (e) { dbg("KADR XƏTASI: " + e.message); }
   requestAnimationFrame(kadrDongusu);
 })();
