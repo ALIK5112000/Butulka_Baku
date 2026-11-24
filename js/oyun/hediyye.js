@@ -552,9 +552,9 @@ const fotoRect = el => {
 
 /* Şəklə düşəndə ölçülər: g15 (tac) = 0.38, g3 (əzik pomidor) = 0.42 */
 const olcu = (d, r) => r.width * (d.i === "g15" ? 0.38 : d.i === "g3" ? 0.42 : 0.4);
-/* Tac: şəklin sol-yuxarı küncündə, bir az içəridə, -30° əyilmiş */
+/* Tac: şəklin sol-yuxarı küncündə, bir az içəridə, -44° əyilmiş */
 function noqte(d, r) {
-  if (d.i === "g15") return [r.left + r.width * 0.075, r.top + r.height * 0.12, -30];
+  if (d.i === "g15") return [r.left + r.width * 0.005, r.top + r.height * 0.05, -44];
   return [r.left + r.width * d.x / 100, r.top + r.height * d.y / 100, d.r || 0];
 }
 
