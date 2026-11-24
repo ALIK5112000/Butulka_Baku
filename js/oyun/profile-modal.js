@@ -1,53 +1,38 @@
 import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
-import { doc, onSnapshot, updateDoc, increment, runTransaction, collection, query, where, getCountFromServer, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { doc, onSnapshot, updateDoc, increment, runTransaction, collection, query, where, getCountFromServer, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { ref, onValue, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
-/* ================= XAL DONDURMA VƏ 30 GÜNLÜK TARİXÇƏ AYARLARI ================= */
-// true = Bütün xal artımları (öpüş, musiqi, smaylik, Məftun cüt ürək və s.) TAM DAYANDIRILIR.
-// false = Xallar normal işləyir, amma 30 gün tamam olan kimi avtomatik köhnə xala qayıdır.
-const XAL_DONDURULUB = true;
-const OTUZ_GUN_MS = 30 * 24 * 60 * 60 * 1000;
-const XAL_SAHELERI = ["kisses", "music", "smiles", "likes", "couples", "gifts", "playTime", "cutUrek"];
+/* ================= DONMA VAXTI YOXLAMA VƏ BƏRPA ================= */
+// Oyunçunun dondurulmuş xalının vaxtı (30 gün) bitibsə avtomatik açır və köhnə xalını bərpa edir
+function aktivDonmaVarmi(d, sahe) {
+  if (!d || !d.dondurulmusXallar) return false;
+  const bitis = Number(d.dondurulmusXallar[sahe] || 0);
+  return bitis > Date.now();
+}
 
-/* 30 gündən köhnə xalları təmizləyib köhnə xalı geri qaytaran funksiya */
-async function xalTarixceYoxla(uid) {
-  if (!uid) return;
-  try {
-    const uRef = doc(fsdb, "users", uid);
-    await runTransaction(fsdb, async tx => {
-      const snap = await tx.get(uRef);
-      if (!snap.exists()) return;
-      const d = snap.data() || {};
-      const indi = Date.now();
+async function donmaVaxtiYoxla(uid, d) {
+  if (!uid || !d || !d.dondurulmusXallar) return;
+  const indi = Date.now();
+  const dz = d.dondurulmusXallar;
+  const yenile = {};
+  let deyisdi = false;
 
-      // İlk dəfə işə düşəndə oyunçunun hazırkı xalını "bazaXal" kimi yadda saxlayır
-      const baza = d.bazaXal || {};
-      let bazaYenilendi = false;
-      XAL_SAHELERI.forEach(k => {
-        if (baza[k] === undefined) {
-          baza[k] = Number(d[k]) || 0;
-          bazaYenilendi = true;
-        }
-      });
-
-      const tarixce = Array.isArray(d.xalTarixce) ? d.xalTarixce : [];
-      // Yalnız son 30 günün içində olan qeydləri saxla, 30 günü keçənləri sil
-      const aktivTarixce = tarixce.filter(q => q && (indi - Number(q.t || 0)) < OTUZ_GUN_MS);
-
-      if (aktivTarixce.length !== tarixce.length || bazaYenilendi) {
-        const yenilenen = { bazaXal: baza, xalTarixce: aktivTarixce };
-        // Baza xal + son 30 günün aktiv xalları = cari xal (30 günü keçən avtomatik silinir)
-        XAL_SAHELERI.forEach(k => {
-          const elave = aktivTarixce.reduce((cem, q) => cem + (q.s === k ? Number(q.v || 0) : 0), 0);
-          yenilenen[k] = Math.max(0, Number(baza[k] || 0) + elave);
-        });
-        tx.update(uRef, yenilenen);
+  for (const sahe of Object.keys(dz)) {
+    const bitis = Number(dz[sahe] || 0);
+    if (bitis > 0 && indi >= bitis) {
+      // 30 gün tamam olub: donmanı sil, əgər köhnə xal saxlanılıbsa bərpa et
+      yenile["dondurulmusXallar." + sahe] = deleteField();
+      if (d.saxlanilanXallar && d.saxlanilanXallar[sahe] !== undefined) {
+        yenile[sahe] = Number(d.saxlanilanXallar[sahe]) || 0;
+        yenile["saxlanilanXallar." + sahe] = deleteField();
       }
-    });
-  } catch (e) {
-    console.error("Xal tarixçə yoxlama xətası:", e);
+      deyisdi = true;
+    }
+  }
+  if (deyisdi) {
+    updateDoc(doc(fsdb, "users", uid), yenile).catch(e => console.error("Donma açılma xətası:", e));
   }
 }
 
@@ -154,36 +139,37 @@ function toast(msg) {
 /* ================= XALLAR ================= */
 const men = cariOyuncu();
 const MEN = men && men.docId ? men.docId : null;
-if (MEN) xalTarixceYoxla(MEN);
 
 const xalVer = (uid, sahe, n = 1) => {
-  // Xal artımı dondurulubsa heç bir xal yazılmır
-  if (XAL_DONDURULUB) return;
   if (!uid || !n || n <= 0) return;
-
   const uRef = doc(fsdb, "users", uid);
+
   runTransaction(fsdb, async tx => {
     const snap = await tx.get(uRef);
     if (!snap.exists()) return;
     const d = snap.data() || {};
-    const indi = Date.now();
 
-    const baza = d.bazaXal || {};
-    XAL_SAHELERI.forEach(k => {
-      if (baza[k] === undefined) baza[k] = Number(d[k]) || 0;
-    });
+    // Əgər bu oyunçunun bu sahəsi (məs. kisses və ya music) dondurulubsa və 30 gün bitməyibsə:
+    // XALI ARTIRMA (0-da qalsın, bazadakı köhnə xala toxunma)!
+    if (aktivDonmaVarmi(d, sahe)) {
+      return;
+    }
 
-    const tarixce = Array.isArray(d.xalTarixce) ? d.xalTarixce : [];
-    const aktivTarixce = tarixce.filter(q => q && (indi - Number(q.t || 0)) < OTUZ_GUN_MS);
-    aktivTarixce.push({ s: sahe, v: n, t: indi });
+    // Əgər 30 gün bitibsə, həm donmanı təmizlə, həm saxlanılan köhnə xalın üstünə yeni xalı əlavə et
+    const yenile = {};
+    if (d.dondurulmusXallar && d.dondurulmusXallar[sahe]) {
+      yenile["dondurulmusXallar." + sahe] = deleteField();
+      if (d.saxlanilanXallar && d.saxlanilanXallar[sahe] !== undefined) {
+        const kohne = Number(d.saxlanilanXallar[sahe]) || 0;
+        yenile["saxlanilanXallar." + sahe] = deleteField();
+        yenile[sahe] = kohne + n;
+        tx.update(uRef, yenile);
+        return;
+      }
+    }
 
-    const yenilenen = { bazaXal: baza, xalTarixce: aktivTarixce };
-    XAL_SAHELERI.forEach(k => {
-      const elave = aktivTarixce.reduce((cem, q) => cem + (q.s === k ? Number(q.v || 0) : 0), 0);
-      yenilenen[k] = Math.max(0, Number(baza[k] || 0) + elave);
-    });
-
-    tx.update(uRef, yenilenen);
+    // Normal oyunçu / dondurulmamış sahə: xalı artır
+    tx.update(uRef, { ...yenile, [sahe]: increment(n) });
   }).catch(e => console.error("Xal xətası:", e));
 };
 
@@ -196,15 +182,15 @@ window.Xallar = {
   beyenme: (uid, n = 1) => xalVer(uid, "likes", n),
   cutluk: (uid, n = 1) => xalVer(uid, "couples", n),
   oyunVaxti: (uid, n = 1) => xalVer(uid, "playTime", n),
-  tarixceYoxla: xalTarixceYoxla
+  donmaYoxla: donmaVaxtiYoxla
 };
 
-/* Yaşıl veriləndə: dondurulubsa öpüş xalı artırılmır */
+/* Yaşıl veriləndə: masadakı öpüş sayğacı artanda oyunçu öz "kisses" xalını eyni qədər artırır (dondurulubsa xalVer bloklayır) */
 if (MEN) {
   let evvel = null;
   onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/opus/" + MEN), s => {
     const v = num(s.val());
-    if (!XAL_DONDURULUB && evvel !== null && v > evvel) xalVer(MEN, "kisses", v - evvel);
+    if (evvel !== null && v > evvel) xalVer(MEN, "kisses", v - evvel);
     evvel = v;
   });
 }
@@ -231,7 +217,6 @@ function meftunTx(isle) {
   });
 }
 
-/* Başqası hədəfə məftun olur: dondurulubsa cüt ürək xalı (cutUrek) dəyişdirilmir */
 async function meftunOl(hedef) {
   const info = {};
   await meftunTx(async (al, yaz) => {
@@ -240,11 +225,16 @@ async function meftunOl(hedef) {
     if (h.meftunUid === MEN) throw new Error("ARTIQ");
     if (num(m.hearts) < q) throw new Error("YETMIR");
     const prev = h.meftunUid || null, odenen = num(h.meftunOdenis);
-    if (!XAL_DONDURULUB) {
-      if (prev) { const p = await al(prev); yaz(prev, "cutUrek", Math.max(0, num(p.cutUrek) - odenen)); }
-      yaz(MEN, "cutUrek", num(m.cutUrek) + q);
+    if (prev) {
+      const p = await al(prev);
+      if (!aktivDonmaVarmi(p, "cutUrek")) {
+        yaz(prev, "cutUrek", Math.max(0, num(p.cutUrek) - odenen));
+      }
     }
     yaz(MEN, "hearts", num(m.hearts) - q);
+    if (!aktivDonmaVarmi(m, "cutUrek")) {
+      yaz(MEN, "cutUrek", num(m.cutUrek) + q);
+    }
     yaz(hedef, "meftunUid", MEN);
     yaz(hedef, "meftunOdenis", q);
     yaz(hedef, "meftunQiymet", q + 1);
@@ -253,7 +243,6 @@ async function meftunOl(hedef) {
   return info;
 }
 
-/* Hədəf öz məftununu silir: dondurulubsa cüt ürək xalı (cutUrek) dəyişdirilmir */
 async function terkEt() {
   const info = {};
   await meftunTx(async (al, yaz) => {
@@ -264,7 +253,7 @@ async function terkEt() {
     const prev = o.meftunUid, odenen = num(o.meftunOdenis);
     const p = await al(prev);
     const prevAd = p.username || "Oyunçu";
-    if (!XAL_DONDURULUB) {
+    if (!aktivDonmaVarmi(p, "cutUrek")) {
       yaz(prev, "cutUrek", Math.max(0, num(p.cutUrek) - odenen));
     }
     yaz(MEN, "hearts", num(o.hearts) - q);
@@ -307,6 +296,8 @@ async function siraYenile(uid, d) {
   try {
     const rk = rkN[uid] || (rkN[uid] = {});
     await Promise.all(SIRA_SAHELERI.map(async k => {
+      // Dondurulmuş sahədirsə sırası görünməsin (0)
+      if (aktivDonmaVarmi(d, k)) { rk[k] = 0; siraYaz(uid, k); return; }
       const v = k === "meftunQiymet" ? Math.max(1, num(d[k])) : num(d[k]);
       if (v <= 0) { rk[k] = 0; siraYaz(uid, k); return; }
       try {
@@ -457,13 +448,19 @@ function ciz(d) {
     ov.querySelector(".pf-stw").innerHTML = stat ? '<div class="pf-st"><span>' + esc(stat) + "</span></div><div class=\"pf-stl\"></div>" : "";
   }
 
+  /* 2) xal sətirləri: dondurulmuş xal varsa kartda 0 kimi göstərilir */
+  const kVal = aktivDonmaVarmi(d, "kisses") ? 0 : d.kisses;
+  const mVal = aktivDonmaVarmi(d, "music") ? 0 : d.music;
+  const sVal = aktivDonmaVarmi(d, "smiles") ? 0 : d.smiles;
+  const cVal = aktivDonmaVarmi(d, "cutUrek") ? 0 : d.cutUrek;
+
   ov.querySelector(".pf-dv").classList.toggle("up", acik);
-  const sRows = [d.kisses, d.music, d.smiles, qiymet, d.cutUrek, acik].map(num).join("|");
+  const sRows = [kVal, mVal, sVal, qiymet, cVal, acik].map(num).join("|");
   if (sig.rows !== sRows) {
     sig.rows = sRows;
-    let rows = row("pf-k", IC.dudaq, d.kisses, "kisses") + row("pf-m", IC.nota, d.music, "music");
-    if (acik) rows += row("pf-h", IC.urek1, qiymet, "meftunQiymet") + row("pf-h", IC.urek2, d.cutUrek, "cutUrek");
-    rows += row("pf-c", IC.smayl, d.smiles, "smiles");
+    let rows = row("pf-k", IC.dudaq, kVal, "kisses") + row("pf-m", IC.nota, mVal, "music");
+    if (acik) rows += row("pf-h", IC.urek1, qiymet, "meftunQiymet") + row("pf-h", IC.urek2, cVal, "cutUrek");
+    rows += row("pf-c", IC.smayl, sVal, "smiles");
     ov.querySelector(".pf-rowsw").innerHTML = rows;
   }
 
@@ -517,7 +514,6 @@ function ciz(d) {
 window.ProfilKart = {
   ac(docId) {
     if (!docId) return;
-    xalTarixceYoxla(docId); // Profil açılarkən 30 günü keçmiş xalları yoxla
     if (unsub) unsub();
     if (ownerUid !== docId) {
       gurulu = false; sig = {}; sonD = null; ov.innerHTML = "";
@@ -536,6 +532,7 @@ window.ProfilKart = {
     unsub = onSnapshot(doc(fsdb, "users", docId), snap => {
       if (!snap.exists()) { bagla(); return; }
       sonD = snap.data();
+      donmaVaxtiYoxla(docId, sonD); // 30 gün bitibsə donmanı avtomatik aç
       udata[docId] = sonD;
       mKesh[docId] = mYarat(docId, sonD);
       izleMeftun(sonD.meftunUid || null);
@@ -557,6 +554,7 @@ async function onYukle(uid, derinlik = 0) {
     const s = await getDoc(doc(fsdb, "users", uid));
     if (!s.exists() || uid === ownerUid) return;
     const d = s.data();
+    donmaVaxtiYoxla(uid, d);
     udata[uid] = d;
     mKesh[uid] = mYarat(uid, d);
     azalt(udata, 60); azalt(mKesh, 60); azalt(rkN, 60);
