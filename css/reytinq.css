@@ -29,17 +29,35 @@
 
 #rtq-head {
   flex: none; height: calc(220 * var(--u)); box-sizing: border-box;
-  background: #84c4ff; border-radius: calc(45 * var(--u)) calc(45 * var(--u)) 0 0;
+  background: linear-gradient(180deg, #7ec2ff 0%, #8bc9ff 100%);
+  border-radius: calc(45 * var(--u)) calc(45 * var(--u)) 0 0;
   padding: calc(22 * var(--u)) 0 0;
 }
-#rtq-tabs { display: flex; padding: 0 calc(13.5 * var(--u)); height: calc(92 * var(--u)); }
+#rtq-tabs {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 calc(16 * var(--u)); height: calc(92 * var(--u));
+}
 .rtq-tab {
   width: calc(135 * var(--u)); height: calc(92 * var(--u)); flex: none;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
-  transition: transform .15s;
+  transition: transform .16s ease, filter .16s ease, opacity .16s ease;
+  filter: grayscale(100%) saturate(0%) brightness(1.06) contrast(0.88);
+  opacity: 0.52;
+  -webkit-tap-highlight-color: transparent;
 }
-.rtq-tab.active { transform: scale(1.12); }
-.rtq-tab img { height: calc(84 * var(--u)); width: auto; max-width: calc(110 * var(--u)); object-fit: contain; }
+.rtq-tab img,
+.rtq-tab .emo {
+  transition: transform .16s ease, filter .16s ease, opacity .16s ease;
+}
+.rtq-tab.active {
+  transform: scale(1.13);
+  filter: none;
+  opacity: 1;
+}
+.rtq-tab img {
+  height: calc(84 * var(--u)); width: auto; max-width: calc(112 * var(--u));
+  object-fit: contain;
+}
 .rtq-tab .emo { font-size: calc(66 * var(--u)); line-height: 1; }
 
 #rtq-sub {
@@ -57,15 +75,15 @@
 }
 #rtq-period option { color: #222; font-style: normal; }
 
-/* Arxa fon: solğun kubok / medal / saat / çiçək / yarpaq naxışları (SVG) + mavi -> ağ gradient.
+/* Arxa fon: solğun kubok / medal / saat / çiçək / yarpaq naxışları (SVG) + yumşaq mavi -> ağ gradient.
    Naxışlar siyahı ilə birlikdə sürüşür (local). Köhnə fon.png qatı saxlanıldı (fayl yoxdursa heç nə etmir). */
 #rtq-list {
   flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
   padding-top: calc(19.5 * var(--u));
   background:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 972 1000' fill='none' stroke='%238cc4f7' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' opacity='.6'><defs><g id='fl'><circle cy='-20' r='13'/><circle cy='-20' r='13' transform='rotate(72)'/><circle cy='-20' r='13' transform='rotate(144)'/><circle cy='-20' r='13' transform='rotate(216)'/><circle cy='-20' r='13' transform='rotate(288)'/><circle r='8'/></g><g id='tr'><path d='M-28-40h56v28a28 28 0 0 1-56 0z M-28-30h-14a14 14 0 0 0 14 22 M28-30h14a14 14 0 0 1-14 22 M0 16v22 M-18 40h36'/></g><g id='md'><circle cy='20' r='22'/><path d='M-16-40l12 38M16-40l-12 38'/></g><g id='sw'><circle r='30'/><path d='M0-30v-12M-10-42h20M0 0v-16M0 0l12 8M24-24l8-8'/></g><g id='lf'><path d='M0 40v-80M0 10c-18-2-24-14-24-22 14 0 24 8 24 22zM0-10c18-2 24-14 24-22-14 0-24 8-24 22z'/></g></defs><use href='%23fl' transform='translate(150 15)'/><use href='%23tr' transform='translate(455 40) scale(.9)'/><use href='%23fl' transform='translate(780 25) scale(1.3)'/><use href='%23lf' transform='translate(910 195) rotate(30) scale(1.2)'/><use href='%23tr' transform='translate(390 265) scale(.8)'/><use href='%23sw' transform='translate(640 272) scale(1.1)'/><use href='%23tr' transform='translate(930 335) scale(1.1)'/><use href='%23lf' transform='translate(650 415) rotate(-20) scale(1.2)'/><use href='%23md' transform='translate(900 470) scale(1.2)'/><use href='%23md' transform='translate(650 560)'/><use href='%23fl' transform='translate(426 620)' opacity='.6'/><use href='%23sw' transform='translate(150 700) scale(.9)' opacity='.5'/><circle cx='908' cy='42' r='14'/><circle cx='298' cy='28' r='5'/><circle cx='729' cy='145' r='6'/><circle cx='831' cy='300' r='6'/><circle cx='519' cy='490' r='6'/></svg>") top left / 100% auto no-repeat local,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 972 1000' fill='none' stroke='%2388c2f8' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' opacity='.52'><defs><g id='fl'><circle cy='-20' r='13'/><circle cy='-20' r='13' transform='rotate(72)'/><circle cy='-20' r='13' transform='rotate(144)'/><circle cy='-20' r='13' transform='rotate(216)'/><circle cy='-20' r='13' transform='rotate(288)'/><circle r='8'/></g><g id='tr'><path d='M-28-40h56v28a28 28 0 0 1-56 0z M-28-30h-14a14 14 0 0 0 14 22 M28-30h14a14 14 0 0 1-14 22 M0 16v22 M-18 40h36'/></g><g id='md'><circle cy='20' r='22'/><path d='M-16-40l12 38M16-40l-12 38'/></g><g id='sw'><circle r='30'/><path d='M0-30v-12M-10-42h20M0 0v-16M0 0l12 8M24-24l8-8'/></g><g id='lf'><path d='M0 40v-80M0 10c-18-2-24-14-24-22 14 0 24 8 24 22zM0-10c18-2 24-14 24-22-14 0-24 8-24 22z'/></g></defs><use href='%23fl' transform='translate(150 15)'/><use href='%23tr' transform='translate(455 40) scale(.9)'/><use href='%23fl' transform='translate(780 25) scale(1.3)'/><use href='%23lf' transform='translate(910 195) rotate(30) scale(1.2)'/><use href='%23tr' transform='translate(390 265) scale(.8)'/><use href='%23sw' transform='translate(640 272) scale(1.1)'/><use href='%23tr' transform='translate(930 335) scale(1.1)'/><use href='%23lf' transform='translate(650 415) rotate(-20) scale(1.2)'/><use href='%23md' transform='translate(900 470) scale(1.2)'/><use href='%23md' transform='translate(650 560)'/><use href='%23fl' transform='translate(426 620)' opacity='.6'/><use href='%23sw' transform='translate(150 700) scale(.9)' opacity='.5'/><circle cx='908' cy='42' r='14'/><circle cx='298' cy='28' r='5'/><circle cx='729' cy='145' r='6'/><circle cx='831' cy='300' r='6'/><circle cx='519' cy='490' r='6'/></svg>") top left / 100% auto no-repeat local,
     url("../images/reytinqler/fon.png") top center / 100% auto no-repeat scroll,
-    linear-gradient(#bfe0ff 0, #dff0ff 45%, #fff 75%) scroll;
+    linear-gradient(180deg, #b5dafd 0%, #d4eaff 38%, #edf6ff 68%, #ffffff 100%) scroll;
   scrollbar-width: none;
 }
 #rtq-list::-webkit-scrollbar { display: none; }
@@ -86,8 +104,11 @@
 }
 .rtq-score { flex: none; width: calc(354 * var(--u)); display: flex; align-items: center; }
 .rtq-score .ic { width: calc(83 * var(--u)); display: flex; justify-content: center; flex: none; }
-.rtq-score .ic img { height: calc(66 * var(--u)); width: auto; max-width: calc(83 * var(--u)); }
-.rtq-score .ic .emo { font-size: calc(56 * var(--u)); line-height: 1; }
+.rtq-score .ic img {
+  height: calc(66 * var(--u)); width: auto; max-width: calc(83 * var(--u));
+  object-fit: contain; filter: none; opacity: 1;
+}
+.rtq-score .ic .emo { font-size: calc(56 * var(--u)); line-height: 1; filter: none; opacity: 1; }
 .rtq-score .say { margin-left: calc(24 * var(--u)); font-size: calc(43 * var(--u)); color: #e8541f; font-weight: 500; white-space: nowrap; }
 
 #rtq-me {
