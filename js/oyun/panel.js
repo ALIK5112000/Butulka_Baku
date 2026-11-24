@@ -235,3 +235,29 @@ if (cari && cari.docId) {
   baglaBtn.onclick = bagla;
   overlay.addEventListener("click", (e) => { if (e.target === overlay) bagla(); });
 })();
+// ===== Ramka düyməsi (# yerinə) =====
+(function ramkaQur() {
+  if (document.getElementById("ramkaBtn")) return;
+  const panel = document.getElementById("ustPanel") || document.getElementById("cixisBtn").parentNode;
+
+  // Köhnə "#-" düyməsini götür
+  Array.from(panel.children).forEach((el) => {
+    if ((el.textContent || "").trim().startsWith("#")) el.remove();
+  });
+
+  const btn = document.createElement("button");
+  btn.id = "ramkaBtn";
+  btn.type = "button";
+  btn.className = "ub";
+  btn.style.left = "45.2vw";
+  btn.innerHTML =
+    '<svg viewBox="0 0 24 24">' +
+    '<rect x="3" y="3" width="18" height="18" rx="2"/>' +
+    '<rect x="7.5" y="7.5" width="9" height="9" rx="1"/></svg>';
+  panel.appendChild(btn);
+
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    document.dispatchEvent(new CustomEvent("ramka-ac"));
+  };
+})();
