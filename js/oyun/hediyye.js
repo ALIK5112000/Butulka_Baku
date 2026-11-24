@@ -535,9 +535,10 @@ const fotoRect = el => {
 
 /* Şəklə düşəndə ölçülər: g15 (tac) = 0.38, g3 (əzik pomidor) = 0.42 */
 const olcu = (d, r) => r.width * (d.i === "g15" ? 0.38 : d.i === "g3" ? 0.42 : d.i === "g21" ? 0.478 : 0.4);
-/* Tac: şəklin sol-yuxarı küncündə, bir az içəridə, -44° əyilmiş */
+/* Tac: şəklin sol-yuxarı küncündə, mərkəzi çərçivənin kənarından eninin/hündürlüyünün ~2.2%-i içəridə
+   (təxminən yarısı çölə çıxır), -44° əyilmiş (ekran görüntüsündən ölçülüb) */
 function noqte(d, r) {
-  if (d.i === "g15") return [r.left + r.width * 0.005, r.top + r.height * 0.05, -44];
+  if (d.i === "g15") return [r.left + r.width * 0.022, r.top + r.height * 0.022, -44];
   /* Kokteyl: şəklin sağ kənarında, aşağıda (videodan: eninin 1.079, hündürlüyünün 0.77 nöqtəsi mərkəz) */
   if (d.i === "g21") return [r.left + r.width * 1.079, r.top + r.height * 0.77, 0];
   return [r.left + r.width * d.x / 100, r.top + r.height * d.y / 100, d.r || 0];
