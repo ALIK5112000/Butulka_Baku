@@ -1,7 +1,7 @@
 import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
-import { ref, get, set, onValue, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, get, set, remove, onValue, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const cari = cariOyuncu() || {};
@@ -13,18 +13,29 @@ const adHazir = cari.docId
   ? getDoc(doc(fsdb, "users", cari.docId)).then((s) => (s.data() || {}).username || "Oyunçu").catch(() => "Oyunçu")
   : Promise.resolve("Oyunçu");
 let bagli = false;
+let serverOfset = 0;                 // server saatı ilə telefon saatı arasındakı fərq
+const PREZANS_OMRU = 80000;          // 30 san-də bir yenilənir; bundan köhnə yazı "oyunda deyil" sayılır
 async function prezansYaz() {
   const r = ref(rtdb, "prezans/" + cari.docId);
   set(r, { masa: MASA_NOMRESI, ad: await adHazir, t: serverTimestamp() });
 }
+function prezansSil() {
+  try { remove(ref(rtdb, "prezans/" + cari.docId)); } catch (e) {}
+}
+// yazı təzədirmi (köhnə qalıb "xəyal" kimi görünməsin)
+const prezansTaze = (p) => !p || typeof p.t !== "number" || (Date.now() + serverOfset - p.t) < PREZANS_OMRU;
 if (cari.docId) {
+  onValue(ref(rtdb, ".info/serverTimeOffset"), (s) => { serverOfset = Number(s.val()) || 0; });
   onValue(ref(rtdb, ".info/connected"), async (s) => {
     bagli = !!s.val();
     if (!bagli) return;
     await onDisconnect(ref(rtdb, "prezans/" + cari.docId)).remove();
     prezansYaz();
   });
-  setInterval(() => { if (bagli) prezansYaz(); }, 30000);
+  setInterval(() => { if (bagli && !document.hidden) prezansYaz(); }, 30000);   // səhifə arxa plandadırsa yeniləmə (tez yox olsun)
+  addEventListener("pagehide", prezansSil);                                    // oyundan çıxanda dərhal sil
+  addEventListener("pageshow", () => { if (bagli) prezansYaz(); });            // geri qayıdanda yenidən yaz
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && bagli) prezansYaz(); });
 }
 
 // ---------- Tanışlar ----------
@@ -166,7 +177,7 @@ export function dostBolmesi(box, gir, IK_O, IK_Q) {
     }
     const pre = preKesh;
     const hamisi = new Set([...dostIds, ...Object.keys(tanisKesh).filter((k) => Date.now() - tanisKesh[k] < HEFTE)]);
-    const siya = [...hamisi].filter((u) => u !== cari.docId && pre[u]);
+    const siya = [...hamisi].filter((u) => u !== cari.docId && pre[u] && prezansTaze(pre[u]));   // köhnə qalmış yazılar sayılmır
     if (!siya.length) {
       [...satir.keys()].forEach(sil);
       box.innerHTML = '<div class="bos">Hazırda oyunda dost və ya tanış yoxdur</div>';
@@ -189,5 +200,6 @@ export function dostBolmesi(box, gir, IK_O, IK_Q) {
   dostYukle().then(ciz);
   subs.push(onValue(ref(rtdb, "tanis/" + cari.docId), (s) => { tanisKesh = s.val() || {}; lsYaz(K_TANIS, tanisKesh); ciz(); }));
   subs.push(onValue(ref(rtdb, "prezans"), (s) => { preKesh = s.val() || {}; ciz(); }));
-  return () => { olu = true; subs.forEach((f) => f()); satir.forEach((s) => s.say && s.say()); satir.clear(); };
+  const saat = setInterval(ciz, 15000);                             // heç nə dəyişməsə də köhnə qalanları təmizləsin
+  return () => { olu = true; clearInterval(saat); subs.forEach((f) => f()); satir.forEach((s) => s.say && s.say()); satir.clear(); };
 }
