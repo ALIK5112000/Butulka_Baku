@@ -1,106 +1,150 @@
-/* reytinq.js - Reytinqlər pəncərəsi (ayrıca fayl)
-   Açmaq üçün: window.Reytinq.ac()
-   Menyudakı "Reytinqlər" düyməsinə onclick="Reytinq.ac()" bağla. */
-(function () {
-  const TABS = [
-    { id: 'kiss',   icon: '💋', title: 'Ən çox öpülən' },
-    { id: 'music',  icon: '🎵', title: 'Ən çox musiqi' },
-    { id: 'heart',  icon: '💙', title: 'Ən çox bəyənilən' },
-    { id: 'hearts', icon: '💞', title: 'Ən çox cütlük' },
-    { id: 'smile',  icon: '😄', title: 'Ən aktiv' },
-    { id: 'crown',  icon: '👑', title: 'Ən çox hədiyyə' },
-    { id: 'time',   icon: '🕒', title: 'Ən çox oyun vaxtı' }
-  ];
-  const PERIODS = [
-    { id: 'all',   label: 'hər zaman' },
-    { id: 'month', label: 'bu ay' },
-    { id: 'week',  label: 'bu həftə' },
-    { id: 'day',   label: 'bu gün' }
-  ];
+/* reytinq.js - Reytinqlər pəncərəsi (ayrıca fayl, real vaxt, ilk 50)
+   Panel faylına yaz:  import "./reytinq.js";
+   (bu fayl panel faylı ilə eyni qovluqda olmalıdır) */
+import { fsdb } from "../core/firebase.js";
+import { cariOyuncu } from "./yardimci.js";
+import {
+  collection, query, orderBy, limit, where, onSnapshot, doc, getCountFromServer
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-  let state = { tab: 'kiss', period: 'all' };
-  let root;
+/* ====== BURANI ÖZ FIELD ADLARINA GÖRƏ DÜZƏLT ======
+   users sənədində hər bölmənin xalını saxlayan field adı.
+   Field yoxdursa o bölmə boş görünür. */
+const KOLLEKSIYA = "users";
+const AD_FIELD = "name";        // oyunçunun adı
+const SEKIL_FIELD = "photo";    // oyunçunun şəkli (url)
+const XAL_FIELD = {
+  kiss:   "kisses",   // öpüş sayı
+  music:  "music",    // mahnı xalı
+  heart:  "likes",    // ürək/bəyənmə
+  hearts: "couples",  // cütlük
+  smile:  "smiles",   // smaylik
+  crown:  "gifts",    // hədiyyə
+  time:   "playTime"  // oyun vaxtı
+};
+const LIMIT = 50;
 
-  /* ---- DATA: bunu Firebase-ə görə doldur ----
-     Qaytarmalı format:
-     { list: [{place, name, photo, score}], me: {place, name, photo, score} } */
-  async function yukle(tab, period) {
-    if (typeof window.reytinqData === 'function') return window.reytinqData(tab, period);
-    return { list: [], me: null };
-  }
+const TABS = [
+  { id: "kiss",   icon: "💋", title: "Ən çox öpülən" },
+  { id: "music",  icon: "🎵", title: "Ən çox mahnı" },
+  { id: "heart",  icon: "💙", title: "Ən çox bəyənilən" },
+  { id: "hearts", icon: "💞", title: "Ən çox cütlük" },
+  { id: "smile",  icon: "😄", title: "Ən çox smaylik" },
+  { id: "crown",  icon: "👑", title: "Ən çox hədiyyə" },
+  { id: "time",   icon: "🕒", title: "Ən çox oyun vaxtı" }
+];
 
-  function sira(r, mine) {
-    const d = document.createElement('div');
-    d.className = 'rtq-row' + (mine ? ' mine' : '');
-    d.innerHTML =
-      '<img src="' + (r.photo || '') + '" alt="">' +
-      '<div class="rtq-place">' + r.place + '.</div>' +
-      '<div class="rtq-name"></div>' +
-      '<div class="rtq-score"><span class="ic">' + TABS.find(t => t.id === state.tab).icon +
-      '</span><span>' + Number(r.score).toLocaleString('fr-FR') + '</span></div>';
-    d.querySelector('.rtq-name').textContent = r.name || '';
-    return d;
-  }
+const state = { tab: "kiss" };
+let root, unsubList = null, unsubMe = null, meData = null, listDocs = [];
 
-  async function render() {
-    const tab = TABS.find(t => t.id === state.tab);
-    root.querySelectorAll('.rtq-tab').forEach(el =>
-      el.classList.toggle('active', el.dataset.id === state.tab));
-    root.querySelector('#rtq-title').textContent = tab.title;
+function fmt(n) { return Number(n || 0).toLocaleString("fr-FR"); }
 
-    const list = root.querySelector('#rtq-list');
-    const me = root.querySelector('#rtq-me');
-    list.innerHTML = ''; me.innerHTML = '';
-    const data = await yukle(state.tab, state.period);
-    (data.list || []).forEach(r => list.appendChild(sira(r, false)));
-    if (data.me) me.appendChild(sira(data.me, true));
-  }
+function sira(place, ad, sekil, xal, mine) {
+  const t = TABS.find(x => x.id === state.tab);
+  const d = document.createElement("div");
+  d.className = "rtq-row" + (mine ? " mine" : "");
+  const img = document.createElement("img");
+  img.alt = ""; img.src = sekil || "";
+  img.onerror = () => { img.style.visibility = "hidden"; };
+  const pl = document.createElement("div"); pl.className = "rtq-place"; pl.textContent = place + ".";
+  const nm = document.createElement("div"); nm.className = "rtq-name"; nm.textContent = ad || "";
+  const sc = document.createElement("div"); sc.className = "rtq-score";
+  sc.innerHTML = '<span class="ic">' + t.icon + "</span><span></span>";
+  sc.lastChild.textContent = fmt(xal);
+  d.append(img, pl, nm, sc);
+  return d;
+}
 
-  function qur() {
-    root = document.createElement('div');
-    root.id = 'rtq-overlay';
-    root.innerHTML =
-      '<div id="rtq-box">' +
-        '<button id="rtq-close" type="button">×</button>' +
-        '<div id="rtq-head">' +
-          '<div id="rtq-tabs">' +
-            TABS.map(t => '<span class="rtq-tab" data-id="' + t.id + '">' + t.icon + '</span>').join('') +
-          '</div>' +
-          '<div id="rtq-sub"><span id="rtq-title"></span>' +
-            '<select id="rtq-period">' +
-              PERIODS.map(p => '<option value="' + p.id + '">' + p.label + '</option>').join('') +
-            '</select></div>' +
-        '</div>' +
-        '<div id="rtq-list"></div>' +
-        '<div id="rtq-me"></div>' +
-      '</div>';
-    document.body.appendChild(root);
-
-    root.querySelector('#rtq-close').onclick = bagla;
-    root.addEventListener('click', e => { if (e.target === root) bagla(); });
-    root.querySelectorAll('.rtq-tab').forEach(el =>
-      el.onclick = () => { state.tab = el.dataset.id; render(); });
-    root.querySelector('#rtq-period').onchange = e => { state.period = e.target.value; render(); };
-  }
-
-  function ac() {
-    if (!root) qur();
-    root.classList.add('open');
-    render();
-  }
-  function bagla() { if (root) root.classList.remove('open'); }
-
-  window.Reytinq = { ac, bagla };
-
-  // CSS-i özü yükləyir (index/oyun html-ə əlavə link yazmağa ehtiyac yoxdur)
-  if (!document.getElementById('rtq-css')) {
-    const l = document.createElement('link');
-    l.id = 'rtq-css'; l.rel = 'stylesheet'; l.href = 'css/reytinq.css';
-    document.head.appendChild(l);
-  }
-
-  // Menyudan "Reytinqlər" seçiləndə açılır (menyu-sec hadisəsi)
-  document.addEventListener('menyu-sec', (e) => {
-    if (e.detail === 'reytinqler') ac();
+function cizList() {
+  const list = root.querySelector("#rtq-list");
+  const st = list.scrollTop;
+  list.innerHTML = "";
+  const f = XAL_FIELD[state.tab];
+  listDocs.forEach((s, i) => {
+    const p = s.data();
+    list.appendChild(sira(i + 1, p[AD_FIELD], p[SEKIL_FIELD], p[f], false));
   });
-})();
+  list.scrollTop = st;
+}
+
+async function cizMe() {
+  const box = root.querySelector("#rtq-me");
+  if (!meData) { box.innerHTML = ""; return; }
+  const f = XAL_FIELD[state.tab];
+  const xal = Number(meData[f] || 0);
+  let yer = "-";
+  try {
+    const c = await getCountFromServer(
+      query(collection(fsdb, KOLLEKSIYA), where(f, ">", xal)));
+    yer = c.data().count + 1;
+  } catch (e) {}
+  box.innerHTML = "";
+  box.appendChild(sira(yer, meData[AD_FIELD], meData[SEKIL_FIELD], xal, true));
+}
+
+function dinle() {
+  if (unsubList) unsubList();
+  if (unsubMe) unsubMe();
+  const f = XAL_FIELD[state.tab];
+  root.querySelector("#rtq-title").textContent = TABS.find(t => t.id === state.tab).title;
+  root.querySelectorAll(".rtq-tab").forEach(el =>
+    el.classList.toggle("active", el.dataset.id === state.tab));
+  root.querySelector("#rtq-list").scrollTop = 0;
+
+  unsubList = onSnapshot(
+    query(collection(fsdb, KOLLEKSIYA), orderBy(f, "desc"), limit(LIMIT)),
+    (snap) => { listDocs = snap.docs; cizList(); cizMe(); },
+    (err) => console.error("reytinq:", err)
+  );
+
+  const cari = cariOyuncu();
+  if (cari && cari.docId) {
+    unsubMe = onSnapshot(doc(fsdb, KOLLEKSIYA, cari.docId), (s) => {
+      meData = s.data() || null; cizMe();
+    });
+  }
+}
+
+function qur() {
+  root = document.createElement("div");
+  root.id = "rtq-overlay";
+  root.innerHTML =
+    '<div id="rtq-box">' +
+      '<button id="rtq-close" type="button">×</button>' +
+      '<div id="rtq-head">' +
+        '<div id="rtq-tabs">' +
+          TABS.map(t => '<span class="rtq-tab" data-id="' + t.id + '">' + t.icon + "</span>").join("") +
+        "</div>" +
+        '<div id="rtq-sub"><span id="rtq-title"></span>' +
+          '<select id="rtq-period"><option>hər zaman</option></select></div>' +
+      "</div>" +
+      '<div id="rtq-list"></div>' +
+      '<div id="rtq-me"></div>' +
+    "</div>";
+  document.body.appendChild(root);
+  root.querySelector("#rtq-close").onclick = bagla;
+  root.addEventListener("click", (e) => { if (e.target === root) bagla(); });
+  root.querySelectorAll(".rtq-tab").forEach(el =>
+    el.onclick = () => { state.tab = el.dataset.id; dinle(); });
+}
+
+function ac() {
+  if (!root) qur();
+  root.classList.add("open");
+  dinle();
+}
+function bagla() {
+  if (!root) return;
+  root.classList.remove("open");
+  if (unsubList) { unsubList(); unsubList = null; }
+  if (unsubMe) { unsubMe(); unsubMe = null; }
+}
+
+window.Reytinq = { ac, bagla };
+
+if (!document.getElementById("rtq-css")) {
+  const l = document.createElement("link");
+  l.id = "rtq-css"; l.rel = "stylesheet"; l.href = "css/reytinq.css";
+  document.head.appendChild(l);
+}
+document.addEventListener("menyu-sec", (e) => { if (e.detail === "reytinqler") ac(); });
