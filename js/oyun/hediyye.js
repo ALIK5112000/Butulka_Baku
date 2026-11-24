@@ -148,8 +148,67 @@ function fxLayer() {
     fxQat = document.createElement("div");
     fxQat.className = "hd-fxLayer";
     (document.getElementById("masa") || document.body).appendChild(fxQat);
+    qatTransformUygula();
   }
   return fxQat;
+}
+
+/* ---------- Koordinat kalibrləməsi ----------
+   Hədiyyə qatları #masa-nın içinə (position:fixed) qoyulur. #masa və ya üst elementlərindən birində transform
+   (məs. scale) / zoom varsa, brauzer "fixed" uşaqları o elementə bağlayır və transformu İKİNCİ dəfə tətbiq edir.
+   Oyunçu şəkillərinin yeri isə artıq ekran koordinatında (getBoundingClientRect) ölçülür, ona görə hədiyyə şəkildən
+   sürüşür; sürüşmə miqdarı şəklin ekrandakı yerindən asılı olduğu üçün hər oyunçuda fərqli çıxır, brauzer/ekran
+   ölçüsü dəyişəndə də dəyişir.
+   Həll (qapalı dövrə): qatın İÇİNDƏ gizli 100×100 ölçü kvadratı (sol=0, yuxarı=0) saxlanılır. Onun getBoundingClientRect
+   nəticəsi qatın yerli koordinatının ekranda real harada olduğunu göstərir (x: sol + miqyas·yerli). Nəticə "sol=0,
+   miqyas=1" deyilsə, qatın öz transformu (translate + scale) elə düzəldilir ki, qatın içindəki px dəyərləri birbaşa ekran
+   px olsun; hər kadr yenidən ölçülür, ona görə #masa-nın miqyası/yeri dəyişəndə (pəncərə ölçüsü, animasiya) də düzələr.
+   Əlavə transform yoxdursa heç nə dəyişmir (qatın transformu boş qalır). */
+let kalProbe = null, kalIter = 0, kalAx = 0, kalAy = 0, kalKx = 1, kalKy = 1, kalT = "";
+function qatTransformUygula() {
+  for (const L of [fxQat, yigQat]) {
+    if (!L) continue;
+    L.style.transformOrigin = "0 0";
+    L.style.transform = kalT;
+  }
+}
+function qatKalibrle() {
+  const L = yigQat || fxQat;
+  if (!L) return;
+  if (!kalProbe || kalProbe.parentNode !== L) {
+    if (kalProbe) kalProbe.remove();
+    kalProbe = document.createElement("div");
+    kalProbe.style.cssText = "position:fixed;left:0;top:0;width:100px;height:100px;visibility:hidden;pointer-events:none";
+    L.appendChild(kalProbe);
+  }
+  const q = kalProbe.getBoundingClientRect();
+  const sx = q.width / 100, sy = q.height / 100;
+  if (!(sx > 0.2 && sy > 0.2) || !isFinite(sx + sy + q.left + q.top)) return;
+  if (Math.abs(q.left) < 0.5 && Math.abs(q.top) < 0.5 && Math.abs(sx - 1) < 0.003 && Math.abs(sy - 1) < 0.003) { kalIter = 0; return; }
+  if (++kalIter > 40) return;
+  /* ekran = P + S·yerli  →  yeni k = k/S, yeni a = a − P·k/S (köhnə k ilə) */
+  kalAx -= q.left * kalKx / sx; kalAy -= q.top * kalKy / sy;
+  kalKx /= sx; kalKy /= sy;
+  kalT = "translate(" + kalAx + "px," + kalAy + "px) scale(" + kalKx + "," + kalKy + ")";
+  qatTransformUygula();
+  dbg("qat kalibri: sol=" + q.left.toFixed(1) + " yuxarı=" + q.top.toFixed(1) + " miqyas=" + sx.toFixed(3) + "/" + sy.toFixed(3));
+}
+window.addEventListener("resize", () => { kalIter = 0; });
+
+/* HD_DEBUG=true olanda ekranın altında daimi sətir: qatın düzəliş transformu və ilk şəklin ölçüsü */
+let kalPanelEl = null, kalPanelN = 0;
+function kalPanel() {
+  if (!HD_DEBUG || ++kalPanelN % 15) return;
+  if (!kalPanelEl) {
+    kalPanelEl = document.createElement("div");
+    kalPanelEl.style.cssText = "position:fixed;left:1vw;bottom:1vw;z-index:20001;max-width:96vw;pointer-events:none;font:600 2.6vw/1.25 monospace;color:#fff;background:rgba(0,0,0,.75);padding:.8vw 1.4vw;border-radius:1.2vw";
+    document.body.appendChild(kalPanelEl);
+  }
+  const f = document.querySelector("#masa .yer .foto");
+  const r = f && f.getBoundingClientRect();
+  kalPanelEl.textContent = "kal a=" + kalAx.toFixed(1) + "," + kalAy.toFixed(1) + " k=" + kalKx.toFixed(3) + "," + kalKy.toFixed(3) +
+    " it=" + kalIter + (r ? " | foto " + [r.left, r.top, r.width].map(v => Math.round(v)).join(",") : "") + " | vw=" + innerWidth + "x" + innerHeight +
+    " vv=" + (window.visualViewport ? window.visualViewport.scale.toFixed(2) : "-");
 }
 
 /* Hər hansı pəncərə/modal açıqdırsa true qaytarır */
@@ -905,7 +964,7 @@ function ucurYigim(g, x, to, pa, b, p) {
 }
 
 function yigimCiz() {
-  if (!yigQat) { yigQat = document.createElement("div"); yigQat.className = "hd-yigQat"; (document.getElementById("masa") || document.body).appendChild(yigQat); qatGorunurlukYenile(); }
+  if (!yigQat) { yigQat = document.createElement("div"); yigQat.className = "hd-yigQat"; (document.getElementById("masa") || document.body).appendChild(yigQat); qatTransformUygula(); qatGorunurlukYenile(); }
   const gizli = gizliKes;
 
   const srv = Date.now() + offset;
@@ -995,6 +1054,6 @@ function yigimCiz() {
 }
 /* Oturan hədiyyələrin yeri HƏR KADRDA yenilənir: şəkil yerini dəyişəndə (masa/mərkəz) hədiyyə onunla bərabər gedir */
 (function kadrDongusu() {
-  try { yigimCiz(); } catch (e) { dbg("KADR XƏTASI: " + e.message); }
+  try { qatKalibrle(); yigimCiz(); kalPanel(); } catch (e) { dbg("KADR XƏTASI: " + e.message); }
   requestAnimationFrame(kadrDongusu);
 })();
