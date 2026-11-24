@@ -1,4 +1,4 @@
-const ARAN = 0.574;    // masa ekranın neçə hissəsini tutsun. Çat daha böyük olsun istəsən azalt (məs. 0.52)
+const ARAN = 0.63;     // masa ekranın neçə hissəsini tutsun. Çat daha böyük olsun istəsən azalt (məs. 0.52)
 const TAXTA_VW = 114;  // masa.css-dəki 114vw ilə eyni olmalıdır
 
 let sonEn = 0;
