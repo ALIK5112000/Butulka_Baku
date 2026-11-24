@@ -533,14 +533,69 @@ const fotoRect = el => {
   return r.width ? r : null;
 };
 
+/* KOKTEYL (g21) — referans ekran görüntüsündən piksellə ölçülüb (oyunçu şəkli 611×611 px götürülüb):
+   - GÖRÜNƏN kokteylin (şüşə + ayaq, şəffaf kənarsız) hündürlüyü = şəklin eninin 0.4926-sı (301 px), eni 0.347-si (212 px)
+   - görünən kokteylin MƏRKƏZİ: şəklin sol kənarından eninin 1.0835-i, yuxarı kənarından 0.766-sı
+     → sol kənarı şəklin içinə 0.090 (55 px, kokteylin eninin ~26%-i) girir, sağ tərəfdən 0.257 çölə çıxır,
+       aşağı ucu şəklin alt kənarından 0.012 aşağı keçir. */
+const KOKTEL_REF = { MX: 1.0835, MY: 0.766, H: 0.4926 };
+/* koktel.png-nin ətrafında şəffaf boşluq ola bilər — real (şəffaf olmayan) hissənin sərhədi şəkil yüklənəndə
+   bir dəfə ölçülür. Ölçülənə qədər bütün şəkil görünən sayılır. l/t/r/b: şəklin 0..1 nisbətində; en: təbii en/hündürlük. */
+const KOKTEL_GORUNEN = { l: 0, t: 0, r: 1, b: 1, en: 1 };
+(function koktelSerhedOlc() {
+  const g = HEDIYYELER.find(h => h.id === "g21");
+  if (!g || !g.img) return;
+  const im = new Image();
+  im.onload = () => {
+    try {
+      const w = im.naturalWidth, h = im.naturalHeight;
+      if (!w || !h) return;
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const cx = c.getContext("2d", { willReadFrequently: true });
+      cx.drawImage(im, 0, 0);
+      const d = cx.getImageData(0, 0, w, h).data;
+      let l = w, t = h, r = -1, b = -1;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          if (d[(y * w + x) * 4 + 3] > 32) {
+            if (x < l) l = x;
+            if (x > r) r = x;
+            if (y < t) t = y;
+            if (y > b) b = y;
+          }
+        }
+      }
+      if (r < l || b < t) return;
+      KOKTEL_GORUNEN.l = l / w; KOKTEL_GORUNEN.r = (r + 1) / w;
+      KOKTEL_GORUNEN.t = t / h; KOKTEL_GORUNEN.b = (b + 1) / h;
+      KOKTEL_GORUNEN.en = w / h;
+      dbg("koktel sərhədi: " + [l, t, r, b].join(",") + " / " + w + "x" + h);
+    } catch (e) { dbg("KOKTEL ÖLÇÜ XƏTASI: " + e.message); }
+  };
+  im.src = g.img;
+})();
+/* rw = oyunçu şəklinin eni. fs = koktel şəklinin hündürlüyü (1em) — elə seçilir ki, GÖRÜNƏN hissənin hündürlüyü
+   referansa (0.4926·rw) bərabər olsun. dx/dy = görünən hissənin mərkəzinin şəklin öz mərkəzindən sapması (px). */
+function koktelOlcusu(rw) {
+  const v = KOKTEL_GORUNEN;
+  const gh = (v.b - v.t) || 1;
+  const fs = rw * KOKTEL_REF.H / gh;
+  return { fs, dx: ((v.l + v.r) / 2 - 0.5) * fs * v.en, dy: ((v.t + v.b) / 2 - 0.5) * fs };
+}
+
 /* Şəklə düşəndə ölçülər: g15 (tac) = 0.38, g3 (əzik pomidor) = 0.42 */
-const olcu = (d, r) => r.width * (d.i === "g15" ? 0.38 : d.i === "g3" ? 0.42 : d.i === "g21" ? 0.478 : 0.4);
+const olcu = (d, r) => d.i === "g21" ? koktelOlcusu(r.width).fs : r.width * (d.i === "g15" ? 0.38 : d.i === "g3" ? 0.42 : 0.4);
 /* Tac: şəklin sol-yuxarı küncündə, mərkəzi çərçivənin kənarından eninin/hündürlüyünün ~2.2%-i içəridə
    (təxminən yarısı çölə çıxır), -44° əyilmiş (ekran görüntüsündən ölçülüb) */
 function noqte(d, r) {
   if (d.i === "g15") return [r.left + r.width * 0.022, r.top + r.height * 0.022, -44];
-  /* Kokteyl: şəklin sağ kənarında, aşağıda (videodan: eninin 1.079, hündürlüyünün 0.77 nöqtəsi mərkəz) */
-  if (d.i === "g21") return [r.left + r.width * 1.079, r.top + r.height * 0.77, 0];
+  /* Kokteyl: nöqtə = şəklin (img) mərkəzidir; görünən hissənin mərkəzi referans nöqtəyə (MX, MY) düşsün deyə
+     şəffaf kənar sapması çıxılır */
+  if (d.i === "g21") {
+    const k = koktelOlcusu(r.width);
+    return [r.left + r.width * KOKTEL_REF.MX - k.dx, r.top + r.height * KOKTEL_REF.MY - k.dy, 0];
+  }
   return [r.left + r.width * d.x / 100, r.top + r.height * d.y / 100, d.r || 0];
 }
 
@@ -672,7 +727,8 @@ function ucurTac(g, x, to, pa, b, p) {
 /* ---------- KOKTEYL (g21) ---------- */
 /* Uçuş boyu ölçü əyrisi [vaxt 0..1, miqyas]: ~55%-ə qədər tam ölçü, sonra şəklin yanında dayanacağı ölçüyə (0.765) kiçilir */
 const KOKTEL_OLCU = [[0, 1], [.55, 1], [.675, .95], [.775, .855], [.875, .795], [.975, .765], [1, .765]];
-const KOKTEL_UCUS_H = 0.625;  /* uçan kokteylin hündürlüyü = şəklin eninin 0.625-i; qalanda 0.478 */
+/* uçan kokteylin ölçüsü = qalan (son) ölçünün 1/0.765 qatı; əyri 0.765-ə enəndə tam son ölçüyə çatır */
+const KOKTEL_UCUS_ORAN = 1 / 0.765;
 
 function ucurKoktel(g, x, to, pa, b) {
   const r0 = fotoRect(b);
@@ -681,12 +737,12 @@ function ucurKoktel(g, x, to, pa, b) {
   const d = document.createElement("div");
   d.className = "hd-fly";
   d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
-  d.style.fontSize = (r0.width * KOKTEL_UCUS_H) + "px";
+  d.style.fontSize = (koktelOlcusu(r0.width).fs * KOKTEL_UCUS_ORAN) + "px";
   d.style.opacity = "0";
   d.innerHTML = gorsel(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
   fxLayer().appendChild(d);
   canli(to, g.ucusMs || 5000,
-    r => { const n = noqte(hed, r); return [n[0], n[1], 0, r.width * KOKTEL_UCUS_H]; },
+    r => { const n = noqte(hed, r); return [n[0], n[1], 0, koktelOlcusu(r.width).fs * KOKTEL_UCUS_ORAN]; },
     (u, h) => {
       const pr = 1 - (1 - u) * (1 - u);
       d.style.fontSize = h[3] + "px";
@@ -714,7 +770,7 @@ function urekEffekti(to) {
   fxLayer().appendChild(d);
   const OM = 1170, GEC = 70;
   canli(to, OM,
-    r => [r.left + r.width * 1.079, r.top + r.height * 0.77 - r.width * 0.239, 0, r.width],
+    r => [r.left + r.width * KOKTEL_REF.MX, r.top + r.height * KOKTEL_REF.MY - r.width * KOKTEL_REF.H / 2, 0, r.width],
     (u, h) => {
       const tt = u * OM - GEC;
       if (tt < 0) { d.style.opacity = "0"; return; }
