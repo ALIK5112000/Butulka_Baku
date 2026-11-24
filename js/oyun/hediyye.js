@@ -162,8 +162,10 @@ function pencereAciqdir() {
   return false;
 }
 
+let gizliKes = false;
 function qatGorunurlukYenile() {
   const gizli = pencereAciqdir();
+  gizliKes = gizli;
   const d = gizli ? "none" : "block";
   if (fxQat) fxQat.style.display = d;
   if (yapQat) yapQat.style.display = d;
@@ -529,8 +531,8 @@ async function gonder(g, c) {
 /* ---------- Animasiya: göndərənin şəklindən alanın şəklinə uçur ---------- */
 function fotoTap(uid) {
   const ortalar = document.querySelectorAll("#masa .orta");
-  if (spin && spin.qu === uid && ortalar[0] && ortalar[0].classList.contains("goster")) return ortalar[0];
-  if (spin && spin.ou === uid && ortalar[1] && ortalar[1].classList.contains("goster")) return ortalar[1];
+  if (spin && spin.qu === uid && ortalar[0] && ortalar[0].classList.contains("goster") && fotoRect(ortalar[0])) return ortalar[0];
+  if (spin && spin.ou === uid && ortalar[1] && ortalar[1].classList.contains("goster") && fotoRect(ortalar[1])) return ortalar[1];
   let ehtiyat = null;
   for (const k in oturacaqlar) {
     if (oturacaqlar[k] && oturacaqlar[k].uid === uid) {
@@ -558,6 +560,52 @@ function noqte(d, r) {
   return [r.left + r.width * d.x / 100, r.top + r.height * d.y / 100, d.r || 0];
 }
 
+/* ---------- Canlı uçuş: hədəf (alanın şəkli) hər kadrda yenidən ölçülür ----------
+   Raund başlayanda/bitəndə şəkil masadan mərkəzə (və geri) keçə bilər. Uçuş qabaqcadan hesablanmış
+   sabit nöqtəyə yox, hər kadrda alanın cari şəkil yerinə uçur və oraya düşür. */
+function bez(x1, y1, x2, y2) {
+  return t => {
+    if (t <= 0) return 0;
+    if (t >= 1) return 1;
+    let a = 0, b = 1, m = 0.5;
+    for (let i = 0; i < 24; i++) {
+      m = (a + b) / 2;
+      const xx = 3 * (1 - m) * (1 - m) * m * x1 + 3 * (1 - m) * m * m * x2 + m * m * m;
+      if (xx < t) a = m; else b = m;
+    }
+    m = (a + b) / 2;
+    return 3 * (1 - m) * (1 - m) * m * y1 + 3 * (1 - m) * m * m * y2 + m * m * m;
+  };
+}
+/* [vaxt, qiymət] cütləri üzrə xətti interpolyasiya */
+function egri(e, u) {
+  for (let i = 1; i < e.length; i++) {
+    if (u <= e[i][0]) {
+      const a = e[i - 1], b = e[i];
+      return a[1] + (b[1] - a[1]) * ((u - a[0]) / ((b[0] - a[0]) || 1));
+    }
+  }
+  return e[e.length - 1][1];
+}
+function canli(to, ms, hedef, uygula, bitdi) {
+  const t0 = performance.now();
+  let son = null, bitib = false;
+  const bit = () => { if (bitib) return; bitib = true; bitdi(); };
+  const fn = now => {
+    const u = Math.max(0, Math.min(1, (now - t0) / ms));
+    try {
+      const e = fotoTap(to), r = e && fotoRect(e);
+      if (r) son = hedef(r);
+      if (son) uygula(u, son);
+    } catch (er) { dbg("UÇUŞ XƏTASI: " + er.message); }
+    if (u < 1) requestAnimationFrame(fn); else bit();
+  };
+  requestAnimationFrame(fn);
+  /* əgər tab gizli olub kadrlar dayanıbsa, uçuş yenə də təmizlənsin */
+  setTimeout(bit, ms + 1500);
+}
+const tr = (dx, dy, s, rot) => "translate(calc(-50% + " + dx + "px),calc(-50% + " + dy + "px)) scale(" + s + ") rotate(" + rot + "deg)";
+
 function ulduz(x, y) {
   const s = document.createElement("div");
   s.className = "hd-spark";
@@ -568,77 +616,75 @@ function ulduz(x, y) {
   s.animate([{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(.2) translateY(3vw)" }], { duration: 600 }).onfinish = () => s.remove();
 }
 
-function ucurYapis(g, x, to, pa, b, p) {
-  const r = fotoRect(b);
-  if (!r) return;
-  const hed = { i: g.id, x: p.x, y: p.y, r: p.r };
-  const [tx, ty, rot] = noqte(hed, r);
-  const dx = tx - pa[0], dy = ty - pa[1];
-  const d = document.createElement("div");
-  d.className = "hd-fly";
-  d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
-  d.style.fontSize = olcu(hed, r) + "px";
-  d.innerHTML = (g.ucusAdi ? gorsel(g) : gorselStk(g)) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
-  fxLayer().appendChild(d);
-  const iz = setInterval(() => {
+function ulduzIzi(d) {
+  return setInterval(() => {
     const q = d.getBoundingClientRect();
     if (q.width) ulduz(q.left + q.width / 2 + (Math.random() * 16 - 8), q.top + q.height / 2 + (Math.random() * 16 - 8));
   }, 45);
-  const an = d.animate([
-    { transform: "translate(-50%,-50%) scale(.4) rotate(0deg)", opacity: 0 },
-    { transform: "translate(-50%,-50%) scale(1.1) rotate(0deg)", opacity: 1, offset: .12 },
-    { transform: "translate(calc(-50% + " + dx + "px),calc(-50% + " + dy + "px)) scale(1) rotate(" + rot + "deg)", opacity: 1 }
-  ], { duration: g.ucusMs || 900, easing: "cubic-bezier(.2,.7,.3,1)", fill: "both" });
-  an.onfinish = () => {
-    clearInterval(iz);
-    sesCal(g.sl);
-    gelen.add(x.n + "|" + to);
-    yapisanCiz();
-    yigimCiz();
-    d.remove();
-  };
+}
+
+function ucurYapis(g, x, to, pa, b, p) {
+  const r0 = fotoRect(b);
+  if (!r0) return;
+  const hed = { i: g.id, x: p.x, y: p.y, r: p.r };
+  const d = document.createElement("div");
+  d.className = "hd-fly";
+  d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
+  d.style.fontSize = olcu(hed, r0) + "px";
+  d.style.opacity = "0";
+  d.innerHTML = (g.ucusAdi ? gorsel(g) : gorselStk(g)) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  fxLayer().appendChild(d);
+  const iz = ulduzIzi(d);
+  const ease = bez(.2, .7, .3, 1);
+  canli(to, g.ucusMs || 900,
+    r => { const n = noqte(hed, r); return [n[0], n[1], n[2], olcu(hed, r)]; },
+    (u, h) => {
+      const e = ease(u), k = e < .12 ? 0 : (e - .12) / .88;
+      const s = e < .12 ? .4 + .7 * (e / .12) : 1.1 - .1 * k;
+      d.style.fontSize = h[3] + "px";
+      d.style.opacity = e < .12 ? e / .12 : 1;
+      d.style.transform = tr((h[0] - pa[0]) * k, (h[1] - pa[1]) * k, s, h[2] * k);
+    },
+    () => {
+      clearInterval(iz);
+      sesCal(g.sl);
+      gelen.add(x.n + "|" + to);
+      yapisanCiz();
+      yigimCiz();
+      d.remove();
+    });
 }
 
 /* Tac (g15) uçuşu: videodakı kimi 5 san, sona doğru yavaşlayan ease-out, bucaq və ölçü əyrisi ilə.
-   Sonda tam olaraq oturan tacın yerinə (noqte) çatır — sonra yapisanCiz oturan tacı göstərir. */
+   Sonda alanın CARİ şəkil yerindəki oturan tacın nöqtəsinə (noqte) çatır — sonra yapisanCiz oturan tacı göstərir. */
 function ucurTac(g, x, to, pa, b, p) {
-  const r = fotoRect(b);
-  if (!r) return;
+  const r0 = fotoRect(b);
+  if (!r0) return;
   const hed = { i: g.id, x: p.x, y: p.y, r: p.r };
-  const [tx, ty, rot] = noqte(hed, r);
-  const dx = tx - pa[0], dy = ty - pa[1];
-  const ms = g.ucusMs || 5000;
   const d = document.createElement("div");
   d.className = "hd-fly";
   d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
-  d.style.fontSize = olcu(hed, r) + "px";
+  d.style.fontSize = olcu(hed, r0) + "px";
+  d.style.opacity = "0";
   d.innerHTML = gorsel(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
   fxLayer().appendChild(d);
-  const iz = setInterval(() => {
-    const q = d.getBoundingClientRect();
-    if (q.width) ulduz(q.left + q.width / 2 + (Math.random() * 16 - 8), q.top + q.height / 2 + (Math.random() * 16 - 8));
-  }, 45);
-
-  /* kadrlar: vaxt xətti (linear), hərəkət/fırlanma p = 1-(1-u)^2, ölçü tacOlcu(u) */
-  const us = new Set();
-  for (let i = 0; i <= TAC_ADDIM; i++) us.add(i / TAC_ADDIM);
-  TAC_OLCU_EYRISI.forEach(n => us.add(n[0]));
-  const kf = [...us].sort((a, c) => a - c).map(u => {
-    const pr = 1 - (1 - u) * (1 - u);
-    return {
-      offset: u, opacity: 1,
-      transform: "translate(calc(-50% + " + (dx * pr).toFixed(2) + "px),calc(-50% + " + (dy * pr).toFixed(2) + "px)) scale(" + tacOlcu(u).toFixed(3) + ") rotate(" + (rot * pr).toFixed(2) + "deg)"
-    };
-  });
-  const an = d.animate(kf, { duration: ms, easing: "linear", fill: "both" });
-  an.onfinish = () => {
-    clearInterval(iz);
-    sesCal(g.sl);
-    gelen.add(x.n + "|" + to);
-    yapisanCiz();
-    yigimCiz();
-    d.remove();
-  };
+  const iz = ulduzIzi(d);
+  canli(to, g.ucusMs || 5000,
+    r => { const n = noqte(hed, r); return [n[0], n[1], n[2], olcu(hed, r)]; },
+    (u, h) => {
+      const pr = 1 - (1 - u) * (1 - u);
+      d.style.fontSize = h[3] + "px";
+      d.style.opacity = 1;
+      d.style.transform = tr((h[0] - pa[0]) * pr, (h[1] - pa[1]) * pr, tacOlcu(u).toFixed(3), h[2] * pr);
+    },
+    () => {
+      clearInterval(iz);
+      sesCal(g.sl);
+      gelen.add(x.n + "|" + to);
+      yapisanCiz();
+      yigimCiz();
+      d.remove();
+    });
 }
 
 function oynaBir(kimden, x, to) {
@@ -655,17 +701,20 @@ function oynaBir(kimden, x, to) {
   const d = document.createElement("div");
   d.className = "hd-fly";
   d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
+  d.style.opacity = "0";
   d.innerHTML = gorsel(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
   fxLayer().appendChild(d);
-  const dx = pb[0] - pa[0], dy = pb[1] - pa[1];
-  const an = d.animate([
-    { transform: "translate(-50%,-50%) scale(.4)", opacity: 0 },
-    { transform: "translate(-50%,-50%) scale(1)", opacity: 1, offset: .15 },
-    { transform: "translate(calc(-50% + " + dx + "px),calc(-50% + " + dy + "px)) scale(1.1)", opacity: 1, offset: .6 },
-    { transform: "translate(calc(-50% + " + dx + "px),calc(-50% + " + dy + "px)) scale(1.6)", opacity: 1, offset: .85 },
-    { transform: "translate(calc(-50% + " + dx + "px),calc(-50% + " + dy + "px)) scale(1.9)", opacity: 0 }
-  ], { duration: 1800, easing: "ease-in-out", fill: "both" });
-  an.onfinish = () => d.remove();
+  const ease = bez(.42, 0, .58, 1);
+  canli(to, 1800,
+    r => [r.left + r.width / 2, r.top + r.height / 2, 0],
+    (u, h) => {
+      const e = ease(u);
+      const k = e < .15 ? 0 : e < .6 ? (e - .15) / .45 : 1;
+      const s = e < .15 ? .4 + .6 * (e / .15) : e < .6 ? 1 + .1 * k : e < .85 ? 1.1 + .5 * ((e - .6) / .25) : 1.6 + .3 * ((e - .85) / .15);
+      d.style.opacity = e < .15 ? e / .15 : e < .85 ? 1 : 1 - (e - .85) / .15;
+      d.style.transform = tr((h[0] - pa[0]) * k, (h[1] - pa[1]) * k, s, 0);
+    },
+    () => d.remove());
 }
 
 function oyna(kimden, x) {
@@ -709,8 +758,8 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyyeYapisan"), s => {
 });
 
 function yapisanCiz() {
-  if (!yapQat) { yapQat = document.createElement("div"); yapQat.className = "hd-stkLayer"; (document.getElementById("masa") || document.body).appendChild(yapQat); }
-  const gizli = qatGorunurlukYenile();
+  if (!yapQat) { yapQat = document.createElement("div"); yapQat.className = "hd-stkLayer"; (document.getElementById("masa") || document.body).appendChild(yapQat); qatGorunurlukYenile(); }
+  const gizli = gizliKes;
 
   const simdi = Date.now();
   const srv = simdi + offset;
@@ -767,7 +816,6 @@ function yapisanCiz() {
     }
   }
 }
-setInterval(yapisanCiz, 120);
 
 /* ======================= ÖPÜŞ YIĞIMI (g.yigim) ======================= */
 const OLCU_EYRISI = [[0, .7], [.012, 1.17], [.05, 1.32], [.11, 1.28], [.16, 1.27], [.22, 1.28], [.28, 1.37], [.36, 1.48],
@@ -792,31 +840,38 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/yigim"), s => {
 });
 
 function ucurYigim(g, x, to, pa, b, p) {
-  const r = fotoRect(b);
-  if (!r) return;
-  const ms = g.ucusMs || 4900, L = r.width * OPUS.OLCU, dir = p.d < 0 ? -1 : 1;
-  const dx = r.left + r.width * p.x / 100 - pa[0], dy = r.top + r.height * p.y / 100 - pa[1];
+  const r0 = fotoRect(b);
+  if (!r0) return;
+  const ms = g.ucusMs || 4900, L = r0.width * OPUS.OLCU, dir = p.d < 0 ? -1 : 1;
   const a = document.createElement("div");
   a.className = "hd-yf";
   a.style.cssText = "left:" + (pa[0] - L / 2) + "px;top:" + (pa[1] - L / 2) + "px;width:" + L + "px;height:" + L + "px;font-size:" + (L * 0.8) + "px";
   a.innerHTML = '<div class="hd-yf-r"><div class="hd-yf-s">' + gorsel(g) + "</div></div>" + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
   fxLayer().appendChild(a);
   const rot = a.firstChild, olc = rot.firstChild;
-  a.animate([{ transform: "translate(0px,0px)" }, { transform: "translate(" + dx + "px," + dy + "px)" }], { duration: ms, easing: YAVASLA, fill: "both" });
-  rot.animate([{ transform: "rotate(" + (p.r - 90 * dir) + "deg)" }, { transform: "rotate(" + p.r + "deg)" }], { duration: ms, easing: YAVASLA, fill: "both" });
-  const an = olc.animate(OLCU_EYRISI.map(([o, s]) => ({ offset: o, transform: "scale(" + s + ")", opacity: o === 0 ? 0 : 1 })), { duration: ms, easing: "linear", fill: "both" });
-  an.onfinish = () => {
-    sesCal(g.sl);
-    ogelen.add(x.n + "|" + to);
-    yigimCiz();
-    yapisanCiz();
-    a.remove();
-  };
+  olc.style.opacity = "0";
+  const ease = bez(0.5, 1, 0.89, 1);
+  canli(to, ms,
+    r => [r.left + r.width * p.x / 100, r.top + r.height * p.y / 100, p.r],
+    (u, h) => {
+      const e = ease(u);
+      a.style.transform = "translate(" + ((h[0] - pa[0]) * e) + "px," + ((h[1] - pa[1]) * e) + "px)";
+      rot.style.transform = "rotate(" + (h[2] - 90 * dir * (1 - e)) + "deg)";
+      olc.style.transform = "scale(" + egri(OLCU_EYRISI, u) + ")";
+      olc.style.opacity = u > 0 ? 1 : 0;
+    },
+    () => {
+      sesCal(g.sl);
+      ogelen.add(x.n + "|" + to);
+      yigimCiz();
+      yapisanCiz();
+      a.remove();
+    });
 }
 
 function yigimCiz() {
-  if (!yigQat) { yigQat = document.createElement("div"); yigQat.className = "hd-yigQat"; (document.getElementById("masa") || document.body).appendChild(yigQat); }
-  const gizli = qatGorunurlukYenile();
+  if (!yigQat) { yigQat = document.createElement("div"); yigQat.className = "hd-yigQat"; (document.getElementById("masa") || document.body).appendChild(yigQat); qatGorunurlukYenile(); }
+  const gizli = gizliKes;
 
   const srv = Date.now() + offset;
   for (const kk in yigEl) {
@@ -866,4 +921,8 @@ function yigimCiz() {
     }
   }
 }
-setInterval(yigimCiz, 120);
+/* Oturan hədiyyələrin yeri HƏR KADRDA yenilənir: şəkil yerini dəyişəndə (masa/mərkəz) hədiyyə onunla bərabər gedir */
+(function kadrDongusu() {
+  try { yapisanCiz(); yigimCiz(); } catch (e) { dbg("KADR XƏTASI: " + e.message); }
+  requestAnimationFrame(kadrDongusu);
+})();
