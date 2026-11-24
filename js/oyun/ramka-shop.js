@@ -77,7 +77,7 @@ ov.innerHTML =
   '<div class="wrap"><div class="ky"><div class="kart" id="rKart">' +
   '<div class="foto" id="rFoto"><div class="cap" id="rCap"></div></div>' +
   '<div class="alt"><div class="stt" id="rStt"></div>' +
-  '<div class="sat"><span id="rUrek"></span><span id="rJeton"></span></div></div></div>' +
+  '<div class="sat"><span id="rUrek"></span><span id="rJeton"></span></div></div><div class="over" id="rOver"></div></div>' +
   '<button class="x" id="rBagla" type="button">&times;</button></div>' +
   '<div class="zl" id="rZl"></div></div>' +
   '<div class="bar"><div class="tabs" id="rTabs"></div>' +
@@ -95,7 +95,8 @@ function ciz() {
   const m = melumat(p, cari);
 
   // Profil kartı (real vaxt, seçilən ramka ilə)
-  $("rKart").setAttribute("style", stil(r, "1.3vw"));
+  $("rKart").setAttribute("style", r.img ? "background:#0b0b0b;" : stil(r, "1.3vw"));
+  $("rOver").style.backgroundImage = r.img ? "url(" + r.img + ")" : "none";
   $("rFoto").style.backgroundImage = m.foto ? "url(" + m.foto + ")" : "none";
   $("rCap").textContent = m.ad + (m.yas ? ", " + m.yas : "");
   $("rStt").textContent = m.status;
@@ -104,11 +105,11 @@ function ciz() {
 
   // Sağ zolaq: seçilən kateqoriyanın ramkaları
   $("rZl").innerHTML = RAMKALAR.filter((x) => x.kat === kat).map((x) =>
-    '<div class="th' + (x.id === sec ? " s" : "") + '" data-id="' + x.id + '" style="' + stil(x, ".9vw") + '">' +
+    '<div class="th' + (x.id === sec ? " s" : "") + '" data-id="' + x.id + '" style="' + (x.img ? "background:#161616 center/contain no-repeat url(" + x.img + ");" : stil(x, ".9vw")) + '">' +
     (qalanGun(x.id) ? "<i>✓</i>" : "") + "</div>").join("");
 
   // Alt hissə: kateqoriyalar
-  $("rTabs").innerHTML = KAT.map((k) =>
+  $("rTabs").innerHTML = KAT.filter((k) => RAMKALAR.some((x) => x.kat === k.id)).map((k) =>
     '<button type="button" data-k="' + k.id + '" class="' + (k.id === kat ? "a" : "") + '">' + k.ad + "</button>").join("");
 
   // Ad, qiymətlər, düymə
