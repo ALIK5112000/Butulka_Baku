@@ -1,57 +1,83 @@
 /* reytinq.js - Reytinqlər pəncərəsi (ayrıca fayl, real vaxt, ilk 50)
-   Panel faylına yaz:  import "./reytinq.js";
-   (bu fayl panel faylı ilə eyni qovluqda olmalıdır) */
+   Panel faylına yaz:  import "./reytinq.js";   (panel faylı ilə eyni qovluqda) */
 import { fsdb } from "../core/firebase.js";
 import { cariOyuncu } from "./yardimci.js";
 import {
   collection, query, orderBy, limit, where, onSnapshot, doc, getCountFromServer
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-/* ====== BURANI ÖZ FIELD ADLARINA GÖRƏ DÜZƏLT ======
-   users sənədində hər bölmənin xalını saxlayan field adı.
-   Field yoxdursa o bölmə boş görünür. */
+/* ====== FIELD ADLARI (users sənədi) ====== */
 const KOLLEKSIYA = "users";
-const AD_FIELD = "name";        // oyunçunun adı
-const SEKIL_FIELD = "photo";    // oyunçunun şəkli (url)
+const AD_FIELD = "name";
+const SEKIL_FIELD = "photo";
 const XAL_FIELD = {
-  kiss:   "kisses",   // öpüş sayı
-  music:  "music",    // mahnı xalı
-  heart:  "likes",    // ürək/bəyənmə
-  hearts: "couples",  // cütlük
-  smile:  "smiles",   // smaylik
-  crown:  "gifts",    // hədiyyə
-  time:   "playTime"  // oyun vaxtı
+  kiss: "kisses", music: "music", heart: "likes", hearts: "couples",
+  smile: "smiles", crown: "gifts", time: "playTime"
 };
+// Ad / şəkil field-i yuxarıdakı tapılmasa bunlar da yoxlanır
+const AD_ALT = ["name", "ad", "username", "nick", "nickname", "displayName", "login", "isim", "adi"];
+const SEKIL_ALT = ["photo", "sekil", "avatar", "photoURL", "photoUrl", "avatarUrl", "img", "image", "imageUrl", "pp", "foto", "pic", "picture", "profilePhoto"];
 const LIMIT = 50;
+const IMG_QOVLUQ = "images/reytinqler/";
 
 const TABS = [
-  { id: "kiss",   icon: "💋", title: "Ən çox öpülən" },
-  { id: "music",  icon: "🎵", title: "Ən çox mahnı" },
-  { id: "heart",  icon: "💙", title: "Ən çox bəyənilən" },
-  { id: "hearts", icon: "💞", title: "Ən çox cütlük" },
-  { id: "smile",  icon: "😄", title: "Ən çox smaylik" },
-  { id: "crown",  icon: "👑", title: "Ən çox hədiyyə" },
-  { id: "time",   icon: "🕒", title: "Ən çox oyun vaxtı" }
+  { id: "kiss",   emo: "💋", title: "Ən çox öpülən" },
+  { id: "music",  emo: "🎵", title: "Ən çox mahnı" },
+  { id: "heart",  emo: "💙", title: "Ən çox bəyənilən" },
+  { id: "hearts", emo: "💞", title: "Ən çox cütlük" },
+  { id: "smile",  emo: "😄", title: "Ən çox smaylik" },
+  { id: "crown",  emo: "👑", title: "Ən çox hədiyyə" },
+  { id: "time",   emo: "🕒", title: "Ən çox oyun vaxtı" }
 ];
 
 const state = { tab: "kiss" };
-let root, unsubList = null, unsubMe = null, meData = null, listDocs = [];
+let root, unsubList = null, unsubMe = null, meData = null, listDocs = [], loggedKeys = false;
 
-function fmt(n) { return Number(n || 0).toLocaleString("fr-FR"); }
+const fmt = (n) => Number(n || 0).toLocaleString("fr-FR");
 
-function sira(place, ad, sekil, xal, mine) {
+function ilk(p, secilen, alt) {
+  for (const k of [secilen, ...alt]) {
+    const v = p[k];
+    if (typeof v === "string" && v.trim()) return v;
+  }
+  return "";
+}
+
+// Stiker şəkli; fayl yoxdursa emoji göstərir
+function ikon(t) {
+  const img = document.createElement("img");
+  img.alt = "";
+  img.src = IMG_QOVLUQ + t.id + ".png";
+  img.onerror = () => {
+    const s = document.createElement("span");
+    s.className = "emo"; s.textContent = t.emo;
+    img.replaceWith(s);
+  };
+  return img;
+}
+
+function sira(place, p, xal, mine) {
   const t = TABS.find(x => x.id === state.tab);
   const d = document.createElement("div");
   d.className = "rtq-row" + (mine ? " mine" : "");
-  const img = document.createElement("img");
-  img.alt = ""; img.src = sekil || "";
-  img.onerror = () => { img.style.visibility = "hidden"; };
-  const pl = document.createElement("div"); pl.className = "rtq-place"; pl.textContent = place + ".";
-  const nm = document.createElement("div"); nm.className = "rtq-name"; nm.textContent = ad || "";
+
+  const foto = document.createElement("img");
+  foto.className = "foto"; foto.alt = "";
+  const src = ilk(p, SEKIL_FIELD, SEKIL_ALT);
+  if (src) foto.src = src;
+  foto.onerror = () => { foto.removeAttribute("src"); };
+
+  const info = document.createElement("div"); info.className = "rtq-info";
+  const pl = document.createElement("span"); pl.className = "rtq-place"; pl.textContent = place + ".";
+  const nm = document.createElement("span"); nm.className = "rtq-name"; nm.textContent = ilk(p, AD_FIELD, AD_ALT);
+  info.append(pl, nm);
+
   const sc = document.createElement("div"); sc.className = "rtq-score";
-  sc.innerHTML = '<span class="ic">' + t.icon + "</span><span></span>";
-  sc.lastChild.textContent = fmt(xal);
-  d.append(img, pl, nm, sc);
+  const ic = document.createElement("span"); ic.className = "ic"; ic.appendChild(ikon(t));
+  const say = document.createElement("span"); say.className = "say"; say.textContent = fmt(xal);
+  sc.append(ic, say);
+
+  d.append(foto, info, sc);
   return d;
 }
 
@@ -62,24 +88,29 @@ function cizList() {
   const f = XAL_FIELD[state.tab];
   listDocs.forEach((s, i) => {
     const p = s.data();
-    list.appendChild(sira(i + 1, p[AD_FIELD], p[SEKIL_FIELD], p[f], false));
+    list.appendChild(sira(i + 1, p, p[f], false));
   });
   list.scrollTop = st;
 }
 
 async function cizMe() {
   const box = root.querySelector("#rtq-me");
+  const cari = cariOyuncu();
   if (!meData) { box.innerHTML = ""; return; }
   const f = XAL_FIELD[state.tab];
   const xal = Number(meData[f] || 0);
-  let yer = "-";
-  try {
-    const c = await getCountFromServer(
-      query(collection(fsdb, KOLLEKSIYA), where(f, ">", xal)));
-    yer = c.data().count + 1;
-  } catch (e) {}
+  let yer = null;
+  // İlk 50-dəyəmsə siyahıdakı sıra ilə eyni olsun
+  const idx = cari && cari.docId ? listDocs.findIndex(s => s.id === cari.docId) : -1;
+  if (idx >= 0) yer = idx + 1;
+  else {
+    try {
+      const c = await getCountFromServer(query(collection(fsdb, KOLLEKSIYA), where(f, ">", xal)));
+      yer = c.data().count + 1;
+    } catch (e) { yer = "-"; }
+  }
   box.innerHTML = "";
-  box.appendChild(sira(yer, meData[AD_FIELD], meData[SEKIL_FIELD], xal, true));
+  box.appendChild(sira(yer, meData, xal, true));
 }
 
 function dinle() {
@@ -93,7 +124,14 @@ function dinle() {
 
   unsubList = onSnapshot(
     query(collection(fsdb, KOLLEKSIYA), orderBy(f, "desc"), limit(LIMIT)),
-    (snap) => { listDocs = snap.docs; cizList(); cizMe(); },
+    (snap) => {
+      listDocs = snap.docs;
+      if (!loggedKeys && snap.docs[0]) {
+        loggedKeys = true;
+        console.log("reytinq: users sənədinin field-ləri:", Object.keys(snap.docs[0].data()));
+      }
+      cizList(); cizMe();
+    },
     (err) => console.error("reytinq:", err)
   );
 
@@ -105,16 +143,16 @@ function dinle() {
   }
 }
 
+const X_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#2f8cff" stroke-width="3.6" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>';
+
 function qur() {
   root = document.createElement("div");
   root.id = "rtq-overlay";
   root.innerHTML =
     '<div id="rtq-box">' +
-      '<button id="rtq-close" type="button">×</button>' +
+      '<button id="rtq-close" type="button">' + X_SVG + "</button>" +
       '<div id="rtq-head">' +
-        '<div id="rtq-tabs">' +
-          TABS.map(t => '<span class="rtq-tab" data-id="' + t.id + '">' + t.icon + "</span>").join("") +
-        "</div>" +
+        '<div id="rtq-tabs"></div>' +
         '<div id="rtq-sub"><span id="rtq-title"></span>' +
           '<select id="rtq-period"><option>hər zaman</option></select></div>' +
       "</div>" +
@@ -122,17 +160,21 @@ function qur() {
       '<div id="rtq-me"></div>' +
     "</div>";
   document.body.appendChild(root);
+
+  const tabs = root.querySelector("#rtq-tabs");
+  TABS.forEach(t => {
+    const el = document.createElement("div");
+    el.className = "rtq-tab"; el.dataset.id = t.id;
+    el.appendChild(ikon(t));
+    el.onclick = () => { state.tab = t.id; dinle(); };
+    tabs.appendChild(el);
+  });
+
   root.querySelector("#rtq-close").onclick = bagla;
   root.addEventListener("click", (e) => { if (e.target === root) bagla(); });
-  root.querySelectorAll(".rtq-tab").forEach(el =>
-    el.onclick = () => { state.tab = el.dataset.id; dinle(); });
 }
 
-function ac() {
-  if (!root) qur();
-  root.classList.add("open");
-  dinle();
-}
+function ac() { if (!root) qur(); root.classList.add("open"); dinle(); }
 function bagla() {
   if (!root) return;
   root.classList.remove("open");
