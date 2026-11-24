@@ -14,8 +14,8 @@ import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx
 const SEKIL_PAPKA = "images/hediyye/";
 const SES_PAPKA = "sesler/";
 const HEDIYYELER = [
-  { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true },
-  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5000, yapis: true, ucusAdi: true },
+  { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true, qrup: "yuz" },
+  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5000, yapis: true, ucusAdi: true, qrup: "yuz" },
   { id: "g7",  e: "🐸", img: SEKIL_PAPKA + "qurbaga.png", q: 2 },
   { id: "g2",  e: "🍓", img: SEKIL_PAPKA + "cilek.png",   q: 1, k: "yeni" },
   { id: "g4",  e: "🪨", img: SEKIL_PAPKA + "dash.png",    q: 1 },
@@ -521,7 +521,8 @@ async function gonder(g, c) {
 
   /* Hər atılan öpüş / pomidor / tac yığımda ÖZ AYRI qeydi kimi saxlanılır (l = şəklə düşmə vaxtı).
      Eyni növdən sonrakı hədiyyə düşəndə əvvəlkilər tək-tək (3 san ərzində tədricən) solur, axırda sonuncu qalır.
-     Pomidor tacı silmir: hər növ (g1 / g3 / g15) öz qrupunda ayrıca idarə olunur. Solma vaxtını hamı
+     Öpüş (g1) və pomidor (g3) eyni "yuz" qrupundadır: hansı sonra düşsə əvvəlkini (öpüş də, pomidor da) soldurub silir.
+     Tac (g15) və kokteyl (g21) öz qruplarında qalır, onları nə öpüş, nə pomidor silmir. Solma vaxtını hamı
      eyni qaydayla hesablayır, ona görə sürətli atmada da heç bir hədiyyə qalıb yığılmır. */
   if (sekileOturur) {
     const p = {};
@@ -978,7 +979,7 @@ function yigimCiz() {
     const f = fotoTap(uid), r = f && fotoRect(f);
     const gor = !!r && !gizli;
 
-    /* hədiyyə növünə görə qruplaşdır: öpüşlər öz aralarında, pomidorlar öz aralarında, tac ayrıca */
+    /* qruplaşdır: öpüş + pomidor bir qrupda ("yuz"), tac ayrıca, kokteyl ayrıca (qrup yoxdursa növün öz id-si) */
     const qruplar = {};
     for (const key in col) {
       const e = col[key];
@@ -986,7 +987,8 @@ function yigimCiz() {
       const gh = HEDIYYELER.find(h => h.id === e.i);
       if (!gh) continue;
       const land = num(e.l) || (num(e.t) + (gh.ucusMs || 4900));
-      (qruplar[e.i] = qruplar[e.i] || []).push([key, e, land, gh]);
+      const qk = gh.qrup || e.i;
+      (qruplar[qk] = qruplar[qk] || []).push([key, e, land, gh]);
     }
 
     for (const gid in qruplar) {
