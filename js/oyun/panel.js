@@ -3,6 +3,7 @@ import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import "./ramka-shop.js";
+import "./reytinq.js";
 
 const cari = cariOyuncu();
 document.getElementById("masaNo").textContent = MASA_NOMRESI;
