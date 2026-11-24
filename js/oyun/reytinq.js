@@ -1,4 +1,4 @@
-/* reytinq.js - Reytinqlər pəncərəsi (ayrıca fayl, real vaxt, ilk 50, 30 günlük tarixçə yoxlaması) */
+/* reytinq.js - Reytinqlər pəncərəsi (ayrıca fayl, real vaxt, ilk 50, xal dondurma dəstəyi) */
 import { fsdb } from "../core/firebase.js";
 import { cariOyuncu } from "./yardimci.js";
 import {
@@ -30,9 +30,14 @@ const TABS = [
 
 const state = { tab: "kiss" };
 let root, unsubList = null, unsubMe = null, meData = null, listDocs = [], loggedKeys = false;
-const yoxlananUidler = {};
 
 const fmt = (n) => Number(n || 0).toLocaleString("fr-FR").replace(/\u202f/g, " ");
+
+function xalDondurulubMu(p, field) {
+  if (!p || !p.dondurulmusXallar) return false;
+  const bitis = Number(p.dondurulmusXallar[field] || 0);
+  return bitis > Date.now();
+}
 
 function ilk(p, secilen, alt) {
   for (const k of [secilen, ...alt]) {
@@ -80,20 +85,29 @@ function sira(place, p, xal, mine) {
   return d;
 }
 
+function aktivSiyahi() {
+  const f = XAL_FIELD[state.tab];
+  // Bu reytinq sahəsi dondurulmuş oyunçuları sıralamadan gizlət (30 gün bitibsə avtomatik bərpa et)
+  return listDocs.filter(s => {
+    const p = s.data();
+    if (p && p.dondurulmusXallar && p.dondurulmusXallar[f]) {
+      if (xalDondurulubMu(p, f)) return false;
+      if (window.Xallar && typeof window.Xallar.donmaYoxla === "function") {
+        window.Xallar.donmaYoxla(s.id, p);
+      }
+    }
+    return true;
+  }).slice(0, LIMIT);
+}
+
 function cizList() {
   const list = root.querySelector("#rtq-list");
   const st = list.scrollTop;
   list.innerHTML = "";
   const f = XAL_FIELD[state.tab];
-  listDocs.forEach((s, i) => {
+  const gorunenler = aktivSiyahi();
+  gorunenler.forEach((s, i) => {
     const p = s.data();
-    // 30 günlük tarixçəsi varsa və vaxtı bitibsə arxa planda köhnə xalı geri qaytar
-    if (Array.isArray(p.xalTarixce) && p.xalTarixce.length && !yoxlananUidler[s.id]) {
-      yoxlananUidler[s.id] = true;
-      if (window.Xallar && typeof window.Xallar.tarixceYoxla === "function") {
-        window.Xallar.tarixceYoxla(s.id);
-      }
-    }
     list.appendChild(sira(i + 1, p, p[f], false));
   });
   list.scrollTop = st;
@@ -104,9 +118,18 @@ async function cizMe() {
   const cari = cariOyuncu();
   if (!meData) { box.innerHTML = ""; return; }
   const f = XAL_FIELD[state.tab];
+
+  // Özünün bu xalı dondurulubsa 0 və "-" sıra göstər
+  if (xalDondurulubMu(meData, f)) {
+    box.innerHTML = "";
+    box.appendChild(sira("-", meData, 0, true));
+    return;
+  }
+
   const xal = Number(meData[f] || 0);
   let yer = null;
-  const idx = cari && cari.docId ? listDocs.findIndex(s => s.id === cari.docId) : -1;
+  const gorunenler = aktivSiyahi();
+  const idx = cari && cari.docId ? gorunenler.findIndex(s => s.id === cari.docId) : -1;
   if (idx >= 0) yer = idx + 1;
   else {
     try {
@@ -136,8 +159,9 @@ function dinle() {
   yenileTabGorunusu();
   root.querySelector("#rtq-list").scrollTop = 0;
 
+  // Dondurulmuş oyunçular çıxarıldıqda siyahı 50-dən az qalmasın deyə 80 nəfər çəkib ilk 50 aktivi göstəririk
   unsubList = onSnapshot(
-    query(collection(fsdb, KOLLEKSIYA), orderBy(f, "desc"), limit(LIMIT)),
+    query(collection(fsdb, KOLLEKSIYA), orderBy(f, "desc"), limit(80)),
     (snap) => {
       listDocs = snap.docs;
       if (!loggedKeys && snap.docs[0]) {
@@ -151,11 +175,12 @@ function dinle() {
 
   const cari = cariOyuncu();
   if (cari && cari.docId) {
-    if (window.Xallar && typeof window.Xallar.tarixceYoxla === "function") {
-      window.Xallar.tarixceYoxla(cari.docId);
-    }
     unsubMe = onSnapshot(doc(fsdb, KOLLEKSIYA, cari.docId), (s) => {
-      meData = s.data() || null; cizMe();
+      meData = s.data() || null;
+      if (meData && window.Xallar && typeof window.Xallar.donmaYoxla === "function") {
+        window.Xallar.donmaYoxla(cari.docId, meData);
+      }
+      cizMe();
     });
   }
 }
@@ -171,7 +196,7 @@ function qur() {
       '<div id="rtq-head">' +
         '<div id="rtq-tabs" role="tablist"></div>' +
         '<div id="rtq-sub"><span id="rtq-title"></span>' +
-          '<select id="rtq-period"><option>son 30 gün</option></select></div>' +
+          '<select id="rtq-period"><option>hər zaman</option></select></div>' +
       "</div>" +
       '<div id="rtq-list"></div>' +
       '<div id="rtq-me"></div>' +
