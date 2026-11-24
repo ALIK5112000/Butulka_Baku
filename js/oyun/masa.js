@@ -9,6 +9,8 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase
 const yol = `masalar/${MASA_NOMRESI}/oturacaqlar`;
 const ayrYol = `masalar/${MASA_NOMRESI}/ayrilma`;      // bağlantısı kəsilənlərin vaxtı (yer dərhal silinmir)
 const opusYol = `masalar/${MASA_NOMRESI}/opus`;
+const yigimYol = `masalar/${MASA_NOMRESI}/yigim`;                 // şəkil üstündəki öpüş/pomidor/tac/kokteyl
+const yapisanYol = `masalar/${MASA_NOMRESI}/hediyyeYapisan`;      // şəklə yapışan hədiyyələr
 const masa = document.getElementById("masa");
 const yerler = [];
 
@@ -42,6 +44,13 @@ const girisVar = () => {
 
 onValue(ref(rtdb, ".info/serverTimeOffset"), (s) => { offset = s.val() || 0; });
 onValue(ref(rtdb, ayrYol), (s) => { ayrilma = s.val() || {}; });
+
+// Oyunçunun şəklindəki bütün hədiyyələri (öpüş, pomidor, tac, kokteyl) bazadan sil
+function hediyyeTemizle(uid) {
+  if (!uid) return;
+  remove(ref(rtdb, `${yigimYol}/${uid}`)).catch(() => {});
+  remove(ref(rtdb, `${yapisanYol}/${uid}`)).catch(() => {});
+}
 
 // Əməliyyatlar növbə ilə işləyir ki, bir-birinin yerini silməsin (itib-gəlmənin əsas səbəbi bu idi)
 let zencir = Promise.resolve();
@@ -81,7 +90,7 @@ async function tazele() {
 }
 onValue(ref(rtdb, ".info/connected"), (s) => { if (s.val()) tazele().catch(() => {}); });
 
-// Uzun müddət qayıtmayanların yerini və öpüş sayğacını sil (hər kəs işlədə bilər, tranzaksiya təhlükəsizdir)
+// Uzun müddət qayıtmayanların yerini, öpüş sayğacını və şəklindəki hədiyyələri sil (hər kəs işlədə bilər, tranzaksiya təhlükəsizdir)
 setInterval(() => {
   const indi = Date.now() + offset;
   for (const k in xamData) {
@@ -94,6 +103,7 @@ setInterval(() => {
         if (n.committed) {
           remove(ref(rtdb, `${ayrYol}/${o.uid}`)).catch(() => {});
           remove(ref(rtdb, `${opusYol}/${o.uid}`)).catch(() => {});
+          hediyyeTemizle(o.uid);
         }
       }).catch(() => {});
   }
@@ -230,8 +240,9 @@ async function yerTutIc(oyuncu, istisna) {
         // Yer dəyişmə: köhnə yeri dərhal boşalt (başqasının yerini silməsin deyə yalnız öz yazımı)
         const eski = ref(rtdb, `${yol}/${istisna}`);
         runTransaction(eski, (cur) => (cur && cur.uid === oyuncu.uid ? null : undefined)).catch(() => {});
-        // Yer dəyişəndə öpüş sayğacı silinir
+        // Yer dəyişəndə öpüş sayğacı və şəkildəki hədiyyələr silinir
         remove(ref(rtdb, `${opusYol}/${oyuncu.uid}`)).catch(() => {});
+        hediyyeTemizle(oyuncu.uid);
         window.dispatchEvent(new CustomEvent("oyuncuYerDeyisdi", { detail: { uid: oyuncu.uid, kohne: Number(istisna), yeni: i } }));
       }
       await dublikatlariSil(oyuncu.uid, i);      // köhnə yer varsa sil
@@ -306,7 +317,7 @@ export function yerDeyis() {
 }
 window.yerDeyis = yerDeyis;
 
-// Oyundan tam çıxış: yeri, prezansı sil və bir daha bərpa etmə
+// Oyundan tam çıxış: yeri, prezansı, şəkildəki hədiyyələri sil və bir daha bərpa etmə
 export async function masadanCix() {
   window.__masaCixir = true;
   clearTimeout(berpaTimer);
@@ -320,6 +331,8 @@ export async function masadanCix() {
       .filter((k) => hamisi[k] && hamisi[k].uid === uid)
       .map((k) => remove(ref(rtdb, `${yol}/${k}`))));
     await remove(ref(rtdb, `${opusYol}/${uid}`));
+    await remove(ref(rtdb, `${yigimYol}/${uid}`));
+    await remove(ref(rtdb, `${yapisanYol}/${uid}`));
     await remove(ref(rtdb, `${ayrYol}/${uid}`));
     await remove(ref(rtdb, "prezans/" + uid));
   } catch (e) {}
@@ -356,6 +369,21 @@ window.addEventListener("pageshow", (e) => {
 });
 window.addEventListener("focus", geriQayidandaYoxla);
 
+// Oyuna təzə girəndə: yerim yoxdursa və ya uzun müddət (GRACE-dən çox) ayrılmış olubsa, köhnə hədiyyələrim silinir.
+// Qısa çıxış-giriş (səhifə keçidi, yenilənmə) hədiyyələrə toxunmur.
+async function kohneHediyyeleriTemizle(uid) {
+  try {
+    const hamisi = (await get(ref(rtdb, yol))).val() || {};
+    const varYer = Object.values(hamisi).some((o) => o && o.uid === uid);
+    const ayr = (await get(ref(rtdb, `${ayrYol}/${uid}`))).val();
+    const uzaqdaIdim = !varYer || (ayr && Date.now() + offset - ayr >= GRACE);
+    if (uzaqdaIdim) {
+      hediyyeTemizle(uid);
+      remove(ref(rtdb, `${opusYol}/${uid}`)).catch(() => {});
+    }
+  } catch (e) {}
+}
+
 async function katil(cari, profilP) {
   try {
     const snap = await (profilP || getDoc(doc(fsdb, "users", cari.docId)));
@@ -378,6 +406,7 @@ async function katil(cari, profilP) {
       vip: vipMi(p),
       cins: cinsTap(p.gender)
     };
+    await kohneHediyyeleriTemizle(cari.docId);
     await ardicil(() => oturacaqTap(aktivOyuncu));
   } catch (e) {
     alert("Masa xətası: " + e.message);
