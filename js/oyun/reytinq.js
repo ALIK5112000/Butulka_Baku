@@ -10,7 +10,7 @@ const KOLLEKSIYA = "users";
 const AD_FIELD = "name";
 const SEKIL_FIELD = "photo";
 const XAL_FIELD = {
-  kiss: "kisses", music: "music", heart: "likes", hearts: "couples",
+  kiss: "kisses", music: "music", heart: "meftunQiymet", hearts: "cutUrek",
   smile: "smiles", crown: "gifts", time: "playTime"
 };
 const FREEZE_FIELD_MAP = {
@@ -72,6 +72,7 @@ function xalDondurulubMu(p, field) {
 function gorunenXal(p, field) {
   if (!p) return 0;
   if (xalDondurulubMu(p, field)) return 0;
+  if (field === "meftunQiymet") return Math.max(1, Number(p[field] || 0));
   return Number(p[field] || 0);
 }
 
@@ -101,6 +102,7 @@ function sira(place, p, xal, mine, uid) {
   const t = TABS.find(x => x.id === state.tab);
   const d = document.createElement("div");
   d.className = "rtq-row" + (mine ? " mine" : "");
+  d.dataset.tab = state.tab;
 
   const foto = document.createElement("img");
   foto.className = "foto"; foto.alt = "";
