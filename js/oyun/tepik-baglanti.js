@@ -2,7 +2,7 @@ import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI, OTURACAQ_SAYI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { ref as rRef, onValue, get, set, update } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref as rRef, onValue, get, set, update, remove } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 const T = window.TepikVur;
 if (T) {
@@ -54,40 +54,37 @@ if (T) {
     }
     return null;
   }
+
+  /* Masanı tərk et: yalnız öz yerini sil (masadanCix() işlətmirik, o oyundan tam çıxış sayılır),
+     sonra təsadüfi başqa masaya keç. oyun.html-dəki #cixisBtn.click() artıq çağırılmır. */
   C.masaniTerkEt = async () => {
     if (atilir) return;
     atilir = true;
     const kohne = String(MASA_NOMRESI);
+    const uid = C.menimUid();
     try { sessionStorage.setItem("tepikAtildi", kohne); sessionStorage.setItem("sonMasa", kohne); } catch (e) {}
-
-    /* masadanCix() və ya oyunun öz yoxlamaları oyunçunu sayta (profil.html və s.) atmasın:
-       çıxış bitənə qədər yalnız oyun.html-ə keçidə icazə verilir, qalan yönləndirmələr ləğv olunur */
-    let blok = true;
-    try {
-      if (window.navigation && typeof window.navigation.addEventListener === "function") {
-        window.navigation.addEventListener("navigate", e => {
-          if (!blok || !e.cancelable || (e.destination && e.destination.sameDocument)) return;
-          let ok = false;
-          try { ok = new URL(e.destination.url).pathname.endsWith("oyun.html"); } catch (x) {}
-          if (!ok) e.preventDefault();
-        });
-      }
-    } catch (e) {}
+    window.__masaCixir = true;   // masa.js yerimi yenidən bərpa etməsin
 
     /* hədəf masanı əvvəlcədən seç ki, yer boşaldılandan sonra gecikmə olmasın */
     const n = await basqaMasaSec();
     const hedefUrl = n ? "oyun.html?masa=" + n : "oyun.html";   // n yoxdursa oyun.html özü təsadüfi masa seçir
 
-    /* yer boşalsın; amma cavab gecikərsə 3 saniyədən sonra yenə də keçid olsun */
-    try {
-      if (typeof window.masadanCix === "function") {
-        await Promise.race([Promise.resolve(window.masadanCix()), new Promise(r => setTimeout(r, 3000))]);
-      }
-    } catch (e) {}
-    window.__masaCixir = true;
-    blok = false;
-    location.href = hedefUrl;
+    /* köhnə masadakı yerim, öpüş sayğacım və prezansım silinsin (3 saniyədən çox gözləmirik) */
+    const temizle = (async () => {
+      if (!uid) return;
+      const yolu = `masalar/${kohne}/oturacaqlar`;
+      const h = (await get(rRef(rtdb, yolu))).val() || {};
+      await Promise.all(Object.keys(h)
+        .filter(k => h[k] && h[k].uid === uid)
+        .map(k => remove(rRef(rtdb, `${yolu}/${k}`))));
+      await remove(rRef(rtdb, `masalar/${kohne}/opus/${uid}`));
+      await remove(rRef(rtdb, "prezans/" + uid));
+    })().catch(() => {});
+    await Promise.race([temizle, new Promise(r => setTimeout(r, 3000))]);
+
+    location.replace(hedefUrl);
   };
+
   /* yeni masaya düşəndə qadağa pəncərəsini göstər (qeyd hələ yazılmayıbsa bir neçə dəfə yenidən yoxlayır) */
   try {
     const k = sessionStorage.getItem("tepikAtildi");
