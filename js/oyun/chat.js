@@ -2,6 +2,7 @@ import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu, cinsTap, vipMi, adRengi, toast } from "./yardimci.js";
 import { tanisYaz } from "./dostlar.js";
+import { topMu, topDeyis, TOP_RENG } from "./top-oyuncular.js";
 import { ref, push, get, remove, update, query, limitToLast, limitToFirst, onChildAdded, onChildChanged, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
@@ -21,6 +22,15 @@ let men = null;
 // Çatda görünən oyunçuların adı → ID-si (kiminsə adına vurub yazanda həmin oyunçunu tanımaq üçün)
 const adUid = new Map();
 if (cari && cari.docId && cari.username) adUid.set(cari.username, cari.docId);
+
+// Çatda ad rəngi: TOP-10 da olan oyunçunun adı TOP lentinin sarı tonunda, qalanlar əvvəlki kimi
+const adRengiTop = (uid, cins, vip) => (topMu(uid) ? TOP_RENG : adRengi(cins, vip));
+// TOP siyahısı dəyişəndə çatda artıq yazılmış mesajların ad rəngləri də avtomatik yenilənir
+topDeyis(() => {
+  qutu.querySelectorAll(".mad[data-uid]").forEach((el) => {
+    el.style.color = adRengiTop(el.dataset.uid, el.dataset.cins, el.dataset.vip === "1");
+  });
+});
 
 // Mesaj kiminsə adına yazılıbsa ("Ad, ..." ilə başlayırsa) həmin oyunçunun ID-sini qaytarır, yoxsa null
 function mesajHedefi(m) {
@@ -256,7 +266,11 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   g.className = "mgovde mkart" + (m.cins === "q" ? " qiz" : "") + (menimle ? " mene" : "");
   const a = document.createElement("span");
   a.className = "mad";
-  a.style.color = adRengi(m.cins, m.vip);
+  // Ad rəngi: TOP-10 oyunçularda sarı (TOP lentinin tonu). data-* sonradan TOP dəyişəndə rəngi yeniləmək üçündür
+  a.dataset.uid = m.uid || "";
+  a.dataset.cins = m.cins || "";
+  a.dataset.vip = m.vip ? "1" : "";
+  a.style.color = adRengiTop(m.uid, m.cins, m.vip);
   a.textContent = (m.vip ? "👑 " : "") + m.ad + ": ";
   // Ada toxunanda yazı xanasına "Ad, " əlavə olunur (həmin oyunçuya müraciət üçün)
   if (!cari || m.uid !== cari.docId) {
