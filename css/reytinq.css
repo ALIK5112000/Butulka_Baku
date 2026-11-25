@@ -10,9 +10,9 @@
 #rtq-box {
   position: absolute; left: 50%; margin-left: calc(-486 * var(--u));
   width: calc(972 * var(--u));
-  /* referansa görə: yuxarı qaldırıldı (300 -> 193), hündürlük 1693 -> 1565 */
-  top: calc(193 * var(--u));
-  height: min(calc(1565 * var(--u)), calc(100dvh - 290 * var(--u)));
+  /* 2-ci referans şəkilə görə: yuxarı 212, hündürlük 1692 (ekranda 10 oyunçu görünür) */
+  top: calc(212 * var(--u));
+  height: min(calc(1692 * var(--u)), calc(100dvh - 300 * var(--u)));
   display: flex; flex-direction: column;
   background: #fff; border-radius: calc(45 * var(--u));
   box-shadow: 0 calc(8 * var(--u)) calc(30 * var(--u)) rgba(0,0,0,.3);
@@ -37,28 +37,18 @@
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 calc(16 * var(--u)); height: calc(92 * var(--u));
 }
+/* 2-ci şəkildəki kimi: ikonlar öz rəngindədir, solğun/boz deyil, böyümür */
 .rtq-tab {
   width: calc(135 * var(--u)); height: calc(92 * var(--u)); flex: none;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
-  transition: transform .16s ease, filter .16s ease, opacity .16s ease;
-  filter: grayscale(100%) saturate(0%) brightness(1.06) contrast(0.88);
-  opacity: 0.52;
   -webkit-tap-highlight-color: transparent;
 }
-.rtq-tab img,
-.rtq-tab .emo {
-  transition: transform .16s ease, filter .16s ease, opacity .16s ease;
-}
-.rtq-tab.active {
-  transform: scale(1.13);
-  filter: none;
-  opacity: 1;
-}
+.rtq-tab.active { transform: none; filter: none; opacity: 1; }
 .rtq-tab img {
-  height: calc(84 * var(--u)); width: auto; max-width: calc(112 * var(--u));
+  height: calc(62 * var(--u)); width: auto; max-width: calc(83 * var(--u));
   object-fit: contain;
 }
-.rtq-tab .emo { font-size: calc(66 * var(--u)); line-height: 1; }
+.rtq-tab .emo { font-size: calc(49 * var(--u)); line-height: 1; }
 
 #rtq-sub {
   display: flex; justify-content: space-between; align-items: center;
@@ -95,6 +85,7 @@
 .rtq-row .foto {
   width: calc(118 * var(--u)); height: calc(118 * var(--u)); flex: none;
   border-radius: calc(14 * var(--u)); object-fit: cover; background: #cfd8e3;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 .rtq-info { flex: 1; min-width: 0; display: flex; align-items: center; margin-left: calc(24 * var(--u)); }
 .rtq-place { flex: none; font-size: calc(42 * var(--u)); color: #333; font-weight: 500; margin-right: calc(20 * var(--u)); }
@@ -123,3 +114,8 @@
   background: #fff3a8; border-radius: 0 calc(26 * var(--u)) calc(26 * var(--u)) 0;
 }
 #rtq-me .rtq-row > * { position: relative; z-index: 1; }
+
+/* Profil kartı (profil-kart.js) reytinq pəncərəsinin (20000) ÜSTÜNDƏ açılsın */
+.pf-ov { z-index: 20500 !important; }
+.pf-full { z-index: 20501 !important; }
+.pf-toast { z-index: 20502 !important; }
