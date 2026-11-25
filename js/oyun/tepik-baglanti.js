@@ -1,6 +1,6 @@
-import { fsdb, rtdb } from "./core/firebase.js";
-import { MASA_NOMRESI } from "./core/config.js";
-import { cariOyuncu } from "./oyun/yardimci.js";
+import { fsdb, rtdb } from "../core/firebase.js";
+import { MASA_NOMRESI } from "../core/config.js";
+import { cariOyuncu } from "./yardimci.js";
 import { doc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { ref as rRef, onValue, get, set } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
