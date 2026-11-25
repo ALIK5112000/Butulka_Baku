@@ -276,7 +276,6 @@ if (T) {
     const uid = hedef;
     if (aktiv) { T.qoru(uid); return; }
     if (uid === C.menimUid()) {   // öz kartım: təpik vurmaq olmur, izah/qiymət pəncərəsi açılır (hamı üçün)
-    window.ProfilKart.bagla();   // əvvəlcə profil kartı bağlanır, pəncərə tək açılır
     if (window.TepikPencere) window.TepikPencere.ac(C.qiymet);
     return;
     }
