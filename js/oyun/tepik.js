@@ -433,12 +433,12 @@
     '.tepik-qad-t i{font-style:normal}',
     '.tepik-qad-ok{background:#9bc43d;color:#fff;border:0;border-radius:3vw;padding:3vw 9vw;font-size:4.4vw}',
     /* kartdakı nişan */
-    '.tepik-belge{position:absolute;left:-2vw;bottom:-1vw;display:flex;align-items:center;gap:1vw;z-index:5;pointer-events:none}',
-    '.tepik-belge-tepik{background:rgba(0,0,0,.78);border-radius:5vw;padding:.6vw 3vw .6vw 1vw}',
-    '.tepik-belge img{width:7vw;height:7vw;object-fit:contain}',
-    '.tepik-belge-qalxan img{width:8vw;height:9vw}',
-    '.tepik-belge-say{font:700 5.4vw/1 Roboto,Arial,sans-serif;color:#fff}',
-    '.tepik-belge-emo{font-size:5vw;line-height:1}',
+    '.tepik-belge{position:absolute;left:.8vw;bottom:.8vw;display:flex;align-items:center;gap:.6vw;z-index:5;pointer-events:none;max-width:calc(100% - 1.6vw)}',
+    '.tepik-belge-tepik{background:rgba(0,0,0,.72);border-radius:3vw;padding:.3vw 1.6vw .3vw .5vw}',
+    '.tepik-belge img{width:4.2vw;height:4.2vw;object-fit:contain}',
+    '.tepik-belge-qalxan img{width:5.4vw;height:6.2vw}',
+    '.tepik-belge-say{font:700 3.6vw/1 Roboto,Arial,sans-serif;color:#fff}',
+    '.tepik-belge-emo{font-size:3.6vw;line-height:1}',
     /* masalar siyahısında sayğac */
     '.tepik-masa-say{font:700 3.2vw/1.2 Roboto,Arial,sans-serif;color:#ff5a7a;text-align:center;margin-top:.8vw}'
   ].join('');
@@ -497,9 +497,7 @@
   function terkEt(v) {
     sonVerilen = v.baslama;
     qovBagla();
-    CONFIG.masaniTerkEt();
-    /* atıldıqdan sonra qadağa pəncərəsi (14:59 geri sayım) */
-    setTimeout(function () { qadagaVarmi(String(v.masa), false); }, 400);
+    CONFIG.masaniTerkEt();   // başqa masaya keçirmə və qadağa pəncərəsi tepik-baglanti.js-dədir
   }
 
   function qiymetlendir() {
