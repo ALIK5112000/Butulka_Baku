@@ -20,29 +20,8 @@
     <link rel="stylesheet" href="css/profile-modal.css">
     <link rel="stylesheet" href="css/tepik.css">
     <script src="js/oyun/tepik.js"></script>
-<script type="module" src="js/oyun/tepik-baglanti.js"></script>
-<script type="module">
-import { fsdb } from "./js/core/firebase.js";
-import { cariOyuncu } from "./js/oyun/yardimci.js";
-import { doc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-
-const C = window.TepikVur.CONFIG;
-C.menimUid = () => (cariOyuncu() || {}).docId;
-C.masaId = () => (document.getElementById('masaNo') || {}).textContent;
-C.masaniTerkEt = () => { const b = document.getElementById('cixisBtn'); if (b) b.click(); };
-C.bonusCix = (miqdar) => {
-  const cari = cariOyuncu();
-  if (!cari || !cari.docId) return Promise.resolve(false);
-  const ref = doc(fsdb, 'users', cari.docId);
-  return runTransaction(fsdb, async tx => {
-    const d = (await tx.get(ref)).data() || {};
-    const h = Number(d.hearts) || 0;
-    if (h < miqdar) return false;
-    tx.update(ref, { hearts: h - miqdar });
-    return true;
-  });
-};
-</script>
+    <!-- Təpik: bütün CONFIG (menimUid, masaId, bonusCix, masaniTerkEt və s.) yalnız bu faylda təyin olunur -->
+    <script type="module" src="js/oyun/tepik-baglanti.js"></script>
     <style>
 * {
     -webkit-tap-highlight-color: transparent !important;
@@ -288,7 +267,7 @@ C.bonusCix = (miqdar) => {
 <script type="module" src="js/oyun/chat.js"></script>
 <script type="module" src="js/oyun/profile-modal.js"></script>
 <script type="module" src="js/oyun/smayl.js"></script>
-<script type="module" src="js/oyun/hediyye.js"></script>    
+<script type="module" src="js/oyun/hediyye.js"></script>
 <script>
 window.CARX_OPTIONS = {
   trigger: '#sansCarxBtn',
