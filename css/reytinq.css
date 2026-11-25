@@ -44,6 +44,9 @@
   -webkit-tap-highlight-color: transparent;
 }
 .rtq-tab.active { transform: none; filter: none; opacity: 1; }
+/* Seçilməmiş tab: referansdakı kimi vahid mavi ton (başlıq fonuna qarışır), seçilmiş tab öz rəngində */
+.rtq-tab:not(.active) img { filter: grayscale(1) sepia(1) hue-rotate(172deg) saturate(2.4) brightness(1.1); }
+.rtq-tab.active img { filter: none; }
 .rtq-tab img {
   height: calc(62 * var(--u)); width: auto; max-width: calc(83 * var(--u));
   object-fit: contain;
