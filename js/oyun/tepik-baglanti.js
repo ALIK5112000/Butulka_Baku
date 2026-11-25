@@ -1,5 +1,5 @@
 import { fsdb, rtdb } from "../core/firebase.js";
-import { MASA_NOMRESI } from "../core/config.js";
+import { MASA_NOMRESI, OTURACAQ_SAYI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { ref as rRef, onValue, get, set, update } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
@@ -25,12 +25,40 @@ if (T) {
   C.menimUid = () => (cariOyuncu() || {}).docId;
   C.masaId = () => MASA_NOMRESI;
 
-  /* Təpik vurulanda oyunçu masadan çıxır (yeri boşalır), amma səhifədə izləyici kimi qalır.
-     masadanCix() yeri silir və bərpanı dayandırır (masa.js) */
-  C.masaniTerkEt = () => {
-    if (typeof window.masadanCix === "function") window.masadanCix();
-    else { const b = document.getElementById("cixisBtn"); if (b) b.click(); }
+  /* Təpik vurulanda: yer boşalır və oyunçu təsadüfi BAŞQA masaya keçirilir.
+     Yeni masada qadağa pəncərəsi (kim atdı, neçə dəqiqə qaldı) açılır. */
+  let atilir = false;
+  async function basqaMasaSec() {
+    const ids = Array.from({ length: 40 }, (_, i) => String(i + 1)).filter(n => n !== String(MASA_NOMRESI));
+    for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+    for (const n of ids.slice(0, 15)) {
+      if (T.qadagaVarmi(n, true)) continue;                    // qadağalı masa olmasın
+      try {
+        const m = await getDoc(doc(fsdb, "masalar", n));
+        const md = m.exists() ? m.data() : null;
+        if (md && md.bitis > Date.now() && md.parolHash) continue;   // kilidli masa olmasın
+        const dolu = Object.values((await get(rRef(rtdb, `masalar/${n}/oturacaqlar`))).val() || {}).filter(Boolean).length;
+        if (dolu >= OTURACAQ_SAYI) continue;                   // dolu masa olmasın
+        return n;
+      } catch (e) {}
+    }
+    return null;
+  }
+  C.masaniTerkEt = async () => {
+    if (atilir) return;
+    atilir = true;
+    const kohne = String(MASA_NOMRESI);
+    try { sessionStorage.setItem("tepikAtildi", kohne); sessionStorage.setItem("sonMasa", kohne); } catch (e) {}
+    try { if (typeof window.masadanCix === "function") await window.masadanCix(); } catch (e) {}
+    const n = await basqaMasaSec();
+    window.__masaCixir = true;
+    location.href = n ? "oyun.html?masa=" + n : "oyun.html";   // oyun.html özü təsadüfi masa seçir
   };
+  /* yeni masaya düşəndə qadağa pəncərəsini göstər */
+  try {
+    const k = sessionStorage.getItem("tepikAtildi");
+    if (k) { sessionStorage.removeItem("tepikAtildi"); setTimeout(() => T.qadagaVarmi(k), 1200); }
+  } catch (e) {}
 
   /* masadakı oyunçu kartları: .yer > .foto (masa.js hər kartın .yer elementinə data-uid yazır) */
   C.kartSelektoru = ".yer .foto";
