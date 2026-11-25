@@ -13,8 +13,8 @@ const NOTA_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#f5a21b" stroke-w
 
 const OX_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#7cc92f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg>';
 
-// Təpik sətirləri üçün ikonlar (təpik şəkli images/tepik-vur/ qovluğundandır, qalanları SVG)
-const TEPIK_SEKIL = "images/tepik-vur/tepik_icon_sari.png";
+// Təpik sətirləri üçün ikonlar (hamısı SVG, şəkil faylı lazım deyil)
+const BOT_SVG = '<svg viewBox="0 0 64 48"><path d="M10 36V29Q10 23 17 23L30 25Q38 26 40 18V6H58V36Z" fill="#f7b928" stroke="#e59a12" stroke-width="2" stroke-linejoin="round"/><rect x="7" y="34" width="54" height="8" rx="3" fill="#7a3f1a"/><circle cx="19" cy="29.500" r="1.800" fill="#7a3f1a"/><circle cx="26" cy="30.500" r="1.800" fill="#7a3f1a"/><path d="M44 10V30" stroke="#fff3b0" stroke-width="2.500" stroke-linecap="round" opacity=".7"/></svg>';
 const KAPI_SVG = '<svg viewBox="0 0 44 44"><rect x="5" y="4" width="20" height="36" rx="3" fill="#ee4d2d"/><circle cx="11" cy="22" r="2" fill="#fff"/><path d="M25 10l12 5v22l-12 3z" fill="#c9a0c0"/><path d="M22 24l5 5 11-13" fill="none" stroke="#f7b733" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const QALXAN_SVG = '<svg viewBox="0 0 40 46"><path d="M20 2l16 5v14c0 11-7 19-16 23C11 40 4 32 4 21V7z" fill="#f4a31f"/><path d="M20 6l12 4v11c0 8.5-5 15-12 18-7-3-12-9.5-12-18V10z" fill="#e8483a"/><path d="M20 13l2.6 5.4 5.9.8-4.3 4.1 1 5.9L20 26.4l-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z" fill="#ffc93d"/></svg>';
 const QALXAN_YASIL_SVG = '<svg viewBox="0 0 40 46"><path d="M20 4l14 4.5v12c0 9.5-6 16.5-14 20C12 37 6 30 6 20.5v-12z" fill="none" stroke="#7bc043" stroke-width="3.5" stroke-linejoin="round"/><path d="M20 13l2.4 5 5.4.7-4 3.8 1 5.4-4.8-2.6-4.8 2.6 1-5.4-4-3.8 5.4-.7z" fill="#7bc043"/></svg>';
@@ -206,16 +206,7 @@ function tepikSatiri(m) {
   // İkon qutusu: ölçü aşağıda şəklin (.mfoto) eninə görə qurulur
   const ik = document.createElement("div");
   ik.style.cssText = "flex:none;display:flex;align-items:center;justify-content:center;";
-  if (m.tip === "vur") {
-    const im = new Image();
-    im.alt = "";
-    im.style.cssText = "width:100%;height:100%;object-fit:contain;display:block;";
-    im.onerror = () => { ik.textContent = "\uD83D\uDC62"; ik.style.fontSize = "7vw"; };
-    im.src = TEPIK_SEKIL;
-    ik.appendChild(im);
-  } else {
-    ik.innerHTML = m.tip === "at" ? KAPI_SVG : QALXAN_SVG;
-  }
+  ik.innerHTML = m.tip === "vur" ? BOT_SVG : m.tip === "at" ? KAPI_SVG : QALXAN_SVG;
 
   const ox = document.createElement("span");
   ox.style.cssText = "flex:none;display:flex;align-items:center;";
