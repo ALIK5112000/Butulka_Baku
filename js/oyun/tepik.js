@@ -4,6 +4,7 @@
 
   var CONFIG = {
     qiymet: 15,
+    vurmaAddim: 15,
     qorumaQiymet: 15,
     qorumaAddim: 15,
     gozleSaniye: 30,
@@ -50,6 +51,18 @@
     try {
       CONFIG.db().ref('.info/serverTimeOffset').on('value', function (s) { serverOfset = s.val() || 0; });
     } catch (e) {}
+  }
+
+  /* ================= qiymətlər (hər oyunçu üçün ayrıca artır) ================= */
+  function vurQiymetOxu(uid) {
+    return CONFIG.db().ref('tepikVurQiymet/' + uid).once('value').then(function (s) {
+      return s.val() || CONFIG.qiymet;
+    });
+  }
+  function qiymetOxu(uid) {
+    return CONFIG.db().ref('tepikQiymet/' + uid).once('value').then(function (s) {
+      return s.val() || CONFIG.qorumaQiymet;
+    });
   }
 
   /* ================= təpik vurma pəncərəsi ================= */
@@ -111,6 +124,11 @@
     adEl.textContent = ilkAd || '';
     if (ilkSekil) imgEl.src = ilkSekil;
     overlay.querySelector('.tepik-vur').disabled = false;
+
+    var qEl = overlay.querySelector('.tepik-qiymet b');
+    qEl.textContent = CONFIG.qiymet;
+    vurQiymetOxu(hedefUid).then(function (q) { if (acikUid === hedefUid) qEl.textContent = q; });
+
     overlay.classList.add('acik');
 
     dinleyiciniSil();
@@ -143,12 +161,14 @@
     var btn = overlay.querySelector('.tepik-vur');
     btn.disabled = true;
 
-    var ref = CONFIG.db().ref(ROOT + '/' + hedef);
+    var ref = CONFIG.db().ref(ROOT + '/' + hedef), q = 0;
     ref.once('value').then(function (snap) {
       var v = snap.val();
-      if (v && v.xilas && v.bitme > indi()) { throw new Error('Bu oyunçu qorunur, təpik vurmaq olmur'); }
-      if (v && v.bitme && v.bitme > indi()) { throw new Error('Bu oyunçuya artıq təpik vurulub'); }
-      return CONFIG.bonusCix(CONFIG.qiymet);
+      if (v && !v.xilas && v.bitme > indi()) { throw new Error('Bu oyunçuya artıq təpik vurulub'); }
+      return vurQiymetOxu(hedef);
+    }).then(function (p) {
+      q = p;
+      return CONFIG.bonusCix(q);
     }).then(function (ok) {
       if (!ok) throw new Error('Bonusun çatmır');
       var baslama = indi();
@@ -161,6 +181,8 @@
         xilas: false
       });
     }).then(function () {
+      return CONFIG.db().ref('tepikVurQiymet/' + hedef).set(q + CONFIG.vurmaAddim);
+    }).then(function () {
       toast('Təpik vuruldu!');
       bagla();
     }).catch(function (err) {
@@ -172,12 +194,6 @@
   /* ================= qoruma ================= */
   function xilas(hedefUid) {
     return CONFIG.db().ref(ROOT + '/' + hedefUid + '/xilas').set(true);
-  }
-
-  function qiymetOxu(uid) {
-    return CONFIG.db().ref('tepikQiymet/' + uid).once('value').then(function (s) {
-      return s.val() || CONFIG.qorumaQiymet;
-    });
   }
 
   function qoru(hedefUid) {
