@@ -125,3 +125,21 @@
 .pf-ov { z-index: 20500 !important; }
 .pf-full { z-index: 20501 !important; }
 .pf-toast { z-index: 20502 !important; }
+
+/* Qrup ayırıcıları (10 / 25 / 50): referans ekrana görə ölçülər */
+.rtq-sep-a, .rtq-sep-b, .rtq-end {
+  display: flex; align-items: center; justify-content: center; box-sizing: border-box;
+  font-size: calc(30 * var(--u)); font-weight: 400; color: #b2b2b2; text-align: center; white-space: nowrap;
+}
+.rtq-sep-a { height: calc(71 * var(--u)); }
+.rtq-sep-line { height: calc(2 * var(--u)); background: #e5e5e5; }
+.rtq-sep-b { height: calc(68 * var(--u)); padding-bottom: calc(4 * var(--u)); }
+.rtq-end { margin-bottom: calc(8 * var(--u)); }
+
+/* Reytinq pəncərəsində mətn seçmə / kopyalama / uzun basma menyusu söndürülüb */
+#rtq-overlay, #rtq-overlay * {
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#rtq-overlay img { -webkit-user-drag: none; user-drag: none; }
