@@ -2,7 +2,7 @@ import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { ref as rRef, onValue, get, set } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref as rRef, onValue, get, set, update } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 const T = window.TepikVur;
 if (T) {
@@ -17,13 +17,25 @@ if (T) {
       off(ev, cb) { if (cb && cb.__un) cb.__un(); },
       once() { return get(r).then(sn); },
       set(v) { return set(r, v); },
+      update(v) { return update(r, v); },
       child(p) { return mkRef(path + "/" + p); }
     };
   };
   C.db = () => ({ ref: mkRef });
   C.menimUid = () => (cariOyuncu() || {}).docId;
   C.masaId = () => MASA_NOMRESI;
-  C.masaniTerkEt = () => { const b = document.getElementById("cixisBtn"); if (b) b.click(); };
+
+  /* Təpik vurulanda oyunçu masadan çıxır (yeri boşalır), amma səhifədə izləyici kimi qalır.
+     masadanCix() yeri silir və bərpanı dayandırır (masa.js) */
+  C.masaniTerkEt = () => {
+    if (typeof window.masadanCix === "function") window.masadanCix();
+    else { const b = document.getElementById("cixisBtn"); if (b) b.click(); }
+  };
+
+  /* masadakı oyunçu kartları: .yer > .foto (masa.js hər kartın .yer elementinə data-uid yazır) */
+  C.kartSelektoru = ".yer .foto";
+  C.kartUid = e => (e.parentElement && e.parentElement.dataset.uid) || null;
+
   C.bonusCix = miqdar => {
     const cari = cariOyuncu();
     if (!cari || !cari.docId) return Promise.resolve(false);
@@ -43,6 +55,8 @@ if (T) {
     return d.role === "admin" || (!!d.vip && (!d.vipUntil || Number(d.vipUntil) > Date.now()));
   };
   C.adGetir = async uid => ((await getDoc(doc(fsdb, "users", uid))).data() || {}).username || "Oyunçu";
+  /* qadağa pəncərəsində atan şəxsin şəkli (users.avatar) */
+  C.sekilGetir = async uid => ((await getDoc(doc(fsdb, "users", uid))).data() || {}).avatar || "";
   T.dinle();
 
   /* ===== profil kartında düymə ===== */
