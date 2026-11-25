@@ -232,7 +232,7 @@ if (T) {
     if (!b) return;
     if (!b.__orig) b.__orig = b.innerHTML;
     b.classList.toggle("pf-qalxan", aktiv);
-    b.style.visibility = (!aktiv && hedef === C.menimUid()) ? "hidden" : "visible";
+    b.style.visibility = "visible";   // öz kartımda da görünür: basanda "Təpik vur və qoru" izah pəncərəsi açılır
     const h = aktiv ? "q" : "t";
     if (b.dataset.h === h) return;
     b.dataset.h = h;
@@ -275,7 +275,10 @@ if (T) {
     if (!b || !hedef) return;
     const uid = hedef;
     if (aktiv) { T.qoru(uid); return; }
-    if (uid === C.menimUid()) return;
+    if (uid === C.menimUid()) {   // öz kartım: təpik vurmaq olmur, izah/qiymət pəncərəsi açılır (hamı üçün)
+      if (window.TepikPencere) window.TepikPencere.ac(C.qiymet);
+      return;
+    }
     if (!(await C.vipMi())) { T.toast("Təpik vurmaq yalnız VIP oyunçular üçündür"); return; }
     const sekil = (document.querySelector(".pf-ov .pf-photo img") || {}).src || "";
     const ad = await C.adGetir(uid);
