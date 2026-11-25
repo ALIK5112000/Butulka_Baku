@@ -1,7 +1,7 @@
 import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
-import { doc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { doc, getDoc, onSnapshot, updateDoc, increment, runTransaction as fsRunTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 /* ADDIM 3: Hədiyyə paneli. Başqa oyunçunun şəklinə toxunanda açılır.
@@ -34,9 +34,6 @@ const HEDIYYELER = [
   { id: "g18", e: "🚗", img: SEKIL_PAPKA + "masin.png",   q: 5, k: "yeni" },
   { id: "g19", e: "💎", img: SEKIL_PAPKA + "almaz.png",   q: 5, k: "ozel" },
   { id: "g20", e: "🏰", img: SEKIL_PAPKA + "qala.png",    q: 9, k: "ozel" },
-  /* KOKTEYL (g21): videodan ölçülüb. Uçuş 5.0 san, sona doğru yavaşlayan (ease-out) düz xətt; göndərənin şəklinin
-     yuxarı-ortasından başlayır, alanın şəklinin yanında (sağ-aşağı) qalır. 1 kokteyl = 1 bonus ürək (alanın balansına düşür).
-     Əvvəlki qalan kokteyl yeni göndərilən anda 1.95 san ərzində tədricən solur. */
   { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 1, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: 1, solMs: 1950 }
 ];
 
@@ -47,11 +44,6 @@ const OTURAN_SEKIL = {
 
 const OPUS = { OLCU: 0.34, MAX: 1, SOLMA_MS: 3000 };
 
-/* TAC (g15) UÇUŞU — referans videodan kadr-kadr ölçülüb:
-   - müddət 5.0 san (ucusMs: 5000), hərəkət düz xətlə, sona doğru yavaşlayır (ease-out kvadratik: p = 1-(1-u)^2)
-   - fırlanma da eyni əyri ilə 0-dan son bucağa qədər artır
-   - tac göndərənin şəklinin ortasında birdən görünür, ilk ~0.2 san-də 0.81-dən tam ölçüyə (1) çatır
-   [vaxt (0..1), miqyas] cütləri: */
 const TAC_OLCU_EYRISI = [[0, 0.81], [0.014, 0.85], [0.024, 0.92], [0.044, 1], [1, 1]];
 const TAC_ADDIM = 60;
 function tacOlcu(u) {
@@ -141,7 +133,74 @@ function gorselStk(g) {
 const num = v => Number(v) || 0;
 const MEN = (cariOyuncu() || {}).docId || null;
 
-/* Bütün uçan və oturan hədiyyələrin konteyneri (pəncərə açılanda tək komanda ilə gizlənir) */
+/* ---------- 30 günlük reytinq dondurma qoruyucusu ("kiss" | "music") ---------- */
+const FREEZE_MAP = {
+  kiss: { freeze: "freeze_kisses", saved: "saved_kisses", stat: "kisses" },
+  music: { freeze: "freeze_music", saved: "saved_music", stat: "music" }
+};
+
+async function reytinqArtir(uid, tip, delta) {
+  if (!uid || !delta || delta <= 0) return;
+  const cfg = FREEZE_MAP[tip];
+  if (!cfg) return;
+  const uRef = doc(fsdb, "users", uid);
+  try {
+    await fsRunTransaction(fsdb, async (tx) => {
+      const snap = await tx.get(uRef);
+      if (!snap.exists()) return;
+      const d = snap.data() || {};
+      const now = Date.now() + offset;
+      const fUntil = num(d[cfg.freeze]);
+      const curStat = num(d[cfg.stat]);
+      const savedStat = num(d[cfg.saved]);
+
+      if (fUntil > now) {
+        /* 30 günlük dondurma aktivdir: reytinq xalı artmasın və 0 qalsın */
+        if (curStat !== 0) tx.update(uRef, { [cfg.stat]: 0 });
+        return;
+      }
+
+      if (fUntil > 0 && fUntil <= now) {
+        /* 30 gün bitibsə köhnə xalı bərpa et və yeni artımı əlavə et */
+        tx.update(uRef, {
+          [cfg.stat]: savedStat + delta,
+          [cfg.freeze]: 0,
+          [cfg.saved]: 0
+        });
+        return;
+      }
+
+      tx.update(uRef, { [cfg.stat]: curStat + delta });
+    });
+  } catch (e) {
+    console.error("Reytinq artım xətası:", e);
+  }
+}
+
+/* Əgər kənar kod window.Xallar.musiqiHediyye çağırırsa, dondurulmuş oyunçunun music xalını blokla */
+(function qoruMusiqiHediyye() {
+  const bagla = () => {
+    if (!window.Xallar || typeof window.Xallar.musiqiHediyye !== "function" || window.Xallar.musiqiHediyye.__qorunub) return;
+    const evvel = window.Xallar.musiqiHediyye;
+    const yeni = async function(uid, say) {
+      if (!uid) return;
+      const snap = await getDoc(doc(fsdb, "users", uid)).catch(() => null);
+      const d = snap && snap.exists() ? (snap.data() || {}) : {};
+      const fUntil = num(d.freeze_music);
+      const now = Date.now() + offset;
+      if (fUntil > now) {
+        if (num(d.music) !== 0) updateDoc(doc(fsdb, "users", uid), { music: 0 }).catch(() => {});
+        return;
+      }
+      return evvel.apply(this, arguments);
+    };
+    yeni.__qorunub = true;
+    window.Xallar.musiqiHediyye = yeni;
+  };
+  bagla();
+  setInterval(bagla, 1000);
+})();
+
 let fxQat = null;
 function fxLayer() {
   if (!fxQat) {
@@ -153,17 +212,6 @@ function fxLayer() {
   return fxQat;
 }
 
-/* ---------- Koordinat kalibrləməsi ----------
-   Hədiyyə qatları #masa-nın içinə (position:fixed) qoyulur. #masa və ya üst elementlərindən birində transform
-   (məs. scale) / zoom varsa, brauzer "fixed" uşaqları o elementə bağlayır və transformu İKİNCİ dəfə tətbiq edir.
-   Oyunçu şəkillərinin yeri isə artıq ekran koordinatında (getBoundingClientRect) ölçülür, ona görə hədiyyə şəkildən
-   sürüşür; sürüşmə miqdarı şəklin ekrandakı yerindən asılı olduğu üçün hər oyunçuda fərqli çıxır, brauzer/ekran
-   ölçüsü dəyişəndə də dəyişir.
-   Həll (qapalı dövrə): qatın İÇİNDƏ gizli 100×100 ölçü kvadratı (sol=0, yuxarı=0) saxlanılır. Onun getBoundingClientRect
-   nəticəsi qatın yerli koordinatının ekranda real harada olduğunu göstərir (x: sol + miqyas·yerli). Nəticə "sol=0,
-   miqyas=1" deyilsə, qatın öz transformu (translate + scale) elə düzəldilir ki, qatın içindəki px dəyərləri birbaşa ekran
-   px olsun; hər kadr yenidən ölçülür, ona görə #masa-nın miqyası/yeri dəyişəndə (pəncərə ölçüsü, animasiya) də düzələr.
-   Əlavə transform yoxdursa heç nə dəyişmir (qatın transformu boş qalır). */
 let kalProbe = null, kalIter = 0, kalAx = 0, kalAy = 0, kalKx = 1, kalKy = 1, kalT = "";
 function qatTransformUygula() {
   for (const L of [fxQat, yigQat]) {
@@ -186,7 +234,6 @@ function qatKalibrle() {
   if (!(sx > 0.2 && sy > 0.2) || !isFinite(sx + sy + q.left + q.top)) return;
   if (Math.abs(q.left) < 0.5 && Math.abs(q.top) < 0.5 && Math.abs(sx - 1) < 0.003 && Math.abs(sy - 1) < 0.003) { kalIter = 0; return; }
   if (++kalIter > 40) return;
-  /* ekran = P + S·yerli  →  yeni k = k/S, yeni a = a − P·k/S (köhnə k ilə) */
   kalAx -= q.left * kalKx / sx; kalAy -= q.top * kalKy / sy;
   kalKx /= sx; kalKy /= sy;
   kalT = "translate(" + kalAx + "px," + kalAy + "px) scale(" + kalKx + "," + kalKy + ")";
@@ -195,7 +242,6 @@ function qatKalibrle() {
 }
 window.addEventListener("resize", () => { kalIter = 0; });
 
-/* HD_DEBUG=true olanda ekranın altında daimi sətir: qatın düzəliş transformu və ilk şəklin ölçüsü */
 let kalPanelEl = null, kalPanelN = 0;
 function kalPanel() {
   if (!HD_DEBUG || ++kalPanelN % 15) return;
@@ -211,7 +257,6 @@ function kalPanel() {
     " vv=" + (window.visualViewport ? window.visualViewport.scale.toFixed(2) : "-");
 }
 
-/* Hər hansı pəncərə/modal açıqdırsa true qaytarır */
 function pencereAciqdir() {
   const my = document.getElementById("modalYer");
   if (my && getComputedStyle(my).display !== "none" && my.offsetWidth > 0) return true;
@@ -393,7 +438,6 @@ $(".hd-x").onclick = bagla;
 $(".hd-av").onclick = () => { if (hedef && window.ProfilKart) window.ProfilKart.ac(hedef); };
 $(".hd-plus").onclick = () => tray.classList.toggle("open");
 
-/* ---------- Çoxlu seçim: qızlar / oğlanlar / tək-tək ---------- */
 function basliq() {
   if (isaret.size) { $("#hdAd").textContent = "Seçilmiş: " + isaret.size; $("#hdSub").textContent = "oyunçuya hədiyyə göndər"; }
   else { $("#hdAd").textContent = hedefAd; $("#hdSub").textContent = "üçün hədiyyə göndər"; }
@@ -428,14 +472,9 @@ $(".hd-tx").onclick = () => { isaret.clear(); tray.classList.remove("open"); mar
 
 window.HediyyePanel = { ac, bagla, hedef: () => hedef, modu: () => root.classList.contains("open") && tray.classList.contains("open"), isaretle };
 
-/* ---------- Oturacaqlar və Yer Dəyişmə İzləməsi ---------- */
 const YAP_YOL = "masalar/" + MASA_NOMRESI + "/hediyyeYapisan/";
 const YIG_YOL = "masalar/" + MASA_NOMRESI + "/yigim/";
 
-/* Oyuna YENİDƏN girəndə köhnə hədiyyələrin silinməsi: masadan çıxıb (səhifəni bağlayıb) sonra qayıdanda
-   əvvəlki hədiyyələr oyunçunun şəklində qalmasın. Telefonda "son görünmə" vaxtı hər saniyə yazılır;
-   səhifə 4 san-dən tez qayıdırsa (səhifə keçidi, yenilənmə) toxunulmur, daha uzun müddət yox idisə
-   bazadakı öz hədiyyələrim (öpüş/pomidor/tac/kokteyl yığımı) silinir. */
 const GORULME_KEY = "hdSon_" + MASA_NOMRESI + "_" + MEN;
 const GORULME_TOLER = 4000;
 function gorulmeYaz() { try { localStorage.setItem(GORULME_KEY, String(Date.now())); } catch (e) {} }
@@ -509,7 +548,6 @@ function djUid() {
   return d.djUid;
 }
 
-/* ---------- Hədiyyə göndərmək ---------- */
 let meHearts = null;
 if (MEN) onSnapshot(doc(fsdb, "users", MEN), s => { meHearts = num((s.data() || {}).hearts); }, () => {});
 
@@ -520,13 +558,11 @@ async function gonder(g, c) {
   const cost = g.q * c * alanlar.length;
   dbg("göndərilir: " + g.id);
 
-  /* sürətli lokal yoxlama */
   if (meHearts !== null && meHearts < cost) { toast("Bonus ürəyiniz çatmır"); if (window.HeartShop) window.HeartShop.open(); return; }
   if (meHearts !== null) meHearts -= cost;
 
   const odenis = updateDoc(doc(fsdb, "users", MEN), { hearts: increment(-cost) });
 
-  /* hamıya göstər */
   const n = Date.now() + "-" + Math.random().toString(36).slice(2, 7);
   const payload = { to: alanlar, i: g.id, c, n };
   const t = Date.now() + offset;
@@ -535,15 +571,8 @@ async function gonder(g, c) {
   const yigUpd = {};
   let yigVar = false;
 
-  /* Yalnız şəklə oturan/yapışan hədiyyələrdən (g1 öpüş, g3 pomidor, g15 tac) biri atılanda,
-     yeni hədiyyə profil şəklinə DÜŞƏN ANDA (dusmeVaxti) köhnə oturan tədricən solub silinir. */
   const sekileOturur = !!(g.yapis || g.yigim || g.koktel);
 
-  /* Hər atılan öpüş / pomidor / tac yığımda ÖZ AYRI qeydi kimi saxlanılır (l = şəklə düşmə vaxtı).
-     Eyni növdən sonrakı hədiyyə düşəndə əvvəlkilər tək-tək (3 san ərzində tədricən) solur, axırda sonuncu qalır.
-     Öpüş (g1) və pomidor (g3) eyni "yuz" qrupundadır: hansı sonra düşsə əvvəlkini (öpüş də, pomidor da) soldurub silir.
-     Tac (g15) və kokteyl (g21) öz qruplarında qalır, onları nə öpüş, nə pomidor silmir. Solma vaxtını hamı
-     eyni qaydayla hesablayır, ona görə sürətli atmada da heç bir hədiyyə qalıb yığılmır. */
   if (sekileOturur) {
     const p = {};
     alanlar.forEach(k => {
@@ -568,18 +597,20 @@ async function gonder(g, c) {
     catch (e) { dbg("ÖPÜŞ YIĞIMI XƏTASI: " + e.message); }
   }
 
-  /* interfeys dərhal təmizlənir */
   isaret.clear(); tray.classList.remove("open"); sec = null; sendBtn.style.display = "none"; ciz(); markYenile();
 
-  /* ödəniş nəticəsi */
   odenis.then(() => {
     if (g.opus) {
       alanlar.forEach(k => {
         rtTx(ref(rtdb, "masalar/" + MASA_NOMRESI + "/opus/" + k), v => num(v) + c).catch(() => {});
+        reytinqArtir(k, "kiss", c);
       });
     }
     const dj = djUid();
-    if (dj && alanlar.includes(dj) && window.Xallar) window.Xallar.musiqiHediyye(dj, c);
+    if (dj && alanlar.includes(dj)) {
+      if (window.Xallar) window.Xallar.musiqiHediyye(dj, c);
+      reytinqArtir(dj, "music", c);
+    }
   }).catch(e => {
     meHearts = null;
     remove(r).catch(() => {});
@@ -589,7 +620,6 @@ async function gonder(g, c) {
   });
 }
 
-/* ---------- Animasiya: göndərənin şəklindən alanın şəklinə uçur ---------- */
 function fotoTap(uid) {
   const ortalar = document.querySelectorAll("#masa .orta");
   if (spin && spin.qu === uid && ortalar[0] && ortalar[0].classList.contains("goster") && fotoRect(ortalar[0])) return ortalar[0];
@@ -613,14 +643,7 @@ const fotoRect = el => {
   return r.width ? r : null;
 };
 
-/* KOKTEYL (g21) — referans ekran görüntüsündən piksellə ölçülüb (oyunçu şəkli 611×611 px götürülüb):
-   - GÖRÜNƏN kokteylin (şüşə + ayaq, şəffaf kənarsız) hündürlüyü = şəklin eninin 0.4926-sı (301 px), eni 0.347-si (212 px)
-   - görünən kokteylin MƏRKƏZİ: şəklin sol kənarından eninin 1.0835-i, yuxarı kənarından 0.766-sı
-     → sol kənarı şəklin içinə 0.090 (55 px, kokteylin eninin ~26%-i) girir, sağ tərəfdən 0.257 çölə çıxır,
-       aşağı ucu şəklin alt kənarından 0.012 aşağı keçir. */
 const KOKTEL_REF = { MX: 1.0835, MY: 0.766, H: 0.4926 };
-/* koktel.png-nin ətrafında şəffaf boşluq ola bilər — real (şəffaf olmayan) hissənin sərhədi şəkil yüklənəndə
-   bir dəfə ölçülür. Ölçülənə qədər bütün şəkil görünən sayılır. l/t/r/b: şəklin 0..1 nisbətində; en: təbii en/hündürlük. */
 const KOKTEL_GORUNEN = { l: 0, t: 0, r: 1, b: 1, en: 1 };
 (function koktelSerhedOlc() {
   const g = HEDIYYELER.find(h => h.id === "g21");
@@ -655,8 +678,6 @@ const KOKTEL_GORUNEN = { l: 0, t: 0, r: 1, b: 1, en: 1 };
   };
   im.src = g.img;
 })();
-/* rw = oyunçu şəklinin eni. fs = koktel şəklinin hündürlüyü (1em) — elə seçilir ki, GÖRÜNƏN hissənin hündürlüyü
-   referansa (0.4926·rw) bərabər olsun. dx/dy = görünən hissənin mərkəzinin şəklin öz mərkəzindən sapması (px). */
 function koktelOlcusu(rw) {
   const v = KOKTEL_GORUNEN;
   const gh = (v.b - v.t) || 1;
@@ -664,14 +685,9 @@ function koktelOlcusu(rw) {
   return { fs, dx: ((v.l + v.r) / 2 - 0.5) * fs * v.en, dy: ((v.t + v.b) / 2 - 0.5) * fs };
 }
 
-/* Şəklə düşəndə ölçülər: g15 (tac) = 0.38, g3 (əzik pomidor) = 0.42 */
 const olcu = (d, r) => d.i === "g21" ? koktelOlcusu(r.width).fs : r.width * (d.i === "g15" ? 0.38 : d.i === "g3" ? 0.42 : 0.4);
-/* Tac: şəklin sol-yuxarı küncündə, mərkəzi çərçivənin kənarından eninin/hündürlüyünün ~2.2%-i içəridə
-   (təxminən yarısı çölə çıxır), -44° əyilmiş (ekran görüntüsündən ölçülüb) */
 function noqte(d, r) {
   if (d.i === "g15") return [r.left + r.width * 0.022, r.top + r.height * 0.022, -44];
-  /* Kokteyl: nöqtə = şəklin (img) mərkəzidir; görünən hissənin mərkəzi referans nöqtəyə (MX, MY) düşsün deyə
-     şəffaf kənar sapması çıxılır */
   if (d.i === "g21") {
     const k = koktelOlcusu(r.width);
     return [r.left + r.width * KOKTEL_REF.MX - k.dx, r.top + r.height * KOKTEL_REF.MY - k.dy, 0];
@@ -679,9 +695,6 @@ function noqte(d, r) {
   return [r.left + r.width * d.x / 100, r.top + r.height * d.y / 100, d.r || 0];
 }
 
-/* ---------- Canlı uçuş: hədəf (alanın şəkli) hər kadrda yenidən ölçülür ----------
-   Raund başlayanda/bitəndə şəkil masadan mərkəzə (və geri) keçə bilər. Uçuş qabaqcadan hesablanmış
-   sabit nöqtəyə yox, hər kadrda alanın cari şəkil yerinə uçur və oraya düşür. */
 function bez(x1, y1, x2, y2) {
   return t => {
     if (t <= 0) return 0;
@@ -696,7 +709,6 @@ function bez(x1, y1, x2, y2) {
     return 3 * (1 - m) * (1 - m) * m * y1 + 3 * (1 - m) * m * m * y2 + m * m * m;
   };
 }
-/* [vaxt, qiymət] cütləri üzrə xətti interpolyasiya */
 function egri(e, u) {
   for (let i = 1; i < e.length; i++) {
     if (u <= e[i][0]) {
@@ -720,7 +732,6 @@ function canli(to, ms, hedef, uygula, bitdi) {
     if (u < 1) requestAnimationFrame(fn); else bit();
   };
   requestAnimationFrame(fn);
-  /* əgər tab gizli olub kadrlar dayanıbsa, uçuş yenə də təmizlənsin */
   setTimeout(bit, ms + 1500);
 }
 const tr = (dx, dy, s, rot) => "translate(calc(-50% + " + dx + "px),calc(-50% + " + dy + "px)) scale(" + s + ") rotate(" + rot + "deg)";
@@ -773,8 +784,6 @@ function ucurYapis(g, x, to, pa, b, p) {
     });
 }
 
-/* Tac (g15) uçuşu: videodakı kimi 5 san, sona doğru yavaşlayan ease-out, bucaq və ölçü əyrisi ilə.
-   Sonda alanın CARİ şəkil yerindəki oturan tacın nöqtəsinə (noqte) çatır — sonra yigimCiz oturan tacı göstərir. */
 function ucurTac(g, x, to, pa, b, p) {
   const r0 = fotoRect(b);
   if (!r0) return;
@@ -804,10 +813,7 @@ function ucurTac(g, x, to, pa, b, p) {
     });
 }
 
-/* ---------- KOKTEYL (g21) ---------- */
-/* Uçuş boyu ölçü əyrisi [vaxt 0..1, miqyas]: ~55%-ə qədər tam ölçü, sonra şəklin yanında dayanacağı ölçüyə (0.765) kiçilir */
 const KOKTEL_OLCU = [[0, 1], [.55, 1], [.675, .95], [.775, .855], [.875, .795], [.975, .765], [1, .765]];
-/* uçan kokteylin ölçüsü = qalan (son) ölçünün 1/0.765 qatı; əyri 0.765-ə enəndə tam son ölçüyə çatır */
 const KOKTEL_UCUS_ORAN = 1 / 0.765;
 
 function ucurKoktel(g, x, to, pa, b) {
@@ -839,7 +845,6 @@ function ucurKoktel(g, x, to, pa, b) {
     });
 }
 
-/* Kokteyl şəklin yanına düşəndə: şüşənin üstündən kiçik bonus ürək qalxıb tədricən itir (videodan) */
 function urekEffekti(to) {
   const d = document.createElement("div");
   d.className = "hd-fly";
@@ -865,7 +870,6 @@ function urekEffekti(to) {
     () => d.remove());
 }
 
-/* Kokteyl kimə gedibsə, 1 kokteyl = 1 bonus ürək onun balansına düşür (alan öz hesabına yazır, hər hədiyyə yalnız 1 dəfə) */
 const bonusVerilen = new Set();
 function bonusVer(g, x, to) {
   if (!MEN || to !== MEN || !g.bonus) return;
@@ -999,7 +1003,6 @@ function yigimCiz() {
     const f = fotoTap(uid), r = f && fotoRect(f);
     const gor = !!r && !gizli;
 
-    /* qruplaşdır: öpüş + pomidor bir qrupda ("yuz"), tac ayrıca, kokteyl ayrıca (qrup yoxdursa növün öz id-si) */
     const qruplar = {};
     for (const key in col) {
       const e = col[key];
@@ -1017,7 +1020,6 @@ function yigimCiz() {
         const [key, e, , g] = L[idx];
         const kk = key + "|" + uid;
         const solMs = g.solMs || OPUS.SOLMA_MS;
-        /* növbəti eyni növ hədiyyə şəklə düşən anda bu tədricən solmağa başlayır; sonuncu qalır */
         const sol = idx < L.length - 1 ? (g.koktel ? num(L[idx + 1][1].t) : L[idx + 1][2]) : 0;
 
         if (sol && srv - sol >= solMs) {
@@ -1064,7 +1066,6 @@ function yigimCiz() {
         }
         if (rec.k !== k || el.style.display === "none") { rec.k = k; stil(); }
 
-        /* Solma vaxtı (növbəti eyni növ hədiyyənin düşmə anı) çatanda tədricən solmanı başlat */
         if (sol && srv >= sol && !rec.sol) {
           rec.sol = true;
           const an = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: solMs, easing: "linear", fill: "both" });
@@ -1074,7 +1075,6 @@ function yigimCiz() {
     }
   }
 }
-/* Oturan hədiyyələrin yeri HƏR KADRDA yenilənir: şəkil yerini dəyişəndə (masa/mərkəz) hədiyyə onunla bərabər gedir */
 (function kadrDongusu() {
   try { qatKalibrle(); yigimCiz(); kalPanel(); } catch (e) { dbg("KADR XƏTASI: " + e.message); }
   requestAnimationFrame(kadrDongusu);
