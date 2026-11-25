@@ -1,0 +1,10 @@
+html, body { margin: 0; height: 100%; }
+
+/* komputer və planşetdə səhifə telefon eni qədər ortada dayansın */
+@media (min-width: 600px) {
+  body {
+    max-width: 480px;
+    margin: 0 auto;
+    box-shadow: 0 0 40px rgba(0,0,0,.35);
+  }
+}
