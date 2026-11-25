@@ -143,8 +143,11 @@ const CSS = `
 .pf-full img{max-width:100%;max-height:100%}
 .pf-toast{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
 .pf-ov.pf-bekle .pf-card{visibility:hidden}
-/* oyunçu masada deyilsə: məktub və musiqi düymələri solğun, basılmır */
-.pf-btn.pf-solgun{opacity:.35;pointer-events:none;cursor:default}
+/* oyunçu masada deyilsə: təpik, musiqi və məktub düymələri boz (solğun), basılmır */
+.pf-btn.pf-solgun{pointer-events:none;cursor:default}
+.pf-btn.pf-kick.pf-solgun{background:#808080 !important}
+.pf-btn.pf-mus.pf-solgun{background:#8b8b8b !important}
+.pf-btn.pf-mail.pf-solgun{background:#a0a0a0 !important}
 /* TOP lenti: 1-10 ci yerdə olan oyunçuda VIP lentinin yerində görünür */
 .pf-topimg{position:absolute;top:4.26vw;left:-3.9vw;width:14.9vw;height:auto;margin:0;z-index:2;pointer-events:none;-webkit-user-select:none;user-select:none}
 `;
@@ -459,6 +462,7 @@ function hazirsaGoster() {
 }
 
 function bagla() {
+  if (window.TepikPencere) window.TepikPencere.bagla();
   sonD = null; ownerUid = null; gurulu = false; sig = {};
   if (mUnsub) { mUnsub(); mUnsub = null; } mUid = null; mD = null;
   clearTimeout(bekleT); bekleT = null;
@@ -472,11 +476,11 @@ ov.addEventListener("click", e => { if (e.target === ov) bagla(); });
 /* Oyunçu hazırda bu masada oturubmu? */
 const masadaMi = uid => !!uid && Object.values(oturacaqlar).some(o => o && o.uid === uid);
 
-/* Masada olmayan oyunçunun kartında məktub və musiqi düymələri solğun olur və basılmır */
+/* Masada olmayan oyunçunun kartında məktub, musiqi və təpik düymələri solğun olur və basılmır */
 function duymeHal() {
   if (!ownerUid) return;
   const var_ = masadaMi(ownerUid);
-  ["pf-mail", "pf-mus"].forEach(c => {
+  ["pf-mail", "pf-mus", "pf-kick"].forEach(c => {
     const b = ov.querySelector("." + c);
     if (!b) return;
     b.disabled = !var_;
@@ -524,7 +528,7 @@ function qur() {
       '<div class="pf-userw"></div>' +
       '<div class="pf-ln"></div>' +
       '<div class="pf-act">' +
-        '<button class="pf-btn" style="background:#ec5440">' + IC.qalxan + "</button>" +
+        '<button class="pf-btn pf-kick" style="background:#ec5440">' + IC.qalxan + "</button>" +
         '<button class="pf-btn t" style="background:#ef8c0b">Buto</button>' +
         '<button class="pf-btn pf-mus" style="background:#ab5a98">' + IC.musiqi + "</button>" +
         '<button class="pf-btn" style="background:#f9a23a">' + IC.tesdiq + "</button>" +
@@ -760,3 +764,167 @@ window.addEventListener("click", e => {
     }
   }
 }, true);
+
+
+/* ================= TƏPİK VUR VƏ QORU PƏNCƏRƏLƏRİ =================
+   Profil kartındakı qırmızı qalxan düyməsi: qiymət pəncərəsi, "?" ilə izah pəncərəsi.
+   "Oldu" basılanda düymənin əvvəlki əməliyyatı (tepik.js) olduğu kimi işə düşür. */
+(function () {
+const T = { qiymet: 15 };
+
+const CSS = `
+.tp-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10003;font-family:Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+.tp-ov.open{display:flex}
+.tp-card{position:relative;width:80vw;background:#fff;border-radius:4.4vw;box-shadow:0 1vw 4vw rgba(0,0,0,.35);animation:tpin .25s ease}
+@keyframes tpin{from{transform:translateY(5vw);opacity:0}}
+.tp-close{position:absolute;top:-2.6vw;right:-2.6vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#fff;border:0;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3);z-index:3}
+.tp-close svg{width:4.2vw;height:4.2vw}
+.tp-head{position:relative;height:11.4vw;display:flex;align-items:center;justify-content:center}
+.tp-head h3{margin:0;font:700 3.2vw/1 Roboto,Arial,sans-serif;color:#b9b9b9}
+.tp-q{position:absolute;left:1vw;top:.4vw;width:8vw;height:8vw;border:0;background:none;padding:0;display:flex;align-items:center;justify-content:center;font:700 5.8vw/1 Roboto,Arial,sans-serif;color:#c3c3c3}
+.tp-main{padding-bottom:4vw}
+.tp-txt{margin:0;padding:0 5vw;text-align:center;font:400 3.3vw/4vw Roboto,Arial,sans-serif;color:#111}
+.tp-pb{margin:4.4vw 5.9vw 0;height:12.5vw;background:#fdf7df;border-radius:4vw;display:flex;align-items:center;padding:0 3.9vw 0 2.1vw;box-sizing:border-box}
+.tp-sh{display:block;width:8.8vw;height:8.8vw;flex:none}
+.tp-sh svg{width:100%;height:100%;display:block}
+.tp-bar{flex:none;width:41.7vw;height:4.1vw;border-radius:2.1vw;background:#97cd32;margin:0 3.6vw 0 2.3vw}
+.tp-ok{width:5.7vw;height:5.7vw;flex:none;display:block}
+.tp-price{display:flex;align-items:center;justify-content:center;height:6.5vw;margin-top:1vw;font:400 3.3vw/1 Roboto,Arial,sans-serif;color:#111}
+.tp-price img{width:3.7vw;height:auto;display:block;margin:0 .8vw 0 1.5vw}
+.tp-price b{font-weight:700;font-size:3.5vw}
+.tp-oldu{display:block;width:20.8vw;height:7.8vw;margin:2.6vw auto 0;border:0;border-radius:2vw;background:#8cc63f;color:#fff;padding:0;font:400 3.7vw/1 Roboto,Arial,sans-serif}
+.tp-info{padding-bottom:3.9vw}
+.tp-r{display:flex;align-items:flex-start;padding:0 4vw 0 3.9vw;margin-bottom:3.9vw}
+.tp-r.l{margin-bottom:0}
+.tp-ic{width:12vw;height:12vw;border-radius:50%;background:#edf3fb;flex:none;margin:1vw 3.9vw 0 0;display:flex;align-items:center;justify-content:center}
+.tp-ic svg{width:8.4vw;height:8.4vw;display:block}
+.tp-rt{flex:1;min-width:0;margin:0;font:400 3.6vw/5.23vw Roboto,Arial,sans-serif;color:#111}
+.tp-rt b{font-weight:700}
+.tp-info .tp-oldu{margin-top:4vw}
+`;
+const st = document.createElement("style");
+st.textContent = CSS;
+document.head.appendChild(st);
+
+const X = '<svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#7cc92f" stroke-width="3.2" stroke-linecap="round"/></svg>';
+
+/* rəngli qalxan + təpik + partlayış */
+const QALXAN =
+  '<svg viewBox="0 0 64 64">' +
+    '<path d="M62 42L53.4 45.1L57.3 53.3L49.1 49.4L46 58L42.9 49.4L34.7 53.3L38.6 45.1L30 42L38.6 38.9L34.7 30.7L42.9 34.6L46 26L49.1 34.6L57.3 30.7L53.4 38.9Z" fill="#f04a2f"/>' +
+    '<path d="M24 38l12-5 14 16-6 7-17-3z" fill="#ffc933" stroke="#e8920e" stroke-width="2" stroke-linejoin="round"/>' +
+    '<path d="M20 4l14 5v11c0 9-6 15-14 18-8-3-14-9-14-18V9z" fill="#f7a823" stroke="#e8591e" stroke-width="2.5" stroke-linejoin="round"/>' +
+    '<path d="M20 11l2.4 5 5.4.7-4 3.8 1 5.4-4.8-2.6-4.8 2.6 1-5.4-4-3.8 5.4-.7z" fill="#fff3b0"/>' +
+  "</svg>";
+
+const SAATOLCEN =
+  '<svg viewBox="0 0 64 64">' +
+    '<rect x="27" y="3" width="10" height="7" rx="2" fill="#2f7fd6"/>' +
+    '<rect x="47" y="11" width="7" height="9" rx="2" fill="#2f7fd6" transform="rotate(42 50 15)"/>' +
+    '<circle cx="32" cy="37" r="24" fill="#2f7fd6"/>' +
+    '<circle cx="32" cy="37" r="19" fill="#fff"/>' +
+    '<path d="M32 22v3M32 49v3M17 37h3M44 37h3" stroke="#2f7fd6" stroke-width="2.5" stroke-linecap="round"/>' +
+    '<path d="M32 37l8-9" stroke="#e8392e" stroke-width="4" stroke-linecap="round"/>' +
+    '<circle cx="32" cy="37" r="3.5" fill="#e8392e"/>' +
+  "</svg>";
+
+const VIPMEDAL =
+  '<svg viewBox="0 0 64 64">' +
+    '<path d="M14 2h11l9 16h-11z" fill="#d93a2e"/>' +
+    '<path d="M50 2H39l-9 16h11z" fill="#d93a2e"/>' +
+    '<rect x="12" y="17" width="40" height="44" rx="6" fill="#fff" stroke="#7bbf2e" stroke-width="3"/>' +
+    '<path d="M19 38l3-12 6 7 4-9 4 9 6-7 3 12z" fill="#f6b300" stroke="#d99700" stroke-width="1.5" stroke-linejoin="round"/>' +
+    '<text x="32" y="55" text-anchor="middle" font-family="Roboto,Arial,sans-serif" font-weight="700" font-size="13" fill="#6cb52d">VIP</text>' +
+  "</svg>";
+
+const OK =
+  '<svg class="tp-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#8ec63a"/>' +
+  '<path d="M6.5 12.5l3.8 3.8 7.2-7.8" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* ================= PƏNCƏRƏ ================= */
+const ov = document.createElement("div");
+ov.className = "tp-ov";
+document.body.appendChild(ov);
+
+let gorunus = "ana";
+let atla = false;
+
+function anaHtml() {
+  return '<div class="tp-card tp-main">' +
+    '<button class="tp-close" aria-label="Bağla">' + X + "</button>" +
+    '<div class="tp-head"><button class="tp-q" aria-label="Məlumat">?</button><h3>Təpik vur və qoru</h3></div>' +
+    '<p class="tp-txt">Təpik vur və qoru ilə oyunçunu masadan kənarlaşdıra, eləcə də ya özünüzü, ya da digər oyunçunu kənarlaşdırılmaqdan qoruya bilərsiniz.</p>' +
+    '<div class="tp-pb"><span class="tp-sh">' + QALXAN + '</span><div class="tp-bar"></div>' + OK + "</div>" +
+    '<div class="tp-price">Aktivləşdirmənin qiyməti:<img src="images/profil/tek_urek.png" alt=""><b>' + (Number(T.qiymet) || 0) + "</b></div>" +
+    '<button class="tp-oldu">Oldu</button>' +
+  "</div>";
+}
+
+function infoHtml() {
+  return '<div class="tp-card tp-info">' +
+    '<button class="tp-close" aria-label="Bağla">' + X + "</button>" +
+    '<div class="tp-head"><h3>Təpik vur və qoru nədir</h3></div>' +
+    '<div class="tp-r"><div class="tp-ic">' + QALXAN + "</div>" +
+      '<p class="tp-rt"><b>"Təpik vur və qoru"</b> – sizə oyunçunu təpiklə masadan kənarlaşdırmağa və özünüzü və ya kimisə kənarlaşdırılmaqdan qorumağa imkan verən xüsusiyyətlər toplusudur. Onlardan istifadə edilməsi taymeri işə salır və istifadəsinə davam edilməsi vaxt bitənə qədər ürəklər tələb edir.</p></div>' +
+    '<div class="tp-r"><div class="tp-ic">' + SAATOLCEN + "</div>" +
+      '<p class="tp-rt">Təpik vurma <b>30</b> saniyə sonra aktivləşəcək və oyunçu <b>15</b> dəqiqə ərzində masadan kənarlaşdırılacaq.</p></div>' +
+    '<div class="tp-r l"><div class="tp-ic">' + VIPMEDAL + "</div>" +
+      '<p class="tp-rt">Hər kəs özünü təpik vurulmasından qoruya bilər, lakin yalnız <b>VIP</b> oyunçular başqalarını təpiklə kənarlaşdıra bilər və ya bundan qoruya bilərlər. VIP oyunçular hər iki variantdan pulsuz olaraq iki dəfə daha tez istifadə edə bilərlər.</p></div>' +
+    '<button class="tp-oldu">Oldu</button>' +
+  "</div>";
+}
+
+function ciz() {
+  ov.innerHTML = gorunus === "info" ? infoHtml() : anaHtml();
+  const q = ov.querySelector(".tp-q");
+  if (q) q.onclick = () => { gorunus = "info"; ciz(); };
+  ov.querySelector(".tp-close").onclick = geri;
+  ov.querySelector(".tp-oldu").onclick = gorunus === "info" ? () => { gorunus = "ana"; ciz(); } : oldu;
+}
+
+/* izah pəncərəsindən ana pəncərəyə qayıdır, ana pəncərədən isə tam bağlayır */
+function geri() {
+  if (gorunus === "info") { gorunus = "ana"; ciz(); }
+  else bagla();
+}
+
+function ac(q) {
+  if (q) T.qiymet = q;
+  gorunus = "ana";
+  ciz();
+  ov.classList.add("open");
+}
+
+function bagla() {
+  ov.classList.remove("open");
+  ov.innerHTML = "";
+  gorunus = "ana";
+}
+
+/* "Oldu": pəncərə bağlanır, düymənin əvvəlki əməliyyatı (tepik.js) bir dəfə işə düşür */
+function oldu() {
+  bagla();
+  const b = document.querySelector(".pf-ov .pf-act .pf-btn:first-child");
+  if (!b) return;
+  atla = true;
+  try { b.click(); } finally { atla = false; }
+}
+
+ov.addEventListener("click", e => { if (e.target === ov) geri(); });
+
+/* profil kartındakı qırmızı qalxan düyməsinə ilk basış tutulur, pəncərə göstərilir */
+window.addEventListener("click", e => {
+  if (atla) return;
+  const t = e.target;
+  const b = t && t.closest ? t.closest(".pf-ov .pf-act .pf-btn:first-child") : null;
+  if (!b) return;
+  e.stopImmediatePropagation();
+  e.preventDefault();
+  if (b.disabled || b.classList.contains("pf-solgun")) return; /* oyunçu masada deyilsə təpik işləmir */
+  ac();
+}, true);
+
+window.TepikPencere = T;
+T.ac = ac;
+T.bagla = bagla;
+})();
