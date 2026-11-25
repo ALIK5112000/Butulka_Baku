@@ -513,7 +513,7 @@ function ciz(d) {
   const stat = String(pick(d, ["status"]) || "").trim();
   if (sig.st !== stat) {
     sig.st = stat;
-    ov.querySelector(".pf-stw").innerHTML = stat ? '<div class="pf-st"><span>' + esc(stat) + "</span></div><div class=\"pf-stl\"></div>" : "";
+    ov.querySelector(".pf-stw").innerHTML = stat ? '<div class="pf-st"><span>' + esc(stat) + '</span></div><div class="pf-stl"></div>' : "";
   }
 
   const kVal = aktivDonmaVarmi(d, "kisses") ? 0 : d.kisses;
@@ -539,7 +539,7 @@ function ciz(d) {
     if (!mVar) { mAva = IC.bosAva; mAd = "Məftun yoxdur"; }
     else if (mOK) {
       mAva = '<img style="width:100%;height:100%;object-fit:cover;display:block" src="' + esc(mD.avatar || NOPHOTO) + '" alt="" onerror="' + onerr + '">';
-      mAd = "Məftun <u style=\"color:" + adRengi(mD) + "\">" + esc(mD.ad) + "</u>";
+      mAd = 'Məftun <u style="color:' + adRengi(mD) + '">' + esc(mD.ad) + "</u>";
     } else { mAva = IC.bosAva; mAd = "Məftun ..."; }
 
     let dugme;
