@@ -13,6 +13,12 @@ const NOTA_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#f5a21b" stroke-w
 
 const OX_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="#7cc92f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg>';
 
+// Təpik sətirləri üçün ikonlar (təpik şəkli images/tepik-vur/ qovluğundandır, qalanları SVG)
+const TEPIK_SEKIL = "images/tepik-vur/tepik_icon_sari.png";
+const KAPI_SVG = '<svg viewBox="0 0 44 44"><rect x="5" y="4" width="20" height="36" rx="3" fill="#ee4d2d"/><circle cx="11" cy="22" r="2" fill="#fff"/><path d="M25 10l12 5v22l-12 3z" fill="#c9a0c0"/><path d="M22 24l5 5 11-13" fill="none" stroke="#f7b733" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const QALXAN_SVG = '<svg viewBox="0 0 40 46"><path d="M20 2l16 5v14c0 11-7 19-16 23C11 40 4 32 4 21V7z" fill="#f4a31f"/><path d="M20 6l12 4v11c0 8.5-5 15-12 18-7-3-12-9.5-12-18V10z" fill="#e8483a"/><path d="M20 13l2.6 5.4 5.9.8-4.3 4.1 1 5.9L20 26.4l-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z" fill="#ffc93d"/></svg>';
+const QALXAN_YASIL_SVG = '<svg viewBox="0 0 40 46"><path d="M20 4l14 4.5v12c0 9.5-6 16.5-14 20C12 37 6 30 6 20.5v-12z" fill="none" stroke="#7bc043" stroke-width="3.5" stroke-linejoin="round"/><path d="M20 13l2.4 5 5.4.7-4 3.8 1 5.4-4.8-2.6-4.8 2.6 1-5.4-4-3.8 5.4-.7z" fill="#7bc043"/></svg>';
+
 const cari = cariOyuncu();
 const yol = `masalar/${MASA_NOMRESI}/chat`;
 const qutu = document.getElementById("mesajlar");
@@ -182,6 +188,96 @@ function musiqiSatiri(m) {
   return d;
 }
 
+// ---- Təpik sətirləri (tepik-baglanti.js chat yoluna isTepikNotice kimi yazır) ----
+//  vur : [vuran] təpik » [vurulan] (yaşıl qalxan düyməsi: bonusla qorumaq)
+//  at  : [atan] qapı » [atılan]     (təpiklə masadan çıxarıldı)
+//  qoru: [qoruyan] qalxan » [qorunan]
+function tepikSatiri(m) {
+  const d = document.createElement("div");
+  d.className = "mesaj";
+  const f = document.createElement("div");
+  f.className = "mfoto";
+  fotoVer(f, m.uid);
+
+  const g = document.createElement("div");
+  g.className = "tepik-sat";
+  g.style.cssText = "display:flex;flex-wrap:nowrap;align-items:center;gap:2.4vw;min-width:0;max-width:80vw;min-height:7.8vw;";
+
+  // İkon qutusu: ölçü aşağıda şəklin (.mfoto) eninə görə qurulur
+  const ik = document.createElement("div");
+  ik.style.cssText = "flex:none;display:flex;align-items:center;justify-content:center;";
+  if (m.tip === "vur") {
+    const im = new Image();
+    im.alt = "";
+    im.style.cssText = "width:100%;height:100%;object-fit:contain;display:block;";
+    im.onerror = () => { ik.textContent = "\uD83D\uDC62"; ik.style.fontSize = "7vw"; };
+    im.src = TEPIK_SEKIL;
+    ik.appendChild(im);
+  } else {
+    ik.innerHTML = m.tip === "at" ? KAPI_SVG : QALXAN_SVG;
+  }
+
+  const ox = document.createElement("span");
+  ox.style.cssText = "flex:none;display:flex;align-items:center;";
+  ox.innerHTML = OX_SVG;
+
+  const f2 = document.createElement("div");
+  f2.className = "mfoto";
+  f2.style.cssText = "flex:none!important;";
+  fotoVer(f2, m.hedef);
+
+  g.append(ik, ox, f2);
+
+  let btn = null, un = null, tm = null;
+  if (m.tip === "vur") {
+    btn = document.createElement("button");
+    btn.type = "button";
+    btn.innerHTML = QALXAN_YASIL_SVG;
+    btn.style.cssText = "flex:none;border:0;padding:0;margin-left:1vw;display:flex;align-items:center;justify-content:center;background:#e3efd2;opacity:.4;touch-action:manipulation;";
+    btn.onclick = () => {
+      if (btn.dataset.aktiv === "1" && window.TepikVur) window.TepikVur.qoru(m.hedef);
+    };
+    g.appendChild(btn);
+    // Düymə yalnız bu təpik hələ qüvvədədirsə (qorunmayıb, 30 saniyə bitməyib) aktivdir
+    const bit = () => {
+      btn.dataset.aktiv = "0";
+      btn.style.opacity = ".4";
+      clearTimeout(tm);
+      if (un) { un(); un = null; }
+    };
+    un = onValue(ref(rtdb, "tepik/" + m.hedef), (s) => {
+      const v = s.val(), n = Date.now() + serverOffset;
+      if (v && m.baslama && v.baslama === m.baslama && !v.xilas && v.terkVaxti > n) {
+        btn.dataset.aktiv = "1";
+        btn.style.opacity = "1";
+        clearTimeout(tm);
+        tm = setTimeout(bit, v.terkVaxti - n);
+      } else bit();
+    });
+  }
+
+  d.append(f, g);
+
+  // Ölçülər: şəkil (.mfoto) nə qədərdirsə ona görə (sətir yerləşdirildikdən sonra)
+  d._olcu = () => {
+    const w = f.offsetWidth || 40;
+    const ikW = Math.round(w * 0.85);
+    ik.style.width = ik.style.height = ikW + "px";
+    const svg = ik.querySelector("svg");
+    if (svg) { svg.style.width = "100%"; svg.style.height = "100%"; }
+    const oxs = ox.querySelector("svg");
+    if (oxs) { oxs.style.width = Math.round(w * 0.42) + "px"; oxs.style.height = Math.round(w * 0.42) + "px"; }
+    if (btn) {
+      btn.style.width = Math.round(w * 0.95) + "px";
+      btn.style.height = Math.round(w * 0.75) + "px";
+      btn.style.borderRadius = Math.round(w * 0.4) + "px";
+      const bs = btn.querySelector("svg");
+      if (bs) { bs.style.width = Math.round(w * 0.42) + "px"; bs.style.height = Math.round(w * 0.48) + "px"; }
+    }
+  };
+  return d;
+}
+
 // Mesaja sonradan "hedef" əlavə olunanda (kiminsə adına qoşulduqda) həmin sətir yenilənir
 onChildChanged(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   const m = s.val(), köhnə = musiqiSatirlari[s.key];
@@ -196,6 +292,17 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   if (!m) return;
   const d = document.createElement("div");
   d.className = "mesaj";
+
+  // Təpik bildirişi (bütün masada görünür): vurdu / masadan atıldı / qorudu
+  if (m.isTepikNotice) {
+    const sat = tepikSatiri(m);
+    qutu.appendChild(sat);
+    sat._olcu();
+    while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
+    qutu.scrollTop = qutu.scrollHeight;
+    requestAnimationFrame(() => { sat._olcu(); qutu.scrollTop = qutu.scrollHeight; });
+    return;
+  }
 
   // Klip qoşulma bildirişi (bütün masada görünür): qoşan oyunçunun şəkli + klipin adı (+ kimin adına olduğu)
   if (m.isMusicNotice) {
