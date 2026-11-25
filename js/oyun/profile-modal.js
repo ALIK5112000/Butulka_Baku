@@ -142,6 +142,9 @@ const CSS = `
 .pf-full img{max-width:100%;max-height:100%}
 .pf-toast{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
 .pf-ov.pf-bekle .pf-card{visibility:hidden}
+/* TOP lenti: reytinqdə 1-10 ci yerdə olan oyunçunun şəklinin sol yuxarı küncündə */
+.pf-topimg{position:absolute;top:4.26vw;left:-3.9vw;width:14.9vw;height:auto;margin:0;z-index:2;pointer-events:none;-webkit-user-select:none;user-select:none}
+.pf-topimg.ikili{top:15.5vw}
 `;
 const st = document.createElement("style");
 st.textContent = CSS;
@@ -168,6 +171,8 @@ const vipMi = d => d.role === "admin" || (d.vip && (!d.vipUntil || Number(d.vipU
 const fmt = n => (Number(n) || 0).toLocaleString("ru-RU");
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const NOPHOTO = "images/avatar/nophoto.svg";
+const TOP_LENT = "images/profil/top.png";
+const TOP_HEDD = 10; /* 1-dən bu yerə qədər olanlarda lent görünür */
 const num = v => Number(v) || 0;
 
 let tT = null;
@@ -341,10 +346,38 @@ let sonD = null, unsub = null, acik = false, ownerUid = null;
 const rkN = {};
 const rkTxt = (uid, k) => (rkN[uid] && rkN[uid][k] ? fmt(rkN[uid][k]) + " sıra" : "");
 
+/* ================= TOP LENTİ (1-10 ci yer) ================= */
+/* Bütün reytinqlərdən (öpücük, mahnı, smayl, məftun qiyməti, cüt ürək) hər hansı birində 1-10 ci yerdədirsə true */
+function topMu(uid) {
+  const rk = rkN[uid];
+  if (!rk) return false;
+  return SIRA_SAHELERI.some(k => rk[k] >= 1 && rk[k] <= TOP_HEDD);
+}
+
+function topLentYenile() {
+  if (!ownerUid) return;
+  const w = ov.querySelector(".pf-topw");
+  if (!w) return;
+  const var_ = topMu(ownerUid);
+  let el = w.querySelector(".pf-topimg");
+  if (!var_) { if (el) el.remove(); return; }
+  if (!el) {
+    el = document.createElement("img");
+    el.className = "pf-topimg";
+    el.alt = "";
+    el.src = TOP_LENT;
+    el.onerror = () => { el.style.display = "none"; };
+    w.insertBefore(el, w.firstChild);
+  }
+  /* VIP lenti də varsa, TOP lenti onun altına düşür */
+  el.classList.toggle("ikili", !!w.querySelector(".pf-vipimg"));
+}
+
 function siraYaz(uid, k) {
   if (uid !== ownerUid) return;
   const t = rkTxt(uid, k);
   ov.querySelectorAll('[data-r="' + k + '"]').forEach(el => { if (el.textContent !== t) el.textContent = t; });
+  topLentYenile();
   hazirsaGoster();
 }
 
@@ -388,6 +421,7 @@ const sekilIsit = u => { if (u) { try { const im = new Image(); im.src = u; } ca
   "images/profil/tek_urek.png",
   "images/profil/cut_urek.png",
   "images/profil/vip.png",
+  TOP_LENT,
   NOPHOTO
 ].forEach(sekilIsit);
 
@@ -509,6 +543,8 @@ function ciz(d) {
       document.body.appendChild(f);
     };
   }
+  /* TOP lenti: innerHTML yenilənəndə silinir, ona görə hər dəfə yenidən yoxlanır */
+  topLentYenile();
 
   const stat = String(pick(d, ["status"]) || "").trim();
   if (sig.st !== stat) {
