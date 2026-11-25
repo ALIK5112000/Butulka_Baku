@@ -113,6 +113,9 @@ const CSS = `
 .hd-yf i{position:absolute;right:-3vw;bottom:-2vw;font:700 4vw/1 Roboto,Arial,sans-serif;font-style:normal;color:#fff;background:#6c4fd6;border-radius:3vw;padding:.8vw 1.8vw}
 .hd-yigQat{position:fixed;left:0;top:0;width:0;height:0;z-index:110;pointer-events:none}
 .hd-yig{position:fixed;pointer-events:none;display:flex;align-items:center;justify-content:center;line-height:1;will-change:transform,opacity}
+/* "Musiqi qoy" rejimi: yalnız klip və mahnı stikerləri, sadə başlıq (profil kartındakı musiqi düyməsindən açılır) */
+.hd-root.hd-musiqi .hd-av,.hd-root.hd-musiqi .hd-plus,.hd-root.hd-musiqi .hd-r1,.hd-root.hd-musiqi .hd-tray{display:none!important}
+.hd-root.hd-musiqi .hd-ttl{margin-left:0}
 `;
 const st = document.createElement("style");
 st.textContent = CSS;
@@ -336,7 +339,7 @@ document.body.appendChild(root);
 
 const $ = s => root.querySelector(s);
 const grid = $(".hd-grid"), sayInp = $(".hd-n"), sendBtn = $(".hd-send");
-let hedef = null, hedefAd = "...", tab = "hamisi", mod = "avto", sec = null, mesgul = false, uUnsub = null;
+let hedef = null, hedefAd = "...", tab = "hamisi", mod = "avto", sec = null, mesgul = false, uUnsub = null, musiqiModu = false;
 const isaret = new Set();
 const tray = $(".hd-tray");
 
@@ -344,7 +347,7 @@ const say = () => Math.min(99, Math.max(1, parseInt(sayInp.value, 10) || 1));
 
 function ciz() {
   grid.innerHTML = "";
-  if (tab === "hamisi") {
+  if (tab === "hamisi" || musiqiModu) {
     const musiqiKafel = (img, emoji, qiymet, ac) => {
       const m = document.createElement("div");
       m.className = "hd-cell";
@@ -357,7 +360,7 @@ function ciz() {
       bagla();
       const bt = document.getElementById("musiqiBtn1");
       if (!bt) { if (window.MusiqiPanel) window.MusiqiPanel.open("popular"); return; }
-      window.__klipHedef = kimin || null;
+      window.__klipHedef = (kimin && kimin !== MEN) ? kimin : null;
       bt.click();
       klipHedefIzle();
     });
@@ -365,11 +368,13 @@ function ciz() {
       const kimin = hedef;
       bagla();
       const bt = document.getElementById("musiqiBtn2");
-      window.__klipHedef = kimin || null;
+      window.__klipHedef = (kimin && kimin !== MEN) ? kimin : null;
       if (bt) { bt.click(); klipHedefIzle(); }
       else if (window.MusiqiPanel) window.MusiqiPanel.open("popular");
     });
   }
+  /* "Musiqi qoy" rejimində hədiyyələr göstərilmir, yalnız klip və mahnı */
+  if (musiqiModu) return;
   HEDIYYELER.filter(g => tab === "hamisi" || g.k === tab).forEach(g => {
     const c = document.createElement("div");
     c.className = "hd-cell" + (sec && sec.id === g.id ? " sel" : "");
@@ -415,12 +420,16 @@ function yerlesdir() {
 }
 window.addEventListener("resize", () => { if (root.classList.contains("open")) yerlesdir(); });
 
-function ac(uid) {
-  if (!uid || uid === MEN) return;
+/* musiqi=true: "Musiqi qoy" rejimi (yalnız klip + mahnı, həmin oyunçu adına). Öz kartından açılanda adına qoşulmur. */
+function ac(uid, musiqi) {
+  if (!uid || (uid === MEN && !musiqi)) return;
   const my = document.getElementById("modalYer");
   if (my && getComputedStyle(my).display !== "none") return;
   if (uUnsub) { uUnsub(); uUnsub = null; }
   if (!root.classList.contains("open")) { isaret.clear(); tray.classList.remove("open"); }
+  if (musiqi) { isaret.clear(); tray.classList.remove("open"); }
+  musiqiModu = !!musiqi;
+  root.classList.toggle("hd-musiqi", musiqiModu);
   hedef = uid; sec = null; sendBtn.style.display = "none";
   hedefAd = "..."; basliq();
   uUnsub = onSnapshot(doc(fsdb, "users", uid), s => { hedefAd = (s.data() || {}).username || "Oyunçu"; basliq(); }, () => {});
@@ -429,6 +438,8 @@ function ac(uid) {
 }
 function bagla() {
   root.classList.remove("open");
+  root.classList.remove("hd-musiqi");
+  musiqiModu = false;
   sendBtn.style.display = "none";
   if (uUnsub) { uUnsub(); uUnsub = null; }
   hedef = null; sec = null;
@@ -439,6 +450,11 @@ $(".hd-av").onclick = () => { if (hedef && window.ProfilKart) window.ProfilKart.
 $(".hd-plus").onclick = () => tray.classList.toggle("open");
 
 function basliq() {
+  if (musiqiModu) {
+    $("#hdAd").textContent = "Musiqi qoy";
+    $("#hdSub").textContent = (hedef && hedef !== MEN) ? hedefAd + " adına" : "";
+    return;
+  }
   if (isaret.size) { $("#hdAd").textContent = "Seçilmiş: " + isaret.size; $("#hdSub").textContent = "oyunçuya hədiyyə göndər"; }
   else { $("#hdAd").textContent = hedefAd; $("#hdSub").textContent = "üçün hədiyyə göndər"; }
 }
@@ -470,7 +486,7 @@ $(".hd-tg").onclick = () => toplu(true);
 $(".hd-tb").onclick = () => toplu(false);
 $(".hd-tx").onclick = () => { isaret.clear(); tray.classList.remove("open"); markYenile(); };
 
-window.HediyyePanel = { ac, bagla, hedef: () => hedef, modu: () => root.classList.contains("open") && tray.classList.contains("open"), isaretle };
+window.HediyyePanel = { ac, bagla, hedef: () => hedef, modu: () => root.classList.contains("open") && tray.classList.contains("open"), isaretle, acMusiqi: uid => ac(uid, true) };
 
 const YAP_YOL = "masalar/" + MASA_NOMRESI + "/hediyyeYapisan/";
 const YIG_YOL = "masalar/" + MASA_NOMRESI + "/yigim/";
