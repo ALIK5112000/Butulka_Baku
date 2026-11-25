@@ -1,89 +1,33 @@
-/* tepik.css - "Təpik vur və qoru" pəncərəsi */
-.tepik-overlay{
-  position:fixed;inset:0;z-index:99999;display:none;
-  background:rgba(0,0,0,.45);align-items:center;justify-content:center;
-  font-family:inherit;
-}
+.tepik-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10002;font-family:Roboto,Arial,sans-serif}
 .tepik-overlay.acik{display:flex}
+.tepik-pencere{position:relative;width:80vw;background:#fff;border-radius:4.4vw;box-shadow:0 1vw 4vw rgba(0,0,0,.35);padding:0 0 3.9vw;animation:tepikin .25s ease;color:#111}
+@keyframes tepikin{from{transform:translateY(5vw);opacity:0}}
+.tepik-bagla{position:absolute;top:-2.6vw;right:-2.6vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#fff;border:0;padding:0 0 .8vw;display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3);color:#7cc92f;font:300 9vw/1 Arial,sans-serif;z-index:3}
+.tepik-sual{position:absolute;left:4vw;top:1.2vw;font:700 6vw/1 Roboto,Arial,sans-serif;color:#aaa}
+.tepik-bashliq{text-align:center;padding-top:3.1vw;font:700 3.5vw/5vw Roboto,Arial,sans-serif;color:#8c8c8c}
+.tepik-esas{display:flex;align-items:center;gap:3.1vw;padding:0 3.9vw;margin-top:3.9vw}
+.tepik-foto{position:relative;width:16.2vw;height:16.2vw;flex:none}
+.tepik-avatar{width:100%;height:100%;object-fit:cover;border-radius:2.4vw;display:block;background:#dfe9f1}
+.tepik-nishan{position:absolute;left:7.9vw;top:7.2vw;width:10.6vw;height:auto}
+.tepik-metn{font:400 3.2vw/4vw Roboto,Arial,sans-serif;color:#111;min-width:0}
+.tepik-metn b{font-weight:700}
+.tepik-ad{display:block;font:700 3.5vw/4vw Roboto,Arial,sans-serif;color:#1414d8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tepik-xeberdarliq{text-align:center;padding:0 6.2vw;margin-top:5.6vw;font:400 2.7vw/3.4vw Roboto,Arial,sans-serif;color:#111}
+.tepik-zolaq{display:flex;align-items:center;width:68.1vw;height:12.5vw;margin:4.4vw auto 0;padding:0 3.9vw 0 2.3vw;box-sizing:border-box;background:#fff9e6;border-radius:4vw}
+.tepik-zolaq>img{width:8.6vw;height:auto;flex:none;margin-right:2.3vw}
+.tepik-bar{flex:1;height:4.1vw;border-radius:2.1vw;background:#9ccc3a;overflow:hidden}
+.tepik-bar i{display:block;height:100%}
+.tepik-tik{width:5.7vw;height:5.7vw;border-radius:50%;background:#7cc92f;color:#fff;margin-left:3.6vw;flex:none;display:flex;align-items:center;justify-content:center;font:700 3.6vw/1 Arial,sans-serif}
+.tepik-qiymet{display:flex;align-items:center;justify-content:center;gap:1vw;margin-top:2.3vw;font:400 3.3vw/4vw Roboto,Arial,sans-serif;color:#111}
+.tepik-urek{color:#e8571f;font-size:4.2vw}
+.tepik-qiymet b{font-weight:700;font-size:3.6vw}
+.tepik-duymeler{display:flex;justify-content:center;gap:5.3vw;margin-top:3.9vw}
+.tepik-duymeler button{width:20.7vw;height:7.8vw;border-radius:1.4vw;font:400 3.5vw/1 Roboto,Arial,sans-serif;padding:0;box-sizing:border-box}
+.tepik-legv{background:#fff;border:.3vw solid #8dc63f;color:#8dc63f}
+.tepik-vur{background:#8dc63f;border:0;color:#fff}
+.tepik-vur:disabled{opacity:.6}
+.tepik-toast{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20002;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
 
-.tepik-pencere{
-  position:relative;width:min(92vw,400px);background:#fff;border-radius:22px;
-  padding:16px 16px 18px;box-shadow:0 10px 40px rgba(0,0,0,.35);
-  box-sizing:border-box;
-}
-.tepik-bashliq{
-  text-align:center;color:#8d8d8d;font-size:17px;font-weight:600;
-  padding:2px 34px 12px;
-}
-.tepik-sual{
-  position:absolute;left:14px;top:10px;color:#bdbdbd;font-size:24px;font-weight:700;
-}
-.tepik-bagla{
-  position:absolute;right:-8px;top:-12px;width:38px;height:38px;border-radius:50%;
-  background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3);border:0;cursor:pointer;
-  color:#8cc63f;font-size:26px;line-height:38px;text-align:center;padding:0;
-}
-
-.tepik-esas{display:flex;gap:10px;align-items:flex-start}
-.tepik-foto{position:relative;flex:0 0 74px;width:74px;height:74px}
-.tepik-foto img.tepik-avatar{
-  width:74px;height:74px;border-radius:10px;object-fit:cover;background:#ddd;display:block;
-}
-.tepik-foto img.tepik-nishan{
-  position:absolute;right:-12px;bottom:-12px;width:44px;height:auto;
-}
-.tepik-metn{font-size:17px;line-height:1.3;color:#111;min-width:0}
-.tepik-metn .tepik-ad{
-  display:block;font-weight:700;color:#1010d8;word-break:break-word;
-}
-.tepik-metn b{font-weight:800}
-
-.tepik-xeberdarliq{
-  text-align:center;font-size:14.5px;line-height:1.35;color:#111;margin:16px 4px 12px;
-}
-
-.tepik-zolaq{
-  display:flex;align-items:center;gap:10px;background:#fffbe2;border-radius:14px;
-  padding:10px 14px;
-}
-.tepik-zolaq img{width:36px;height:auto;flex:0 0 36px}
-.tepik-zolaq .tepik-bar{
-  flex:1;height:18px;border-radius:9px;background:#9acd32;position:relative;overflow:hidden;
-}
-.tepik-zolaq .tepik-bar i{
-  position:absolute;left:0;top:0;bottom:0;width:100%;background:#9acd32;
-  transition:width .4s ease;
-}
-.tepik-zolaq .tepik-tik{
-  flex:0 0 34px;width:34px;height:34px;border-radius:50%;background:#7cc02e;
-  color:#fff;font-size:20px;line-height:34px;text-align:center;font-weight:700;
-}
-
-.tepik-qiymet{
-  text-align:center;font-size:17px;color:#111;margin:10px 0 14px;
-}
-.tepik-qiymet .tepik-urek{color:#e8591a;margin:0 2px}
-.tepik-qiymet b{font-weight:800}
-
-.tepik-duymeler{display:flex;gap:16px;justify-content:center}
-.tepik-duymeler button{
-  min-width:110px;padding:11px 18px;font-size:19px;border-radius:9px;cursor:pointer;
-  font-family:inherit;
-}
-.tepik-legv{background:#fff;color:#8cc63f;border:2px solid #8cc63f}
-.tepik-vur{background:#8cc63f;color:#fff;border:2px solid #8cc63f}
-.tepik-vur[disabled]{opacity:.55;pointer-events:none}
-
-/* kiçik bildiriş (bonus çatmır və s.) */
-.tepik-toast{
-  position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:100000;
-  background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:12px;
-  font-size:15px;max-width:86vw;text-align:center;
-}
-
-/* profil kartındakı təpik düyməsi */
-.tepik-duyme{
-  width:64px;height:64px;border-radius:50%;border:0;padding:0;cursor:pointer;
-  background:#ec6c4c url('../images/tepik-vur/tepik_icon.png') center/100% 100% no-repeat;
-  flex:0 0 auto;
-}
+/* profil kartında təpik düyməsi: qırmızı təpik ikonu */
+.pf-ov .pf-act .pf-btn:first-child[data-h="t"]{background:url("../images/tepik-vur/tepik_duyme.png") center/100% 100% no-repeat!important}
+.pf-ov .pf-act .pf-btn:first-child[data-h="t"] img,.pf-ov .pf-act .pf-btn:first-child[data-h="t"] svg{display:none}
