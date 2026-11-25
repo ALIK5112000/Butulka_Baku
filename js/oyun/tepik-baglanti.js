@@ -2,7 +2,7 @@ import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI, OTURACAQ_SAYI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { ref as rRef, onValue, get, set, update, remove } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref as rRef, onValue, get, set, update, remove, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 const T = window.TepikVur;
 if (T) {
@@ -10,6 +10,14 @@ if (T) {
 
   /* təsadüfi masa seçiləndə baxılan masaların sayı (1-dən bu nömrəyə qədər) */
   const TESADUFI_MASA_SAYI = 40;
+
+  /* ===== chat hadisələri (təpik vuruldu / qovuldu / qorundu): adi chat yoluna isTepikNotice kimi yazılır, chat.js çəkir ===== */
+  const chatYol = `masalar/${MASA_NOMRESI}/chat`;
+  let ofs = 0;
+  onValue(rRef(rtdb, ".info/serverTimeOffset"), s => { ofs = s.val() || 0; });
+  const hadise = o => {
+    try { return push(rRef(rtdb, chatYol), Object.assign({ isTepikNotice: true, vaxt: serverTimestamp() }, o)).catch(() => {}); } catch (e) {}
+  };
 
   /* tepik.js köhnə db.ref() üslubundadır, modulyar SDK-ya uyğunlaşdırırıq */
   const sn = s => ({ val: () => s.val() });
@@ -19,8 +27,22 @@ if (T) {
       on(ev, cb) { cb.__un = onValue(r, s => cb(sn(s))); return cb; },
       off(ev, cb) { if (cb && cb.__un) cb.__un(); },
       once() { return get(r).then(sn); },
-      set(v) { return set(r, v); },
-      update(v) { return update(r, v); },
+      set(v) {
+        const p = set(r, v), m = /^tepik\/([^/]+)$/.exec(path);
+        /* təpik vuruldu: chata "vuran >> vurulan" sətri */
+        if (m && v && v.kim && v.xilas === false) {
+          p.then(() => hadise({ tip: "vur", uid: v.kim, hedef: m[1], baslama: v.baslama })).catch(() => {});
+        }
+        return p;
+      },
+      update(v) {
+        const p = update(r, v), m = /^tepik\/([^/]+)$/.exec(path);
+        /* qorundu: chata "qoruyan >> qorunan" sətri */
+        if (m && v && v.xilas === true) {
+          p.then(() => hadise({ tip: "qoru", uid: C.menimUid(), hedef: m[1] })).catch(() => {});
+        }
+        return p;
+      },
       child(p) { return mkRef(path + "/" + p); }
     };
   };
@@ -72,6 +94,13 @@ if (T) {
     /* köhnə masadakı yerim, öpüş sayğacım və prezansım silinsin (3 saniyədən çox gözləmirik) */
     const temizle = (async () => {
       if (!uid) return;
+      /* mən təpiklə qovulmuşamsa: chata "vuran >> qapı >> mən" sətri yazılır */
+      try {
+        const tv = (await get(rRef(rtdb, "tepik/" + uid))).val();
+        if (tv && tv.kim && !tv.xilas && String(tv.masa) === kohne && Date.now() + ofs - tv.terkVaxti < 15000) {
+          await hadise({ tip: "at", uid: tv.kim, hedef: uid });
+        }
+      } catch (e) {}
       const yolu = `masalar/${kohne}/oturacaqlar`;
       const h = (await get(rRef(rtdb, yolu))).val() || {};
       await Promise.all(Object.keys(h)
@@ -137,6 +166,7 @@ if (T) {
   /* qadağa pəncərəsində atan şəxsin şəkli (users.avatar) */
   C.sekilGetir = async uid => ((await getDoc(doc(fsdb, "users", uid))).data() || {}).avatar || "";
   T.dinle();
+
 
   /* ===== profil kartında düymə ===== */
   const st = document.createElement("style");
