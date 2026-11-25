@@ -46,6 +46,47 @@ const geriQaytarilan = new Set();
 const indi = () => Date.now() + offset;
 const kecen = (d) => Math.max(0, (indi() - Number(d.startedAt || indi())) / 1000);
 
+// ---------- 30 günlük reytinq dondurma yoxlaması ("kiss" | "music" | "smile") ----------
+const FREEZE_SAHELERI = {
+  kiss: { freeze: "freeze_kisses", saved: "saved_kisses", stat: "kisses" },
+  music: { freeze: "freeze_music", saved: "saved_music", stat: "music" },
+  smile: { freeze: "freeze_smiles", saved: "saved_smiles", stat: "smiles" }
+};
+
+export async function reytingArtiraBiler(uid, tip) {
+  if (!uid) return true;
+  const cfg = FREEZE_SAHELERI[tip];
+  if (!cfg) return true;
+  try {
+    const uRef = doc(fsdb, "users", uid);
+    const snap = await getDoc(uRef);
+    if (!snap.exists()) return true;
+    const d = snap.data() || {};
+    const fUntil = Number(d[cfg.freeze] || 0);
+    if (fUntil <= 0) return true;
+
+    const now = indi();
+    if (now < fUntil) {
+      // Hələ 30 günlük dondurma müddəti bitməyib: xal artmasın və 0 qalsın
+      if (Number(d[cfg.stat] || 0) !== 0) {
+        await updateDoc(uRef, { [cfg.stat]: 0 }).catch(() => {});
+      }
+      return false;
+    }
+
+    // 30 gün bitibsə, köhnə xalı avtomatik bərpa et
+    const savedVal = Number(d[cfg.saved] || 0);
+    await updateDoc(uRef, {
+      [cfg.stat]: savedVal,
+      [cfg.freeze]: 0,
+      [cfg.saved]: 0
+    }).catch(() => {});
+    return true;
+  } catch (e) {
+    return true;
+  }
+}
+
 // ---------- yeni klip üçün gözləmə: başqasının klipi başlayandan 60 saniyə keçməyibsə qoşmaq olmaz ----------
 export const KLIP_BEKLE = 60;
 const gozleQalan = (d) => (d ? Math.max(0, Math.ceil(KLIP_BEKLE - kecen(d))) : 0);
@@ -56,6 +97,11 @@ const lsYaz = (a, v) => { try { localStorage.setItem(a, v); } catch (e) {} };
 let ses = Math.min(100, Math.max(1, Number(lsOxu("klipSes", 85)) || 85));
 let sessiz = lsOxu("klipSessiz", "0") === "1";
 
+const musiqiSeviyyesi = () => {
+  const v = window.__musiqiSeviyyesi;
+  return v === undefined || v === null ? 100 : Number(v);
+};
+
 function sesUI() {
   const v = sessiz ? 0 : ses;
   sesInp.value = v;
@@ -65,8 +111,12 @@ function sesUI() {
 function sesiTetbiqEt() {
   if (!oynatici || !oynatici.mute) return;
   try {
-    if (sessiz || secimAcik) oynatici.mute();
-    else { oynatici.unMute(); oynatici.setVolume(ses); }
+    const m = musiqiSeviyyesi();
+    if (sessiz || secimAcik || m <= 0) oynatici.mute();
+    else {
+      oynatici.unMute();
+      oynatici.setVolume(Math.max(1, Math.round(ses * m / 100)));
+    }
   } catch (e) {}
 }
 // Klip seçim pəncərəsi açılanda chatdakı klipin səsi kəsilir, bağlananda avtomatik qayıdır (yalnız bu oyunçuda)
@@ -158,25 +208,8 @@ document.addEventListener("pointerdown", () => {
   if (!sesliGozle) return;
   sesliGozle = false;
   kart.classList.remove("klik-gozle");
-  // Ayarlardakı "Musiqi" slayderi (0-100). Hələ təyin olunmayıbsa 100 sayılır
-const musiqiSeviyyesi = () => {
-  const v = window.__musiqiSeviyyesi;
-  return v === undefined || v === null ? 100 : Number(v);
-};
-
-function sesiTetbiqEt() {
-  if (!oynatici || !oynatici.mute) return;
-  try {
-    const m = musiqiSeviyyesi();
-    if (sessiz || secimAcik || m <= 0) oynatici.mute();
-    else {
-      oynatici.unMute();
-      // klipin öz slayderi × ayarlardakı Musiqi slayderi
-      oynatici.setVolume(Math.max(1, Math.round(ses * m / 100)));
-    }
-  } catch (e) {}
-}
-  try { oynatici.playVideo(); } catch (e) {}
+  sesiTetbiqEt();
+  try { if (oynatici && oynatici.playVideo) oynatici.playVideo(); } catch (e) {}
 }, true);
 
 // Video bu saytda oynadıla bilmir (sahibi icazə vermir və s.): klipi bağla, qoşan oyunçuya ürəyi qaytar
@@ -187,7 +220,9 @@ function oynadilmadi() {
   if (cari && cari.docId === d.djUid && !geriQaytarilan.has(d.klipId)) {
     geriQaytarilan.add(d.klipId);
     updateDoc(doc(fsdb, "users", cari.docId), { hearts: increment(KLIP_QIYMETI) }).catch(() => {});
-    toast(`Bu klip oynadıla bilmədi, ${KLIP_QIYMETI} ürək geri qaytarıldı`);
+    if (!window.__klipSessizBildiris) {
+      toast(`Bu klip oynadıla bilmədi, ${KLIP_QIYMETI} ürək geri qaytarıldı`);
+    }
   }
   bitir(d);
 }
@@ -404,10 +439,13 @@ export function klipDurumu() {
   return { calir: true, benim, qalan: benim ? 0 : gozleQalan(aktiv) };
 }
 
-export async function klipQos(klip) {
+export async function klipQos(klip, opts = {}) {
+  const sessizToast = !!(opts && opts.sessizBildiris) || !!window.__klipSessizBildiris;
+  const xeberVer = (msg) => { if (!sessizToast) toast(msg); };
+
   const cari = cariOyuncu();
-  if (!cari || !cari.docId) { toast("Oyunçu məlumatı tapılmadı"); return false; }
-  if (!klip || !ID_RE.test(String(klip.videoId))) { toast("Klip tapılmadı"); return false; }
+  if (!cari || !cari.docId) { xeberVer("Oyunçu məlumatı tapılmadı"); return false; }
+  if (!klip || !ID_RE.test(String(klip.videoId))) { xeberVer("Klip tapılmadı"); return false; }
 
   // Başqasının klipi başlayandan 60 saniyə keçməyibsə qoşmaq olmaz (klipi qoşan oyunçu istənilən an qoşa bilər).
   // Ürək çıxılmamışdan əvvəl bazadakı ən son məlumata baxırıq (pəncərə açıq qalarkən kimsə klip qoşmuş ola bilər).
@@ -415,7 +453,7 @@ export async function klipQos(klip) {
     const t = (await get(klipRef)).val();
     if (t && ID_RE.test(String(t.videoId)) && t.djUid !== cari.docId) {
       const q = gozleQalan(t);
-      if (q > 0) { toast(`Yeni klip üçün ${vq(q)} gözləyin`); return false; }
+      if (q > 0) { xeberVer(`Yeni klip üçün ${vq(q)} gözləyin`); return false; }
     }
   } catch (e) {}
 
@@ -435,7 +473,7 @@ export async function klipQos(klip) {
       return d.username || "Oyunçu";
     });
   } catch (e) {
-    toast(e.message === "az" ? `Klip qoşmaq üçün ${KLIP_QIYMETI} ürək lazımdır` : "Xəta baş verdi, yenidən cəhd et");
+    xeberVer(e.message === "az" ? `Klip qoşmaq üçün ${KLIP_QIYMETI} ürək lazımdır` : "Xəta baş verdi, yenidən cəhd et");
     return false;
   }
 
@@ -455,7 +493,7 @@ export async function klipQos(klip) {
     window.__klipHedef = null;
   } catch (e) {
     updateDoc(uRef, { hearts: increment(KLIP_QIYMETI) }).catch(() => {});
-    toast("Klip qoşula bilmədi, ürəklər geri qaytarıldı");
+    xeberVer("Klip qoşula bilmədi, ürəklər geri qaytarıldı");
     return false;
   }
   return true;
