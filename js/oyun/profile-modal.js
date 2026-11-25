@@ -550,7 +550,7 @@ function ciz(d) {
     ov.querySelector(".pf-userw").innerHTML =
       '<div class="pf-user"><div class="pf-ava" style="overflow:hidden">' + mAva + "</div>" +
       '<div class="pf-info"><div class="pf-name">' + mAd + "</div>" +
-      '<div class="pf-heart">' + IC.urek1 + '<b class="pf-hv"></b>' + R("meftunQiymet") + "</div>" +
+      '<div class="pf-heart"><img src="images/profil/tek_urek.png" alt="" style="width:7.2vw;height:auto;display:block;margin-right:2.1vw"><b class="pf-hv"></b>' + R("meftunQiymet") + "</div>" +
       dugme + "</div></div>";
 
     if (mOK) {
