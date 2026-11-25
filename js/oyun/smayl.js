@@ -380,7 +380,26 @@ async function jestIsle(g) {
     await runTransaction(fsdb, async tx => {
       const r = doc(fsdb, "users", MEN), s = await tx.get(r), d = s.data() || {};
       if (num(d.smileBal) < g.q) throw new Error("YETMIR");
-      tx.update(r, { smileBal: num(d.smileBal) - g.q, smiles: num(d.smiles) + g.q });
+
+      const nextBal = num(d.smileBal) - g.q;
+      const freezeUntil = num(d.freeze_smiles);
+      const now = Date.now();
+
+      if (freezeUntil > now) {
+        /* 30 günlük dondurma aktivdir: balans azalır, amma smiles xalı artmır və 0 qalır */
+        tx.update(r, { smileBal: nextBal, smiles: 0 });
+      } else if (freezeUntil > 0 && freezeUntil <= now) {
+        /* Dondurma vaxtı bitibsə köhnə xalı bərpa et və yeni xalı əlavə et */
+        const restored = num(d.saved_smiles) + g.q;
+        tx.update(r, {
+          smileBal: nextBal,
+          smiles: restored,
+          freeze_smiles: 0,
+          saved_smiles: 0
+        });
+      } else {
+        tx.update(r, { smileBal: nextBal, smiles: num(d.smiles) + g.q });
+      }
     });
     /* hamıya göstər: n unikal olduğu üçün hər istifadə bir dəfə oynayır */
     const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/jest/" + MEN);
