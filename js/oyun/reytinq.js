@@ -146,6 +146,23 @@ function aktivSiyahi() {
   }).slice(0, LIMIT);
 }
 
+/* Qrup ayırıcıları: 10 / 25 / 50-ci yerdən sonra "İlk-N ən yaxşı oyunçu" yazısı + xətt + növbəti qrupun yazısı */
+const ESIKLER = [10, 25, 50];
+const yaziDiv = (cls, n) => {
+  const d = document.createElement("div");
+  d.className = cls;
+  d.textContent = "İlk-" + n + " ən yaxşı oyunçu";
+  return d;
+};
+function ayirici(bitenN, novbetiN) {
+  const w = document.createElement("div");
+  w.className = "rtq-sep";
+  const xett = document.createElement("div");
+  xett.className = "rtq-sep-line";
+  w.append(yaziDiv("rtq-sep-a", bitenN), xett, yaziDiv("rtq-sep-b", novbetiN));
+  return w;
+}
+
 function cizList() {
   const list = root.querySelector("#rtq-list");
   const st = list.scrollTop;
@@ -155,6 +172,14 @@ function cizList() {
   gorunenler.forEach((s, i) => {
     const p = s.data();
     list.appendChild(sira(i + 1, p, gorunenXal(p, f), false, s.id));
+    const k = ESIKLER.indexOf(i + 1);
+    if (k >= 0) {
+      if (k < ESIKLER.length - 1) {
+        if (i + 1 < gorunenler.length) list.appendChild(ayirici(ESIKLER[k], ESIKLER[k + 1]));
+      } else {
+        list.appendChild(yaziDiv("rtq-sep-a rtq-end", ESIKLER[k]));
+      }
+    }
   });
   list.scrollTop = st;
 }
@@ -266,6 +291,9 @@ function qur() {
 
   yenileTabGorunusu();
 
+  /* uzun basanda seçmə/kopyalama menyusu çıxmasın */
+  root.addEventListener("contextmenu", (e) => e.preventDefault());
+  root.addEventListener("selectstart", (e) => e.preventDefault());
   root.querySelector("#rtq-close").onclick = bagla;
   root.addEventListener("click", (e) => { if (e.target === root) bagla(); });
 }
