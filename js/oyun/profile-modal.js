@@ -484,6 +484,15 @@ function duymeHal() {
   });
 }
 
+/* Musiqi düyməsi: kart bağlanır, "Musiqi qoy" paneli (klip + mahnı) həmin oyunçu adına açılır */
+function musiqiAc() {
+  const uid = ownerUid;
+  if (!uid || !masadaMi(uid)) return;
+  bagla();
+  if (window.SmaylPanel) window.SmaylPanel.bagla();
+  if (window.HediyyePanel && typeof window.HediyyePanel.acMusiqi === "function") window.HediyyePanel.acMusiqi(uid);
+}
+
 function mesajYaz() {
   const uid = ownerUid, ad = sonD ? pick(sonD, ["username"]) : null;
   if (!uid || uid === MEN || !ad) return;
@@ -525,6 +534,7 @@ function qur() {
   gurulu = true; sig = {};
   ov.querySelector(".pf-close").onclick = bagla;
   ov.querySelector(".pf-mail").onclick = mesajYaz;
+  ov.querySelector(".pf-mus").onclick = musiqiAc;
   ov.querySelector(".pf-dv span").onclick = () => { acik = !acik; if (sonD) ciz(sonD); };
 }
 
