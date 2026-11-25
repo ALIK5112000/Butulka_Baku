@@ -10,6 +10,22 @@
     <link rel="apple-touch-icon" href="icons/icon-192.jpg">
     <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
     <title>Butulka Baku - Profil</title>
+    /* Komputer və planşet: səhifə ortada telefon eni qədər */
+@media (min-width: 600px) {
+    html { background: #05060d; }
+    body {
+        max-width: 520px;
+        margin: 0 auto;
+        background: #0d0e1a;
+        box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+    }
+    .bottom-nav {
+        left: 50%;
+        right: auto;
+        width: 520px;
+        transform: translateX(-50%);
+    }
+}
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         body {
