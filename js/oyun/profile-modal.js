@@ -469,7 +469,7 @@ function qur() {
       '<div class="pf-ln"></div>' +
       '<div class="pf-act">' +
         '<button class="pf-btn" style="background:#ec5440">' + IC.qalxan + "</button>" +
-        '<button class="pf-btn t" style="background:#ef8c0b">Buto</button>" +
+        '<button class="pf-btn t" style="background:#ef8c0b">Buto</button>' +
         '<button class="pf-btn" style="background:#ab5a98">' + IC.musiqi + "</button>" +
         '<button class="pf-btn" style="background:#f9a23a">' + IC.tesdiq + "</button>" +
         '<button class="pf-btn pf-mail" style="background:#4fa9de">' + IC.mail + "</button>" +
