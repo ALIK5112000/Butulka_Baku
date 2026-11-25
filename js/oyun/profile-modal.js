@@ -177,7 +177,7 @@ const vipMi = d => d.role === "admin" || (d.vip && (!d.vipUntil || Number(d.vipU
 const fmt = n => (Number(n) || 0).toLocaleString("ru-RU");
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const NOPHOTO = "images/avatar/nophoto.svg";
-const TOP_LENT = "images/profil/top.png";
+const TOP_LENT = "images/profil/top.png"; /* <<< BU SƏTRİ KÖHNƏ FAYLDAKI "const TOP_LENT = ..." SƏTRİ İLƏ ƏVƏZ ET */
 const num = v => Number(v) || 0;
 
 let tT = null;
@@ -783,7 +783,7 @@ window.addEventListener("click", e => {
 const T = { qiymet: 15 };
 
 const CSS = `
-.tp-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:10003;font-family:Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+.tp-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:2147483000 !important;font-family:Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
 .tp-ov.open{display:flex}
 .tp-card{position:relative;width:80vw;background:#fff;border-radius:4.4vw;box-shadow:0 1vw 4vw rgba(0,0,0,.35);animation:tpin .25s ease}
 @keyframes tpin{from{transform:translateY(5vw);opacity:0}}
