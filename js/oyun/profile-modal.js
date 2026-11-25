@@ -144,8 +144,9 @@ const CSS = `
 .pf-toast{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
 .pf-ov.pf-bekle .pf-card{visibility:hidden}
 /* oyunçu masada deyilsə: təpik, musiqi və məktub düymələri boz (solğun), basılmır */
-.pf-btn.pf-solgun{pointer-events:none;cursor:default}
-.pf-btn.pf-kick.pf-solgun{background:#808080 !important}
+.pf-solgun{pointer-events:none;cursor:default}
+.pf-kick.pf-solgun{background-color:#808080 !important}
+.pf-kick.pf-solgun img{filter:grayscale(1) brightness(1.6)}
 .pf-btn.pf-mus.pf-solgun{background:#8b8b8b !important}
 .pf-btn.pf-mail.pf-solgun{background:#a0a0a0 !important}
 /* TOP lenti: 1-10 ci yerdə olan oyunçuda VIP lentinin yerində görünür */
@@ -480,13 +481,21 @@ const masadaMi = uid => !!uid && Object.values(oturacaqlar).some(o => o && o.uid
 function duymeHal() {
   if (!ownerUid) return;
   const var_ = masadaMi(ownerUid);
-  ["pf-mail", "pf-mus", "pf-kick"].forEach(c => {
+  ["pf-mail", "pf-mus"].forEach(c => {
     const b = ov.querySelector("." + c);
     if (!b) return;
     b.disabled = !var_;
     b.classList.toggle("pf-solgun", !var_);
   });
+  /* təpik düyməsi: başqasının kartında oyunçu bu masada deyilsə solğun, öz kartımda həmişə aktiv */
+  const kAktiv = var_ || ownerUid === MEN;
+  ov.querySelectorAll(".pf-kick").forEach(b => {
+    b.disabled = !kAktiv;
+    b.classList.toggle("pf-solgun", !kAktiv);
+  });
 }
+/* təpik düyməsi kart açıldıqdan sonra əlavə oluna bilər: açıq kartda vəziyyət tez-tez yoxlanır */
+setInterval(() => { if (ov.classList.contains("open")) duymeHal(); }, 300);
 
 /* Musiqi düyməsi: kart bağlanır, "Musiqi qoy" paneli (klip + mahnı) həmin oyunçu adına açılır */
 function musiqiAc() {
@@ -768,7 +777,8 @@ window.addEventListener("click", e => {
 
 /* ================= TƏPİK VUR VƏ QORU PƏNCƏRƏLƏRİ =================
    Profil kartındakı qırmızı qalxan düyməsi: qiymət pəncərəsi, "?" ilə izah pəncərəsi.
-   "Oldu" basılanda düymənin əvvəlki əməliyyatı (tepik.js) olduğu kimi işə düşür. */
+   Pəncərəni tepik-baglanti.js öz kartımda düyməyə basılanda window.TepikPencere.ac() ilə açır.
+   "Oldu" yalnız pəncərəni bağlayır. */
 (function () {
 const T = { qiymet: 15 };
 
@@ -847,7 +857,6 @@ ov.className = "tp-ov";
 document.body.appendChild(ov);
 
 let gorunus = "ana";
-let atla = false;
 
 function anaHtml() {
   return '<div class="tp-card tp-main">' +
@@ -879,7 +888,7 @@ function ciz() {
   const q = ov.querySelector(".tp-q");
   if (q) q.onclick = () => { gorunus = "info"; ciz(); };
   ov.querySelector(".tp-close").onclick = geri;
-  ov.querySelector(".tp-oldu").onclick = gorunus === "info" ? () => { gorunus = "ana"; ciz(); } : oldu;
+  ov.querySelector(".tp-oldu").onclick = gorunus === "info" ? () => { gorunus = "ana"; ciz(); } : bagla;
 }
 
 /* izah pəncərəsindən ana pəncərəyə qayıdır, ana pəncərədən isə tam bağlayır */
@@ -901,28 +910,7 @@ function bagla() {
   gorunus = "ana";
 }
 
-/* "Oldu": pəncərə bağlanır, düymənin əvvəlki əməliyyatı (tepik.js) bir dəfə işə düşür */
-function oldu() {
-  bagla();
-  const b = document.querySelector(".pf-ov .pf-act .pf-btn:first-child");
-  if (!b) return;
-  atla = true;
-  try { b.click(); } finally { atla = false; }
-}
-
 ov.addEventListener("click", e => { if (e.target === ov) geri(); });
-
-/* profil kartındakı qırmızı qalxan düyməsinə ilk basış tutulur, pəncərə göstərilir */
-window.addEventListener("click", e => {
-  if (atla) return;
-  const t = e.target;
-  const b = t && t.closest ? t.closest(".pf-ov .pf-act .pf-btn:first-child") : null;
-  if (!b) return;
-  e.stopImmediatePropagation();
-  e.preventDefault();
-  if (b.disabled || b.classList.contains("pf-solgun")) return; /* oyunçu masada deyilsə təpik işləmir */
-  ac();
-}, true);
 
 window.TepikPencere = T;
 T.ac = ac;
