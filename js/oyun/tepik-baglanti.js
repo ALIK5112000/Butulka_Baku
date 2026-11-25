@@ -168,6 +168,61 @@ if (T) {
   T.dinle();
 
 
+  /* ===== təpik vurulanda oyunçu şəklində hərəkətli təpik animasiyası (təpik uçur, partlayış, sayğac çıxır) ===== */
+  const stA = document.createElement("style");
+  stA.textContent =
+    ".tepik-anim{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:7}" +
+    ".tepik-anim .tb{position:absolute;left:-4%;bottom:-6%;width:46%;height:auto;opacity:0;transform-origin:70% 70%;animation:tepikBot 1.1s cubic-bezier(.3,.1,.4,1) forwards}" +
+    ".tepik-anim .tp{position:absolute;left:14%;bottom:-8%;width:50%;height:50%;opacity:0;animation:tepikPatla 1.1s ease-out forwards}" +
+    "@keyframes tepikBot{" +
+      "0%{opacity:0;transform:translate(-60%,-55%) rotate(-35deg) scale(.8)}" +
+      "15%{opacity:1}" +
+      "45%{transform:translate(-22%,-20%) rotate(-28deg) scale(1)}" +
+      "62%{opacity:1;transform:translate(10%,2%) rotate(4deg) scale(1.12)}" +
+      "78%{opacity:1;transform:translate(8%,2%) rotate(2deg) scale(1.05)}" +
+      "100%{opacity:0;transform:translate(10%,3%) rotate(2deg) scale(1)}}" +
+    "@keyframes tepikPatla{" +
+      "0%,55%{opacity:0;transform:scale(.2)}" +
+      "66%{opacity:1;transform:scale(1.15)}" +
+      "100%{opacity:0;transform:scale(1.35)}}";
+  document.head.appendChild(stA);
+
+  const PATLA = '<svg class="tp" viewBox="0 0 100 100"><polygon points="50,2 60,30 88,14 72,42 98,52 70,62 84,90 54,74 46,98 38,72 10,86 28,58 2,46 30,38 14,12 42,28" fill="#d9531e" stroke="#8a2a0a" stroke-width="3" stroke-linejoin="round"/></svg>';
+
+  function tepikAnim(kart, badge) {
+    badge.style.visibility = "hidden";   // animasiya bitənə qədər sayğac görünməsin
+    const goster = () => { badge.style.visibility = ""; };
+    const uid = C.kartUid(kart);
+    if (!uid) { goster(); return; }
+    get(rRef(rtdb, "tepik/" + uid)).then(snap => {
+      const v = snap.val();
+      const yas = v ? Date.now() + ofs - v.baslama : 1e9;
+      /* yalnız təzə vurulmuş təpik üçün (səhifəyə sonradan girənə animasiya göstərilmir) */
+      if (!v || v.xilas || yas > 4000 || kart._tepikAnimB === v.baslama) { goster(); return; }
+      kart._tepikAnimB = v.baslama;
+      if (kart._tepikAnimEl) kart._tepikAnimEl.remove();
+      const a = document.createElement("div");
+      a.className = "tepik-anim";
+      a.innerHTML = PATLA;
+      const im = new Image();
+      im.className = "tb";
+      im.alt = "";
+      im.src = "images/tepik-vur/tepik_icon_sari.png";
+      a.insertBefore(im, a.firstChild);
+      kart.appendChild(a);
+      kart._tepikAnimEl = a;
+      setTimeout(() => { a.remove(); if (kart._tepikAnimEl === a) kart._tepikAnimEl = null; goster(); }, 1150);
+    }).catch(goster);
+  }
+
+  new MutationObserver(list => {
+    list.forEach(mu => mu.addedNodes.forEach(n => {
+      if (n.nodeType === 1 && n.classList && n.classList.contains("tepik-belge-tepik") && n.parentElement) {
+        tepikAnim(n.parentElement, n);
+      }
+    }));
+  }).observe(document.body, { childList: true, subtree: true });
+
   /* ===== profil kartında düymə ===== */
   const st = document.createElement("style");
   st.textContent = ".pf-btn.pf-qalxan{background:none!important}.pf-btn.pf-qalxan img{width:100%;height:100%;display:block}";
