@@ -8,6 +8,9 @@ const T = window.TepikVur;
 if (T) {
   const C = T.CONFIG;
 
+  /* təsadüfi masa seçiləndə baxılan masaların sayı (1-dən bu nömrəyə qədər) */
+  const TESADUFI_MASA_SAYI = 40;
+
   /* tepik.js köhnə db.ref() üslubundadır, modulyar SDK-ya uyğunlaşdırırıq */
   const sn = s => ({ val: () => s.val() });
   const mkRef = path => {
@@ -25,13 +28,20 @@ if (T) {
   C.menimUid = () => (cariOyuncu() || {}).docId;
   C.masaId = () => MASA_NOMRESI;
 
+  /* masalar lentində masa elementi + nömrəsi (qadağalı masanın altında dəqiqə sayğacı çıxır;
+     lentdə qadağalı masaya toxunanda qadağa pəncərəsi tepik.js-də açılır) */
+  C.masaSelektoru = "[data-masa-id],[data-masa],[data-masa-no],[data-masa-nomre],[data-nomre]";
+  C.masaIdOxu = e =>
+    e.getAttribute("data-masa-id") || e.getAttribute("data-masa") || e.getAttribute("data-masa-no") ||
+    e.getAttribute("data-masa-nomre") || e.getAttribute("data-nomre");
+
   /* Təpik vurulanda: yer boşalır və oyunçu təsadüfi BAŞQA masaya keçirilir.
      Yeni masada qadağa pəncərəsi (kim atdı, neçə dəqiqə qaldı) açılır. */
   let atilir = false;
   async function basqaMasaSec() {
-    const ids = Array.from({ length: 40 }, (_, i) => String(i + 1)).filter(n => n !== String(MASA_NOMRESI));
+    const ids = Array.from({ length: TESADUFI_MASA_SAYI }, (_, i) => String(i + 1)).filter(n => n !== String(MASA_NOMRESI));
     for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
-    for (const n of ids.slice(0, 15)) {
+    for (const n of ids.slice(0, 20)) {
       if (T.qadagaVarmi(n, true)) continue;                    // qadağalı masa olmasın
       try {
         const m = await getDoc(doc(fsdb, "masalar", n));
@@ -49,15 +59,28 @@ if (T) {
     atilir = true;
     const kohne = String(MASA_NOMRESI);
     try { sessionStorage.setItem("tepikAtildi", kohne); sessionStorage.setItem("sonMasa", kohne); } catch (e) {}
-    try { if (typeof window.masadanCix === "function") await window.masadanCix(); } catch (e) {}
+    /* yer boşalsın; amma cavab gecikərsə 3 saniyədən sonra yenə də keçid olsun */
+    try {
+      if (typeof window.masadanCix === "function") {
+        await Promise.race([Promise.resolve(window.masadanCix()), new Promise(r => setTimeout(r, 3000))]);
+      }
+    } catch (e) {}
     const n = await basqaMasaSec();
     window.__masaCixir = true;
     location.href = n ? "oyun.html?masa=" + n : "oyun.html";   // oyun.html özü təsadüfi masa seçir
   };
-  /* yeni masaya düşəndə qadağa pəncərəsini göstər */
+  /* yeni masaya düşəndə qadağa pəncərəsini göstər (qeyd hələ yazılmayıbsa bir neçə dəfə yenidən yoxlayır) */
   try {
     const k = sessionStorage.getItem("tepikAtildi");
-    if (k) { sessionStorage.removeItem("tepikAtildi"); setTimeout(() => T.qadagaVarmi(k), 1200); }
+    if (k) {
+      sessionStorage.removeItem("tepikAtildi");
+      let cehd = 0;
+      const goster = () => {
+        if (T.qadagaGoster(k) || ++cehd > 20) return;
+        setTimeout(goster, 400);
+      };
+      setTimeout(goster, 800);
+    }
   } catch (e) {}
 
   /* masadakı oyunçu kartları: oturduqları yer (.yer > .foto) və öpüş üçün ortaya gələn kart (.orta > .foto).
