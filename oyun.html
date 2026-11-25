@@ -1,6 +1,28 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
+    <script>
+(function () {
+    if (window.top !== window.self) return;      // artıq iframe-in içindəyik
+    if (window.innerWidth <= 700) return;        // telefon: dəyişiklik yoxdur
+    var src = location.href;
+    document.open();
+    document.write(
+        '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+        '<title>Butulka Baku</title>' +
+        '<style>html,body{margin:0;height:100%;background:#05060d;overflow:hidden}' +
+        'body{display:flex;justify-content:center}' +
+        'iframe{border:0;height:100%;background:#000;box-shadow:0 0 60px rgba(0,0,0,.7)}</style>' +
+        '</head><body><iframe id="f" allow="autoplay; fullscreen" src="' + src + '"></iframe>' +
+        '<script>' +
+        'function fit(){document.getElementById("f").style.width=Math.min(innerWidth,Math.round(innerHeight*0.5))+"px"}' +
+        'fit();addEventListener("resize",fit);' +
+        '<\/script></body></html>'
+    );
+    document.close();
+})();
+    </script>
     <script src="js/core/qoruma.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
