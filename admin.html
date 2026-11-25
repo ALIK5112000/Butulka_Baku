@@ -110,6 +110,10 @@
             background: #0e1020; border: 1px solid rgba(255,255,255,0.08);
             border-radius: 10px; padding: 10px; text-align: center;
         }
+        .rate-card.frozen-card {
+            border-color: rgba(56, 189, 248, 0.55);
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.2) inset;
+        }
         .rate-card b { display: block; font-size: 17px; color: #fbbf24; margin: 4px 0; }
         .rate-inp {
             width: 100%; padding: 6px; background: #171b33; border: 1px solid rgba(255,255,255,0.15);
@@ -175,10 +179,10 @@
                 </div>
             </div>
 
-            <!-- 2. REYTİNQLƏR (ÖPÜŞ, MUSİQİ, SMAYLİK + 30 GÜNLÜK 0-DA DONDURMA VƏ BƏRPA) -->
+            <!-- 2. REYTİNQLƏR (ÖPÜŞ, MAHNı, SMAYLİK + 30 GÜNLÜK 0-DA DONDURMA VƏ BƏRPA) -->
             <div class="acc-item" data-roles="admin,adminka">
                 <button class="acc-btn" onclick="toggleAcc(this)">
-                    <span>🏆 2. Reytinqlər (Öpüş, Musiqi, Smaylik)</span>
+                    <span>🏆 2. Reytinqlər (Öpüş, Mahnı, Smaylik)</span>
                     <span class="arrow">▼</span>
                 </button>
                 <div class="acc-body">
@@ -353,9 +357,63 @@
         let myRole = "user";
         let allUsers = [];
         let tableUnsub = null;
+        let autoRestoreInFlight = new Set();
 
         let savedAdminLogin = "Alik511";
         let savedAdminPass = "ALIYEV511#";
+
+        const STAT_CONFIGS = [
+            {
+                key: "kiss",
+                title: "💋 Öpüş",
+                inpId: "inp_kiss",
+                freezeField: "freeze_kisses",
+                savedField: "saved_kisses",
+                candidates: ["kisses", "kiss", "opus", "öpüş"]
+            },
+            {
+                key: "music",
+                title: "🎵 Mahnı",
+                inpId: "inp_music",
+                freezeField: "freeze_music",
+                savedField: "saved_musicPoints",
+                candidates: ["musicPoints", "music", "mahni", "mahnı", "songs", "songCount", "musiqi"]
+            },
+            {
+                key: "smiley",
+                title: "😀 Smaylik",
+                inpId: "inp_smile",
+                freezeField: "freeze_smileys",
+                savedField: "saved_smileys",
+                candidates: ["smileys", "smiles", "smaylik", "smiley", "smaylikler"]
+            }
+        ];
+
+        function resolveStatField(userObj, cfg) {
+            for (const f of cfg.candidates) {
+                if (userObj && userObj[f] !== undefined && userObj[f] !== null) {
+                    return f;
+                }
+            }
+            return cfg.candidates[0];
+        }
+
+        function getStatValue(userObj, cfg) {
+            if (!userObj) return 0;
+            for (const f of cfg.candidates) {
+                const v = userObj[f];
+                if (typeof v === "number" && !Number.isNaN(v)) return v;
+                if (typeof v === "string" && v.trim() !== "" && !Number.isNaN(Number(v))) return Number(v);
+            }
+            if (userObj.rating && typeof userObj.rating === "object") {
+                for (const f of cfg.candidates) {
+                    const rv = userObj.rating[f];
+                    if (typeof rv === "number" && !Number.isNaN(rv)) return rv;
+                    if (typeof rv === "string" && rv.trim() !== "" && !Number.isNaN(Number(rv))) return Number(rv);
+                }
+            }
+            return 0;
+        }
 
         window.toggleAcc = function(btn) {
             const item = btn.parentElement;
@@ -536,8 +594,8 @@
             });
         }
 
-        // 2. REYTİNQLƏR, XAL DƏYİŞMƏ VƏ 30 GÜNLÜK 0-DA DONDURMAQ (KÖHNƏ XALI BƏRPA İLƏ)
-        window.searchRatingUser = async function() {
+        // 2. REYTİNQLƏR (ÖPÜŞ, MAHNı, SMAYLİK) + 30 GÜNLÜK 0-DA DONDURMAQ VƏ KÖHNƏ XALI BƏRPA ETMƏK
+        window.searchRatingUser = function() {
             const val = document.getElementById("rateSearchInp").value;
             const box = document.getElementById("ratingUserPanel");
             const u = findUser(val);
@@ -547,55 +605,63 @@
             }
 
             const now = Date.now();
-
-            // Əgər 30 gün vaxtı artıq bitibsə, bazada avtomatik bərpa et
             const autoRestore = {};
             let needAutoRestore = false;
-            const configs = [
-                { stat: "kisses", freeze: "freeze_kisses", saved: "saved_kisses" },
-                { stat: "musicPoints", freeze: "freeze_music", saved: "saved_musicPoints" },
-                { stat: "smileys", freeze: "freeze_smileys", saved: "saved_smileys" }
-            ];
 
-            for (const c of configs) {
-                const fTime = Number(u[c.freeze] || 0);
+            for (const cfg of STAT_CONFIGS) {
+                const activeField = resolveStatField(u, cfg);
+                const fTime = Number(u[cfg.freezeField] || 0);
                 if (fTime > 0 && fTime <= now) {
-                    autoRestore[c.stat] = Number(u[c.saved] || 0);
-                    autoRestore[c.freeze] = 0;
-                    autoRestore[c.saved] = 0;
+                    const restoreVal = Number(u[cfg.savedField] || 0);
+                    autoRestore[activeField] = restoreVal;
+                    autoRestore[cfg.freezeField] = 0;
+                    autoRestore[cfg.savedField] = 0;
                     needAutoRestore = true;
                 }
             }
-            if (needAutoRestore) {
-                await updateDoc(doc(fsdb, "users", u.docId), autoRestore);
-                return;
+
+            if (needAutoRestore && !autoRestoreInFlight.has(u.docId)) {
+                autoRestoreInFlight.add(u.docId);
+                updateDoc(doc(fsdb, "users", u.docId), autoRestore)
+                    .catch(() => {})
+                    .finally(() => autoRestoreInFlight.delete(u.docId));
             }
 
-            const renderCard = (title, statField, freezeField, savedField, inpId) => {
-                const fUntil = Number(u[freezeField] || 0);
+            const previousInputs = {};
+            for (const cfg of STAT_CONFIGS) {
+                const el = document.getElementById(cfg.inpId);
+                if (el && el.value !== "") previousInputs[cfg.inpId] = el.value;
+            }
+
+            const renderCard = (cfg) => {
+                const activeField = resolveStatField(u, cfg);
+                const fUntil = Number(u[cfg.freezeField] || 0);
                 const isFrozen = fUntil > now;
-                const currentScore = Number(u[statField] || 0);
-                const savedScore = Number(u[savedField] || 0);
-                const daysLeft = isFrozen ? Math.ceil((fUntil - now) / (1000 * 60 * 60 * 24)) : 0;
+                const currentScore = getStatValue(u, cfg);
+                const savedScore = Number(u[cfg.savedField] || 0);
+                const daysLeft = isFrozen ? Math.max(1, Math.ceil((fUntil - now) / (1000 * 60 * 60 * 24))) : 0;
 
                 return `
-                    <div class="rate-card">
-                        <span style="font-size:11px;">${title}</span>
+                    <div class="rate-card ${isFrozen ? "frozen-card" : ""}">
+                        <span style="font-size:11px; font-weight:700;">${cfg.title}</span>
                         <b>${isFrozen ? "0 ❄️" : currentScore}</b>
-                        ${isFrozen ? `<div class="freeze-info">Ehtiyat xal: <b>${savedScore}</b><br>${daysLeft} gün qalıb</div>` : ""}
-                        
+                        ${isFrozen
+                            ? `<div class="freeze-info">Köhnə xal: <b>${savedScore}</b><br>${daysLeft} gün qalıb</div>`
+                            : `<div class="hint" style="font-size:9px; margin-bottom:5px;">Aktiv: ${currentScore}</div>`
+                        }
+
                         ${!isFrozen ? `
-                            <input type="number" id="${inpId}" class="rate-inp" placeholder="Yeni xal yaz">
-                            <button class="btn c-blue" style="width:100%; margin-bottom:4px; font-size:10px;" onclick="setExactRate('${u.docId}', '${statField}', '${inpId}')">💾 Xalı Təyin Et</button>
+                            <input type="number" id="${cfg.inpId}" class="rate-inp" placeholder="Yeni xal yaz">
+                            <button class="btn c-blue" style="width:100%; margin-bottom:4px; font-size:10px;" onclick="setExactRate('${u.docId}', '${activeField}', '${cfg.inpId}')">💾 Təyin Et</button>
                             <div class="g-2" style="margin-bottom:4px;">
-                                <button class="btn c-green" style="padding:6px; font-size:10px;" onclick="editRate('${u.docId}', '${statField}', 10)">+10</button>
-                                <button class="btn c-yellow" style="padding:6px; font-size:10px;" onclick="editRate('${u.docId}', '${statField}', -10)">-10</button>
+                                <button class="btn c-green" style="padding:6px; font-size:10px;" onclick="editRate('${u.docId}', '${activeField}', 10)">+10</button>
+                                <button class="btn c-yellow" style="padding:6px; font-size:10px;" onclick="editRate('${u.docId}', '${activeField}', -10)">-10</button>
                             </div>
                         ` : ""}
 
-                        <button class="btn ${isFrozen ? 'c-green' : 'c-red'}" style="width:100%; font-size:10px;" 
-                            onclick="toggleFreeze30('${u.docId}', '${statField}', '${freezeField}', '${savedField}', ${!isFrozen}, ${currentScore}, ${savedScore})">
-                            ${isFrozen ? "🔓 Donu Aç (" + savedScore + ")" : "❄️ 30g 0 Dondur"}
+                        <button class="btn ${isFrozen ? "c-green" : "c-red"}" style="width:100%; font-size:10px;"
+                            onclick="toggleFreeze30('${u.docId}', '${activeField}', '${cfg.freezeField}', '${cfg.savedField}', ${!isFrozen}, ${currentScore}, ${savedScore}, '${cfg.title}')">
+                            ${isFrozen ? "🔓 Donu Aç (" + savedScore + ")" : "❄️ 30g Dondur"}
                         </button>
                     </div>
                 `;
@@ -604,11 +670,14 @@
             box.innerHTML = `
                 <div class="found-badge">👤 <b>${u.username}</b> (ID: ${u.customId || u.id})</div>
                 <div class="g-3">
-                    ${renderCard("💋 Öpüş", "kisses", "freeze_kisses", "saved_kisses", "inp_kiss")}
-                    ${renderCard("🎵 Musiqi", "musicPoints", "freeze_music", "saved_musicPoints", "inp_music")}
-                    ${renderCard("😀 Smaylik", "smileys", "freeze_smileys", "saved_smileys", "inp_smile")}
+                    ${STAT_CONFIGS.map(renderCard).join("")}
                 </div>
             `;
+
+            for (const [id, v] of Object.entries(previousInputs)) {
+                const el = document.getElementById(id);
+                if (el) el.value = v;
+            }
         };
 
         window.editRate = async function(docId, field, delta) {
@@ -623,27 +692,28 @@
             const val = parseInt(raw, 10);
             if (isNaN(val) || val < 0) return alert("Düzgün xal yazın (0 və ya müsbət rəqəm)!");
             await updateDoc(doc(fsdb, "users", docId), { [field]: val });
+            document.getElementById(inpId).value = "";
             alert(`✅ Reytinq xalı ${val} olaraq yeniləndi!`);
         };
 
-        window.toggleFreeze30 = async function(docId, statField, freezeField, savedField, shouldFreeze, currentScore, savedScore) {
+        window.toggleFreeze30 = async function(docId, statField, freezeField, savedField, shouldFreeze, currentScore, savedScore, label) {
             const thirtyDays = 30 * 24 * 60 * 60 * 1000;
             if (shouldFreeze) {
-                // Köhnə xalı ehtiyata yaz, aktiv xalı 0 et və 30 gün dondur
+                const scoreToSave = Number(currentScore || 0);
                 await updateDoc(doc(fsdb, "users", docId), {
-                    [savedField]: currentScore,
+                    [savedField]: scoreToSave,
                     [statField]: 0,
                     [freezeField]: Date.now() + thirtyDays
                 });
-                alert(`❄️ Reytinq 30 günlük donduruldu! Köhnə xal (${currentScore}) yadda saxlanıldı, 30 gün boyunca 0 görünəcək.`);
+                alert(`❄️ ${label} 30 günlük 0-da donduruldu! Köhnə xal (${scoreToSave}) saxlanıldı, 30 gün sonra avtomatik qayıdacaq.`);
             } else {
-                // Donu aç: ehtiyatda olan köhnə xalı yerinə qaytar
+                const restoreAmount = Number(savedScore || 0);
                 await updateDoc(doc(fsdb, "users", docId), {
-                    [statField]: savedScore,
+                    [statField]: restoreAmount,
                     [savedField]: 0,
                     [freezeField]: 0
                 });
-                alert(`✅ Don açıldı! Köhnə xal (${savedScore}) geri qaytarıldı və normal işləməyə davam edir.`);
+                alert(`✅ ${label} donu açıldı! Köhnə xal (${restoreAmount}) geri qaytarıldı.`);
             }
         };
 
