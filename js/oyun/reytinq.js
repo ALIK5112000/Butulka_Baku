@@ -96,7 +96,8 @@ function ikon(t) {
   return img;
 }
 
-function sira(place, p, xal, mine) {
+/* uid: oyunçunun users sənəd id-si. Şəkilə toxunanda profil kartı açılır */
+function sira(place, p, xal, mine, uid) {
   const t = TABS.find(x => x.id === state.tab);
   const d = document.createElement("div");
   d.className = "rtq-row" + (mine ? " mine" : "");
@@ -106,6 +107,13 @@ function sira(place, p, xal, mine) {
   const src = ilk(p, SEKIL_FIELD, SEKIL_ALT);
   if (src) foto.src = src;
   foto.onerror = () => { foto.removeAttribute("src"); };
+  if (uid) {
+    foto.style.cursor = "pointer";
+    foto.onclick = (e) => {
+      e.stopPropagation();
+      if (window.ProfilKart) window.ProfilKart.ac(uid);
+    };
+  }
 
   const info = document.createElement("div"); info.className = "rtq-info";
   const pl = document.createElement("span"); pl.className = "rtq-place"; pl.textContent = place + ".";
@@ -144,7 +152,7 @@ function cizList() {
   const gorunenler = aktivSiyahi();
   gorunenler.forEach((s, i) => {
     const p = s.data();
-    list.appendChild(sira(i + 1, p, gorunenXal(p, f), false));
+    list.appendChild(sira(i + 1, p, gorunenXal(p, f), false, s.id));
   });
   list.scrollTop = st;
 }
@@ -152,19 +160,20 @@ function cizList() {
 async function cizMe() {
   const box = root.querySelector("#rtq-me");
   const cari = cariOyuncu();
+  const meUid = cari && cari.docId ? cari.docId : null;
   if (!meData) { box.innerHTML = ""; return; }
   const f = XAL_FIELD[state.tab];
 
   if (xalDondurulubMu(meData, f)) {
     box.innerHTML = "";
-    box.appendChild(sira("-", meData, 0, true));
+    box.appendChild(sira("-", meData, 0, true, meUid));
     return;
   }
 
   const xal = gorunenXal(meData, f);
   let yer = null;
   const gorunenler = aktivSiyahi();
-  const idx = cari && cari.docId ? gorunenler.findIndex(s => s.id === cari.docId) : -1;
+  const idx = meUid ? gorunenler.findIndex(s => s.id === meUid) : -1;
   if (idx >= 0) yer = idx + 1;
   else {
     try {
@@ -173,7 +182,7 @@ async function cizMe() {
     } catch (e) { yer = "-"; }
   }
   box.innerHTML = "";
-  box.appendChild(sira(yer, meData, xal, true));
+  box.appendChild(sira(yer, meData, xal, true, meUid));
 }
 
 function yenileTabGorunusu() {
@@ -274,4 +283,5 @@ if (!document.getElementById("rtq-css")) {
   l.id = "rtq-css"; l.rel = "stylesheet"; l.href = "css/reytinq.css";
   document.head.appendChild(l);
 }
+
 document.addEventListener("menyu-sec", (e) => { if (e.detail === "reytinqler") ac(); });
