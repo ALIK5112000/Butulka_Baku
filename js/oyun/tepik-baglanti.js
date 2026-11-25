@@ -275,9 +275,9 @@ if (T) {
     if (!b || !hedef) return;
     const uid = hedef;
     if (aktiv) { T.qoru(uid); return; }
-    if (uid === C.menimUid()) {   // öz kartım: təpik vurmaq olmur, izah/qiymət pəncərəsi açılır (hamı üçün)
-    if (window.TepikPencere) window.TepikPencere.ac(C.qiymet);
-    return;
+    if (uid === C.menimUid()) {   // öz kartım: profil kartı bağlanmır (arxada açıq qalır), üstündə izah/qiymət pəncərəsi açılır
+      if (window.TepikPencere) window.TepikPencere.ac(C.qiymet);
+      return;
     }
     if (!(await C.vipMi())) { T.toast("Təpik vurmaq yalnız VIP oyunçular üçündür"); return; }
     const sekil = (document.querySelector(".pf-ov .pf-photo img") || {}).src || "";
