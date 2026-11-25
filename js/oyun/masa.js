@@ -128,6 +128,8 @@ function cizdir(data) {
     if (d._sig === sig) return;      // dəyişməyən yer yenidən çəkilmir
     d._sig = sig;
     d.classList.toggle("dolu", !!o);
+    // təpik nişanı üçün: kartın sahibinin uid-i
+    if (o) d.dataset.uid = o.uid; else delete d.dataset.uid;
     if (o) {
       d.querySelector(".ad").textContent = o.ad;
       const s = o.sekil ? String(o.sekil).replace(/"/g, "%22") : "";
@@ -254,6 +256,9 @@ async function yerTutIc(oyuncu, istisna) {
 const yerTut = (oyuncu) => yerTutIc(oyuncu, null);
 
 async function oturacaqTap(oyuncu) {
+  // Təpik qadağası: bu masada oturmaq olmaz, qadağa pəncərəsi göstərilir
+  if (window.TepikVur && window.TepikVur.qadagaVarmi(MASA_NOMRESI)) return;
+
   const hamisi = (await get(ref(rtdb, yol))).val() || {};
   const oz = Object.keys(hamisi).filter((k) => hamisi[k] && hamisi[k].uid === oyuncu.uid);
 
@@ -306,6 +311,9 @@ export function yerDeyis() {
     try {
       await aktivOyuncuHazirla();
       if (!aktivOyuncu) return false;
+      // Təpik qadağası varsa yer dəyişmək olmaz
+      if (window.TepikVur && window.TepikVur.qadagaVarmi(MASA_NOMRESI)) return false;
+      window.__masaCixir = false;   // təpikdən sonra qadağa bitibsə, yenidən oturmağa icazə
       const hamisi = (await get(ref(rtdb, yol))).val() || {};
       const oz = Object.keys(hamisi).filter((k) => hamisi[k] && hamisi[k].uid === aktivOyuncu.uid);
       if (!oz.length) return await yerTutIc(aktivOyuncu, null);
@@ -418,6 +426,8 @@ async function tesadufiMasaSec() {
   for (let k = 0; k < 15; k++) {
     const n = String(1 + Math.floor(Math.random() * 40));
     if (n === MASA_NOMRESI) continue;
+    // təpik qadağası olan masanı seçmə
+    if (window.TepikVur && window.TepikVur.qadagaVarmi(n, true)) continue;
     try {
       const m = await getDoc(doc(fsdb, "masalar", n));
       const md = m.exists() ? m.data() : null;
