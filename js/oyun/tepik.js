@@ -219,7 +219,10 @@
     var used = {};
     Array.prototype.forEach.call(document.querySelectorAll(CONFIG.kartSelektoru), function (e) {
       var u = CONFIG.kartUid(e);
-      if (!u) return;
+      if (!u) {   // element artıq heç kimi göstərmir: köhnə nişanı sil
+        if (e._tepikB) { e._tepikB.remove(); e._tepikB = null; e._tepikMod = null; }
+        return;
+      }
       used[u] = 1;
       if (!abune[u]) abuneOl(u);
       kartRender(e, u);
