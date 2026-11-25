@@ -143,6 +143,8 @@ const CSS = `
 .pf-full img{max-width:100%;max-height:100%}
 .pf-toast{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
 .pf-ov.pf-bekle .pf-card{visibility:hidden}
+/* oyunçu masada deyilsə: məktub və musiqi düymələri solğun, basılmır */
+.pf-btn.pf-solgun{opacity:.35;pointer-events:none;cursor:default}
 /* TOP lenti: 1-10 ci yerdə olan oyunçuda VIP lentinin yerində görünür */
 .pf-topimg{position:absolute;top:4.26vw;left:-3.9vw;width:14.9vw;height:auto;margin:0;z-index:2;pointer-events:none;-webkit-user-select:none;user-select:none}
 `;
@@ -467,9 +469,25 @@ function bagla() {
 }
 ov.addEventListener("click", e => { if (e.target === ov) bagla(); });
 
+/* Oyunçu hazırda bu masada oturubmu? */
+const masadaMi = uid => !!uid && Object.values(oturacaqlar).some(o => o && o.uid === uid);
+
+/* Masada olmayan oyunçunun kartında məktub və musiqi düymələri solğun olur və basılmır */
+function duymeHal() {
+  if (!ownerUid) return;
+  const var_ = masadaMi(ownerUid);
+  ["pf-mail", "pf-mus"].forEach(c => {
+    const b = ov.querySelector("." + c);
+    if (!b) return;
+    b.disabled = !var_;
+    b.classList.toggle("pf-solgun", !var_);
+  });
+}
+
 function mesajYaz() {
   const uid = ownerUid, ad = sonD ? pick(sonD, ["username"]) : null;
   if (!uid || uid === MEN || !ad) return;
+  if (!masadaMi(uid)) return; /* masada deyilsə çatda adı yazılmasın */
   bagla();
   if (window.HediyyePanel) window.HediyyePanel.bagla();
   if (window.SmaylPanel) window.SmaylPanel.bagla();
@@ -499,7 +517,7 @@ function qur() {
       '<div class="pf-act">' +
         '<button class="pf-btn" style="background:#ec5440">' + IC.qalxan + "</button>" +
         '<button class="pf-btn t" style="background:#ef8c0b">Buto</button>' +
-        '<button class="pf-btn" style="background:#ab5a98">' + IC.musiqi + "</button>" +
+        '<button class="pf-btn pf-mus" style="background:#ab5a98">' + IC.musiqi + "</button>" +
         '<button class="pf-btn" style="background:#f9a23a">' + IC.tesdiq + "</button>" +
         '<button class="pf-btn pf-mail" style="background:#4fa9de">' + IC.mail + "</button>" +
       "</div>" +
@@ -521,6 +539,7 @@ function ciz(d) {
   const menimdir = ownerUid === MEN;
   const mailBtn = ov.querySelector(".pf-mail");
   if (mailBtn) mailBtn.style.visibility = menimdir ? "hidden" : "visible";
+  duymeHal();
 
   const sTop = [sekil, ad, yas, yer, vipMi(d)].join("|");
   if (sig.top !== sTop) {
@@ -668,6 +687,7 @@ async function onYukle(uid, derinlik = 0) {
 let oturacaqlar = {}, spin = null;
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/oturacaqlar"), s => {
   oturacaqlar = s.val() || {};
+  duymeHal();
   Object.values(oturacaqlar).forEach(o => { if (o && o.uid) onYukle(o.uid); });
 });
 onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/raund/spin"), s => {
