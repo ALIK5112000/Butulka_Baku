@@ -13,6 +13,11 @@ const XAL_FIELD = {
   kiss: "kisses", music: "music", heart: "likes", hearts: "couples",
   smile: "smiles", crown: "gifts", time: "playTime"
 };
+const FREEZE_FIELD_MAP = {
+  kisses: "freeze_kisses",
+  music: "freeze_music",
+  smiles: "freeze_smiles"
+};
 const AD_ALT = ["name", "ad", "username", "nick", "nickname", "displayName", "login", "isim", "adi"];
 const SEKIL_ALT = ["photo", "sekil", "avatar", "photoURL", "photoUrl", "avatarUrl", "img", "image", "imageUrl", "pp", "foto", "pic", "picture", "profilePhoto"];
 const LIMIT = 50;
@@ -33,10 +38,41 @@ let root, unsubList = null, unsubMe = null, meData = null, listDocs = [], logged
 
 const fmt = (n) => Number(n || 0).toLocaleString("fr-FR").replace(/\u202f/g, " ");
 
+function vaxtMs(val) {
+  if (!val) return 0;
+  if (typeof val === "number") return val > 0 && val < 1e12 ? val * 1000 : val;
+  if (val && typeof val.toMillis === "function") return val.toMillis();
+  if (val && typeof val.seconds === "number") return val.seconds * 1000;
+  const n = Number(val);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return n < 1e12 ? n * 1000 : n;
+}
+
+function donmaBitisVaxti(p, field) {
+  if (!p) return 0;
+  let maxMs = 0;
+
+  if (p.dondurulmusXallar && p.dondurulmusXallar[field]) {
+    maxMs = Math.max(maxMs, vaxtMs(p.dondurulmusXallar[field]));
+  }
+
+  const fKey = FREEZE_FIELD_MAP[field];
+  if (fKey && p[fKey]) {
+    maxMs = Math.max(maxMs, vaxtMs(p[fKey]));
+  }
+
+  return maxMs;
+}
+
 function xalDondurulubMu(p, field) {
-  if (!p || !p.dondurulmusXallar) return false;
-  const bitis = Number(p.dondurulmusXallar[field] || 0);
+  const bitis = donmaBitisVaxti(p, field);
   return bitis > Date.now();
+}
+
+function gorunenXal(p, field) {
+  if (!p) return 0;
+  if (xalDondurulubMu(p, field)) return 0;
+  return Number(p[field] || 0);
 }
 
 function ilk(p, secilen, alt) {
@@ -87,10 +123,10 @@ function sira(place, p, xal, mine) {
 
 function aktivSiyahi() {
   const f = XAL_FIELD[state.tab];
-  // Bu reytinq sahəsi dondurulmuş oyunçuları sıralamadan gizlət (30 gün bitibsə avtomatik bərpa et)
   return listDocs.filter(s => {
     const p = s.data();
-    if (p && p.dondurulmusXallar && p.dondurulmusXallar[f]) {
+    if (!p) return false;
+    if (donmaBitisVaxti(p, f) > 0) {
       if (xalDondurulubMu(p, f)) return false;
       if (window.Xallar && typeof window.Xallar.donmaYoxla === "function") {
         window.Xallar.donmaYoxla(s.id, p);
@@ -108,7 +144,7 @@ function cizList() {
   const gorunenler = aktivSiyahi();
   gorunenler.forEach((s, i) => {
     const p = s.data();
-    list.appendChild(sira(i + 1, p, p[f], false));
+    list.appendChild(sira(i + 1, p, gorunenXal(p, f), false));
   });
   list.scrollTop = st;
 }
@@ -119,14 +155,13 @@ async function cizMe() {
   if (!meData) { box.innerHTML = ""; return; }
   const f = XAL_FIELD[state.tab];
 
-  // Özünün bu xalı dondurulubsa 0 və "-" sıra göstər
   if (xalDondurulubMu(meData, f)) {
     box.innerHTML = "";
     box.appendChild(sira("-", meData, 0, true));
     return;
   }
 
-  const xal = Number(meData[f] || 0);
+  const xal = gorunenXal(meData, f);
   let yer = null;
   const gorunenler = aktivSiyahi();
   const idx = cari && cari.docId ? gorunenler.findIndex(s => s.id === cari.docId) : -1;
@@ -159,7 +194,6 @@ function dinle() {
   yenileTabGorunusu();
   root.querySelector("#rtq-list").scrollTop = 0;
 
-  // Dondurulmuş oyunçular çıxarıldıqda siyahı 50-dən az qalmasın deyə 80 nəfər çəkib ilk 50 aktivi göstəririk
   unsubList = onSnapshot(
     query(collection(fsdb, KOLLEKSIYA), orderBy(f, "desc"), limit(80)),
     (snap) => {
