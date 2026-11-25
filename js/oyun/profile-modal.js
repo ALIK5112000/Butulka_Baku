@@ -177,7 +177,7 @@ const vipMi = d => d.role === "admin" || (d.vip && (!d.vipUntil || Number(d.vipU
 const fmt = n => (Number(n) || 0).toLocaleString("ru-RU");
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const NOPHOTO = "images/avatar/nophoto.svg";
-const TOP_LENT = "images/profil/top.png"; /* <<< BU SƏTRİ KÖHNƏ FAYLDAKI "const TOP_LENT = ..." SƏTRİ İLƏ ƏVƏZ ET */
+const TOP_LENT = "images/profil/top.png";
 const num = v => Number(v) || 0;
 
 let tT = null;
