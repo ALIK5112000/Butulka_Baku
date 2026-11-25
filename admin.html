@@ -111,8 +111,8 @@
             border-radius: 10px; padding: 10px; text-align: center;
         }
         .rate-card.frozen-card {
-            border-color: rgba(56, 189, 248, 0.55);
-            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.2) inset;
+            border-color: rgba(56, 189, 248, 0.6);
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.25) inset;
         }
         .rate-card b { display: block; font-size: 17px; color: #fbbf24; margin: 4px 0; }
         .rate-inp {
@@ -366,53 +366,33 @@
             {
                 key: "kiss",
                 title: "💋 Öpüş",
+                field: "kisses",
                 inpId: "inp_kiss",
                 freezeField: "freeze_kisses",
-                savedField: "saved_kisses",
-                candidates: ["kisses", "kiss", "opus", "öpüş"]
+                savedField: "saved_kisses"
             },
             {
                 key: "music",
                 title: "🎵 Mahnı",
+                field: "music",
                 inpId: "inp_music",
                 freezeField: "freeze_music",
-                savedField: "saved_musicPoints",
-                candidates: ["musicPoints", "music", "mahni", "mahnı", "songs", "songCount", "musiqi"]
+                savedField: "saved_music"
             },
             {
                 key: "smiley",
                 title: "😀 Smaylik",
+                field: "smiles",
                 inpId: "inp_smile",
-                freezeField: "freeze_smileys",
-                savedField: "saved_smileys",
-                candidates: ["smileys", "smiles", "smaylik", "smiley", "smaylikler"]
+                freezeField: "freeze_smiles",
+                savedField: "saved_smiles"
             }
         ];
 
-        function resolveStatField(userObj, cfg) {
-            for (const f of cfg.candidates) {
-                if (userObj && userObj[f] !== undefined && userObj[f] !== null) {
-                    return f;
-                }
-            }
-            return cfg.candidates[0];
-        }
-
-        function getStatValue(userObj, cfg) {
-            if (!userObj) return 0;
-            for (const f of cfg.candidates) {
-                const v = userObj[f];
-                if (typeof v === "number" && !Number.isNaN(v)) return v;
-                if (typeof v === "string" && v.trim() !== "" && !Number.isNaN(Number(v))) return Number(v);
-            }
-            if (userObj.rating && typeof userObj.rating === "object") {
-                for (const f of cfg.candidates) {
-                    const rv = userObj.rating[f];
-                    if (typeof rv === "number" && !Number.isNaN(rv)) return rv;
-                    if (typeof rv === "string" && rv.trim() !== "" && !Number.isNaN(Number(rv))) return Number(rv);
-                }
-            }
-            return 0;
+        function getExactNum(userObj, fieldName) {
+            if (!userObj || userObj[fieldName] === undefined || userObj[fieldName] === null) return 0;
+            const n = Number(userObj[fieldName]);
+            return Number.isNaN(n) ? 0 : n;
         }
 
         window.toggleAcc = function(btn) {
@@ -594,7 +574,7 @@
             });
         }
 
-        // 2. REYTİNQLƏR (ÖPÜŞ, MAHNı, SMAYLİK) + 30 GÜNLÜK 0-DA DONDURMAQ VƏ KÖHNƏ XALI BƏRPA ETMƏK
+        // 2. REYTİNQLƏR (kisses, music, smiles) + 30 GÜNLÜK 0-DA DONDURMAQ VƏ KÖHNƏ XALI BƏRPA ETMƏK
         window.searchRatingUser = function() {
             const val = document.getElementById("rateSearchInp").value;
             const box = document.getElementById("ratingUserPanel");
@@ -609,11 +589,10 @@
             let needAutoRestore = false;
 
             for (const cfg of STAT_CONFIGS) {
-                const activeField = resolveStatField(u, cfg);
-                const fTime = Number(u[cfg.freezeField] || 0);
+                const fTime = getExactNum(u, cfg.freezeField);
                 if (fTime > 0 && fTime <= now) {
-                    const restoreVal = Number(u[cfg.savedField] || 0);
-                    autoRestore[activeField] = restoreVal;
+                    const restoreVal = getExactNum(u, cfg.savedField);
+                    autoRestore[cfg.field] = restoreVal;
                     autoRestore[cfg.freezeField] = 0;
                     autoRestore[cfg.savedField] = 0;
                     needAutoRestore = true;
@@ -634,11 +613,10 @@
             }
 
             const renderCard = (cfg) => {
-                const activeField = resolveStatField(u, cfg);
-                const fUntil = Number(u[cfg.freezeField] || 0);
+                const fUntil = getExactNum(u, cfg.freezeField);
                 const isFrozen = fUntil > now;
-                const currentScore = getStatValue(u, cfg);
-                const savedScore = Number(u[cfg.savedField] || 0);
+                const currentScore = getExactNum(u, cfg.field);
+                const savedScore = getExactNum(u, cfg.savedField);
                 const daysLeft = isFrozen ? Math.max(1, Math.ceil((fUntil - now) / (1000 * 60 * 60 * 24))) : 0;
 
                 return `
@@ -647,20 +625,20 @@
                         <b>${isFrozen ? "0 ❄️" : currentScore}</b>
                         ${isFrozen
                             ? `<div class="freeze-info">Köhnə xal: <b>${savedScore}</b><br>${daysLeft} gün qalıb</div>`
-                            : `<div class="hint" style="font-size:9px; margin-bottom:5px;">Aktiv: ${currentScore}</div>`
+                            : `<div class="hint" style="font-size:9px; margin-bottom:5px;">Bazada: ${currentScore}</div>`
                         }
 
                         ${!isFrozen ? `
                             <input type="number" id="${cfg.inpId}" class="rate-inp" placeholder="Yeni xal yaz">
-                            <button class="btn c-blue" style="width:100%; margin-bottom:4px; font-size:10px;" onclick="setExactRate('${u.docId}', '${activeField}', '${cfg.inpId}')">💾 Təyin Et</button>
+                            <button class="btn c-blue" style="width:100%; margin-bottom:4px; font-size:10px;" onclick="setExactRate('${u.docId}', '${cfg.field}', '${cfg.inpId}')">💾 Təyin Et</button>
                             <div class="g-2" style="margin-bottom:4px;">
-                                <button class="btn c-green" style="padding:6px; font-size:10px;" onclick="editRate('${u.docId}', '${activeField}', 10)">+10</button>
-                                <button class="btn c-yellow" style="padding:6px; font-size:10px;" onclick="editRate('${u.docId}', '${activeField}', -10)">-10</button>
+                                <button class="btn c-green" style="padding:6px; font-size:10px;" onclick="editRate('${u.docId}', '${cfg.field}', 10)">+10</button>
+                                <button class="btn c-yellow" style="padding:6px; font-size:10px;" onclick="editRate('${u.docId}', '${cfg.field}', -10)">-10</button>
                             </div>
                         ` : ""}
 
                         <button class="btn ${isFrozen ? "c-green" : "c-red"}" style="width:100%; font-size:10px;"
-                            onclick="toggleFreeze30('${u.docId}', '${activeField}', '${cfg.freezeField}', '${cfg.savedField}', ${!isFrozen}, ${currentScore}, ${savedScore}, '${cfg.title}')">
+                            onclick="toggleFreeze30('${u.docId}', '${cfg.field}', '${cfg.freezeField}', '${cfg.savedField}', ${!isFrozen}, ${currentScore}, ${savedScore}, '${cfg.title}')">
                             ${isFrozen ? "🔓 Donu Aç (" + savedScore + ")" : "❄️ 30g Dondur"}
                         </button>
                     </div>
@@ -682,7 +660,7 @@
 
         window.editRate = async function(docId, field, delta) {
             const u = allUsers.find(x => x.docId === docId);
-            const cur = Number((u && u[field]) || 0);
+            const cur = getExactNum(u, field);
             const next = Math.max(0, cur + delta);
             await updateDoc(doc(fsdb, "users", docId), { [field]: next });
         };
@@ -697,23 +675,27 @@
         };
 
         window.toggleFreeze30 = async function(docId, statField, freezeField, savedField, shouldFreeze, currentScore, savedScore, label) {
-            const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-            if (shouldFreeze) {
-                const scoreToSave = Number(currentScore || 0);
-                await updateDoc(doc(fsdb, "users", docId), {
-                    [savedField]: scoreToSave,
-                    [statField]: 0,
-                    [freezeField]: Date.now() + thirtyDays
-                });
-                alert(`❄️ ${label} 30 günlük 0-da donduruldu! Köhnə xal (${scoreToSave}) saxlanıldı, 30 gün sonra avtomatik qayıdacaq.`);
-            } else {
-                const restoreAmount = Number(savedScore || 0);
-                await updateDoc(doc(fsdb, "users", docId), {
-                    [statField]: restoreAmount,
-                    [savedField]: 0,
-                    [freezeField]: 0
-                });
-                alert(`✅ ${label} donu açıldı! Köhnə xal (${restoreAmount}) geri qaytarıldı.`);
+            try {
+                const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+                if (shouldFreeze) {
+                    const scoreToSave = getExactNum({ [statField]: currentScore }, statField);
+                    await updateDoc(doc(fsdb, "users", docId), {
+                        [savedField]: scoreToSave,
+                        [statField]: 0,
+                        [freezeField]: Date.now() + thirtyDays
+                    });
+                    alert(`❄️ ${label} 30 günlük 0-da donduruldu! Köhnə xal (${scoreToSave}) saxlanıldı, 30 gün sonra avtomatik qayıdacaq.`);
+                } else {
+                    const restoreAmount = getExactNum({ [savedField]: savedScore }, savedField);
+                    await updateDoc(doc(fsdb, "users", docId), {
+                        [statField]: restoreAmount,
+                        [savedField]: 0,
+                        [freezeField]: 0
+                    });
+                    alert(`✅ ${label} donu açıldı! Köhnə xal (${restoreAmount}) geri qaytarıldı.`);
+                }
+            } catch (err) {
+                alert("❌ Xəta: " + err.message);
             }
         };
 
