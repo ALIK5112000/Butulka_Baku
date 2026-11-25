@@ -60,9 +60,21 @@ if (T) {
     if (k) { sessionStorage.removeItem("tepikAtildi"); setTimeout(() => T.qadagaVarmi(k), 1200); }
   } catch (e) {}
 
-  /* masadakı oyunçu kartları: .yer > .foto (masa.js hər kartın .yer elementinə data-uid yazır) */
-  C.kartSelektoru = ".yer .foto";
-  C.kartUid = e => (e.parentElement && e.parentElement.dataset.uid) || null;
+  /* masadakı oyunçu kartları: oturduqları yer (.yer > .foto) və öpüş üçün ortaya gələn kart (.orta > .foto).
+     Ortadakı kartın sahibini raund/spin qeydindən tapırıq: 1-ci .orta = qız (qu), 2-ci .orta = oğlan (ou) */
+  let spinSon = null;
+  onValue(rRef(rtdb, `masalar/${MASA_NOMRESI}/raund/spin`), s => { spinSon = s.val(); });
+  C.kartSelektoru = ".yer .foto, .orta .foto";
+  C.kartUid = e => {
+    const p = e.parentElement;
+    if (!p) return null;
+    if (p.classList.contains("orta")) {
+      if (!p.classList.contains("goster") || !spinSon) return null;
+      const k = Array.prototype.indexOf.call(document.querySelectorAll(".orta"), p);
+      return k === 0 ? spinSon.qu : k === 1 ? spinSon.ou : null;
+    }
+    return p.dataset.uid || null;
+  };
 
   C.bonusCix = miqdar => {
     const cari = cariOyuncu();
