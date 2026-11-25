@@ -178,7 +178,7 @@ const fmt = n => (Number(n) || 0).toLocaleString("ru-RU");
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const NOPHOTO = "images/avatar/nophoto.svg";
 /* TOP lent şəkli images/profil/ qovluğundan götürülür. Faylın adı fərqlidirsə, siyahıya yaz (ilk tapılan işləyir) */
-const TOP_LENTLER = ["top.png", "TOP.png", "Top.png", "top.webp", "top.jpg", "top_lent.png", "top-lent.png", "toplent.png", "top_ribbon.png"].map(a => "images/profil/" + a);
+const TOP_LENTLER = ["top-ribbon.png", "top.png", "TOP.png", "Top.png", "top.webp", "top.jpg", "top_lent.png", "top-lent.png", "toplent.png", "top_ribbon.png"].map(a => "images/profil/" + a);
 const TOP_LENT = TOP_LENTLER[0];
 const num = v => Number(v) || 0;
 
