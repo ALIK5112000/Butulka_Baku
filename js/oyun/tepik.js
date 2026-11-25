@@ -114,8 +114,34 @@
         if (!v.xilas && v.bitme > n) { m[k] = { bas: v.terkVaxti, bit: v.bitme, kim: v.kim }; d = true; }
         else if (m[k]) { delete m[k]; d = true; }
       }
+      /* əvvəlki masalardakı hələ bitməyən qadağalar (başqa masada yenidən təpik vurulsa da itmir) */
+      if (v.eski) {
+        Object.keys(v.eski).forEach(function (ek) {
+          var e = v.eski[ek];
+          if (!e || e.bit <= n || ek === String(v.masa)) return;
+          if (!m[ek] || m[ek].bit !== e.bit) { m[ek] = { bas: e.bas, bit: e.bit, kim: e.kim }; d = true; }
+        });
+      }
     }
     if (d) qadagaYaz(m);
+  }
+
+  /* yeni təpik köhnə qadağanı silməsin: əvvəlki qeyddən hələ bitməyən qadağalar (masa -> {bas,bit,kim}) */
+  function eskiQadagalar(v, yeniMasa) {
+    if (!v) return null;
+    var n = indi(), r = {}, say = 0, ym = String(yeniMasa);
+    if (v.eski) {
+      Object.keys(v.eski).forEach(function (k) {
+        var e = v.eski[k];
+        if (e && e.bit > n && k !== ym) { r[k] = { bas: e.bas || 0, bit: e.bit, kim: e.kim || '' }; say++; }
+      });
+    }
+    /* yeni təpik eyni masadadırsa, köhnə qeydi daşımağa ehtiyac yoxdur: yeni qadağa onu əvəz edir */
+    if (v.masa && String(v.masa) !== ym && !v.xilas && v.bitme > n) {
+      r[String(v.masa)] = { bas: v.terkVaxti || 0, bit: v.bitme, kim: v.kim || '' };
+      say++;
+    }
+    return say ? r : null;
   }
 
   /* qoşulmaq / masa arxasına keçmək qadağandırmı (yalnız həmin masa üçün) */
@@ -417,10 +443,11 @@
     var btn = overlay.querySelector('.tepik-vur');
     btn.disabled = true;
 
-    var ref = CONFIG.db().ref(ROOT + '/' + hedef), q = 0;
+    var ref = CONFIG.db().ref(ROOT + '/' + hedef), q = 0, evvelki = null;
     ref.once('value').then(function (snap) {
-      var v = snap.val();
-      if (v && !v.xilas && v.bitme > indi()) { throw xeta('Bu oyunçuya artıq təpik vurulub'); }
+      evvelki = snap.val();
+      /* "Bu oyunçuya artıq təpik vurulub" yoxlaması götürülüb: həm eyni masada, həm başqa masada
+         yenidən təpik vurmaq olar; yeni təpik 30 saniyəni yenidən başladır, qiymət qaldığı yerdən davam edir */
       return vurQiymetOxu(hedef);
     }).then(function (p) {
       q = p;
@@ -428,14 +455,17 @@
     }).then(function (ok) {
       if (!ok) throw xeta(BONUS_YOXDUR);
       var baslama = indi();
-      return ref.set({
+      var yeni = {
         kim: men,
         masa: String(masa),
         baslama: baslama,
         terkVaxti: baslama + CONFIG.gozleSaniye * 1000,
         bitme: baslama + CONFIG.gozleSaniye * 1000 + CONFIG.qadagaDeqiqe * 60 * 1000,
         xilas: false
-      });
+      };
+      var eski = eskiQadagalar(evvelki, masa);
+      if (eski) yeni.eski = eski;   // əvvəlki masadakı qadağa yeni qeydlə silinməsin
+      return ref.set(yeni);
     }).then(function () {
       return CONFIG.db().ref('tepikVurQiymet/' + hedef).set(q + CONFIG.vurmaAddim);
     }).then(function () {
