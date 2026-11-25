@@ -177,7 +177,9 @@ const vipMi = d => d.role === "admin" || (d.vip && (!d.vipUntil || Number(d.vipU
 const fmt = n => (Number(n) || 0).toLocaleString("ru-RU");
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const NOPHOTO = "images/avatar/nophoto.svg";
-const TOP_LENT = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 233"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd62a"/><stop offset="1" stop-color="#ffab00"/></linearGradient></defs><path d="M0 190 L74 190 L74 233 Q36 226 0 212 Z" fill="#e07800"/><path d="M0 0 H320 L296 95 L320 190 H0 Z" fill="url(#g)"/><path d="M0 0 H320 L314 24 H0 Z" fill="#fff" opacity=".25"/><text x="150" y="150" text-anchor="middle" font-family="Arial Black,Arial,Helvetica,sans-serif" font-weight="900" font-size="150" fill="#fff" stroke="#e28a00" stroke-width="4" paint-order="stroke">TOP</text></svg>'); /* TOP lenti koda daxildir, ayrıca fayl lazım deyil */
+/* TOP lent şəkli images/profil/ qovluğundan götürülür. Faylın adı fərqlidirsə, siyahıya yaz (ilk tapılan işləyir) */
+const TOP_LENTLER = ["top.png", "TOP.png", "Top.png", "top.webp", "top.jpg", "top_lent.png", "top-lent.png", "toplent.png", "top_ribbon.png"].map(a => "images/profil/" + a);
+const TOP_LENT = TOP_LENTLER[0];
 const num = v => Number(v) || 0;
 
 let tT = null;
@@ -365,8 +367,10 @@ function topLentYenile() {
     el = document.createElement("img");
     el.className = "pf-topimg";
     el.alt = "";
-    el.src = TOP_LENT;
-    el.onerror = () => { el.style.display = "none"; };
+    let ti = 0;
+    el.src = TOP_LENTLER[0];
+    /* fayl tapılmasa siyahıdakı növbəti adı yoxlayır */
+    el.onerror = () => { ti++; if (ti < TOP_LENTLER.length) el.src = TOP_LENTLER[ti]; else el.style.display = "none"; };
     w.insertBefore(el, w.firstChild);
   }
 }
