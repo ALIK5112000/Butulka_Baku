@@ -1,4 +1,4 @@
-/* tepik.js - "Təpik vur və qoru" */
+/* tepik.js - "Təpik vur və qoru" (v2) */
 (function () {
   'use strict';
 
@@ -9,7 +9,17 @@
     qorumaAddim: 15,
     gozleSaniye: 30,
     qadagaDeqiqe: 15,
+    xilasGosterSaniye: 2,           // qalxan kartda neçə saniyə görünsün
     sekilYolu: 'images/tepik-vur/',
+    belgeTepikSekil: 'tepik_icon_ag.png',   // kartdakı çəkmə ikonu (ağ)
+    belgeQalxanSekil: 'qalxan.png',         // kartdakı qalxan ikonu
+    /* masadakı oyunçu kartları: element + uid necə tapılsın */
+    kartSelektoru: '[data-uid]',
+    kartUid: function (e) { return e.getAttribute('data-uid'); },
+    /* masalar siyahısı: element + masa id necə tapılsın (altında dəqiqə sayğacı çıxacaq) */
+    masaSelektoru: '[data-masa-id]',
+    masaIdOxu: function (e) { return e.getAttribute('data-masa-id'); },
+    masaNomre: function (id) { return id; },
     db: function () { return window.db || (window.firebase && firebase.database()); },
     menimUid: function () { return window.uid || window.menimUid || window.userId; },
     masaId: function () { return window.masaId || window.hazirkiMasa; },
@@ -24,7 +34,10 @@
       else if (typeof window.terkEt === 'function') window.terkEt();
     },
     vipMi: function () { return Promise.resolve(true); },
-    adGetir: function () { return Promise.resolve('Bir oyunçu'); }
+    adGetir: function () { return Promise.resolve('Bir oyunçu'); },
+    sekilGetir: function (uid) {
+      return CONFIG.db().ref(CONFIG.oyuncuYolu(uid) + '/' + CONFIG.sekilSahesi).once('value').then(function (s) { return s.val() || ''; });
+    }
   };
 
   var ROOT = 'tepik';
@@ -45,12 +58,173 @@
     document.body.appendChild(t);
     setTimeout(function () { t.remove(); }, 2500);
   }
+  function dqSan(s) {
+    s = Math.max(0, s);
+    var d = Math.floor(s / 60), c = s % 60;
+    return d + ':' + (c < 10 ? '0' : '') + c;
+  }
   var serverOfset = 0;
   function indi() { return Date.now() + serverOfset; }
   function ofsetDinle() {
     try {
       CONFIG.db().ref('.info/serverTimeOffset').on('value', function (s) { serverOfset = s.val() || 0; });
     } catch (e) {}
+  }
+
+  /* ================= masa üzrə qadağa (yalnız atıldığı masaya) ================= */
+  var QADAGA_KEY = 'tepikQadaga2';
+  try { localStorage.removeItem('tepikQadaga'); } catch (e) {}
+
+  function qadagaOxu() {
+    try { return JSON.parse(localStorage.getItem(QADAGA_KEY) || '{}') || {}; } catch (e) { return {}; }
+  }
+  function qadagaYaz(m) {
+    try { localStorage.setItem(QADAGA_KEY, JSON.stringify(m)); } catch (e) {}
+  }
+  /* v = tepik/{menimUid} qeydi; qadağa yalnız v.masa üçün yazılır */
+  function qadagaYenile(v) {
+    var m = qadagaOxu(), n = indi(), d = false;
+    if (!v) { if (Object.keys(m).length) { m = {}; d = true; } }
+    else {
+      Object.keys(m).forEach(function (k) { if (m[k].bit <= n) { delete m[k]; d = true; } });
+      if (v.masa) {
+        var k = String(v.masa);
+        if (!v.xilas && v.bitme > n) { m[k] = { bas: v.terkVaxti, bit: v.bitme, kim: v.kim }; d = true; }
+        else if (m[k]) { delete m[k]; d = true; }
+      }
+    }
+    if (d) qadagaYaz(m);
+  }
+
+  /* qoşulmaq / masa arxasına keçmək qadağandırmı (yalnız həmin masa üçün) */
+  function qadagaVarmi(masaId, sessiz) {
+    masaId = masaId || CONFIG.masaId();
+    if (!masaId) return false;
+    var q = qadagaOxu()[String(masaId)], n = indi();
+    if (q && n >= q.bas && n < q.bit) {
+      if (!sessiz) qadagaPencere(masaId, q);
+      return true;
+    }
+    return false;
+  }
+
+  /* masa üçün qadağanın qalan saniyəsi (qadağa başlamayıbsa və ya bitibsə 0) */
+  function qadagaQalan(masaId) {
+    var q = qadagaOxu()[String(masaId)], n = indi();
+    return (q && n >= q.bas && n < q.bit) ? Math.ceil((q.bit - n) / 1000) : 0;
+  }
+  /* hazırda qadağalı olan masaların siyahısı */
+  function qadagaMasalari() {
+    var m = qadagaOxu();
+    return Object.keys(m).filter(function (k) { return qadagaQalan(k) > 0; });
+  }
+
+  var qadEl = null, qadT = null;
+  function qadagaBagla() { clearInterval(qadT); if (qadEl) { qadEl.remove(); qadEl = null; } }
+  function qadagaPencere(masaId, q) {
+    q = q || qadagaOxu()[String(masaId)];
+    if (!q) return;
+    qadagaBagla();
+    qadEl = el('div', 'tepik-qad');
+    qadEl.innerHTML =
+      '<div class="tepik-qad-k">' +
+        '<button type="button" class="tepik-qad-x">&times;</button>' +
+        '<div class="tepik-qad-b">Masa arxasına keçmək qadağandır</div>' +
+        '<div class="tepik-qad-s">' +
+          '<div class="tepik-qad-foto"><img alt=""><span>&#128682;</span></div>' +
+          '<div class="tepik-qad-m"><b class="tepik-qad-ad">Bir oyunçu</b> sizi #' + esc(CONFIG.masaNomre(masaId)) +
+            ' nömrəli masadan kənarlaşdırıb</div>' +
+        '</div>' +
+        '<div class="tepik-qad-t">Masa arxasına aşağıdakı müddətdən sonra keçmək olar:<b>&#9201; <i>0:00</i></b></div>' +
+        '<button type="button" class="tepik-qad-ok">Oldu</button>' +
+      '</div>';
+    document.body.appendChild(qadEl);
+    var adEl = qadEl.querySelector('.tepik-qad-ad'), img = qadEl.querySelector('img'), say = qadEl.querySelector('.tepik-qad-t i');
+    try {
+      Promise.resolve(CONFIG.adGetir(q.kim)).then(function (a) { if (qadEl) adEl.textContent = a; });
+      Promise.resolve(CONFIG.sekilGetir(q.kim)).then(function (src) {
+        if (qadEl && src) img.src = src;
+      });
+    } catch (e) {}
+    function yenile() {
+      var s = Math.ceil((q.bit - indi()) / 1000);
+      if (s <= 0) { qadagaBagla(); return; }
+      say.textContent = dqSan(s);
+    }
+    yenile();
+    qadT = setInterval(yenile, 250);
+    qadEl.querySelector('.tepik-qad-x').onclick = qadagaBagla;
+    qadEl.querySelector('.tepik-qad-ok').onclick = qadagaBagla;
+  }
+
+  /* masalar siyahısında hər qadağan olunmuş masanın altında real vaxtlı sayğac */
+  function masaSayaciTara() {
+    var m = qadagaOxu(), n = indi();
+    var list = document.querySelectorAll(CONFIG.masaSelektoru);
+    Array.prototype.forEach.call(list, function (e) {
+      var id = CONFIG.masaIdOxu(e), q = id != null ? m[String(id)] : null;
+      var b = e._tepikSay;
+      if (b && !e.contains(b)) { b = null; e._tepikSay = null; }
+      if (q && n >= q.bas && n < q.bit) {
+        if (!b) { b = el('div', 'tepik-masa-say'); e.appendChild(b); e._tepikSay = b; }
+        b.textContent = '\u23F1 ' + dqSan(Math.ceil((q.bit - n) / 1000));
+      } else if (b) { b.remove(); e._tepikSay = null; }
+    });
+  }
+
+  /* ================= masadakı oyunçu kartında nişan (çəkmə + say / qalxan) ================= */
+  var kesh = {}, abune = {};
+  function abuneOl(u) {
+    var r = CONFIG.db().ref(ROOT + '/' + u);
+    var h = r.on('value', function (s) { kesh[u] = s.val(); });
+    abune[u] = { r: r, h: h };
+  }
+  function abuneSil(u) {
+    try { abune[u].r.off('value', abune[u].h); } catch (e) {}
+    delete abune[u]; delete kesh[u];
+  }
+  function ikon(src, emoji) {
+    return '<img src="' + CONFIG.sekilYolu + src + '" alt="" ' +
+      'onerror="this.style.display=\'none\';this.nextSibling.style.display=\'block\'">' +
+      '<span class="tepik-belge-emo" style="display:none">' + emoji + '</span>';
+  }
+  function kartRender(e, u) {
+    var v = kesh[u], n = indi(), mod = null, say = 0, hm = CONFIG.masaId();
+    if (v && (!v.masa || (hm && String(v.masa) === String(hm)))) {
+      if (!v.xilas && v.terkVaxti > n) { mod = 'tepik'; say = Math.ceil((v.terkVaxti - n) / 1000); }
+      else if (v.xilas && v.xilasVaxti && n - v.xilasVaxti < CONFIG.xilasGosterSaniye * 1000) mod = 'qalxan';
+    }
+    var b = e._tepikB;
+    if (b && !e.contains(b)) { b = null; e._tepikB = null; e._tepikMod = null; }
+    if (!mod) { if (b) { b.remove(); e._tepikB = null; e._tepikMod = null; } return; }
+    if (!b) {
+      if (getComputedStyle(e).position === 'static') e.style.position = 'relative';
+      b = el('div', 'tepik-belge');
+      e.appendChild(b);
+      e._tepikB = b;
+    }
+    if (e._tepikMod !== mod) {
+      e._tepikMod = mod;
+      b.className = 'tepik-belge tepik-belge-' + mod;
+      b.innerHTML = mod === 'tepik'
+        ? ikon(CONFIG.belgeTepikSekil, '\uD83D\uDC62') + '<span class="tepik-belge-say"></span>'
+        : ikon(CONFIG.belgeQalxanSekil, '\uD83D\uDEE1\uFE0F');
+    }
+    if (mod === 'tepik') b.querySelector('.tepik-belge-say').textContent = say;
+  }
+  function kartTara() {
+    var db;
+    try { db = CONFIG.db(); } catch (e) {}
+    if (!db) return;
+    var used = {};
+    Array.prototype.forEach.call(document.querySelectorAll(CONFIG.kartSelektoru), function (e) {
+      var u = CONFIG.kartUid(e);
+      if (!u) return;
+      used[u] = 1;
+      if (!abune[u]) abuneOl(u);
+      kartRender(e, u);
+    });
+    Object.keys(abune).forEach(function (u) { if (!used[u]) abuneSil(u); });
   }
 
   /* ================= qiymətlər (hər oyunçu üçün ayrıca artır) ================= */
@@ -158,6 +332,7 @@
   function vur() {
     var hedef = acikUid, men = CONFIG.menimUid(), masa = CONFIG.masaId();
     if (!hedef || !men) return;
+    if (!masa) { toast('Masa tapılmadı'); return; }
     var btn = overlay.querySelector('.tepik-vur');
     btn.disabled = true;
 
@@ -174,7 +349,7 @@
       var baslama = indi();
       return ref.set({
         kim: men,
-        masa: masa || null,
+        masa: String(masa),
         baslama: baslama,
         terkVaxti: baslama + CONFIG.gozleSaniye * 1000,
         bitme: baslama + CONFIG.gozleSaniye * 1000 + CONFIG.qadagaDeqiqe * 60 * 1000,
@@ -193,7 +368,7 @@
 
   /* ================= qoruma ================= */
   function xilas(hedefUid) {
-    return CONFIG.db().ref(ROOT + '/' + hedefUid + '/xilas').set(true);
+    return CONFIG.db().ref(ROOT + '/' + hedefUid).update({ xilas: true, xilasVaxti: indi() });
   }
 
   function qoru(hedefUid) {
@@ -214,7 +389,7 @@
     .catch(function (err) { toast(err && err.message ? err.message : 'Xəta baş verdi'); });
   }
 
-  /* kartda qalxanı göstərmək üçün: cb(true/false) */
+  /* kartda qalxanı göstərmək üçün (köhnə API): cb(true/false) */
   function izle(hedefUid, cb) {
     var r = CONFIG.db().ref(ROOT + '/' + hedefUid), t = null;
     var h = r.on('value', function (snap) {
@@ -227,7 +402,7 @@
     return function () { clearTimeout(t); r.off('value', h); };
   }
 
-  /* ================= təpik vurulana çıxan pəncərə ================= */
+  /* ================= üslublar ================= */
   var stl = document.createElement('style');
   stl.textContent = [
     '.tepik-qov{position:fixed;inset:0;background:rgba(8,4,20,.72);z-index:20001;display:flex;align-items:center;justify-content:center}',
@@ -241,15 +416,42 @@
     '.tepik-qov-s span{font:500 2.7vw/1 Roboto,Arial,sans-serif;letter-spacing:.3vw;color:#a99cc4}',
     '.tepik-qov-od{width:100%;height:13vw;border:0;border-radius:3.4vw;background:linear-gradient(#ffe29a,#f1b24c);color:#4a2b00;font:700 4vw/1 Roboto,Arial,sans-serif}',
     '.tepik-qov-od:disabled{opacity:.6}',
-    '.tepik-qov-c{background:none;border:0;color:#cfc4e6;font:500 3.5vw/1 Roboto,Arial,sans-serif;margin-top:4.6vw;padding:1vw 3vw}'
+    '.tepik-qov-c{background:none;border:0;color:#cfc4e6;font:500 3.5vw/1 Roboto,Arial,sans-serif;margin-top:4.6vw;padding:1vw 3vw}',
+    /* qadağa pəncərəsi */
+    '.tepik-qad{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20002;display:flex;align-items:center;justify-content:center}',
+    '.tepik-qad-k{position:relative;width:80vw;background:#fff;border-radius:6vw;padding:6vw 4vw 5vw;text-align:center;font-family:Roboto,Arial,sans-serif}',
+    '.tepik-qad-x{position:absolute;right:-2vw;top:-2vw;width:9vw;height:9vw;border-radius:50%;border:0;background:#fff;color:#7cc24a;font-size:7vw;line-height:9vw;padding:0;box-shadow:0 .5vw 2vw rgba(0,0,0,.3)}',
+    '.tepik-qad-b{font:500 4.4vw/1.2 Roboto,Arial,sans-serif;color:#9a9a9a;margin-bottom:5vw}',
+    '.tepik-qad-s{display:flex;align-items:center;gap:3vw;text-align:left;margin-bottom:5vw}',
+    '.tepik-qad-foto{position:relative;width:16vw;height:16vw;flex:none}',
+    '.tepik-qad-foto img{width:100%;height:100%;border-radius:2.5vw;object-fit:cover;background:#222}',
+    '.tepik-qad-foto span{position:absolute;right:-2vw;bottom:-2vw;font-size:7vw}',
+    '.tepik-qad-m{font-size:4vw;line-height:1.25;color:#111}',
+    '.tepik-qad-ad{color:#1a1aff}',
+    '.tepik-qad-t{background:#fdf8e1;border-radius:3vw;padding:4vw 3vw;font-size:4vw;line-height:1.25;color:#111;margin-bottom:5vw}',
+    '.tepik-qad-t b{display:block;font-size:4.8vw;margin-top:1.5vw}',
+    '.tepik-qad-t i{font-style:normal}',
+    '.tepik-qad-ok{background:#9bc43d;color:#fff;border:0;border-radius:3vw;padding:3vw 9vw;font-size:4.4vw}',
+    /* kartdakı nişan */
+    '.tepik-belge{position:absolute;left:-2vw;bottom:-1vw;display:flex;align-items:center;gap:1vw;z-index:5;pointer-events:none}',
+    '.tepik-belge-tepik{background:rgba(0,0,0,.78);border-radius:5vw;padding:.6vw 3vw .6vw 1vw}',
+    '.tepik-belge img{width:7vw;height:7vw;object-fit:contain}',
+    '.tepik-belge-qalxan img{width:8vw;height:9vw}',
+    '.tepik-belge-say{font:700 5.4vw/1 Roboto,Arial,sans-serif;color:#fff}',
+    '.tepik-belge-emo{font-size:5vw;line-height:1}',
+    /* masalar siyahısında sayğac */
+    '.tepik-masa-say{font:700 3.2vw/1.2 Roboto,Arial,sans-serif;color:#ff5a7a;text-align:center;margin-top:.8vw}'
   ].join('');
   document.head.appendChild(stl);
 
+  /* ================= təpik vurulana çıxan pəncərə ================= */
   var qovEl = null, qovT = null;
   function qovBagla() { clearInterval(qovT); if (qovEl) { qovEl.remove(); qovEl = null; } }
   function qovAc(v) {
     var men = CONFIG.menimUid();
     Promise.all([qiymetOxu(men), CONFIG.adGetir(v.kim)]).then(function (r) {
+      /* gözləyərkən vəziyyət dəyişibsə (qorunub / başqa masa) açma */
+      if (!sonV || sonV.baslama !== v.baslama || sonV.xilas || !masaUygun(sonV)) return;
       qovBagla();
       var q = r[0], ad = r[1];
       qovEl = el('div', 'tepik-qov');
@@ -271,6 +473,7 @@
       }
       yenile();
       qovT = setInterval(yenile, 250);
+      /* "Bilirəm, çıxıram" yalnız pəncərəni bağlayır; say bitəndə oyunçu yenə də masadan çıxır */
       qovEl.querySelector('.tepik-qov-c').onclick = qovBagla;
       var od = qovEl.querySelector('.tepik-qov-od');
       od.onclick = function () {
@@ -282,6 +485,50 @@
 
   /* ================= mənə təpik vurulanda ================= */
   var menimRef = null, tepikTimer = null, sonVerilen = null, gosterilen = null;
+  var sonV = null, sonMasa = null, tikT = null;
+
+  /* qeyd hazırda oturduğum masaya aiddirmi */
+  function masaUygun(v) {
+    var m = CONFIG.masaId();
+    if (!v.masa) return true;
+    return !!m && String(v.masa) === String(m);   // masa məlum deyilsə (lobbi) göstərmə
+  }
+
+  function terkEt(v) {
+    sonVerilen = v.baslama;
+    qovBagla();
+    CONFIG.masaniTerkEt();
+    /* atıldıqdan sonra qadağa pəncərəsi (14:59 geri sayım) */
+    setTimeout(function () { qadagaVarmi(String(v.masa), false); }, 400);
+  }
+
+  function qiymetlendir() {
+    var v = sonV;
+    clearTimeout(tepikTimer);
+    if (!v || v.xilas || v.bitme <= indi()) { qovBagla(); return; }
+    /* başqa masadayam: təpiklə bağlı heç bir bildiriş çıxmasın */
+    if (!masaUygun(v)) { qovBagla(); return; }
+
+    var qalan = v.terkVaxti - indi();
+    if (qalan <= 0) {
+      qovBagla();
+      if (sonVerilen !== v.baslama) {
+        /* yalnız indicə atılmışamsa çıx; sonradan qayıdıbsa sadəcə yadda saxla */
+        if (indi() - v.terkVaxti < 10000) terkEt(v);
+        else { sonVerilen = v.baslama; CONFIG.masaniTerkEt(); }   // qadağalı masaya qayıdıbsa yerini boşalt
+      }
+      return;
+    }
+    if (gosterilen !== v.baslama) { gosterilen = v.baslama; qovAc(v); }
+    tepikTimer = setTimeout(function () {
+      if (sonV !== v || !masaUygun(v)) return;
+      menimRef.child('xilas').once('value').then(function (s) {
+        if (s.val() || sonVerilen === v.baslama) return;
+        if (!masaUygun(v)) return;
+        terkEt(v);
+      });
+    }, qalan);
+  }
 
   function dinle() {
     var men = CONFIG.menimUid();
@@ -290,38 +537,22 @@
     ofsetDinle();
     menimRef = CONFIG.db().ref(ROOT + '/' + men);
     menimRef.on('value', function (snap) {
-      var v = snap.val();
-      clearTimeout(tepikTimer);
-      if (!v || v.xilas) { localStorage.removeItem('tepikQadaga'); qovBagla(); return; }
-      if (v.bitme <= indi()) { qovBagla(); return; }
-      var qalan = v.terkVaxti - indi();
-      localStorage.setItem('tepikQadaga', String(v.bitme));
-      if (qalan <= 0) {
-        qovBagla();
-        if (sonVerilen !== v.baslama) { sonVerilen = v.baslama; CONFIG.masaniTerkEt(); }
-        return;
-      }
-      if (gosterilen !== v.baslama) { gosterilen = v.baslama; qovAc(v); }
-      tepikTimer = setTimeout(function () {
-        menimRef.child('xilas').once('value').then(function (s) {
-          if (s.val()) return;
-          sonVerilen = v.baslama;
-          qovBagla();
-          CONFIG.masaniTerkEt();
-        });
-      }, qalan);
+      sonV = snap.val();
+      qadagaYenile(sonV);   // qadağa həmişə yazılır, amma yalnız v.masa üçün
+      qiymetlendir();
     });
-  }
-
-  /* qoşulmaq qadağandırmı */
-  function qadagaVarmi() {
-    var b = parseInt(localStorage.getItem('tepikQadaga') || '0', 10);
-    if (b && b > indi()) {
-      var dq = Math.ceil((b - indi()) / 60000);
-      toast('Təpik vurulub. ' + dq + ' dəqiqə sonra qoşula bilərsən');
-      return true;
-    }
-    return false;
+    sonMasa = CONFIG.masaId();
+    clearInterval(tikT);
+    tikT = setInterval(function () {
+      var m = CONFIG.masaId();
+      if (String(m) !== String(sonMasa)) {   // masa dəyişdi
+        sonMasa = m;
+        qovBagla();
+        qiymetlendir();
+      }
+      kartTara();
+      masaSayaciTara();
+    }, 250);
   }
 
   function duymeElaveEt(satir, hedefUid, ad, sekil) {
@@ -342,7 +573,9 @@
   window.TepikVur = {
     CONFIG: CONFIG,
     ac: ac, bagla: bagla, xilas: xilas, qoru: qoru, izle: izle, toast: toast,
-    dinle: dinle, qadagaVarmi: qadagaVarmi,
+    dinle: dinle, qadagaVarmi: qadagaVarmi, qadagaPencere: qadagaPencere,
+    qadagaQalan: qadagaQalan, qadagaMasalari: qadagaMasalari, dqSan: dqSan,
+    kartTara: kartTara, masaSayaciTara: masaSayaciTara,
     duymeElaveEt: duymeElaveEt
   };
 })();
