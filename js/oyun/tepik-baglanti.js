@@ -187,6 +187,7 @@ if (T) {
       "100%{opacity:0;transform:scale(1.35)}}";
   document.head.appendChild(stA);
 
+  const BOT_ANIM = '<svg class="tb" viewBox="0 0 64 48"><path d="M10 36V29Q10 23 17 23L30 25Q38 26 40 18V6H58V36Z" fill="#f7b928" stroke="#e59a12" stroke-width="2" stroke-linejoin="round"/><rect x="7" y="34" width="54" height="8" rx="3" fill="#7a3f1a"/><circle cx="19" cy="29.500" r="1.800" fill="#7a3f1a"/><circle cx="26" cy="30.500" r="1.800" fill="#7a3f1a"/><path d="M44 10V30" stroke="#fff3b0" stroke-width="2.500" stroke-linecap="round" opacity=".7"/></svg>';
   const PATLA = '<svg class="tp" viewBox="0 0 100 100"><polygon points="50,2 60,30 88,14 72,42 98,52 70,62 84,90 54,74 46,98 38,72 10,86 28,58 2,46 30,38 14,12 42,28" fill="#d9531e" stroke="#8a2a0a" stroke-width="3" stroke-linejoin="round"/></svg>';
 
   function tepikAnim(kart, badge) {
@@ -203,12 +204,7 @@ if (T) {
       if (kart._tepikAnimEl) kart._tepikAnimEl.remove();
       const a = document.createElement("div");
       a.className = "tepik-anim";
-      a.innerHTML = PATLA;
-      const im = new Image();
-      im.className = "tb";
-      im.alt = "";
-      im.src = "images/tepik-vur/tepik_icon_sari.png";
-      a.insertBefore(im, a.firstChild);
+      a.innerHTML = BOT_ANIM + PATLA;
       kart.appendChild(a);
       kart._tepikAnimEl = a;
       setTimeout(() => { a.remove(); if (kart._tepikAnimEl === a) kart._tepikAnimEl = null; goster(); }, 1150);
