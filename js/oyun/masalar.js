@@ -155,8 +155,7 @@ function nomreOxu(v) {
 // ---------- Geri sayım düyməsi (9 → 0) ----------
 const yBtn = [...document.querySelectorAll("#ustPanel .ub")].pop();
 // İkon: referans şəkildəki iki dairəvi ox (ağ, parıltılı), şəkildən birbaşa götürülüb
-// >>>>>> DİQQƏT: aşağıdakı sətri sil və yerinə KÖHNƏ masalar.js faylındakı "const ikon = '<img src="data:image/png;base64,...";" sətrini yapışdır <<<<<<
-const ikon = "";
+const ikon = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:64.8%;height:auto;display:block;pointer-events:none;filter:drop-shadow(0 0 2px rgba(255,255,255,.9))"><path d="M20 12a8 8 0 0 0-14.3-4.9"/><path d="M5.7 3.5v3.6h3.6"/><path d="M4 12a8 8 0 0 0 14.3 4.9"/><path d="M18.3 20.5v-3.6h-3.6"/></svg>';
 // Rəqəm: "Masa 511" yazısının şrifti, ölçüsü, rəngi və parıltısı ilə eyni (yazıdan oxunur)
 const sayiStil = (() => {
   try {
