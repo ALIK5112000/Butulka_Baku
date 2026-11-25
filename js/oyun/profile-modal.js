@@ -103,7 +103,7 @@ const CSS = `
 .pf-close svg{width:4.2vw;height:4.2vw}
 .pf-stats{display:flex;justify-content:space-between;align-items:center;padding:1.2vw 4.5vw 0 2.9vw}
 .pf-row{display:flex;align-items:center;height:7vw;white-space:nowrap}
-.pf-ic{width:6.2vw;margin-right:1.2vw;display:flex;align-items:center;justify-content:center}
+.pf-ic{width:7.6vw;margin-right:1vw;display:flex;align-items:center;justify-content:center}
 .pf-ic svg,.pf-ic img{display:block}
 .pf-row b{font:700 3.7vw/1 Roboto,Arial,sans-serif;margin-right:3vw}
 .pf-rk{font:400 2.6vw/1 Roboto,Arial,sans-serif;color:#9a9a9a}
@@ -120,7 +120,7 @@ const CSS = `
 .pf-name{font:400 3.6vw/3.9vw Roboto,Arial,sans-serif;color:#555;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pf-name u{text-decoration:none;color:#3aa0e0;font-weight:700}
 .pf-heart{display:flex;align-items:center;height:6.5vw}
-.pf-heart img{width:4.4vw;height:auto;margin-right:1.6vw}
+.pf-heart img{width:6.4vw;height:auto;margin-right:2vw}
 .pf-heart b{font:700 3.6vw/1 Roboto,Arial,sans-serif;color:#2b2b2b;margin-right:2.8vw}
 .pf-heart .pf-rk{font-size:2.7vw}
 .pf-follow{background:#7cc92f;color:#fff;border:0;border-radius:.5vw;min-width:20.8vw;padding:0 2vw;height:6.2vw;font:400 3.4vw/1 Roboto,Arial,sans-serif}
@@ -151,8 +151,8 @@ const IC = {
   dudaq: '<img src="images/profil/opucuk.png" alt="" style="width:5.7vw;height:auto;display:block">',
   nota: '<img src="images/profil/mahni.png" alt="" style="width:4.6vw;height:auto;display:block">',
   smayl: '<img src="images/profil/smaylik.png" alt="" style="width:4.7vw;height:auto;display:block">',
-  urek1: '<img src="images/profil/tek_urek.png" alt="" style="width:4.4vw;height:auto;display:block">',
-  urek2: '<img src="images/profil/cut_urek.png" alt="" style="width:5.4vw;height:auto;display:block">',
+  urek1: '<img src="images/profil/tek_urek.png" alt="" style="width:6.4vw;height:auto;display:block">',
+  urek2: '<img src="images/profil/cut_urek.png" alt="" style="width:7.4vw;height:auto;display:block">',
   kubok: '<svg class="pf-trophy" viewBox="0 0 64 68"><defs><linearGradient id="pfg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#aebfd0"/><stop offset=".45" stop-color="#eef3f8"/><stop offset="1" stop-color="#93a9bf"/></linearGradient></defs><path d="M13 9C0 9 0 30 20 34M51 9c13 0 13 21-7 25" fill="none" stroke="#9db2c6" stroke-width="5" stroke-linecap="round"/><path d="M12 5h40v17c0 14-8 22-20 22S12 36 12 22z" fill="url(#pfg)" stroke="#8aa0b5" stroke-width="2"/><rect x="28" y="44" width="8" height="11" fill="#9db2c6"/><path d="M17 55h30l3 9H14z" fill="url(#pfg)" stroke="#8aa0b5" stroke-width="2"/><path d="M32 13l3.200 6.500 7.100 1-5.200 5 1.300 7.100L32 29.200l-6.400 3.400 1.300-7.100-5.200-5 7.100-1z" fill="#f6b300" stroke="#d99700" stroke-width="1.200"/></svg>',
   chev: '<svg viewBox="0 0 46 24"><path d="M6 6l17 12L40 6" fill="none" stroke="#9a9a9a" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   zoom: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M20 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>',
