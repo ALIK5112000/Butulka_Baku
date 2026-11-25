@@ -120,7 +120,7 @@ const CSS = `
 .pf-name{font:400 3.6vw/3.9vw Roboto,Arial,sans-serif;color:#555;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pf-name u{text-decoration:none;color:#3aa0e0;font-weight:700}
 .pf-heart{display:flex;align-items:center;height:6.5vw}
-.pf-heart img{width:6.4vw;height:auto;margin-right:2vw}
+.pf-heart img{width:7.4vw;height:auto;margin-right:2.1vw}
 .pf-heart b{font:700 3.6vw/1 Roboto,Arial,sans-serif;color:#2b2b2b;margin-right:2.8vw}
 .pf-heart .pf-rk{font-size:2.7vw}
 .pf-follow{background:#7cc92f;color:#fff;border:0;border-radius:.5vw;min-width:20.8vw;padding:0 2vw;height:6.2vw;font:400 3.4vw/1 Roboto,Arial,sans-serif}
@@ -469,7 +469,7 @@ function qur() {
       '<div class="pf-ln"></div>' +
       '<div class="pf-act">' +
         '<button class="pf-btn" style="background:#ec5440">' + IC.qalxan + "</button>" +
-        '<button class="pf-btn t" style="background:#ef8c0b">Buto</button>' +
+        '<button class="pf-btn t" style="background:#ef8c0b">Buto</button>" +
         '<button class="pf-btn" style="background:#ab5a98">' + IC.musiqi + "</button>" +
         '<button class="pf-btn" style="background:#f9a23a">' + IC.tesdiq + "</button>" +
         '<button class="pf-btn pf-mail" style="background:#4fa9de">' + IC.mail + "</button>" +
