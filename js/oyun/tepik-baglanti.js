@@ -59,15 +59,34 @@ if (T) {
     atilir = true;
     const kohne = String(MASA_NOMRESI);
     try { sessionStorage.setItem("tepikAtildi", kohne); sessionStorage.setItem("sonMasa", kohne); } catch (e) {}
+
+    /* masadanCix() və ya oyunun öz yoxlamaları oyunçunu sayta (profil.html və s.) atmasın:
+       çıxış bitənə qədər yalnız oyun.html-ə keçidə icazə verilir, qalan yönləndirmələr ləğv olunur */
+    let blok = true;
+    try {
+      if (window.navigation && typeof window.navigation.addEventListener === "function") {
+        window.navigation.addEventListener("navigate", e => {
+          if (!blok || !e.cancelable || (e.destination && e.destination.sameDocument)) return;
+          let ok = false;
+          try { ok = new URL(e.destination.url).pathname.endsWith("oyun.html"); } catch (x) {}
+          if (!ok) e.preventDefault();
+        });
+      }
+    } catch (e) {}
+
+    /* hədəf masanı əvvəlcədən seç ki, yer boşaldılandan sonra gecikmə olmasın */
+    const n = await basqaMasaSec();
+    const hedefUrl = n ? "oyun.html?masa=" + n : "oyun.html";   // n yoxdursa oyun.html özü təsadüfi masa seçir
+
     /* yer boşalsın; amma cavab gecikərsə 3 saniyədən sonra yenə də keçid olsun */
     try {
       if (typeof window.masadanCix === "function") {
         await Promise.race([Promise.resolve(window.masadanCix()), new Promise(r => setTimeout(r, 3000))]);
       }
     } catch (e) {}
-    const n = await basqaMasaSec();
     window.__masaCixir = true;
-    location.href = n ? "oyun.html?masa=" + n : "oyun.html";   // oyun.html özü təsadüfi masa seçir
+    blok = false;
+    location.href = hedefUrl;
   };
   /* yeni masaya düşəndə qadağa pəncərəsini göstər (qeyd hələ yazılmayıbsa bir neçə dəfə yenidən yoxlayır) */
   try {
