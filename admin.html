@@ -678,7 +678,7 @@
             try {
                 const thirtyDays = 30 * 24 * 60 * 60 * 1000;
                 if (shouldFreeze) {
-                    const scoreToSave = getExactNum({ [statField]: currentScore }, statField);
+                    const scoreToSave = Number(currentScore) || 0;
                     await updateDoc(doc(fsdb, "users", docId), {
                         [savedField]: scoreToSave,
                         [statField]: 0,
@@ -686,7 +686,7 @@
                     });
                     alert(`❄️ ${label} 30 günlük 0-da donduruldu! Köhnə xal (${scoreToSave}) saxlanıldı, 30 gün sonra avtomatik qayıdacaq.`);
                 } else {
-                    const restoreAmount = getExactNum({ [savedField]: savedScore }, savedField);
+                    const restoreAmount = Number(savedScore) || 0;
                     await updateDoc(doc(fsdb, "users", docId), {
                         [statField]: restoreAmount,
                         [savedField]: 0,
