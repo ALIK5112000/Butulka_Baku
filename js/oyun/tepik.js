@@ -1,4 +1,4 @@
-/* tepik.js - "Təpik vur və qoru" (v2) */
+/* tepik.js - "Təpik vur və qoru" (v3) */
 (function () {
   'use strict';
 
@@ -10,6 +10,7 @@
     gozleSaniye: 30,
     qadagaDeqiqe: 15,
     xilasGosterSaniye: 2,           // qalxan kartda neçə saniyə görünsün
+    yaziSaniye: 3,                  // ekranda çıxan qısa yazı neçə saniyə qalsın
     sekilYolu: 'images/tepik-vur/',
     belgeTepikSekil: 'tepik_icon_ag.png',   // kartdakı çəkmə ikonu (ağ)
     belgeQalxanSekil: 'qalxan.png',         // kartdakı qalxan ikonu
@@ -53,11 +54,29 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
+
+  /* ekranda pəncərəsiz qısa yazı (3 saniyə); həmişə ən üstdə görünür */
+  var yaziEl = null, yaziT = null;
   function toast(msg) {
-    var t = el('div', 'tepik-toast', esc(msg));
-    document.body.appendChild(t);
-    setTimeout(function () { t.remove(); }, 2500);
+    clearTimeout(yaziT);
+    if (yaziEl) { yaziEl.remove(); yaziEl = null; }
+    yaziEl = el('div', 'tepik-yazi', esc(msg));
+    document.body.appendChild(yaziEl);
+    yaziT = setTimeout(function () {
+      if (yaziEl) { yaziEl.remove(); yaziEl = null; }
+    }, CONFIG.yaziSaniye * 1000);
   }
+  /* istifadəçiyə göstərilməli xəta (qalan xətalar üçün ümumi "Xəta baş verdi" çıxır) */
+  function xeta(msg) {
+    var e = new Error(msg);
+    e.tepik = true;
+    return e;
+  }
+  function xetaMesaji(err) {
+    return err && err.tepik && err.message ? err.message : 'Xəta baş verdi';
+  }
+  var BONUS_YOXDUR = 'Kifayət qədər bonus yoxdur';
+
   function dqSan(s) {
     s = Math.max(0, s);
     var d = Math.floor(s / 60), c = s % 60;
@@ -67,7 +86,10 @@
   function indi() { return Date.now() + serverOfset; }
   function ofsetDinle() {
     try {
-      CONFIG.db().ref('.info/serverTimeOffset').on('value', function (s) { serverOfset = s.val() || 0; });
+      CONFIG.db().ref('.info/serverTimeOffset').on('value', function (s) {
+        serverOfset = s.val() || 0;
+        if (menimRef) qiymetlendir();   // saat fərqi məlum oldu: taymeri dəqiqləşdir
+      });
     } catch (e) {}
   }
 
@@ -105,6 +127,14 @@
       if (!sessiz) qadagaPencere(masaId, q);
       return true;
     }
+    return false;
+  }
+
+  /* atıldıqdan sonra yeni masaya düşəndə: qadağa bitməyibsə pəncərəni göstər
+     (cihaz saatı serverdən bir neçə saniyə geri qalsa belə pəncərə çıxsın deyə "bas" yoxlanmır) */
+  function qadagaGoster(masaId) {
+    var q = qadagaOxu()[String(masaId)];
+    if (q && indi() < q.bit) { qadagaPencere(masaId, q); return true; }
     return false;
   }
 
@@ -171,6 +201,54 @@
       } else if (b) { b.remove(); e._tepikSay = null; }
     });
   }
+
+  /* ================= masalar lentində atıldığın masaya toxunanda qadağa pəncərəsi ================= */
+  function rxEsc(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  /* toxunulan elementin (və 8 səviyyə yuxarısının) hansı qadağalı masaya aid olduğunu tapır */
+  function masaTiklaId(hedef) {
+    if (!hedef || !hedef.closest) return null;
+    if (hedef.closest('.tepik-qad,.tepik-qov,.tepik-overlay,.tepik-yazi')) return null;   // öz pəncərələrimiz
+    var cari = String(CONFIG.masaId() || '');
+    var yasaq = qadagaMasalari().filter(function (k) { return k !== cari; });
+    if (!yasaq.length) return null;
+    var i, k, d, e, an, av;
+
+    /* 1) CONFIG-dəki seçici + oxuyucu */
+    try {
+      var me = hedef.closest(CONFIG.masaSelektoru);
+      if (me) {
+        var mid = CONFIG.masaIdOxu(me);
+        if (mid != null && yasaq.indexOf(String(mid)) >= 0) return String(mid);
+      }
+    } catch (x) {}
+
+    /* 2) ümumi yoxlama: elementin hər hansı atributunda (data-*, id, value, onclick) masa nömrəsi varmı */
+    e = hedef; d = 0;
+    while (e && e.nodeType === 1 && e !== document.body && e !== document.documentElement && d < 8) {
+      for (i = 0; i < e.attributes.length; i++) {
+        an = e.attributes[i].name;
+        if (an === 'class' || an === 'style') continue;
+        av = String(e.attributes[i].value).trim();
+        for (k = 0; k < yasaq.length; k++) {
+          if (av === yasaq[k]) return yasaq[k];
+          if (an === 'onclick' && new RegExp('(^|[^0-9A-Za-z_])' + rxEsc(yasaq[k]) + '([^0-9A-Za-z_]|$)').test(av)) return yasaq[k];
+        }
+      }
+      e = e.parentElement; d++;
+    }
+    return null;
+  }
+
+  function masaTikla(ev) {
+    var id = masaTiklaId(ev.target);
+    if (id == null) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    qadagaPencere(id);   // keçid bloklanır, qadağa pəncərəsi (kim atdı + qalan vaxt) açılır
+  }
+  document.addEventListener('click', masaTikla, true);
 
   /* ================= masadakı oyunçu kartında nişan (çəkmə + say / qalxan) ================= */
   var kesh = {}, abune = {};
@@ -342,13 +420,13 @@
     var ref = CONFIG.db().ref(ROOT + '/' + hedef), q = 0;
     ref.once('value').then(function (snap) {
       var v = snap.val();
-      if (v && !v.xilas && v.bitme > indi()) { throw new Error('Bu oyunçuya artıq təpik vurulub'); }
+      if (v && !v.xilas && v.bitme > indi()) { throw xeta('Bu oyunçuya artıq təpik vurulub'); }
       return vurQiymetOxu(hedef);
     }).then(function (p) {
       q = p;
       return CONFIG.bonusCix(q);
     }).then(function (ok) {
-      if (!ok) throw new Error('Bonusun çatmır');
+      if (!ok) throw xeta(BONUS_YOXDUR);
       var baslama = indi();
       return ref.set({
         kim: men,
@@ -364,7 +442,7 @@
       toast('Təpik vuruldu!');
       bagla();
     }).catch(function (err) {
-      toast(err && err.message ? err.message : 'Xəta baş verdi');
+      toast(xetaMesaji(err));
       btn.disabled = false;
     });
   }
@@ -378,18 +456,18 @@
     var r = CONFIG.db().ref(ROOT + '/' + hedefUid), q = 0;
     return r.once('value').then(function (snap) {
       var v = snap.val();
-      if (!v || v.xilas || v.terkVaxti <= indi()) throw new Error('Qoruma artıq lazım deyil');
+      if (!v || v.xilas || v.terkVaxti <= indi()) throw xeta('Qoruma artıq lazım deyil');
       return qiymetOxu(hedefUid);
     }).then(function (p) {
       q = p;
       return CONFIG.bonusCix(q);
     }).then(function (ok) {
-      if (!ok) throw new Error('Bonusun çatmır');
+      if (!ok) throw xeta(BONUS_YOXDUR);   // bonus çatmırsa: pəncərəsiz, 3 saniyəlik yazı
       return xilas(hedefUid);
     }).then(function () {
       return CONFIG.db().ref('tepikQiymet/' + hedefUid).set(q + CONFIG.qorumaAddim);
     }).then(function () { toast('Oyunçu qorundu!'); })
-    .catch(function (err) { toast(err && err.message ? err.message : 'Xəta baş verdi'); });
+    .catch(function (err) { toast(xetaMesaji(err)); });
   }
 
   /* kartda qalxanı göstərmək üçün (köhnə API): cb(true/false) */
@@ -408,6 +486,8 @@
   /* ================= üslublar ================= */
   var stl = document.createElement('style');
   stl.textContent = [
+    /* ekranda qısa yazı (pəncərəsiz) */
+    '.tepik-yazi{position:fixed;left:50%;top:40%;right:auto;bottom:auto;transform:translate(-50%,-50%);max-width:82vw;padding:3.4vw 5.4vw;border-radius:3.4vw;background:rgba(25,12,45,.92);color:#fff;font:700 4.2vw/1.3 Roboto,Arial,sans-serif;text-align:center;z-index:20010;pointer-events:none;box-shadow:0 1vw 4vw rgba(0,0,0,.4)}',
     '.tepik-qov{position:fixed;inset:0;background:rgba(8,4,20,.72);z-index:20001;display:flex;align-items:center;justify-content:center}',
     '.tepik-qov-k{width:84vw;padding:7vw 5vw 5vw;border-radius:5vw;background:linear-gradient(#3b2163,#2a1749);box-shadow:0 2vw 8vw rgba(0,0,0,.5);text-align:center;color:#fff}',
     '.tepik-qov-ic{width:17vw;height:17vw;margin:0 auto 4vw;border-radius:50%;background:linear-gradient(#ff6a7d,#e8335f);display:flex;align-items:center;justify-content:center;font-size:8.5vw}',
@@ -476,7 +556,8 @@
       }
       yenile();
       qovT = setInterval(yenile, 250);
-      /* "Bilirəm, çıxıram" yalnız pəncərəni bağlayır; say bitəndə oyunçu yenə də masadan çıxır */
+      /* "Bilirəm, çıxıram" yalnız pəncərəni bağlayır; say oyunçunun kartında davam edir
+         və sıfırlananda oyunçu masadan çıxarılır */
       qovEl.querySelector('.tepik-qov-c').onclick = qovBagla;
       var od = qovEl.querySelector('.tepik-qov-od');
       od.onclick = function () {
@@ -523,6 +604,7 @@
     if (gosterilen !== v.baslama) { gosterilen = v.baslama; qovAc(v); }
     tepikTimer = setTimeout(function () {
       if (sonV !== v || !masaUygun(v)) return;
+      if (v.terkVaxti - indi() > 400) { qiymetlendir(); return; }   // saat fərqi: vaxt hələ bitməyib, taymeri yenidən qur
       menimRef.child('xilas').once('value').then(function (s) {
         if (s.val() || sonVerilen === v.baslama) return;
         if (!masaUygun(v)) return;
@@ -551,6 +633,9 @@
         qovBagla();
         qiymetlendir();
       }
+      /* ehtiyat: say sıfırlandığı halda taymer işləməyibsə də oyunçu masadan çıxarılsın */
+      if (sonV && !sonV.xilas && sonVerilen !== sonV.baslama && sonV.terkVaxti <= indi() &&
+          sonV.bitme > indi() && masaUygun(sonV)) qiymetlendir();
       kartTara();
       masaSayaciTara();
     }, 250);
@@ -575,6 +660,7 @@
     CONFIG: CONFIG,
     ac: ac, bagla: bagla, xilas: xilas, qoru: qoru, izle: izle, toast: toast,
     dinle: dinle, qadagaVarmi: qadagaVarmi, qadagaPencere: qadagaPencere,
+    qadagaGoster: qadagaGoster,
     qadagaQalan: qadagaQalan, qadagaMasalari: qadagaMasalari, dqSan: dqSan,
     kartTara: kartTara, masaSayaciTara: masaSayaciTara,
     duymeElaveEt: duymeElaveEt
