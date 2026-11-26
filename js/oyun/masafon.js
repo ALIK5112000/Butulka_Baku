@@ -1,23 +1,13 @@
-/* masafon.js — "Masa fonu" pəncərəsi. Mövcud koda toxunmur.
-   Quraşdırma (oyun yüklənəndən sonra bir dəfə):
-
-   MasaFon.init({
-     rtdb: rtdbDatabase,          // masa/söhbət/butulka olan Realtime DB
-     fs: firestoreDb,             // istifadəçi/jeton olan Firestore
-     getUid: () => currentUid,
-     getTableId: () => currentTableId,   // oyunçunun hazırkı masası
-     tableSelector: '#masa',      // fonu görünməli element
-   });
-*/
+/* masafon.js — "Masa fonu" pəncərəsi. Firebase ilə bağlantı masafon-baglanti.js-dədir. */
 (function () {
   var CFG = {
     rtdb: null, fs: null,
     getUid: function () { return null; },
     getTableId: function () { return null; },
     tableSelector: '#masa',
-    tablesPath: 'tables',        // RTDB: tables/{id}/bg
-    userCollection: 'users',     // Firestore: users/{uid}
-    tokenField: 'tokens',        // jeton sahəsi
+    tablesPath: 'tables',
+    userCollection: 'users',
+    tokenField: 'tokens',
     price: 100,
     folder: 'images/masa/'
   };
@@ -46,7 +36,7 @@
     if (!el) return;
     var s = src(b);
     if (!s) { el.style.backgroundImage = ''; el.style.backgroundSize = ''; return; }
-    var img = new Image();                 // əvvəl yüklə, sonra göstər
+    var img = new Image();
     img.onload = function () {
       el.style.backgroundImage = 'url("' + s + '")';
       el.style.backgroundSize = 'cover';
@@ -55,7 +45,6 @@
     img.src = s;
   }
 
-  /* Masa dəyişəndə də çağırılmalıdır: MasaFon.watchTable() */
   function watchTable() {
     var tid = CFG.getTableId();
     if (!CFG.rtdb || !tid || tid === bgRefTable) return;
@@ -138,28 +127,37 @@
 
   function confirmChange() {
     var uid = CFG.getUid(), tid = CFG.getTableId(), id = selected;
-    if (!uid || !tid || !id) return;
+    if (!uid || !tid || !id) { alert('Hesab və ya masa tapılmadı'); return; }
     var yes = overlay.querySelector('#mf-yes');
     yes.disabled = true;
     var ref = CFG.fs.collection(CFG.userCollection).doc(uid);
-    CFG.fs.runTransaction(function (t) {
-      return t.get(ref).then(function (d) {
-        var bal = (d.data() && d.data()[CFG.tokenField]) || 0;
-        if (bal < CFG.price) throw new Error('az');
-        var u = {}; u[CFG.tokenField] = bal - CFG.price;
-        t.update(ref, u);
+    function change(delta) {
+      return CFG.fs.runTransaction(function (t) {
+        return t.get(ref).then(function (d) {
+          var bal = (d.data() && d.data()[CFG.tokenField]) || 0;
+          if (delta < 0 && bal < -delta) throw new Error('az');
+          var u = {}; u[CFG.tokenField] = bal + delta;
+          t.update(ref, u);
+        });
       });
-    }).then(function () {
-      return CFG.rtdb.ref(CFG.tablesPath + '/' + tid + '/bg').set(id); // hamıda dəyişir
+    }
+    var charged = false;
+    change(-CFG.price).then(function () {
+      charged = true;
+      return CFG.rtdb.ref(CFG.tablesPath + '/' + tid + '/bg').set(id);
     }).then(function () {
       close();
     }).catch(function (e) {
-      yes.disabled = false;
-      alert(e && e.message === 'az' ? 'Jeton çatmır' : 'Xəta baş verdi');
+      var back = charged ? change(CFG.price).catch(function () {}) : Promise.resolve();
+      back.then(function () {
+        if (yes) yes.disabled = false;
+        alert(e && e.message === 'az' ? 'Jeton çatmır'
+          : 'Xəta: ' + ((e && e.message) || e) + (charged ? ' (jeton geri qaytarıldı)' : ''));
+      });
     });
   }
 
-    /* 3-xətt menyusunda "Masa fonu" yazısına toxunanda aç */
+  /* 3-xətt menyusunda "Masa fonu" yazısına toxunanda aç */
   document.addEventListener('click', function (e) {
     if (overlay) return;
     var el = e.target;
