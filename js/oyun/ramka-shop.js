@@ -5,6 +5,10 @@ import { doc, onSnapshot, runTransaction, updateDoc } from "https://www.gstatic.
 const REPO = "ALIK5112000/Butulka_Baku";
 const YOL = "images/ramkalar";
 
+// ===== QİYMƏT: bütün ramkalar eyni =====
+const QH = 500;    // 7 günlük
+const QA = 1000;   // 30 günlük
+
 // ===== users/{docId} sahə adları: bazanda fərqlidirsə, siyahıya öz adını ƏN BAŞA yaz =====
 const SAHE = {
   ad:      ["ad", "name", "nick", "nickname", "username", "adi", "isim", "displayName"],
@@ -69,43 +73,46 @@ function melumat(p, cari) {
 
 const GUN = { h: 7, a: 30 };
 const GUN_MS = 86400000;
-const KAT = [{ id: "qiz", ad: "Qız" }, { id: "oglan", ad: "Oğlan" }, { id: "premium", ad: "Premium" }];
 
 // ===== Ehtiyat CSS ramkaları (images/ramkalar boş olanda görünür) =====
-const R = (id, kat, ad, h, a, g, bg) => ({ id, kat, ad, h: 500, a: 1000, g, bg });
+const R = (id, kat, ad, h, a, g, bg) => ({ id, kat, ad, h: QH, a: QA, g, bg });
 const NUMUNE = [
-  R("cicek",  "qiz",     "Çiçək Çəhrayı", 60, 180, "linear-gradient(135deg,#ff9ccb,#ffe0f0,#ff6fb0)", "#5a1a3f"),
-  R("lavanda","qiz",     "Lavanda",       60, 180, "linear-gradient(135deg,#b79cff,#e6dcff,#8a6bff)", "#2e2160"),
-  R("zumrud", "oglan",   "Zümrüd Qızıl",  60, 180, "linear-gradient(135deg,#d4a73a,#fff3b0,#d4a73a)", "#0e4d3a"),
-  R("deniz",  "oglan",   "Dəniz Mavisi",  60, 180, "linear-gradient(135deg,#2b8cff,#8fe3ff,#2b8cff)", "#0a2a52"),
-  R("alov",   "premium", "Alov",         150, 450, "linear-gradient(135deg,#ff3b00,#ffb000,#ff3b00)", "#3a0d05"),
-  R("neon",   "premium", "Neon",         150, 450, "linear-gradient(135deg,#ff2bd6,#2bffea,#ffe92b,#ff2bd6)", "#0d0d0d")
+  R("cicek",  "qiz",     "Çiçək Çəhrayı", 0, 0, "linear-gradient(135deg,#ff9ccb,#ffe0f0,#ff6fb0)", "#5a1a3f"),
+  R("lavanda","qiz",     "Lavanda",       0, 0, "linear-gradient(135deg,#b79cff,#e6dcff,#8a6bff)", "#2e2160"),
+  R("zumrud", "oglan",   "Zümrüd Qızıl",  0, 0, "linear-gradient(135deg,#d4a73a,#fff3b0,#d4a73a)", "#0e4d3a"),
+  R("deniz",  "oglan",   "Dəniz Mavisi",  0, 0, "linear-gradient(135deg,#2b8cff,#8fe3ff,#2b8cff)", "#0a2a52"),
+  R("alov",   "premium", "Alov",          0, 0, "linear-gradient(135deg,#ff3b00,#ffb000,#ff3b00)", "#3a0d05"),
+  R("neon",   "premium", "Neon",          0, 0, "linear-gradient(135deg,#ff2bd6,#2bffea,#ffe92b,#ff2bd6)", "#0d0d0d")
 ];
 let RAMKALAR = NUMUNE;
 
+const U = (n) => "calc(" + n + "*var(--u))";
 const stil = (r, w) =>
   "border:" + w + " solid transparent;background:linear-gradient(" + r.bg + "," + r.bg + ") padding-box," + r.g + " border-box;";
 
-// ===== images/ramkalar qovluğunu oxuyur: kateqoriya_Ad_həftəlik_aylıq.png =====
-const QIY = { qiz: [60, 180], oglan: [60, 180], premium: [150, 450] };
+// ===== images/ramkalar qovluğunu oxuyur =====
+// Fayl adı istənilən ola bilər: Zumrud-Qizil.png  (ad = Zumrud Qizil)
+// İstəsən əvvəlinə qiz_ / oglan_ / premium_ yaza bilərsən, o ada düşməz.
+// Qiymət fayl adından asılı deyil: həmişə QH / QA.
+const PREF = ["qiz", "oglan", "premium"];
 function parsla(fad) {
   const m = fad.match(/^(.+)\.(png|webp|gif|jpg|jpeg)$/i);
   if (!m) return null;
-  const p = m[1].split("_");
-  const kat = (p[0] || "").toLowerCase();
-  if (!QIY[kat] || !p[1]) return null;
+  const p = m[1].split("_").filter((s) => s && !/^\d+$/.test(s));
+  if (p.length > 1 && PREF.includes(p[0].toLowerCase())) p.shift();
+  if (!p.length) return null;
   return {
     id: m[1].replace(/[^a-zA-Z0-9_]/g, "_"),
-    kat,
-    ad: p[1].replace(/-/g, " "),
-    h: Number(p[2]) || QIY[kat][0],
-    a: Number(p[3]) || QIY[kat][1],
+    kat: "",
+    ad: p.join(" ").replace(/-/g, " "),
+    h: QH,
+    a: QA,
     img: YOL + "/" + encodeURIComponent(fad)
   };
 }
 async function sekilRamkalar() {
   let f = null;
-  try { const c = JSON.parse(localStorage.getItem("ramkaSiyahi") || "null"); if (c && Date.now() - c.t < 300000) f = c.f; } catch (e) {}
+  try { const c = JSON.parse(localStorage.getItem("ramkaSiyahi") || "null"); if (c && Date.now() - c.t < 120000) f = c.f; } catch (e) {}
   if (!f) {
     try {
       const r = await fetch("https://api.github.com/repos/" + REPO + "/contents/" + YOL);
@@ -121,13 +128,15 @@ async function sekilRamkalar() {
 
 const cari = cariOyuncu();
 let p = {}, jeton = 0, sahib = {}, aktiv = "";
-let sec = RAMKALAR[0].id, period = "h", kat = RAMKALAR[0].kat;
+let sec = RAMKALAR[0].id, period = "h";
 
+// ===== CSS (ölçülər vw ilə yazılıb, aşağıda ekrana sığan vahidə çevrilir) =====
 const st = document.createElement("style");
 st.textContent =
-  "#ramkaOv{position:fixed;inset:0;display:none;z-index:10000;background:rgba(0,0,0,.55);font-family:Roboto,Arial,sans-serif;color:#fff}" +
-  "#ramkaOv .wrap{position:absolute;left:0;right:0;top:0;bottom:34vw;display:flex;align-items:center;justify-content:center}" +
-  "#ramkaOv .ky{position:relative}" +
+  "#ramkaOv{position:fixed;inset:0;display:none;z-index:10000;background:rgba(0,0,0,.6);font-family:Roboto,Arial,sans-serif;color:#fff}" +
+  "#ramkaOv .pn{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4vw}" +
+  "#ramkaOv .row{display:flex;align-items:center;justify-content:center;gap:2.6vw}" +
+  "#ramkaOv .ky{position:relative;flex:none}" +
   "#ramkaOv .kart{position:relative;box-sizing:border-box;width:66vw;aspect-ratio:1075/1867;border-radius:4vw;overflow:hidden;box-shadow:0 1vw 5vw rgba(0,0,0,.5);background:#0b0b0b}" +
   "#ramkaOv .over{position:absolute;inset:0;background:center/100% 100% no-repeat;pointer-events:none;z-index:2}" +
   "#ramkaOv .foto{position:absolute;left:5.5%;top:2.4%;width:89%;height:51.2%;z-index:1;background:#2b2b2b center/cover no-repeat}" +
@@ -150,35 +159,31 @@ st.textContent =
   "#ramkaOv .mf .tk{display:inline-block;background:#6fbf2e;color:#fff;border-radius:1vw;padding:.4vw 2.6vw;font-size:3vw;margin-top:.6vw}" +
   "#ramkaOv .dg{display:flex;justify-content:space-between;padding:0 1vw}" +
   "#ramkaOv .dg div{width:9vw;height:9vw;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:3vw;font-weight:800;box-sizing:border-box}" +
-  "#ramkaOv .x{position:absolute;top:-3vw;right:-3vw;width:8.4vw;height:8.4vw;border-radius:50%;border:0;padding:0;background:#fff;color:#8cc63f;font-size:6vw;line-height:1;box-shadow:0 .6vw 2vw rgba(0,0,0,.3);cursor:pointer}" +
-  "#ramkaOv .zl{position:absolute;right:1.2vw;top:50%;transform:translateY(-50%);width:14.6vw;max-height:100vw;overflow-y:auto;background:rgba(0,0,0,.45);border-radius:3vw;padding:1.5vw;box-sizing:border-box;display:flex;flex-direction:column;gap:1.6vw;align-items:center}" +
-  "#ramkaOv .th{position:relative;flex:none;width:11.4vw;height:11.4vw;border-radius:2vw;box-sizing:border-box;cursor:pointer}" +
+  "#ramkaOv .x{position:absolute;top:-3vw;right:-3vw;z-index:6;width:8.4vw;height:8.4vw;border-radius:50%;border:0;padding:0;background:#fff;color:#8cc63f;font-size:6vw;line-height:1;box-shadow:0 .6vw 2vw rgba(0,0,0,.3);cursor:pointer}" +
+  // sağ zolaq
+  "#ramkaOv .zl{flex:none;width:15.6vw;max-height:76vw;overflow-y:auto;scrollbar-width:none;background:rgba(0,0,0,.5);border-radius:3.4vw;padding:1.8vw;box-sizing:border-box;display:flex;flex-direction:column;gap:2vw;align-items:center}" +
+  "#ramkaOv .zl::-webkit-scrollbar{display:none}" +
+  "#ramkaOv .th{position:relative;flex:none;width:12vw;height:12vw;border-radius:2.2vw;box-sizing:border-box;cursor:pointer;background:#2b2b2b}" +
   "#ramkaOv .th.s{outline:.6vw solid #fff;outline-offset:.2vw}" +
-  "#ramkaOv .th i{position:absolute;right:-1vw;top:-1vw;width:4.4vw;height:4.4vw;border-radius:50%;background:#8cc63f;color:#fff;font-size:3vw;font-style:normal;display:flex;align-items:center;justify-content:center}" +
+  "#ramkaOv .th i{position:absolute;right:-1vw;top:-1vw;width:4.6vw;height:4.6vw;border-radius:50%;background:#8cc63f;color:#fff;font-size:3vw;font-style:normal;display:flex;align-items:center;justify-content:center}" +
   "#ramkaOv .bos{font-size:2.6vw;color:#aaa;padding:3vw 0;text-align:center}" +
-  "#ramkaOv .bar{position:absolute;left:2.5vw;right:2.5vw;bottom:4vw;box-sizing:border-box;background:#16130f;border-radius:4vw;padding:2.4vw 3vw 3vw;box-shadow:0 1vw 4vw rgba(0,0,0,.5)}" +
-  "#ramkaOv .tabs{display:flex;gap:2vw;margin-bottom:2.6vw}" +
-  "#ramkaOv .tabs button{flex:1;height:8vw;border:0;border-radius:2.4vw;background:#2a2620;color:#bbb;font-size:3.6vw;font-weight:500;cursor:pointer}" +
-  "#ramkaOv .tabs button.a{background:#f08a1c;color:#fff}" +
-  "#ramkaOv .alis{display:flex;align-items:center;gap:2.4vw}" +
-  "#ramkaOv .ad{flex:1;min-width:0;color:#e8c766;font-size:4.2vw;font-weight:700;line-height:1.15}" +
-  "#ramkaOv .ad small{display:block;color:#9a9a9a;font-size:2.8vw;font-weight:400}" +
+  // aşağı bar
+  "#ramkaOv .bar{flex:none;box-sizing:border-box;width:92vw;background:#16130f;border-radius:4vw;padding:2.4vw 3vw;display:flex;align-items:center;gap:2.6vw;box-shadow:0 1vw 4vw rgba(0,0,0,.5)}" +
+  "#ramkaOv .ad{flex:1;min-width:0;color:#e8c766;font-size:4.6vw;font-weight:700;line-height:1.15}" +
+  "#ramkaOv .ad small{display:block;color:#9a9a9a;font-size:2.8vw;font-weight:400;margin-top:.6vw}" +
   "#ramkaOv .qy{flex:none;display:flex;flex-direction:column;gap:1.2vw}" +
-  "#ramkaOv .qy button{border:.3vw solid #444;background:transparent;color:#ddd;border-radius:2vw;padding:1vw 1.8vw;font-size:3.1vw;cursor:pointer;white-space:nowrap}" +
+  "#ramkaOv .qy button{border:.3vw solid #444;background:transparent;color:#ddd;border-radius:2vw;padding:1.2vw 2vw;font-size:3.3vw;cursor:pointer;white-space:nowrap}" +
   "#ramkaOv .qy button.a{border-color:#f08a1c;color:#fff;background:#3a2a14}" +
-  "#ramkaOv .al{flex:none;width:17vw;height:11vw;border:0;border-radius:2.6vw;background:#6fbf2e;color:#fff;font-size:4.6vw;font-weight:800;cursor:pointer}";
+  "#ramkaOv .al{flex:none;width:18vw;height:12vw;border:0;border-radius:2.6vw;background:#6fbf2e;color:#fff;font-size:4.8vw;font-weight:800;cursor:pointer}";
+// vw -> ekrana (en və hündürlüyə) görə kiçilən vahid: hər şey ekrana sığır
 st.textContent = st.textContent.replace(/(-?\d*\.?\d+)vw/g, "calc($1*var(--u))");
-st.textContent +=
-  "#ramkaOv{--u:min(1vw,.62vh)}" +
-  "#ramkaOv .wrap{bottom:calc(36*var(--u))}" +
-  "#ramkaOv .zl{z-index:5}" +
-  "#ramkaOv .bar,#ramkaOv .x{z-index:6}";
+st.textContent += "#ramkaOv{--u:min(1vw,.6vh)}";
 document.head.appendChild(st);
 
 const ov = document.createElement("div");
 ov.id = "ramkaOv";
 ov.innerHTML =
-  '<div class="wrap"><div class="ky"><div class="kart" id="rKart">' +
+  '<div class="pn"><div class="row"><div class="ky"><div class="kart" id="rKart">' +
   '<div class="foto" id="rFoto"><div class="cap" id="rCap"></div></div>' +
   '<div class="alt"><div class="stt" id="rStt"></div><div class="sts" id="rSts"></div>' +
   '<div class="dv"><i></i><b>&#8964;</b><i></i></div><div class="mf" id="rMf"></div>' +
@@ -188,8 +193,7 @@ ov.innerHTML =
   '<div class="vip" id="rVip">VIP</div><div class="over" id="rOver"></div></div>' +
   '<button class="x" id="rBagla" type="button">&times;</button></div>' +
   '<div class="zl" id="rZl"></div></div>' +
-  '<div class="bar"><div class="tabs" id="rTabs"></div>' +
-  '<div class="alis"><div class="ad" id="rAd"></div>' +
+  '<div class="bar"><div class="ad" id="rAd"></div>' +
   '<div class="qy"><button id="rQH" type="button"></button><button id="rQA" type="button"></button></div>' +
   '<button class="al" id="rAl" type="button">AL</button></div></div>';
 document.body.appendChild(ov);
@@ -205,7 +209,7 @@ function ciz() {
   const m = melumat(p, cari);
 
   // ===== Profil kartı: oyunçunun öz canlı məlumatları + seçilən ramka =====
-  $("rKart").setAttribute("style", !r ? "background:#0b0b0b;border:.5vw solid #444;" : r.img ? "background:#0b0b0b;" : stil(r, "1.3vw"));
+  $("rKart").setAttribute("style", !r ? "background:#0b0b0b;border:" + U(.5) + " solid #444;" : r.img ? "background:#0b0b0b;" : stil(r, U(1.3)));
   $("rOver").style.backgroundImage = r && r.img ? "url(" + JSON.stringify(r.img) + ")" : "none";
   $("rFoto").style.backgroundImage = m.foto ? "url(" + JSON.stringify(m.foto) + ")" : "none";
   $("rCap").textContent = m.ad + (m.yas ? ", " + m.yas : "");
@@ -223,16 +227,34 @@ function ciz() {
     if (m.meftun.foto) mf.querySelector(".av").style.backgroundImage = "url(" + JSON.stringify(m.meftun.foto) + ")";
   } else { mf.style.display = "none"; mf.innerHTML = ""; }
 
-  // ===== Sağ zolaq: seçilən kateqoriyanın ramkaları =====
-  const siy = RAMKALAR.filter((x) => x.kat === kat);
-  $("rZl").innerHTML = siy.length ? siy.map((x) =>
-    '<div class="th' + (x.id === sec ? " s" : "") + '" data-id="' + x.id + '" style="' +
-    (x.img ? "background:#161616 center/contain no-repeat url(" + x.img + ");" : stil(x, ".9vw")) + '">' +
-    (qalanGun(x.id) ? "<i>&#10003;</i>" : "") + "</div>").join("") : '<div class="bos">Tezliklə</div>';
+  // ===== Sağ zolaq: bütün ramkalar (hər kiçik şəkildə oyunçunun öz şəkli ramkanın içində görünür) =====
+  const zl = $("rZl");
+  const kecen = zl.scrollTop;
+  zl.innerHTML = "";
+  if (!RAMKALAR.length) {
+    zl.innerHTML = '<div class="bos">Tezliklə</div>';
+  } else {
+    RAMKALAR.forEach((x) => {
+      const d = document.createElement("div");
+      d.className = "th" + (x.id === sec ? " s" : "");
+      d.dataset.id = x.id;
+      if (x.img) {
+        const ft = m.foto ? ",url(" + JSON.stringify(m.foto) + ")" : "";
+        d.style.backgroundImage = "url(" + JSON.stringify(x.img) + ")" + ft;
+        d.style.backgroundSize = m.foto ? "100% auto,cover" : "100% auto";
+        d.style.backgroundPosition = m.foto ? "top center,center" : "top center";
+        d.style.backgroundRepeat = "no-repeat";
+        d.style.overflow = "visible";
+      } else {
+        d.style.cssText = stil(x, U(.9));
+      }
+      if (qalanGun(x.id)) { const i = document.createElement("i"); i.innerHTML = "&#10003;"; d.appendChild(i); }
+      zl.appendChild(d);
+    });
+  }
+  zl.scrollTop = kecen;
 
   // ===== Aşağı bar =====
-  $("rTabs").innerHTML = KAT.map((k) =>
-    '<button type="button" data-k="' + k.id + '" class="' + (k.id === kat ? "a" : "") + '">' + k.ad + "</button>").join("");
   if (!r) {
     $("rAd").innerHTML = "Tezliklə";
     $("rQH").textContent = ""; $("rQA").textContent = ""; $("rAl").textContent = "—";
@@ -286,36 +308,36 @@ if (cari && cari.docId) {
   });
 }
 
+// images/ramkalar-dakı ramkaları oxuyub siyahını yeniləyir (nümunələrin yerinə onlar gəlir)
+function yenile() {
+  sekilRamkalar().then((l) => {
+    if (!l.length) return;
+    RAMKALAR = l;
+    const a = RAMKALAR.find((x) => x.id === aktiv && qalanGun(x.id));
+    const f = RAMKALAR.find((x) => x.id === sec) || a || RAMKALAR[0];
+    sec = f.id;
+    ciz();
+  }).catch(() => {});
+}
+
 document.addEventListener("ramka-ac", () => {
   const a = RAMKALAR.find((x) => x.id === aktiv && qalanGun(x.id));
-  if (a) { sec = a.id; kat = a.kat; }
+  if (a) sec = a.id;
   ciz();
   ov.style.display = "block";
+  yenile();                                         // hər açılışda yeni yüklənən ramkalar da gəlsin
 });
 const bagla = () => { ov.style.display = "none"; };
 $("rBagla").onclick = bagla;
-ov.addEventListener("click", (e) => { if (e.target === ov || e.target.classList.contains("wrap")) bagla(); });
+ov.addEventListener("click", (e) => {
+  if (e.target === ov || e.target.classList.contains("pn") || e.target.classList.contains("row")) bagla();
+});
 $("rZl").onclick = (e) => { const t = e.target.closest(".th"); if (t) { sec = t.dataset.id; ciz(); } };
-$("rTabs").onclick = (e) => {
-  const b = e.target.closest("button"); if (!b) return;
-  kat = b.dataset.k;
-  const f = RAMKALAR.find((x) => x.kat === kat);
-  sec = f ? f.id : "";
-  ciz();
-};
 $("rQH").onclick = () => { period = "h"; ciz(); };
 $("rQA").onclick = () => { period = "a"; ciz(); };
 $("rAl").onclick = al;
 
-// images/ramkalar-dakı öz ramkaların varsa, nümunələrin yerinə onlar gəlir
-sekilRamkalar().then((l) => {
-  if (!l.length) return;
-  RAMKALAR = l;
-  const a = RAMKALAR.find((x) => x.id === aktiv && qalanGun(x.id));
-  const f = a || RAMKALAR.find((x) => x.id === sec) || RAMKALAR[0];
-  sec = f.id; kat = f.kat;
-  ciz();
-}).catch(() => {});
+yenile();
 
 // Başqa fayllar (məs. masadakı profil kartı) üçün: oyunçunun aktiv ramkasını qaytarır
 window.ramkaAktivTap = (pp) => {
