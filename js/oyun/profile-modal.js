@@ -151,6 +151,24 @@ const CSS = `
 .pf-btn.pf-mail.pf-solgun{background:#a0a0a0 !important}
 /* TOP lenti: 1-10 ci yerdə olan oyunçuda VIP lentinin yerində görünür */
 .pf-topimg{position:absolute;top:4.26vw;left:-3.9vw;width:14.9vw;height:auto;margin:0;z-index:2;pointer-events:none;-webkit-user-select:none;user-select:none}
+/* ===== RAMKA REJİMİ: oyunçunun aktiv ramkası olanda kart qara fonda, ramka ilə görünür ===== */
+.pf-rover{display:none}
+.pf-card.pf-r{aspect-ratio:1075/1867;background:#0b0b0b;border-radius:4vw}
+.pf-r .pf-rover{display:block;position:absolute;inset:0;z-index:2;pointer-events:none;background:center/100% 100% no-repeat}
+.pf-r .pf-topw{position:absolute;left:5.5%;top:2.4%;width:89%;height:51.2%}
+.pf-r .pf-photo{height:100%;border-radius:0}
+.pf-r .pf-vipimg,.pf-r .pf-topimg{z-index:4}
+.pf-r .pf-close{z-index:5}
+.pf-r .pf-low{position:absolute;left:7.8%;top:54%;width:84.4%;height:43%;overflow:hidden;z-index:3}
+.pf-r .pf-lowi{width:80vw;transform:scale(.84);transform-origin:top left}
+.pf-r .pf-ln,.pf-r .pf-stl{display:none}
+.pf-r .pf-st{height:7vw;color:#fff}
+.pf-r .pf-act{padding:2vw 3.9vw 0}
+.pf-r .pf-dv i{background:rgba(255,255,255,.18)}
+.pf-r .pf-dv span{background:#3a3125}
+.pf-r .pf-name{color:#ddd}
+.pf-r .pf-heart b{color:#fff}
+.pf-r .pf-ava{background:#2b2b2b}
 `;
 const st = document.createElement("style");
 st.textContent = CSS;
@@ -535,7 +553,8 @@ function qur() {
     '<div class="pf-card">' +
       '<button class="pf-close" aria-label="Bağla"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#7cc92f" stroke-width="3.2" stroke-linecap="round"/></svg></button>' +
       '<div class="pf-topw"></div>' +
-      '<div class="pf-stw"></div>' +
+      '<div class="pf-rover"></div>' +
+      '<div class="pf-low"><div class="pf-lowi"><div class="pf-stw"></div>' +
       '<div class="pf-stats"><div class="pf-rowsw"></div>' + IC.kubok + "</div>" +
       '<div class="pf-dv"><i></i><span>' + IC.chev + "</span><i></i></div>" +
       '<div class="pf-userw"></div>' +
@@ -546,7 +565,7 @@ function qur() {
         '<button class="pf-btn pf-mus" style="background:#ab5a98">' + IC.musiqi + "</button>" +
         '<button class="pf-btn" style="background:#f9a23a">' + IC.tesdiq + "</button>" +
         '<button class="pf-btn pf-mail" style="background:#4fa9de">' + IC.mail + "</button>" +
-      "</div>" +
+      "</div></div></div>" +
     "</div>";
   gurulu = true; sig = {};
   ov.querySelector(".pf-close").onclick = bagla;
@@ -555,8 +574,20 @@ function qur() {
   ov.querySelector(".pf-dv span").onclick = () => { acik = !acik; if (sonD) ciz(sonD); };
 }
 
+/* Oyunçunun aktiv ramkası varsa kart qara fonda ramka ilə görünür (ramka.js-dən window.ramkaAktivTap) */
+function ramkaTetbiq(d) {
+  const c = ov.querySelector(".pf-card"), o = ov.querySelector(".pf-rover");
+  if (!c || !o) return;
+  const r = typeof window.ramkaAktivTap === "function" ? window.ramkaAktivTap(d) : null;
+  c.classList.toggle("pf-r", !!r);
+  o.style.backgroundImage = r && r.img ? "url(" + JSON.stringify(r.img) + ")" : "none";
+  const s = r && !r.img && typeof window.ramkaStil === "function" ? window.ramkaStil(r, "1.3vw") : "";
+  if (c.dataset.rs !== s) { c.style.cssText = s; c.dataset.rs = s; }
+}
+
 function ciz(d) {
   if (!gurulu || !ov.querySelector(".pf-card")) qur();
+  ramkaTetbiq(d);
   const ad = pick(d, ["username"]) || "Oyunçu";
   const yas = pick(d, ["age"]);
   const yer = [pick(d, ["country"]), pick(d, ["city"])].filter(Boolean).join(", ");
@@ -690,6 +721,9 @@ window.ProfilKart = {
 
 /* TOP siyahısı dəyişəndə açıq kart yenilənir (lent + məftun adının rəngi) */
 topDeyis(() => { if (sonD && ownerUid && ov.classList.contains("open")) ciz(sonD); });
+
+/* ramkalar siyahısı (images/ramkalar) yüklənəndə açıq kart ramkanı tapsın */
+document.addEventListener("ramka-yuklendi", () => { if (sonD && ownerUid && ov.classList.contains("open")) ciz(sonD); });
 
 const hazir = {};
 async function onYukle(uid, derinlik = 0) {
