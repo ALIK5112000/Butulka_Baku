@@ -161,7 +161,7 @@ const CSS = `
 .pf-r .pf-close{z-index:5}
 .pf-r .pf-low{position:absolute;left:7.8%;top:54%;width:84.4%;height:43%;overflow:hidden;z-index:3}
 .pf-r .pf-lowi{width:80vw;transform:scale(.84);transform-origin:top left}
-.pf-r .pf-ln,.pf-r .pf-stl{display:none}
+.pf-r .pf-ln{display:none}
 .pf-r .pf-st{height:7vw}
 .pf-r .pf-act{padding:2vw 3.9vw 0}
 `;
@@ -619,7 +619,8 @@ function ciz(d) {
   const stat = String(pick(d, ["status"]) || "").trim();
   if (sig.st !== stat) {
     sig.st = stat;
-    ov.querySelector(".pf-stw").innerHTML = stat ? '<div class="pf-st"><span>' + esc(stat) + '</span></div><div class="pf-stl"></div>' : "";
+    /* status xətti həmişə görünür (status boş olsa da); status yazısı yalnız varsa əlavə olunur */
+    ov.querySelector(".pf-stw").innerHTML = (stat ? '<div class="pf-st"><span>' + esc(stat) + "</span></div>" : "") + '<div class="pf-stl"></div>';
   }
 
   const kVal = aktivDonmaVarmi(d, "kisses") ? 0 : d.kisses;
