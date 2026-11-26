@@ -25,7 +25,7 @@
   // Şəkilləri images/masa/ qovluğuna at və bura əlavə et. file:null = standart.
   var BACKGROUNDS = [
     { id: 'standart', name: 'Standart', file: null },
-    { id: 'kral', name: 'Yeni il', file: '1795660881796.jpg' },
+    { id: 'yeniil', name: 'Yeni il', file: 'yeniil.jpg' },
     { id: 'luks', name: 'Lüks zal', file: 'luks.jpg' },
     { id: 'gece', name: 'Gecə şəhəri', file: 'gece.jpg' },
     { id: 'kosmos', name: 'Kosmos', file: 'kosmos.jpg' },
