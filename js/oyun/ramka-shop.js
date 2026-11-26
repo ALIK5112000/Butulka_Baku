@@ -317,6 +317,7 @@ function yenile() {
     const f = RAMKALAR.find((x) => x.id === sec) || a || RAMKALAR[0];
     sec = f.id;
     ciz();
+    document.dispatchEvent(new Event("ramka-yuklendi"));   // açıq profil kartı ramkanı tapsın
   }).catch(() => {});
 }
 
