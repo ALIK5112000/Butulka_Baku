@@ -72,7 +72,7 @@ const GUN_MS = 86400000;
 const KAT = [{ id: "qiz", ad: "Qız" }, { id: "oglan", ad: "Oğlan" }, { id: "premium", ad: "Premium" }];
 
 // ===== Ehtiyat CSS ramkaları (images/ramkalar boş olanda görünür) =====
-const R = (id, kat, ad, h, a, g, bg) => ({ id, kat, ad, h, a, g, bg });
+const R = (id, kat, ad, h, a, g, bg) => ({ id, kat, ad, h: 500, a: 1000, g, bg });
 const NUMUNE = [
   R("cicek",  "qiz",     "Çiçək Çəhrayı", 60, 180, "linear-gradient(135deg,#ff9ccb,#ffe0f0,#ff6fb0)", "#5a1a3f"),
   R("lavanda","qiz",     "Lavanda",       60, 180, "linear-gradient(135deg,#b79cff,#e6dcff,#8a6bff)", "#2e2160"),
@@ -167,6 +167,12 @@ st.textContent =
   "#ramkaOv .qy button{border:.3vw solid #444;background:transparent;color:#ddd;border-radius:2vw;padding:1vw 1.8vw;font-size:3.1vw;cursor:pointer;white-space:nowrap}" +
   "#ramkaOv .qy button.a{border-color:#f08a1c;color:#fff;background:#3a2a14}" +
   "#ramkaOv .al{flex:none;width:17vw;height:11vw;border:0;border-radius:2.6vw;background:#6fbf2e;color:#fff;font-size:4.6vw;font-weight:800;cursor:pointer}";
+st.textContent = st.textContent.replace(/(-?\d*\.?\d+)vw/g, "calc($1*var(--u))");
+st.textContent +=
+  "#ramkaOv{--u:min(1vw,.62vh)}" +
+  "#ramkaOv .wrap{bottom:calc(36*var(--u))}" +
+  "#ramkaOv .zl{z-index:5}" +
+  "#ramkaOv .bar,#ramkaOv .x{z-index:6}";
 document.head.appendChild(st);
 
 const ov = document.createElement("div");
