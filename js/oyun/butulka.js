@@ -3,10 +3,10 @@ const QOVLUQ = "images/butulka/";
 const PANEL_TOP_VW = 122;   // panelin başladığı yer (masanın aşağı kənarı). Aşağı-yuxarı etmək üçün bunu dəyiş
 
 const BUTULKALAR = [
-  { id: "butulka",    ad: "Butulka",       fayl: "butulka.png",    qiymet: 5 },
+  { id: "butulka",    ad: "Butulka",        fayl: "butulka.png",    qiymet: 5 },
   { id: "energy",     ad: "Butulka Energy", fayl: "energy.png",     qiymet: 5 },
-  { id: "viski",      ad: "Butulka Viski",  fayl: "viski.png",      qiymet: 15 },
-  { id: "viski_mavi", ad: "Mavi Viski",     fayl: "viski_mavi.png", qiymet: 20 },
+  { id: "vip",        ad: "VIP",            fayl: "vip.png",        qiymet: 10 },
+  { id: "viski_mavi", ad: "Mavi Viski",     fayl: "viski_mavi.png", qiymet: 5 },
   // yeni butulka: şəkli images/butulka/ qovluğuna yüklə, bura bir sətir yaz
 ];
 
