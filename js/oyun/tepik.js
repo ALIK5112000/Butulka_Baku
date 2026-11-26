@@ -1,4 +1,4 @@
-/* tepik.js - "Təpik vur və qoru" (v3) */
+/* tepik.js - "Təpik vur və qoru" (v4) */
 (function () {
   'use strict';
 
@@ -7,6 +7,7 @@
     vurmaAddim: 15,
     qorumaQiymet: 15,
     qorumaAddim: 15,
+    qiymetSifirlaDeqiqe: 60,        // son əməliyyatdan neçə dəqiqə sonra qiymət yenidən 15-dən başlasın
     gozleSaniye: 30,
     qadagaDeqiqe: 15,
     xilasGosterSaniye: 2,           // qalxan kartda neçə saniyə görünsün
@@ -334,16 +335,40 @@
     Object.keys(abune).forEach(function (u) { if (!used[u]) abuneSil(u); });
   }
 
-  /* ================= qiymətlər (hər oyunçu üçün ayrıca artır) ================= */
-  function vurQiymetOxu(uid) {
-    return CONFIG.db().ref('tepikVurQiymet/' + uid).once('value').then(function (s) {
-      return s.val() || CONFIG.qiymet;
+  /* ================= qiymətlər =================
+     Qiymət oyunçuya bağlıdır (masa dəyişsə də qalır) və {q, kim, vaxt} kimi saxlanır:
+       - q    : növbəti əməliyyatın qiyməti
+       - kim  : qiymətin bağlı olduğu təpik vuran oyunçu
+       - vaxt : son əməliyyat vaxtı
+     Qiymət yenidən 15-dən başlayır əgər:
+       1) başqa oyunçu təpik vuribsa ("kim" dəyişibsə), və ya
+       2) son əməliyyatdan 1 saat keçibsə.
+     Bunlar yoxdursa, hər dəfə +15 artır. */
+  var VUR_YOL = 'tepikVurQiymet/';   // təpik vurma qiyməti (hədəf oyunçu üzrə)
+  var QORU_YOL = 'tepikQiymet/';     // qoruma qiyməti (qorunan oyunçu üzrə)
+
+  function qiymetHesabla(v, kim, baza) {
+    if (!v || typeof v !== 'object' || !v.q || !v.vaxt) return baza;   // yoxdur / köhnə format
+    if (indi() - v.vaxt >= CONFIG.qiymetSifirlaDeqiqe * 60 * 1000) return baza;   // 1 saat keçib
+    if (kim && v.kim !== kim) return baza;   // başqa oyunçu təpik vurub
+    return v.q;
+  }
+  function qiymetOxuUmumi(yol, uid, kim, baza) {
+    return CONFIG.db().ref(yol + uid).once('value').then(function (s) {
+      return qiymetHesabla(s.val(), kim, baza);
     });
   }
-  function qiymetOxu(uid) {
-    return CONFIG.db().ref('tepikQiymet/' + uid).once('value').then(function (s) {
-      return s.val() || CONFIG.qorumaQiymet;
-    });
+  function qiymetYaz(yol, uid, q, kim) {
+    return CONFIG.db().ref(yol + uid).set({ q: q, kim: kim || '', vaxt: indi() });
+  }
+
+  /* təpik vurma qiyməti: hədəf oyunçuya mən vururam */
+  function vurQiymetOxu(hedefUid, kim) {
+    return qiymetOxuUmumi(VUR_YOL, hedefUid, kim, CONFIG.qiymet);
+  }
+  /* qoruma qiyməti: qorunan oyunçu, onu təpikləyən "kim"-ə qarşı */
+  function qiymetOxu(uid, kim) {
+    return qiymetOxuUmumi(QORU_YOL, uid, kim, CONFIG.qorumaQiymet);
   }
 
   /* ================= təpik vurma pəncərəsi ================= */
@@ -408,7 +433,7 @@
 
     var qEl = overlay.querySelector('.tepik-qiymet b');
     qEl.textContent = CONFIG.qiymet;
-    vurQiymetOxu(hedefUid).then(function (q) { if (acikUid === hedefUid) qEl.textContent = q; });
+    vurQiymetOxu(hedefUid, CONFIG.menimUid()).then(function (q) { if (acikUid === hedefUid) qEl.textContent = q; });
 
     overlay.classList.add('acik');
 
@@ -446,9 +471,9 @@
     var ref = CONFIG.db().ref(ROOT + '/' + hedef), q = 0, evvelki = null;
     ref.once('value').then(function (snap) {
       evvelki = snap.val();
-      /* "Bu oyunçuya artıq təpik vurulub" yoxlaması götürülüb: həm eyni masada, həm başqa masada
-         yenidən təpik vurmaq olar; yeni təpik 30 saniyəni yenidən başladır, qiymət qaldığı yerdən davam edir */
-      return vurQiymetOxu(hedef);
+      /* qiymət: eyni oyunçu təpik vurursa qaldığı yerdən artır; başqa oyunçu vurursa
+         və ya 1 saat keçibsə yenidən 15-dən başlayır; masa dəyişməsi qiymətə təsir etmir */
+      return vurQiymetOxu(hedef, men);
     }).then(function (p) {
       q = p;
       return CONFIG.bonusCix(q);
@@ -467,7 +492,7 @@
       if (eski) yeni.eski = eski;   // əvvəlki masadakı qadağa yeni qeydlə silinməsin
       return ref.set(yeni);
     }).then(function () {
-      return CONFIG.db().ref('tepikVurQiymet/' + hedef).set(q + CONFIG.vurmaAddim);
+      return qiymetYaz(VUR_YOL, hedef, q + CONFIG.vurmaAddim, men);
     }).then(function () {
       toast('Təpik vuruldu!');
       bagla();
@@ -483,11 +508,14 @@
   }
 
   function qoru(hedefUid) {
-    var r = CONFIG.db().ref(ROOT + '/' + hedefUid), q = 0;
+    var r = CONFIG.db().ref(ROOT + '/' + hedefUid), q = 0, tepikleyen = null;
     return r.once('value').then(function (snap) {
       var v = snap.val();
       if (!v || v.xilas || v.terkVaxti <= indi()) throw xeta('Qoruma artıq lazım deyil');
-      return qiymetOxu(hedefUid);
+      tepikleyen = v.kim || null;
+      /* qoruma qiyməti də eyni məntiqlə: eyni oyunçunun təpiyinə qarşı qaldığı yerdən artır;
+         başqa oyunçu təpik vurubsa və ya 1 saat keçibsə yenidən 15-dən başlayır */
+      return qiymetOxu(hedefUid, tepikleyen);
     }).then(function (p) {
       q = p;
       return CONFIG.bonusCix(q);
@@ -495,7 +523,7 @@
       if (!ok) throw xeta(BONUS_YOXDUR);   // bonus çatmırsa: pəncərəsiz, 3 saniyəlik yazı
       return xilas(hedefUid);
     }).then(function () {
-      return CONFIG.db().ref('tepikQiymet/' + hedefUid).set(q + CONFIG.qorumaAddim);
+      return qiymetYaz(QORU_YOL, hedefUid, q + CONFIG.qorumaAddim, tepikleyen);
     }).then(function () { toast('Oyunçu qorundu!'); })
     .catch(function (err) { toast(xetaMesaji(err)); });
   }
@@ -562,7 +590,8 @@
   function qovBagla() { clearInterval(qovT); if (qovEl) { qovEl.remove(); qovEl = null; } }
   function qovAc(v) {
     var men = CONFIG.menimUid();
-    Promise.all([qiymetOxu(men), CONFIG.adGetir(v.kim)]).then(function (r) {
+    /* qoruma qiyməti bu təpikləyənə görə hesablanır (başqa oyunçu vurubsa 15-dən başlayır) */
+    Promise.all([qiymetOxu(men, v.kim), CONFIG.adGetir(v.kim)]).then(function (r) {
       /* gözləyərkən vəziyyət dəyişibsə (qorunub / başqa masa) açma */
       if (!sonV || sonV.baslama !== v.baslama || sonV.xilas || !masaUygun(sonV)) return;
       qovBagla();
