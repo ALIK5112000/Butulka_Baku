@@ -153,7 +153,7 @@ const CSS = `
 .pf-topimg{position:absolute;top:4.26vw;left:-3.9vw;width:14.9vw;height:auto;margin:0;z-index:2;pointer-events:none;-webkit-user-select:none;user-select:none}
 /* ===== RAMKA REJİMİ: oyunçunun aktiv ramkası olanda kart qara fonda, ramka ilə görünür ===== */
 .pf-rover{display:none}
-.pf-card.pf-r{aspect-ratio:1075/1867;background:#0b0b0b;border-radius:4vw}
+.pf-card.pf-r{aspect-ratio:1075/1867;border-radius:2.6vw}
 .pf-r .pf-rover{display:block;position:absolute;inset:0;z-index:2;pointer-events:none;background:center/100% 100% no-repeat}
 .pf-r .pf-topw{position:absolute;left:5.5%;top:2.4%;width:89%;height:51.2%}
 .pf-r .pf-photo{height:100%;border-radius:0}
@@ -162,13 +162,8 @@ const CSS = `
 .pf-r .pf-low{position:absolute;left:7.8%;top:54%;width:84.4%;height:43%;overflow:hidden;z-index:3}
 .pf-r .pf-lowi{width:80vw;transform:scale(.84);transform-origin:top left}
 .pf-r .pf-ln,.pf-r .pf-stl{display:none}
-.pf-r .pf-st{height:7vw;color:#fff}
+.pf-r .pf-st{height:7vw}
 .pf-r .pf-act{padding:2vw 3.9vw 0}
-.pf-r .pf-dv i{background:rgba(255,255,255,.18)}
-.pf-r .pf-dv span{background:#3a3125}
-.pf-r .pf-name{color:#ddd}
-.pf-r .pf-heart b{color:#fff}
-.pf-r .pf-ava{background:#2b2b2b}
 `;
 const st = document.createElement("style");
 st.textContent = CSS;
@@ -575,12 +570,15 @@ function qur() {
 }
 
 /* Oyunçunun aktiv ramkası varsa kart qara fonda ramka ilə görünür (ramka.js-dən window.ramkaAktivTap) */
+const RAMKA_KES = "polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,8.1% 54.3%,91.9% 54.3%,91.9% 91%,82% 91%,82% 96.8%,18% 96.8%,18% 91%,8.1% 91%,8.1% 54.3%)";   // ramkanın alt qara hissəsini kəsir (küncdəki naxışlar qalır)
 function ramkaTetbiq(d) {
   const c = ov.querySelector(".pf-card"), o = ov.querySelector(".pf-rover");
   if (!c || !o) return;
   const r = typeof window.ramkaAktivTap === "function" ? window.ramkaAktivTap(d) : null;
   c.classList.toggle("pf-r", !!r);
   o.style.backgroundImage = r && r.img ? "url(" + JSON.stringify(r.img) + ")" : "none";
+  const kes = r && r.img ? RAMKA_KES : "";
+  o.style.clipPath = kes; o.style.webkitClipPath = kes;
   const s = r && !r.img && typeof window.ramkaStil === "function" ? window.ramkaStil(r, "1.3vw") : "";
   if (c.dataset.rs !== s) { c.style.cssText = s; c.dataset.rs = s; }
 }
