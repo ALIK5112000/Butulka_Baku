@@ -149,7 +149,6 @@ st.textContent =
   "#ramkaOv .sr{display:flex;align-items:center;gap:2vw;height:5.6vw;font-size:4.2vw;font-weight:800;white-space:nowrap}" +
   "#ramkaOv .sr span{width:5vw;text-align:center;font-size:4.4vw}" +
   "#ramkaOv .sr small{font-size:2.5vw;color:#999;font-weight:400}" +
-  "#ramkaOv .tr{font-size:12vw;line-height:1;margin-right:1vw}" +
   "#ramkaOv .dv{display:flex;align-items:center;gap:2vw;height:3.6vw}" +
   "#ramkaOv .dv i{flex:1;height:.2vw;background:#e3e3e3}" +
   "#ramkaOv .dv b{font-size:3vw;background:#ececec;border-radius:1.2vw;padding:0 3vw;line-height:3.4vw;color:#9a9a9a;font-weight:400}" +
@@ -158,8 +157,6 @@ st.textContent =
   "#ramkaOv .mf .tx{font-size:3.4vw;line-height:1.25;min-width:0;color:#555}" +
   "#ramkaOv .mf .tx small{color:#999;font-size:2.6vw}" +
   "#ramkaOv .mf .tk{display:inline-block;background:#6fbf2e;color:#fff;border-radius:1vw;padding:.4vw 2.6vw;font-size:3vw;margin-top:.6vw}" +
-  "#ramkaOv .dg{display:flex;justify-content:space-between;padding:0 1vw}" +
-  "#ramkaOv .dg div{width:9vw;height:9vw;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:3vw;font-weight:800;box-sizing:border-box}" +
   "#ramkaOv .x{position:absolute;top:-3vw;right:-3vw;z-index:6;width:8.4vw;height:8.4vw;border-radius:50%;border:0;padding:0;background:#fff;color:#8cc63f;font-size:6vw;line-height:1;box-shadow:0 .6vw 2vw rgba(0,0,0,.3);cursor:pointer}" +
   // sağ zolaq
   "#ramkaOv .zl{position:absolute;left:73vw;top:57.3vw;transform:translateY(-50%);width:15.6vw;max-height:76vw;overflow-y:auto;scrollbar-width:none;background:rgba(0,0,0,.5);border-radius:3.4vw;padding:1.8vw;box-sizing:border-box;display:flex;flex-direction:column;gap:2vw;align-items:center}" +
@@ -168,8 +165,8 @@ st.textContent =
   "#ramkaOv .th.s{outline:.6vw solid #fff;outline-offset:.2vw}" +
   "#ramkaOv .th i{position:absolute;right:-1vw;top:-1vw;width:4.6vw;height:4.6vw;border-radius:50%;background:#8cc63f;color:#fff;font-size:3vw;font-style:normal;display:flex;align-items:center;justify-content:center}" +
   "#ramkaOv .bos{font-size:2.6vw;color:#aaa;padding:3vw 0;text-align:center}" +
-  // aşağı bar
-  "#ramkaOv .bar{position:absolute;left:0;top:119vw;box-sizing:border-box;width:92vw;background:#16130f;border-radius:4vw;padding:2.4vw 3vw;display:flex;align-items:center;gap:2.6vw;box-shadow:0 1vw 4vw rgba(0,0,0,.5)}" +
+  // aşağı bar (adı .rbar: səhifədəki başqa .bar qaydası ilə toqquşmasın deyə; transform/right/bottom/margin sıfırlanıb)
+  "#ramkaOv .rbar{position:absolute;left:0;top:119vw;right:auto;bottom:auto;margin:0;transform:none;box-sizing:border-box;width:92vw;background:#16130f;border-radius:4vw;padding:2.4vw 3vw;display:flex;align-items:center;gap:2.6vw;box-shadow:0 1vw 4vw rgba(0,0,0,.5)}" +
   "#ramkaOv .ad{flex:1;min-width:0;color:#e8c766;font-size:4.6vw;font-weight:700;line-height:1.15}" +
   "#ramkaOv .ad small{display:block;color:#9a9a9a;font-size:2.8vw;font-weight:400;margin-top:.6vw}" +
   "#ramkaOv .qy{flex:none;display:flex;flex-direction:column;gap:1.2vw}" +
@@ -187,14 +184,11 @@ ov.innerHTML =
   '<div class="pn"><div class="row"><div class="ky"><div class="kart" id="rKart">' +
   '<div class="foto" id="rFoto"><div class="cap" id="rCap"></div></div>' +
   '<div class="alt"><div class="stt" id="rStt"></div><div class="sts" id="rSts"></div>' +
-  '<div class="dv"><i></i><b>&#8964;</b><i></i></div><div class="mf" id="rMf"></div>' +
-  '<div class="dg"><div style="background:#e8553d">&#128737;</div>' +
-  '<div style="background:#f08a1c">Buto</div><div style="background:#a9519c">&#127925;</div>' +
-  '<div style="background:#f6a23c">&#10004;</div></div></div>' +
+  '<div class="dv"><i></i><b>&#8964;</b><i></i></div><div class="mf" id="rMf"></div></div>' +
   '<div class="vip" id="rVip">VIP</div><div class="over" id="rOver"></div></div>' +
   '<button class="x" id="rBagla" type="button">&times;</button></div>' +
   '<div class="zl" id="rZl"></div></div>' +
-  '<div class="bar"><div class="ad" id="rAd"></div>' +
+  '<div class="rbar"><div class="ad" id="rAd"></div>' +
   '<div class="qy"><button id="rQH" type="button"></button><button id="rQA" type="button"></button></div>' +
   '<button class="al" id="rAl" type="button">AL</button></div></div>';
 document.body.appendChild(ov);
@@ -219,7 +213,7 @@ function ciz() {
   $("rVip").style.display = m.vip ? "block" : "none";
   $("rSts").innerHTML =
     "<div>" + sr("&#128139;", "#e5383b", m.opuc, m.opucS) + sr("&#127925;", "#c57ac0", m.musiqi, m.musiqiS) +
-    sr("&#128516;", "#f08a1c", jeton, m.jetonS) + '</div><div class="tr">&#127942;</div>';
+    sr("&#128516;", "#f08a1c", jeton, m.jetonS) + "</div>";
   const mf = $("rMf");
   if (m.meftun) {
     mf.style.display = "flex";
