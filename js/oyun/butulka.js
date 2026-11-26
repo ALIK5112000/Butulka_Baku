@@ -1,15 +1,15 @@
-import { fsdb } from "../core/firebase.js";
+import { rtdb, fsdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
-import { doc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { doc, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 // ===== Butulka seçimi paneli (aşağıdan açılır) =====
 const QOVLUQ = "images/butulka/";
 const PANEL_TOP_VW = 122;
 
-// DİQQƏT: bu ikisini öz layihənə uyğun düzəlt (aşağıdakı izaha bax)
-const MASA_KOLLEKSIYA = "masalar";                          // masaların Firestore kolleksiyası
-const MASA_BUTULKA_SEC = "#butulka, #bottle, .butulka-img"; // masadakı butulka şəklinin elementi
+// DİQQƏT: masadakı butulka şəklinin elementi (oyun.html-dəki id/klass). Bunu dəqiqləşdirməliyik.
+const MASA_BUTULKA_SEC = "#butulka, #bottle, .butulka-img";
 
 const BUTULKALAR = [
   { id: "vip",        ad: "VIP",            fayl: "vip.png",        qiymet: 10 },
@@ -24,11 +24,10 @@ const BUTULKALAR = [
   const UREK =
     '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.8-8 11-8 11z" fill="#ff6a13"/></svg>';
 
-  const masaRef = doc(fsdb, MASA_KOLLEKSIYA, String(MASA_NOMRESI));
-  let masadakiId = null;     // masada hazırda hansı butulka var
-  let mesgul = false;        // ikiqat toxunuşdan qorunma
+  const butulkaRef = ref(rtdb, `masalar/${MASA_NOMRESI}/butulka`);
+  let masadakiId = null;
+  let mesgul = false;
 
-  // ---- kiçik bildiriş ----
   function toast(metn) {
     const t = document.createElement("div");
     t.textContent = metn;
@@ -98,32 +97,36 @@ const BUTULKALAR = [
 
   function ac() { panel.style.display = "flex"; siyahi.scrollTop = 0; }
   function bagla() { panel.style.display = "none"; }
-
   document.addEventListener("menyu-sec", (e) => { if (e.detail === "butulka") ac(); });
 
-  // ---- ALMAQ: ürək çıx + masaya yaz (hamısı bir əməliyyatda) ----
+  // Ürəyi dəyiş (Firestore tranzaksiyası). delta mənfi = çıx, müsbət = geri qaytar
+  function urekDeyis(userRef, delta, yoxla) {
+    return runTransaction(fsdb, async (tx) => {
+      const s = await tx.get(userRef);
+      const urek = (s.data() && s.data().hearts) || 0;
+      if (yoxla && urek + delta < 0) throw new Error("AZ_UREK");
+      tx.update(userRef, { hearts: urek + delta });
+    });
+  }
+
+  // ---- ALMAQ ----
   async function al(b) {
     if (mesgul) return;
     const cari = cariOyuncu();
     if (!cari || !cari.docId) { toast("Əvvəlcə daxil ol"); return; }
-    if (masadakiId === b.id) { bagla(); return; }          // masada artıq bu var: pul tutulmur
+    if (masadakiId === b.id) { bagla(); return; }     // masada artıq bu var: pul tutulmur
 
     mesgul = true;
     const userRef = doc(fsdb, "users", cari.docId);
     try {
-      await runTransaction(fsdb, async (tx) => {
-        const s = await tx.get(userRef);
-        const urek = (s.data() && s.data().hearts) || 0;
-        if (urek < b.qiymet) throw new Error("AZ_UREK");
-        tx.update(userRef, { hearts: urek - b.qiymet });
-        tx.set(masaRef, {
-          butulka: b.id,
-          butulkaFayl: b.fayl,
-          butulkaKim: cari.docId,
-          butulkaVaxt: Date.now()
-        }, { merge: true });
-      });
-      bagla();
+      await urekDeyis(userRef, -b.qiymet, true);       // 1) ürək çıx
+      try {
+        await set(butulkaRef, { id: b.id, fayl: b.fayl, kim: cari.docId, vaxt: Date.now() });   // 2) masaya yaz
+        bagla();
+      } catch (e) {
+        await urekDeyis(userRef, b.qiymet, false).catch(() => {});   // masaya yazılmadısa ürək qaytarılır
+        throw e;
+      }
     } catch (e) {
       toast(e.message === "AZ_UREK" ? "Kifayət qədər ürək yoxdur" : "Xəta baş verdi, yenidən cəhd edin");
       console.error("butulka al:", e);
@@ -131,19 +134,20 @@ const BUTULKALAR = [
     mesgul = false;
   }
 
-  // ---- HAMI GÖRSÜN: masa sənədi dəyişəndə butulka şəklini yenilə ----
+  // ---- HAMI GÖRSÜN: masadakı butulkanı canlı yenilə ----
   function masadaGoster(b) {
     const el = document.querySelector(MASA_BUTULKA_SEC);
     if (!el) { console.warn("Masadakı butulka elementi tapılmadı:", MASA_BUTULKA_SEC); return; }
-    if (el.tagName === "IMG") el.src = QOVLUQ + b.fayl;
-    else el.style.backgroundImage = "url(" + QOVLUQ + b.fayl + ")";
+    const url = QOVLUQ + b.fayl;
+    if (el.tagName === "IMG") { el.src = url; el.style.objectFit = "contain"; }
+    else { el.style.backgroundImage = 'url("' + url + '")'; el.style.backgroundSize = "contain"; el.style.backgroundRepeat = "no-repeat"; el.style.backgroundPosition = "center"; }
   }
 
-  onSnapshot(masaRef, (s) => {
-    const d = s.data();
-    if (!d || !d.butulka) return;
-    masadakiId = d.butulka;
-    const b = BUTULKALAR.find((z) => z.id === d.butulka);
+  onValue(butulkaRef, (s) => {
+    const d = s.val();
+    if (!d || !d.id) return;
+    masadakiId = d.id;
+    const b = BUTULKALAR.find((z) => z.id === d.id);
     if (b) masadaGoster(b);
     document.dispatchEvent(new CustomEvent("butulka-secildi", { detail: b || d }));
   });
