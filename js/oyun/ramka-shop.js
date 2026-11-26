@@ -93,38 +93,59 @@ const stil = (r, w) =>
 
 // ===== images/ramkalar qovluğunu oxuyur =====
 // Fayl adı istənilən ola bilər: Zumrud-Qizil.png  (ad = Zumrud Qizil)
+// Rəqəmlə adlanan fayllar da olar: 1.png, 2.png ... (ad = Ramka 1)
 // İstəsən əvvəlinə qiz_ / oglan_ / premium_ yaza bilərsən, o ada düşməz.
 // Qiymət fayl adından asılı deyil: həmişə QH / QA.
 const PREF = ["qiz", "oglan", "premium"];
 function parsla(fad) {
   const m = fad.match(/^(.+)\.(png|webp|gif|jpg|jpeg)$/i);
   if (!m) return null;
-  const p = m[1].split("_").filter((s) => s && !/^\d+$/.test(s));
+  const p = m[1].split("_").filter((s) => s);
   if (p.length > 1 && PREF.includes(p[0].toLowerCase())) p.shift();
-  if (!p.length) return null;
+  if (!p.length) p.push("Ramka " + m[1]);
   return {
     id: m[1].replace(/[^a-zA-Z0-9_]/g, "_"),
     kat: "",
-    ad: p.join(" ").replace(/-/g, " "),
+    ad: /^\d+$/.test(p.join("")) ? "Ramka " + p.join(" ") : p.join(" ").replace(/-/g, " "),
     h: QH,
     a: QA,
     img: YOL + "/" + encodeURIComponent(fad)
   };
 }
+function yoxla(url) {
+  return new Promise((res) => {
+    const im = new Image();
+    im.onload = () => res(true);
+    im.onerror = () => res(false);
+    im.src = url;
+  });
+}
 async function sekilRamkalar() {
   let f = null;
   try { const c = JSON.parse(localStorage.getItem("ramkaSiyahi") || "null"); if (c && Date.now() - c.t < 120000) f = c.f; } catch (e) {}
   if (!f) {
+    f = [];
+    // 1) GitHub API (public repo): qovluqdakı bütün fayllar, istənilən adla
     try {
       const r = await fetch("https://api.github.com/repos/" + REPO + "/contents/" + YOL);
-      if (!r.ok) throw new Error(r.status);
-      f = (await r.json()).map((x) => x.name);
-    } catch (e) {
+      if (r.ok) f = (await r.json()).filter((x) => x.type === "file").map((x) => x.name);
+    } catch (e) {}
+    // 2) API işləməsə (private repo / limit): 1.png, 2.png ... 40.png (və .webp) birbaşa yoxlanır
+    if (!f.length) {
+      const yoxlar = [];
+      for (let n = 1; n <= 40; n++) for (const ext of ["png", "webp"]) {
+        const ad = n + "." + ext;
+        yoxlar.push(yoxla(YOL + "/" + ad).then((ok) => (ok ? ad : null)));
+      }
+      f = (await Promise.all(yoxlar)).filter(Boolean);
+    }
+    // 3) Ən son ehtiyat: siyahi.json varsa onu oxuyur
+    if (!f.length) {
       try { f = await (await fetch(YOL + "/siyahi.json")).json(); } catch (e2) { f = []; }
     }
     if (f.length) { try { localStorage.setItem("ramkaSiyahi", JSON.stringify({ t: Date.now(), f })); } catch (e) {} }
   }
-  return f.map(parsla).filter(Boolean).sort((a, b) => a.id.localeCompare(b.id));
+  return f.map(parsla).filter(Boolean).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
 }
 
 const cari = cariOyuncu();
