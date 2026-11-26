@@ -161,6 +161,17 @@
 
   /* 3-xətt menyusunda "Masa fonu" yazısına toxunanda aç */
   document.addEventListener('click', function (e) {
+  if (overlay) return;
+  var el = e.target;
+  for (var i = 0; el && i < 5; i++, el = el.parentElement) {
+    var txt = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    if (txt.length < 20 && txt.indexOf('Masa fonu') !== -1) {
+      e.stopPropagation();
+      open();
+      return;
+    }
+  }
+}, true);
     var t = e.target.closest && e.target.closest('*');
     if (t && t.children.length === 0 && t.textContent.trim() === 'Masa fonu' && !overlay) open();
   }, true);
