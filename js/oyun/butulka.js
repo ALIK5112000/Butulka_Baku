@@ -6,6 +6,8 @@ const BUTULKALAR = [
   { id: "kola",     ad: "Kola",     fayl: "kola.png",     qiymet: 5 },
   { id: "portagal", ad: "Portağal", fayl: "portagal.png", qiymet: 5 },
   { id: "kolamax",  ad: "Kola Max", fayl: "kolamax.png",  qiymet: 5 },
+  { id: "energy", ad: "Butulka Energy", fayl: "energy.png", qiymet: 5 },
+  { id: "viski",  ad: "Butulka Viski",  fayl: "viski.png",  qiymet: 15 },
   // yeni butulka: şəkli images/butulka/ qovluğuna yüklə, bura bir sətir yaz
 ];
 
