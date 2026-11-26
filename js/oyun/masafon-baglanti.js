@@ -1,16 +1,34 @@
 // masafon-baglanti.js — masafon.js-i Firebase v10 (modul) ilə bağlayır.
 import { rtdb, fsdb } from "../core/firebase.js";
+import { cariOyuncu } from "./yardimci.js";
 import { ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { doc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-/* ====== BU 4 YERİ SƏNİN KODUNA UYĞUN DÜZƏLT ====== */
-const GET_UID = () => window.menimUid;      // oyunçunun uid-i (tepik-baglanti.js-dəki kimi)
-const GET_TABLE = () => window.masaId;      // hazırkı masanın id-si
-const TABLE_SELECTOR = "#masa";             // fonun görünəcəyi element
-const JETON_ALANI = "coins";                // Firestore-da jeton sahəsinin adı
-/* ================================================= */
+if (!window.MasaFon) throw new Error("masafon.js tapılmadı. oyun.html-dəki yol ilə faylın yeri eyni olmalıdır");
 
-// masafon.js compat üslubunda yazılıb, ona görə kiçik adapter:
+/* ====== lazım olsa düzəlt ====== */
+const GET_UID = () => (cariOyuncu() || {}).docId;                 // Firestore: users/{docId}
+const GET_TABLE = () => { const n = document.getElementById("masaNo"); return n ? n.textContent.trim() : null; };
+const TABLE_SELECTOR = "#taxta";                                  // taxta fonunun olduğu element
+const TABLES_PATH = "masalar";                                    // RTDB-də masaların yolu
+const JETON_ALANI = null;                                         // bilirsənsə yaz, yoxsa özü tapır
+/* =============================== */
+
+const ADAYLAR = ["jeton", "jetonlar", "jetons", "coins", "coin", "tokens", "token"];
+const KEY = "__jeton";
+let sahe = JETON_ALANI;
+function tap(d) {
+  if (sahe && d[sahe] !== undefined) return sahe;
+  for (const k of ADAYLAR) if (d[k] !== undefined && d[k] !== null && isFinite(Number(d[k]))) { sahe = k; return k; }
+  return null;
+}
+function norm(d) {
+  d = d || {};
+  const f = tap(d), o = Object.assign({}, d);
+  o[KEY] = f ? Number(d[f]) || 0 : 0;
+  return o;
+}
+
 const rtdbShim = {
   ref(path) {
     const r = ref(rtdb, path);
@@ -24,17 +42,28 @@ const rtdbShim = {
 };
 
 const fsShim = {
-  collection(c) {
+  collection() {
     return {
       doc(id) {
-        const d = doc(fsdb, c, id);
-        return { _d: d, onSnapshot(cb) { return onSnapshot(d, cb); } };
+        const d = doc(fsdb, "users", id);
+        return { _d: d, onSnapshot(cb) { return onSnapshot(d, (s) => cb({ data: () => norm(s.data()) })); } };
       }
     };
   },
   runTransaction(fn) {
     return runTransaction(fsdb, (tx) =>
-      fn({ get: (r) => tx.get(r._d), update: (r, u) => tx.update(r._d, u) })
+      fn({
+        get: (r) => tx.get(r._d).then((s) => ({ data: () => norm(s.data()) })),
+        update: (r, u) => {
+          const o = Object.assign({}, u);
+          if (KEY in o) {
+            if (!sahe) throw new Error("Jeton sahəsi tapılmadı");
+            o[sahe] = o[KEY];
+            delete o[KEY];
+          }
+          tx.update(r._d, o);
+        }
+      })
     );
   }
 };
@@ -45,9 +74,8 @@ MasaFon.init({
   getUid: GET_UID,
   getTableId: GET_TABLE,
   tableSelector: TABLE_SELECTOR,
-  tokenField: JETON_ALANI,
-  tablesPath: "masalar"      // RTDB-də masaların yolu; səndə fərqlidirsə dəyiş
+  tokenField: KEY,
+  tablesPath: TABLES_PATH
 });
 
-// Oyunçu masa dəyişəndə fon dinləyicisi yenilənsin
 setInterval(() => MasaFon.watchTable(), 1500);
