@@ -86,6 +86,7 @@ const NUMUNE = [
 ];
 let RAMKALAR = NUMUNE;
 
+const RAMKA_KES = "polygon(evenodd,0 0,100% 0,100% 100%,0 100%,0 0,8.1% 54.3%,91.9% 54.3%,91.9% 91%,82% 91%,82% 96.8%,18% 96.8%,18% 91%,8.1% 91%,8.1% 54.3%)";   // ramkanın alt qara hissəsini kəsir (küncdəki naxışlar qalır)
 const U = (n) => "calc(" + n + "*var(--u))";
 const stil = (r, w) =>
   "border:" + w + " solid transparent;background:linear-gradient(" + r.bg + "," + r.bg + ") padding-box," + r.g + " border-box;";
@@ -137,12 +138,12 @@ st.textContent =
   "#ramkaOv .pn{position:absolute;left:50%;top:50%;width:92vw;height:138vw;transform:translate(-50%,-50%)}" +
   "#ramkaOv .row{display:block}" +
   "#ramkaOv .ky{position:absolute;left:4.4vw;top:0;width:66vw;height:114.6vw}" +
-  "#ramkaOv .kart{position:absolute;left:0;top:0;box-sizing:border-box;width:100%;height:100%;border-radius:4vw;overflow:hidden;box-shadow:0 1vw 5vw rgba(0,0,0,.5);background:#0b0b0b}" +
+  "#ramkaOv .kart{position:absolute;left:0;top:0;box-sizing:border-box;width:100%;height:100%;border-radius:2.6vw;overflow:hidden;box-shadow:0 1vw 5vw rgba(0,0,0,.5);background:#fff}" +
   "#ramkaOv .over{position:absolute;inset:0;background:center/100% 100% no-repeat;pointer-events:none;z-index:2}" +
   "#ramkaOv .foto{position:absolute;left:5.5%;top:2.4%;width:89%;height:51.2%;z-index:1;background:#2b2b2b center/cover no-repeat}" +
   "#ramkaOv .cap{position:absolute;left:0;right:0;bottom:0;padding:6vw 2vw 2vw;text-align:center;font-size:4vw;font-weight:700;text-shadow:0 .3vw .8vw rgba(0,0,0,.7);background:linear-gradient(transparent,rgba(0,0,0,.45))}" +
   "#ramkaOv .vip{position:absolute;left:1.5%;top:3.2%;z-index:4;display:none;background:#7cb83a;color:#fff;font-weight:800;font-size:5.4vw;padding:.3vw 3.4vw .3vw 2.4vw;border-radius:.8vw 2vw 2vw .8vw;box-shadow:0 .4vw 1vw rgba(0,0,0,.4)}" +
-  "#ramkaOv .alt{position:absolute;left:7.8%;top:54%;width:84.4%;height:43%;z-index:3;box-sizing:border-box;padding:.8vw 1vw 1vw;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}" +
+  "#ramkaOv .alt{color:#111;position:absolute;left:7.8%;top:54%;width:84.4%;height:43%;z-index:3;box-sizing:border-box;padding:.8vw 1vw 1vw;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}" +
   "#ramkaOv .stt{text-align:center;font-style:italic;font-size:3.4vw}" +
   "#ramkaOv .sts{display:flex;align-items:center;justify-content:space-between}" +
   "#ramkaOv .sr{display:flex;align-items:center;gap:2vw;height:5.6vw;font-size:4.2vw;font-weight:800;white-space:nowrap}" +
@@ -150,11 +151,11 @@ st.textContent =
   "#ramkaOv .sr small{font-size:2.5vw;color:#999;font-weight:400}" +
   "#ramkaOv .tr{font-size:12vw;line-height:1;margin-right:1vw}" +
   "#ramkaOv .dv{display:flex;align-items:center;gap:2vw;height:3.6vw}" +
-  "#ramkaOv .dv i{flex:1;height:.2vw;background:rgba(255,255,255,.18)}" +
-  "#ramkaOv .dv b{font-size:3vw;background:#3a3125;border-radius:1.2vw;padding:0 3vw;line-height:3.4vw;color:#ddd;font-weight:400}" +
+  "#ramkaOv .dv i{flex:1;height:.2vw;background:#e3e3e3}" +
+  "#ramkaOv .dv b{font-size:3vw;background:#ececec;border-radius:1.2vw;padding:0 3vw;line-height:3.4vw;color:#9a9a9a;font-weight:400}" +
   "#ramkaOv .mf{display:flex;gap:2.4vw;align-items:center}" +
   "#ramkaOv .mf .av{width:11vw;height:11vw;flex:none;border-radius:2vw;background:#2b2b2b center/cover no-repeat;border:.3vw solid #c9a45a;box-sizing:border-box}" +
-  "#ramkaOv .mf .tx{font-size:3.4vw;line-height:1.25;min-width:0}" +
+  "#ramkaOv .mf .tx{font-size:3.4vw;line-height:1.25;min-width:0;color:#555}" +
   "#ramkaOv .mf .tx small{color:#999;font-size:2.6vw}" +
   "#ramkaOv .mf .tk{display:inline-block;background:#6fbf2e;color:#fff;border-radius:1vw;padding:.4vw 2.6vw;font-size:3vw;margin-top:.6vw}" +
   "#ramkaOv .dg{display:flex;justify-content:space-between;padding:0 1vw}" +
@@ -209,8 +210,9 @@ function ciz() {
   const m = melumat(p, cari);
 
   // ===== Profil kartı: oyunçunun öz canlı məlumatları + seçilən ramka =====
-  $("rKart").setAttribute("style", !r ? "background:#0b0b0b;border:" + U(.5) + " solid #444;" : r.img ? "background:#0b0b0b;" : stil(r, U(1.3)));
+  $("rKart").setAttribute("style", !r ? "background:#fff;border:" + U(.5) + " solid #ccc;" : r.img ? "background:#fff;" : stil(r, U(1.3)));
   $("rOver").style.backgroundImage = r && r.img ? "url(" + JSON.stringify(r.img) + ")" : "none";
+  $("rOver").style.clipPath = $("rOver").style.webkitClipPath = r && r.img ? RAMKA_KES : "";
   $("rFoto").style.backgroundImage = m.foto ? "url(" + JSON.stringify(m.foto) + ")" : "none";
   $("rCap").textContent = m.ad + (m.yas ? ", " + m.yas : "");
   $("rStt").textContent = m.status;
