@@ -5,6 +5,10 @@ import { doc, onSnapshot, runTransaction, updateDoc } from "https://www.gstatic.
 const REPO = "ALIK5112000/Butulka_Baku";
 const YOL = "images/ramkalar";
 
+// GitHub API işləməyəndə (private repo / limit) bu siyahı istifadə olunur.
+// Yeni ramka yükləyəndə adını bura da əlavə et (API işləyirsə, buna ehtiyac yoxdur).
+const EHTIYAT = ["Gul-Almaz.png", "VIP-Aslan.png", "Yunan-Qizil.png"];
+
 // ===== QİYMƏT: bütün ramkalar eyni =====
 const QH = 500;    // 7 günlük
 const QA = 1000;   // 30 günlük
@@ -143,6 +147,8 @@ async function sekilRamkalar() {
     if (!f.length) {
       try { f = await (await fetch(YOL + "/siyahi.json")).json(); } catch (e2) { f = []; }
     }
+    // 4) hələ də boşdursa, koddakı ehtiyat siyahı
+    if (!f.length) f = EHTIYAT.slice();
     if (f.length) { try { localStorage.setItem("ramkaSiyahi", JSON.stringify({ t: Date.now(), f })); } catch (e) {} }
   }
   return f.map(parsla).filter(Boolean).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
