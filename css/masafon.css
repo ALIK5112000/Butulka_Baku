@@ -1,0 +1,17 @@
+.mf-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:inherit}
+.mf-box{position:relative;background:#fff;border-radius:28px;width:94%;max-width:480px;max-height:92vh;overflow-y:auto;padding:20px 18px 90px;box-sizing:border-box}
+.mf-x{position:absolute;top:16px;right:16px;width:44px;height:44px;border:0;border-radius:50%;background:#efeaf9;color:#4a3f8a;font-size:20px}
+.mf-title{font-size:28px;font-weight:800;color:#1f1a3d;margin:4px 0 8px}
+.mf-sub{font-size:15px;color:#6b6788;margin-bottom:14px;padding-right:50px}
+.mf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.mf-card{position:relative;background:#f5f2fb;border-radius:18px;padding:8px 8px 10px;text-align:center;border:3px solid transparent;cursor:pointer}
+.mf-card.mf-sel{border-color:#7c5ce0;background:#ece6fb}
+.mf-img{aspect-ratio:1/1;border-radius:14px;background:linear-gradient(#e8a24a,#c97f2c) center/cover no-repeat}
+.mf-name{font-size:14px;font-weight:700;color:#1f1a3d;margin-top:6px}
+.mf-badge{position:absolute;top:14px;left:14px;z-index:1;background:#7bc043;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
+.mf-confirm{position:sticky;bottom:-90px;margin:14px -18px -90px;background:#f5f2fb;padding:14px 18px;border-top:1px solid #ddd}
+#mf-q{font-size:18px;font-weight:700;color:#1f1a3d;margin-bottom:10px}
+.mf-row{display:flex;gap:10px}
+.mf-yes{flex:1;height:52px;border:0;border-radius:26px;background:#7c5ce0;color:#fff;font-size:18px;font-weight:700}
+.mf-yes:disabled{opacity:.6}
+.mf-no{height:52px;padding:0 22px;border:0;border-radius:26px;background:#e6e0f7;color:#5b45b5;font-size:18px;font-weight:700}
