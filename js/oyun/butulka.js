@@ -1,13 +1,17 @@
 // ===== Butulka seçimi paneli (aşağıdan açılır) =====
+const QOVLUQ = "images/butulka/";
+
 const BUTULKALAR = [
-  { id: "vip",      ad: "VIP",      sekil: "butulkalar/vip.png",      qiymet: 5 },
-  { id: "kola",     ad: "Kola",     sekil: "butulkalar/kola.png",     qiymet: 5 },
-  { id: "portagal", ad: "Portağal", sekil: "butulkalar/portagal.png", qiymet: 5 },
-  { id: "kolamax",  ad: "Kola Max", sekil: "butulkalar/kolamax.png",  qiymet: 5 },
-  // yeni butulka əlavə etmək üçün bura bir sətir yaz
+  { id: "butulka",  ad: "Butulka",  fayl: "butulka.png",  qiymet: 5 },
+  { id: "kola",     ad: "Kola",     fayl: "kola.png",     qiymet: 5 },
+  { id: "portagal", ad: "Portağal", fayl: "portagal.png", qiymet: 5 },
+  { id: "kolamax",  ad: "Kola Max", fayl: "kolamax.png",  qiymet: 5 },
+  // yeni butulka: şəkli images/butulka/ qovluğuna yüklə, bura bir sətir yaz
 ];
 
 (function butulkaQur() {
+  if (document.getElementById("butulkaPanel")) return;
+
   const UREK =
     '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.8-8 11-8 11z" fill="#ff6a13"/></svg>';
 
@@ -26,7 +30,7 @@ const BUTULKALAR = [
   const siyahi = document.createElement("div");
   siyahi.style.cssText =
     "flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(4,1fr);" +
-    "row-gap:3vw;padding:3vw 2vw 20vw;-webkit-overflow-scrolling:touch;";
+    "align-content:start;row-gap:3vw;padding:3vw 2vw 20vw;-webkit-overflow-scrolling:touch;";
   panel.appendChild(siyahi);
 
   BUTULKALAR.forEach((b) => {
@@ -35,11 +39,12 @@ const BUTULKALAR = [
       "display:flex;flex-direction:column;align-items:center;gap:1vw;cursor:pointer;";
     item.innerHTML =
       '<div style="width:20vw;height:20vw;display:flex;align-items:center;justify-content:center;">' +
-      '<img src="' + b.sekil + '" alt="' + b.ad + '" style="max-width:100%;max-height:100%;object-fit:contain;"></div>' +
+      '<img src="' + QOVLUQ + b.fayl + '" alt="' + b.ad + '" ' +
+      'style="max-width:100%;max-height:100%;object-fit:contain;"></div>' +
       '<div style="display:flex;align-items:center;gap:1vw;font-size:5.4vw;font-weight:700;color:#222;">' +
       '<span style="width:6.4vw;height:6.4vw;display:flex;">' + UREK + "</span>" + b.qiymet + "</div>";
     item.onclick = () => {
-      // Burda sonra ürək çıxma / alma məntiqini bağlayacağıq
+      // Sonra bura ürək çıxma / alma məntiqini bağlayacağıq
       try { localStorage.setItem("secilmisButulka", b.id); } catch (e) {}
       document.dispatchEvent(new CustomEvent("butulka-secildi", { detail: b }));
       bagla();
