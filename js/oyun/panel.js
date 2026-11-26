@@ -4,6 +4,7 @@ import { cariOyuncu } from "./yardimci.js";
 import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import "./ramka-shop.js";
 import "./reytinq.js";
+import "./butulka.js";
 
 const cari = cariOyuncu();
 document.getElementById("masaNo").textContent = MASA_NOMRESI;
