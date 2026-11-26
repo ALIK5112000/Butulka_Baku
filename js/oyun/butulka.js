@@ -1,13 +1,21 @@
+import { fsdb } from "../core/firebase.js";
+import { MASA_NOMRESI } from "../core/config.js";
+import { cariOyuncu } from "./yardimci.js";
+import { doc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
 // ===== Butulka seçimi paneli (aşağıdan açılır) =====
 const QOVLUQ = "images/butulka/";
-const PANEL_TOP_VW = 122;   // panelin başladığı yer (masanın aşağı kənarı). Aşağı-yuxarı etmək üçün bunu dəyiş
+const PANEL_TOP_VW = 122;
+
+// DİQQƏT: bu ikisini öz layihənə uyğun düzəlt (aşağıdakı izaha bax)
+const MASA_KOLLEKSIYA = "masalar";                          // masaların Firestore kolleksiyası
+const MASA_BUTULKA_SEC = "#butulka, #bottle, .butulka-img"; // masadakı butulka şəklinin elementi
 
 const BUTULKALAR = [
+  { id: "vip",        ad: "VIP",            fayl: "vip.png",        qiymet: 10 },
   { id: "butulka",    ad: "Butulka",        fayl: "butulka.png",    qiymet: 5 },
   { id: "energy",     ad: "Butulka Energy", fayl: "energy.png",     qiymet: 5 },
-  { id: "vip",        ad: "VIP",            fayl: "vip.png",        qiymet: 10 },
   { id: "viski_mavi", ad: "Mavi Viski",     fayl: "viski_mavi.png", qiymet: 5 },
-  // yeni butulka: şəkli images/butulka/ qovluğuna yüklə, bura bir sətir yaz
 ];
 
 (function butulkaQur() {
@@ -16,6 +24,22 @@ const BUTULKALAR = [
   const UREK =
     '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.8-8 11-8 11z" fill="#ff6a13"/></svg>';
 
+  const masaRef = doc(fsdb, MASA_KOLLEKSIYA, String(MASA_NOMRESI));
+  let masadakiId = null;     // masada hazırda hansı butulka var
+  let mesgul = false;        // ikiqat toxunuşdan qorunma
+
+  // ---- kiçik bildiriş ----
+  function toast(metn) {
+    const t = document.createElement("div");
+    t.textContent = metn;
+    t.style.cssText =
+      "position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);z-index:10001;background:rgba(0,0,0,.82);" +
+      "color:#fff;padding:2.6vw 4.5vw;border-radius:3vw;font:600 3.8vw Roboto,Arial,sans-serif;max-width:80vw;text-align:center;";
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2200);
+  }
+
+  // ---- panel ----
   const panel = document.createElement("div");
   panel.id = "butulkaPanel";
   panel.style.cssText =
@@ -37,39 +61,28 @@ const BUTULKALAR = [
 
   BUTULKALAR.forEach((b) => {
     const item = document.createElement("div");
-    item.style.cssText =
-      "display:flex;flex-direction:column;align-items:center;gap:1vw;cursor:pointer;";
+    item.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:1vw;cursor:pointer;";
 
     const qutu = document.createElement("div");
-    qutu.style.cssText =
-      "width:16vw;height:16vw;display:flex;align-items:center;justify-content:center;";
+    qutu.style.cssText = "width:16vw;height:16vw;display:flex;align-items:center;justify-content:center;";
     const img = document.createElement("img");
     img.src = QOVLUQ + b.fayl;
     img.alt = "";
-    // 45° əyilmiş butulka xananı doldurur (referansdakı kimi)
     img.style.cssText =
       "width:19vw;height:19vw;flex:none;object-fit:contain;transform:rotate(45deg);pointer-events:none;";
-    img.onerror = () => item.remove();   // şəkil yoxdursa, xana görünmür
+    img.onerror = () => item.remove();
     qutu.appendChild(img);
 
     const qiy = document.createElement("div");
-    qiy.style.cssText =
-      "display:flex;align-items:center;gap:1.2vw;font-size:4vw;font-weight:700;color:#222;";
-    qiy.innerHTML =
-      '<span style="width:6.2vw;height:6.2vw;display:flex;">' + UREK + "</span>" + b.qiymet;
+    qiy.style.cssText = "display:flex;align-items:center;gap:1.2vw;font-size:4vw;font-weight:700;color:#222;";
+    qiy.innerHTML = '<span style="width:6.2vw;height:6.2vw;display:flex;">' + UREK + "</span>" + b.qiymet;
 
     item.appendChild(qutu);
     item.appendChild(qiy);
-    item.onclick = () => {
-      // Sonra bura ürək çıxma / alma məntiqini bağlayacağıq
-      try { localStorage.setItem("secilmisButulka", b.id); } catch (e) {}
-      document.dispatchEvent(new CustomEvent("butulka-secildi", { detail: b }));
-      bagla();
-    };
+    item.onclick = () => al(b);
     siyahi.appendChild(item);
   });
 
-  // Yaşıl X düyməsi
   const x = document.createElement("button");
   x.type = "button";
   x.style.cssText =
@@ -86,7 +99,52 @@ const BUTULKALAR = [
   function ac() { panel.style.display = "flex"; siyahi.scrollTop = 0; }
   function bagla() { panel.style.display = "none"; }
 
-  document.addEventListener("menyu-sec", (e) => {
-    if (e.detail === "butulka") ac();
+  document.addEventListener("menyu-sec", (e) => { if (e.detail === "butulka") ac(); });
+
+  // ---- ALMAQ: ürək çıx + masaya yaz (hamısı bir əməliyyatda) ----
+  async function al(b) {
+    if (mesgul) return;
+    const cari = cariOyuncu();
+    if (!cari || !cari.docId) { toast("Əvvəlcə daxil ol"); return; }
+    if (masadakiId === b.id) { bagla(); return; }          // masada artıq bu var: pul tutulmur
+
+    mesgul = true;
+    const userRef = doc(fsdb, "users", cari.docId);
+    try {
+      await runTransaction(fsdb, async (tx) => {
+        const s = await tx.get(userRef);
+        const urek = (s.data() && s.data().hearts) || 0;
+        if (urek < b.qiymet) throw new Error("AZ_UREK");
+        tx.update(userRef, { hearts: urek - b.qiymet });
+        tx.set(masaRef, {
+          butulka: b.id,
+          butulkaFayl: b.fayl,
+          butulkaKim: cari.docId,
+          butulkaVaxt: Date.now()
+        }, { merge: true });
+      });
+      bagla();
+    } catch (e) {
+      toast(e.message === "AZ_UREK" ? "Kifayət qədər ürək yoxdur" : "Xəta baş verdi, yenidən cəhd edin");
+      console.error("butulka al:", e);
+    }
+    mesgul = false;
+  }
+
+  // ---- HAMI GÖRSÜN: masa sənədi dəyişəndə butulka şəklini yenilə ----
+  function masadaGoster(b) {
+    const el = document.querySelector(MASA_BUTULKA_SEC);
+    if (!el) { console.warn("Masadakı butulka elementi tapılmadı:", MASA_BUTULKA_SEC); return; }
+    if (el.tagName === "IMG") el.src = QOVLUQ + b.fayl;
+    else el.style.backgroundImage = "url(" + QOVLUQ + b.fayl + ")";
+  }
+
+  onSnapshot(masaRef, (s) => {
+    const d = s.data();
+    if (!d || !d.butulka) return;
+    masadakiId = d.butulka;
+    const b = BUTULKALAR.find((z) => z.id === d.butulka);
+    if (b) masadaGoster(b);
+    document.dispatchEvent(new CustomEvent("butulka-secildi", { detail: b || d }));
   });
 })();
