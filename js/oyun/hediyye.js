@@ -16,6 +16,8 @@ import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js"
    - TOPAZ (g22): uçuş və düşmə ölçüsü videodan ölçülərək bir-bir quraşdırılıb.
    - ÇİYƏLƏK (g2): uçuş, fırlanma, ölçü və yavaşlama videodan ölçülüb; yığım/solma qaydası topaz kimidir.
    - KOKTEL (g21): qiyməti 2, göndərəndən 2 bonus çıxır, alan cəmi hər kokteylə +1 bonus almalıdır (KOKTEL_ALAN_BONUS).
+   - PAPAQ ("papaq", kovboy papağı): qiyməti 2 ürək. Tacla EYNİ yerə və EYNİ zonaya ("bas") oturur. Uçuş sürəti, fırlanması,
+     uçuş və düşmə ölçüsü videodan kadr-kadr ölçülüb (PAPAQ_* ayarları), səslər videodan kəsilib (sesler/hat.mp3, hat_dusme.mp3).
    - YER (ZONA) qaydası: tac ("bas"), kokteyl ("koktel") və şəklin üstünə düşənlər ("yuz") bir-birini silmir;
      yalnız eyni zonadakı başqa növ hədiyyə köhnəni solub silir.
    - Topaz, çiyələk, öpüş və pomidor çoxlu atılanda hamısı şəkildə qalır, ən köhnədən başlayaraq sıra ilə tədricən solur,
@@ -62,6 +64,24 @@ const POMIDOR_UCUS_OLCU = 0.49;
 const POMIDOR_OTUR_OLCU = 0.45;
 const POMIDOR_OLCU_EYRISI = [[0, .82], [.05, 1], [.67, 1], [.69, .977], [.71, .96], [.73, .934], [.75, .91], [.77, .9],
                              [.79, .88], [.81, .857], [.85, .843], [.87, .828], [.91, .814], [1, .806]];
+
+/* PAPAQ (id "papaq"): videodan kadr-kadr (60 fps) ölçülüb.
+   - Uçuş 5 san. Yerdəyişmə tacla eyni əyri üzrədir: irəliləmə = 1-(1-u)^2 (əvvəl sürətli, sonra yavaş-yavaş oturur).
+   - Fırlanma da eyni əyri üzrə gedir: 0°-dən tacın oturma bucağına (-44°) qədər (bucaq noqte() funksiyasından gəlir).
+   - Ölçü, düşəndən sonrakı (son) ölçüyə nisbətdə: uçuşun əvvəlində ~1.04×-dən tez 1.25×-ə qalxır, uçuşun 65%-nə qədər 1.25× qalır,
+     sonra yavaş-yavaş kiçilib uçuşun 94%-də 1×-ə çatır və şəkildə o ölçüdə qalır. Ox: [uçuşun payı 0..1, ölçü əmsalı].
+   - Düşəndən sonra papağın eni = şəkil enində PAPAQ_EN_PAYI (videoda 143px / 184px). papaq.png 640x585-dir (eni/hündürlüyü
+     PAPAQ_ASPEKT); şəkil 1em hündürlükdə göstərildiyindən şrift ölçüsü = en payı / aspekt. Papağın gövdəsi şəklin mərkəzindədir
+     (tük yuxarıdan çıxır, aşağıdan boş yer var), ona görə də tacla eyni nöqtəyə oturur.
+   - Papaq oturma yerini ("noqte") tacdan alır, yəni tacla EYNİ yerdə durur. Yeri/bucağı dəyişmək üçün noqte() funksiyasına bax. */
+const PAPAQ_ID = "papaq";
+const PAPAQ_EN_PAYI = 0.777;
+const PAPAQ_ASPEKT = 640 / 585;
+const PAPAQ_OLCU = PAPAQ_EN_PAYI / PAPAQ_ASPEKT;
+const PAPAQ_OLCU_EYRISI = [[0, 1.04], [.01, 1.055], [.02, 1.12], [.03, 1.165], [.04, 1.205], [.05, 1.238], [.065, 1.246],
+                           [.65, 1.246], [.68, 1.237], [.70, 1.214], [.72, 1.187], [.74, 1.159], [.76, 1.132], [.78, 1.108],
+                           [.80, 1.086], [.82, 1.066], [.84, 1.055], [.86, 1.043], [.88, 1.029], [.90, 1.017], [.92, 1.008],
+                           [.94, 1.001], [1, 1]];
 const QAL_OMUR = 15000, QAL_SOLMA = 2500, QAL_ADDIM = 400;
 /* Başqa növ hədiyyə düşəndə şəkildəki köhnə növün hədiyyələri (məs. topaz atılanda pomidor) ən köhnədən başlayaraq
    bir-bir solur, YENİ atılan növ qalır. Solmaların başlanğıcı arasında CAPRAZ_ADDIM ms (çox olsa CAPRAZ_PENCERE-yə sıxılır). */
@@ -85,6 +105,9 @@ const SADE_HEDIYYELER = [
     olcu: 0.4, olcuEgri: TOPAZ_OLCU_EYRISI, ucusEase: TOPAZ_EASE,
     variantlar: ["gul_qirmizi.png", "gul_romashka.png"] },
   { id: "g15", e: "👑", img: SEKIL_PAPKA + "tac.png",     q: 3, k: "ozel",            s: SES_PAPKA + "crown.mp3",  sl: SES_PAPKA + "crown_dusme.mp3", ucusMs: 5000, tacUcus: true, yapis: true, zona: "bas" },
+  /* papaq: tacla eyni yerə (zona "bas") oturur, qiyməti 2 ürək. Uçuş/düşmə sürəti, fırlanması və ölçüsü videodan ölçülüb (PAPAQ_*, papaqUcus).
+     Şəkil: images/hediyye/papaq.png. Səs faylları: sesler/hat.mp3 (göndərmə) və sesler/hat_dusme.mp3 (düşmə). */
+  { id: PAPAQ_ID, e: "🤠", img: SEKIL_PAPKA + "papaq.png", q: 2, k: "yeni", s: SES_PAPKA + "hat.mp3", sl: SES_PAPKA + "hat_dusme.mp3", ucusMs: 5000, papaqUcus: true, yapis: true, zona: "bas" },
   /* g21 koktel: qiymət 2 (göndərəndən 2 bonus çıxır), alan oyunçuya hər kokteylə +1 bonus (bonus:1) düşəndə verilir */
   { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 2, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: KOKTEL_ALAN_BONUS, solMs: 1950, zona: "koktel" },
   /* g22 topaz: paneldə 1 topaz görünür, hər toxunuşda fərqli forma + rəng göndərilir (variantlar).
@@ -997,9 +1020,10 @@ function koktelOlcusu(rw) {
   return { fs, dx: ((v.l + v.r) / 2 - 0.5) * fs * v.en, dy: ((v.t + v.b) / 2 - 0.5) * fs };
 }
 
-const olcu = (d, r) => d.i === "g21" ? koktelOlcusu(r.width).fs : r.width * (d.i === "g15" ? 0.38 : d.i === "g3" ? POMIDOR_OTUR_OLCU : 0.4);
+const olcu = (d, r) => d.i === "g21" ? koktelOlcusu(r.width).fs : r.width * (d.i === "g15" ? 0.38 : d.i === PAPAQ_ID ? PAPAQ_OLCU : d.i === "g3" ? POMIDOR_OTUR_OLCU : 0.4);
 function noqte(d, r) {
-  if (d.i === "g15") return [r.left + r.width * 0.022, r.top + r.height * 0.022, -44];
+  /* tac və papaq şəklin EYNİ nöqtəsinə, eyni bucaqla oturur */
+  if (d.i === "g15" || d.i === PAPAQ_ID) return [r.left + r.width * 0.022, r.top + r.height * 0.022, -44];
   if (d.i === "g21") {
     const k = koktelOlcusu(r.width);
     return [r.left + r.width * KOKTEL_REF.MX - k.dx, r.top + r.height * KOKTEL_REF.MY - k.dy, 0];
@@ -1118,6 +1142,35 @@ function ucurTac(g, x, to, pa, b, p) {
     },
     () => {
       clearInterval(iz);
+      sesCal(g.sl);
+      ogelen.add(x.n + "|" + to);
+      yigimCiz();
+      d.remove();
+    });
+}
+
+/* PAPAQ uçuşu: videodakı kimi. Hərəkət və fırlanma tacla eyni əyri (pr = 1-(1-u)^2), ölçü isə PAPAQ_OLCU_EYRISI üzrə.
+   Videoda uçan papağın arxasında ulduz izi yoxdur, ona görə burada da yoxdur. */
+function ucurPapaq(g, x, to, pa, b, p) {
+  const r0 = fotoRect(b);
+  if (!r0) return;
+  const hed = { i: g.id, x: p.x, y: p.y, r: p.r };
+  const d = document.createElement("div");
+  d.className = "hd-fly";
+  d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
+  d.style.fontSize = olcu(hed, r0) + "px";
+  d.style.opacity = "0";
+  d.innerHTML = gorsel(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  fxLayer().appendChild(d);
+  canli(to, g.ucusMs || 5000,
+    r => { const n = noqte(hed, r); return [n[0], n[1], n[2], olcu(hed, r)]; },
+    (u, h) => {
+      const pr = 1 - (1 - u) * (1 - u);
+      d.style.fontSize = h[3] + "px";
+      d.style.opacity = 1;
+      d.style.transform = tr((h[0] - pa[0]) * pr, (h[1] - pa[1]) * pr, egri(PAPAQ_OLCU_EYRISI, u).toFixed(3), h[2] * pr);
+    },
+    () => {
       sesCal(g.sl);
       ogelen.add(x.n + "|" + to);
       yigimCiz();
@@ -1249,6 +1302,7 @@ function oynaBir(kimden, x, to) {
   const p = g.yapis && x.p && x.p[to];
   if (p && g.pomidor) { ucurPomidor(g, x, to, pa, b, p); return; }
   if (p && g.tacUcus) { ucurTac(g, x, to, pa, b, p); return; }
+  if (p && g.papaqUcus) { ucurPapaq(g, x, to, pa, b, p); return; }
   if (p) { ucurYapis(g, x, to, pa, b, p); return; }
   const d = document.createElement("div");
   d.className = "hd-fly";
@@ -1439,7 +1493,7 @@ function yigimCiz() {
         if (!rec) {
           const el = document.createElement("div");
           el.className = (g.yapis || g.koktel) ? ("hd-stk" + (g.koktel ? " hd-nosh" : "")) : "hd-yig";
-          el.style.zIndex = g.tacUcus ? "2" : "1";
+          el.style.zIndex = (g.tacUcus || g.papaqUcus) ? "2" : "1";
           el.innerHTML = g.yapis ? gorselStk(g) : gorselV(g, e.v);
           yigQat.appendChild(el);
           rec = yigEl[kk] = { el, sol: false, k: "" };
