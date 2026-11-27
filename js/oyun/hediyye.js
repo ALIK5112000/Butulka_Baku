@@ -13,9 +13,9 @@ import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js"
    - Panelin iki bölməsi var: "Premium" (premium-hediyye.js faylından) və "Sadə" (musiqi + sadə hədiyyələr).
    - Sadə hədiyyənin üzərinə basıb saxlayanda hədiyyə davamlı göndərilir, əli çəkəndə dayanır.
      Bir-bir basanda neçə dəfə basılıbsa o qədər hədiyyə göndərilir.
-   - TOPAZ (g22): uçuş və düşmə ölçüsü videodan ölçülərək bir-bir quraşdırılıb. Çoxlu topaz göndəriləndə
-     hamısı oyunçunun şəklində qalır, son topaz düşəndən QAL_BEKLE müddət sonra isə ən köhnədən başlayaraq
-     bir-bir tədricən yox olur. */
+   - TOPAZ (g22): uçuş və düşmə ölçüsü videodan ölçülərək bir-bir quraşdırılıb.
+   - Topaz, öpüş və pomidor çoxlu atılanda hamısı şəkildə qalır, ən köhnədən başlayaraq sıra ilə tədricən solur,
+     SON atılan qalır. Başqa növ hədiyyə düşəndə köhnə növ bir-bir solur, yeni növ qalır. */
 
 /* ---------- AYARLAR ---------- */
 const SEKIL_PAPKA = "images/hediyye/";
@@ -27,16 +27,17 @@ const TOPAZ_OLCU_EYRISI = [[0, .85], [.03, .97], [.05, 1], [.70, 1], [.735, .95]
                            [.83, .85], [.86, .84], [.89, .82], [.92, .815], [.95, .8], [1, .8]];
 /* Topazın yerdəyişmə əyrisi (cubic-bezier): əvvəl sürətli, sonra yavaşlayır (videodakı kimi) */
 const TOPAZ_EASE = [0.3, 0.5, 0.6, 1];
-/* Topaz yığımı: son topaz düşəndən sonra QAL_BEKLE ms hamısı qalır, sonra ən köhnədən başlayaraq
-   hər biri QAL_SOLMA ms ərzində solur; solmanın başlanğıcları arasında QAL_ADDIM ms (çox olsa QAL_PENCERE-yə sıxılır) */
-const QAL_BEKLE = 10000, QAL_SOLMA = 2500, QAL_ADDIM = 700, QAL_PENCERE = 45000;
+/* YIĞIM QAYDASI (topaz, öpüş, pomidor): atılan hədiyyələrin hamısı şəkildə qalır. Hər hədiyyə düşəndən
+   QAL_OMUR ms sonra, ən köhnədən başlayaraq SIRAYLA (solmaların başlanğıcı arası ən azı QAL_ADDIM ms)
+   QAL_SOLMA ms ərzində tədricən solur. SON atılan hədiyyə heç vaxt solmur (başqa növ hədiyyə düşənə qədər). */
+const QAL_OMUR = 15000, QAL_SOLMA = 2500, QAL_ADDIM = 400;
 /* Başqa növ hədiyyə düşəndə şəkildəki köhnə növün hədiyyələri (məs. topaz atılanda pomidor) ən köhnədən başlayaraq
    bir-bir solur, YENİ atılan növ qalır. Solmaların başlanğıcı arasında CAPRAZ_ADDIM ms (çox olsa CAPRAZ_PENCERE-yə sıxılır). */
 const CAPRAZ_ADDIM = 600, CAPRAZ_PENCERE = 20000;
 
 const SADE_HEDIYYELER = [
-  { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true, qrup: "yuz" },
-  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5000, yapis: true, ucusAdi: true, qrup: "yuz" },
+  { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true, qrup: "yuz", qal: true },
+  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5000, yapis: true, ucusAdi: true, qrup: "yuz", qal: true },
   { id: "g7",  e: "🐸", img: SEKIL_PAPKA + "qurbaga.png", q: 2 },
   { id: "g2",  e: "🍓", img: SEKIL_PAPKA + "cilek.png",   q: 1, k: "yeni" },
   { id: "g4",  e: "🪨", img: SEKIL_PAPKA + "dash.png",    q: 1 },
@@ -1320,20 +1321,18 @@ function yigimCiz() {
     for (const gid in qruplar) {
       const L = qruplar[gid].sort((a, b) => a[2] - b[2]);
 
-      /* "qal" hədiyyələr (topaz): hamısı şəkildə qalır. Ardıcıl düşmələr (aralarındakı fasilə ≤ QAL_BEKLE)
-         bir dəstə sayılır; dəstənin SON hədiyyəsi düşəndən QAL_BEKLE sonra ən köhnədən başlayaraq
-         hər biri bir-bir (QAL_ADDIM aralıqla) solur. Yeni hədiyyə gələrsə dəstə uzanır və solma geri çəkilir. */
+      /* "qal" hədiyyələr (topaz, öpüş, pomidor): hamısı qalır; i-ci hədiyyə ən tez düşməsindən QAL_OMUR sonra,
+         özündən sonrakı hədiyyə düşəndən əvvəl yox, əvvəlki hədiyyənin solmasından ən azı QAL_ADDIM sonra solur.
+         Beləcə köhnədən başlayaraq sıra ilə solur, SON hədiyyənin solma vaxtı yoxdur və qalır.
+         Hər vaxt yalnız özündən əvvəlkilərdən və növbətidən asılıdır, ona görə yeni hədiyyə gələndə
+         artıq solmağa başlayanlar geri qayıtmır. */
       const qalSol = {};
-      if (L.length && L[0][3].qal) {
-        let i0 = 0;
-        while (i0 < L.length) {
-          let i1 = i0;
-          while (i1 + 1 < L.length && L[i1 + 1][2] - L[i1][2] <= QAL_BEKLE) i1++;
-          const say = i1 - i0 + 1;
-          const addim = Math.min(QAL_ADDIM, QAL_PENCERE / say);
-          const baza = L[i1][2] + QAL_BEKLE;
-          for (let q = i0; q <= i1; q++) qalSol[q] = baza + (q - i0) * addim;
-          i0 = i1 + 1;
+      if (L.length > 1 && L[0][3].qal) {
+        let evvel = 0;
+        for (let i = 0; i < L.length - 1; i++) {
+          if (!L[i][3].qal) continue;
+          const sv = Math.max(L[i][2] + QAL_OMUR, L[i + 1][2], evvel + QAL_ADDIM);
+          qalSol[i] = sv; evvel = sv;
         }
       }
 
