@@ -29,7 +29,10 @@ const TOPAZ_OLCU_EYRISI = [[0, .85], [.03, .97], [.05, 1], [.70, 1], [.735, .95]
 const TOPAZ_EASE = [0.3, 0.5, 0.6, 1];
 /* Topaz yığımı: son topaz düşəndən sonra QAL_BEKLE ms hamısı qalır, sonra ən köhnədən başlayaraq
    hər biri QAL_SOLMA ms ərzində solur; solmanın başlanğıcları arasında QAL_ADDIM ms (çox olsa QAL_PENCERE-yə sıxılır) */
-const QAL_BEKLE = 10000, QAL_SOLMA = 1500, QAL_ADDIM = 250, QAL_PENCERE = 9000;
+const QAL_BEKLE = 10000, QAL_SOLMA = 2500, QAL_ADDIM = 700, QAL_PENCERE = 45000;
+/* Başqa növ hədiyyə düşəndə şəkildəki köhnə növün hədiyyələri (məs. topaz atılanda pomidor) ən köhnədən başlayaraq
+   bir-bir solur, YENİ atılan növ qalır. Solmaların başlanğıcı arasında CAPRAZ_ADDIM ms (çox olsa CAPRAZ_PENCERE-yə sıxılır). */
+const CAPRAZ_ADDIM = 600, CAPRAZ_PENCERE = 20000;
 
 const SADE_HEDIYYELER = [
   { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true, qrup: "yuz" },
@@ -1294,6 +1297,26 @@ function yigimCiz() {
       (qruplar[qk] = qruplar[qk] || []).push([key, e, land, gh]);
     }
 
+    /* NÖVLƏRARASI SOLMA: bir növ hədiyyə düşəndə şəkildə olan BAŞQA növ hədiyyələr (hələ solmayanlar)
+       həmin hədiyyənin düşmə vaxtından başlayaraq ən köhnədən bir-bir solur. Hər hədiyyənin solma vaxtı
+       onu əvəz edən ilk fərqli növ hədiyyəyə görə bir dəfə təyin olunur, ona görə sonradan dəyişmir. */
+    const caprazSol = {};
+    {
+      const hamisi = [];
+      for (const gk in qruplar) for (const it of qruplar[gk]) hamisi.push([gk, it]);
+      hamisi.sort((a, b) => a[1][2] - b[1][2]);
+      let gozle = [];
+      for (const [gk, it] of hamisi) {
+        const getdi = gozle.filter(w => w[0] !== gk);
+        if (getdi.length) {
+          const addim = Math.min(CAPRAZ_ADDIM, CAPRAZ_PENCERE / getdi.length);
+          getdi.forEach((w, i) => { caprazSol[w[1][0]] = it[2] + i * addim; });
+          gozle = gozle.filter(w => w[0] === gk);
+        }
+        gozle.push([gk, it]);
+      }
+    }
+
     for (const gid in qruplar) {
       const L = qruplar[gid].sort((a, b) => a[2] - b[2]);
 
@@ -1318,9 +1341,11 @@ function yigimCiz() {
         const [key, e, , g] = L[idx];
         const kk = key + "|" + uid;
         const solMs = g.qal ? QAL_SOLMA : (g.solMs || OPUS.SOLMA_MS);
-        const sol = g.qal
+        let sol = g.qal
           ? (qalSol[idx] || 0)
           : (idx < L.length - 1 ? (g.koktel ? num(L[idx + 1][1].t) : L[idx + 1][2]) : 0);
+        const cs = caprazSol[key];
+        if (cs && (!sol || cs < sol)) sol = cs;
 
         if (sol && srv - sol >= solMs) {
           if (yigEl[kk]) { yigEl[kk].el.remove(); delete yigEl[kk]; }
