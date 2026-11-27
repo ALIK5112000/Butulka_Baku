@@ -13,15 +13,20 @@ import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js"
    - Panelin iki bölməsi var: "Premium" (premium-hediyye.js faylından) və "Sadə" (musiqi + sadə hədiyyələr).
    - Sadə hədiyyənin üzərinə basıb saxlayanda hədiyyə davamlı göndərilir, əli çəkəndə dayanır.
      Bir-bir basanda neçə dəfə basılıbsa o qədər hədiyyə göndərilir.
+   - ÇOXBARMAQ: bir barmaq bir hədiyyəni basıb saxlayıb davamlı göndərərkən, o biri barmaqla başqa hədiyyələri də
+     eyni anda göndərmək olar. Hər barmağın basması (pointerId) ayrıca izlənir və bir-birini kəsmir.
    - TOPAZ (g22): uçuş və düşmə ölçüsü videodan ölçülərək bir-bir quraşdırılıb.
    - ÇİYƏLƏK (g2): uçuş, fırlanma, ölçü və yavaşlama videodan ölçülüb; yığım/solma qaydası topaz kimidir.
    - KOKTEL (g21): qiyməti 2, göndərəndən 2 bonus çıxır, alan cəmi hər kokteylə +1 bonus almalıdır (KOKTEL_ALAN_BONUS).
    - PAPAQ ("papaq", kovboy papağı): qiyməti 2 ürək. Tacla EYNİ yerə və EYNİ zonaya ("bas") oturur. Uçuş sürəti, fırlanması,
      uçuş və düşmə ölçüsü videodan kadr-kadr ölçülüb (PAPAQ_* ayarları), səslər videodan kəsilib (sesler/hat.mp3, hat_dusme.mp3).
-   - SOSKA ("soska"): qiyməti 1 ürək. Şəklin sağ-aşağı küncünə (yarısı şəklin kənarından çıxaraq) oturur, öz zonası var ("soska").
+   - SOSKA ("soska"): qiyməti 1 ürək. Şəklin sağ-aşağı küncünə (yarısı şəklin kənarından çıxaraq) oturur.
+     Hər göndərişdə 4 variantdan biri (qırmızı, çəhrayı, yaşıl, göy qurşağı) göndərilir, əvvəlkindən fərqli seçilir (variantlar).
+     Soska ilə kokteyl EYNİ yerə düşdüyü üçün ortaq zonadadır ("yan"): soska atandan sonra o yerə başqa hədiyyə (kokteyl)
+     düşəndə soska solub silinir (kokteyl atılandan sonra soska atılanda da kokteyl solub silinir).
      Uçuş yolu (x və y ayrı-ayrı əyrilərlə), uçuş ölçüsü və düşmədən sonrakı ölçü videodan kadr-kadr (şablon uyğunlaşdırması ilə)
      ölçülüb (SOSKA_* ayarları), səslər videodan kəsilib (sesler/soska.mp3, soska_dusme.mp3).
-   - YER (ZONA) qaydası: tac ("bas"), kokteyl ("koktel"), soska ("soska") və şəklin üstünə düşənlər ("yuz") bir-birini silmir;
+   - YER (ZONA) qaydası: tac ("bas"), kokteyl+soska ("yan") və şəklin üstünə düşənlər ("yuz") bir-birini silmir;
      yalnız eyni zonadakı başqa növ hədiyyə köhnəni solub silir.
    - Topaz, çiyələk, öpüş və pomidor çoxlu atılanda hamısı şəkildə qalır, ən köhnədən başlayaraq sıra ilə tədricən solur,
      SON atılan qalır. Başqa növ hədiyyə düşəndə köhnə növ bir-bir solur, yeni növ qalır. */
@@ -33,9 +38,9 @@ const SEKIL_PAPKA = "images/hediyye/";
 const KOKTEL_ALAN_BONUS = 1;
 /* YER (ZONA) QAYDASI: hədiyyələr yalnız EYNİ yerə düşən başqa növ hədiyyə ilə bir-birini solub silir.
    "yuz"   = şəklin üstünə düşənlər (öpüş, pomidor, çiyələk, topaz) – bir-birini əvəz edir.
-   "bas"   = başa qoyulan (tac) – yalnız başa qoyulan başqa hədiyyə tacı silir.
-   "koktel"= kokteylin yeri (şəklin yanı) – yalnız başqa kokteyl əvəz edir.
-   "soska" = soskanın yeri (şəklin sağ-aşağı küncü) – yalnız başqa soska əvəz edir.
+   "bas"   = başa qoyulan (tac, papaq) – yalnız başa qoyulan başqa hədiyyə tacı silir.
+   "yan"   = şəklin sağ-aşağı yanı (kokteyl və soska) – bu yerə düşən başqa növ hədiyyə (kokteyl ↔ soska) köhnəni silir,
+             eyni növ (kokteyl→kokteyl, soska→soska) də köhnəni əvəz edir.
    Yeni hədiyyə üçün zona yazılmasa, ona ayrıca yer verilir (heç kimi silmir, heç kim onu silmir). */
 const zonaDe = g => g.zona || g.qrup || g.id;
 const SES_PAPKA = "sesler/";
@@ -139,12 +144,16 @@ const SADE_HEDIYYELER = [
   /* papaq: tacla eyni yerə (zona "bas") oturur, qiyməti 2 ürək. Uçuş/düşmə sürəti, fırlanması və ölçüsü videodan ölçülüb (PAPAQ_*, papaqUcus).
      Şəkil: images/hediyye/papaq.png. Səs faylları: sesler/hat.mp3 (göndərmə) və sesler/hat_dusme.mp3 (düşmə). */
   { id: PAPAQ_ID, e: "🤠", img: SEKIL_PAPKA + "papaq.png", q: 2, k: "yeni", s: SES_PAPKA + "hat.mp3", sl: SES_PAPKA + "hat_dusme.mp3", ucusMs: 5000, papaqUcus: true, yapis: true, zona: "bas" },
-  /* g21 koktel: qiymət 2 (göndərəndən 2 bonus çıxır), alan oyunçuya hər kokteylə +1 bonus (bonus:1) düşəndə verilir */
-  { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 2, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: KOKTEL_ALAN_BONUS, solMs: 1950, zona: "koktel" },
-  /* soska: qiymət 1 ürək. Şəklin sağ-aşağı küncünə oturur (öz zonası "soska"), uçuşu/ölçüsü videodan ölçülüb (SOSKA_*, ucurSoska).
-     Yeni soska düşəndə köhnəsi solmağa başlayır (solMs ms ərzində). Şəkil: images/hediyye/soska.png.
+  /* g21 koktel: qiymət 2 (göndərəndən 2 bonus çıxır), alan oyunçuya hər kokteylə +1 bonus (bonus:1) düşəndə verilir.
+     Zona "yan": soska ilə eyni yerə düşür, ona görə biri o birini solub silir. */
+  { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 2, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: KOKTEL_ALAN_BONUS, solMs: 1950, zona: "yan" },
+  /* soska: qiymət 1 ürək. Şəklin sağ-aşağı küncünə oturur (zona "yan"), uçuşu/ölçüsü videodan ölçülüb (SOSKA_*, ucurSoska).
+     Hər göndərişdə 4 variantdan biri seçilir (variantlar). Yeni soska və ya o yerə düşən başqa hədiyyə (kokteyl) gələndə
+     köhnə soska solmağa başlayır (solMs ms ərzində). Şəkillər: images/hediyye/soska_qirmizi.png, soska_pembe.png, soska_yasil.png,
+     soska_goyqurshagi.png (panel üçün əsas şəkil soska.png qalır).
      Səs faylları: sesler/soska.mp3 (göndərmə) və sesler/soska_dusme.mp3 (düşmə). */
-  { id: SOSKA_ID, e: "🍼", img: SEKIL_PAPKA + "soska.png", q: 1, k: "yeni", s: SES_PAPKA + "soska.mp3", sl: SES_PAPKA + "soska_dusme.mp3", ucusMs: 5020, soska: true, solMs: 2000, zona: "soska" },
+  { id: SOSKA_ID, e: "🍼", img: SEKIL_PAPKA + "soska.png", q: 1, k: "yeni", s: SES_PAPKA + "soska.mp3", sl: SES_PAPKA + "soska_dusme.mp3", ucusMs: 5020, soska: true, solMs: 2000, zona: "yan",
+    variantlar: ["soska_qirmizi.png", "soska_pembe.png", "soska_yasil.png", "soska_goyqurshagi.png"] },
   /* g22 topaz: paneldə 1 topaz görünür, hər toxunuşda fərqli forma + rəng göndərilir (variantlar).
      Videodakı kimi uçur/düşür (olcu, olcuEgri, ucusEase) və çoxlu göndəriləndə şəkildə qalıb sonra bir-bir yox olur (qal).
      Səs faylları: sesler/topaz.mp3 (göndərmə) və sesler/topaz_dusme.mp3 (düşmə) — adları sənin fayllarına görə dəyiş. */
@@ -161,6 +170,9 @@ const HEDIYYELER = [...SADE_HEDIYYELER, ...PREMIUM_HEDIYYELER];
 /* basıb saxlama: bu müddətdən uzun saxlasa davamlı göndərməyə başlayır, sonra hər ARALIQ ms-dən bir göndərir */
 const BASMA_GECIKME = 300;
 const BASMA_ARALIQ = 320;
+/* bir neçə barmaqla eyni anda göndərəndə bazaya yazmalar arasında ən azı bu qədər ms fasilə (biri o birini ÜSTÜNDƏN yazıb
+   itirməsin deyə: hər göndərən üçün bazada tək "hediyye/{uid}" qovluğu var) */
+const YAZ_ARALIQ = 90;
 
 const OTURAN_SEKIL = {
   g15: SEKIL_PAPKA + "tac2.png",
@@ -282,7 +294,7 @@ function gorselStk(g) {
   return '<img src="' + src + '" alt="" onerror="this.onerror=function(){this.replaceWith(document.createTextNode(\'' + g.e + '\'))};this.src=\'' + g.img + '\'">';
 }
 
-/* variantlı hədiyyə (topaz): v = variantlar siyahısındakı sıra nömrəsi; yoxsa adi şəkil */
+/* variantlı hədiyyə (topaz, gül, soska): v = variantlar siyahısındakı sıra nömrəsi; yoxsa adi şəkil */
 const gorselV = (g, v) => (g.variantlar && v != null && g.variantlar[v])
   ? gorsel({ img: SEKIL_PAPKA + g.variantlar[v], e: g.e })
   : gorsel(g);
@@ -504,40 +516,45 @@ function alicilar() {
   return isaret.size ? [...isaret].filter(u => u !== MEN) : (hedef ? [hedef] : []);
 }
 
-/* ---------- Basıb saxlama (sadə hədiyyələr) ----------
+/* ---------- Basıb saxlama (sadə hədiyyələr), ÇOXBARMAQ ----------
    Bir-bir basanda: hər basış 1 hədiyyə göndərir (neçə dəfə basılıbsa o qədər).
    Basıb saxlayanda: BASMA_GECIKME-dən sonra davamlı göndərir, əl çəkiləndə dayanır.
-   Barmaq sürüşdürüb siyahını fırladanda (pointercancel) heç nə göndərilmir. */
-let basma = null;
-function basmaBitir(tekGonder) {
-  const b = basma;
+   Hər barmaq (pointerId) ayrıca izlənir: bir barmaq bir hədiyyəni saxlayıb davamlı göndərərkən başqa barmaqla başqa
+   hədiyyələri də (bir-bir basaraq və ya saxlayaraq) eyni anda göndərmək olar, biri o birini kəsmir.
+   Barmaq sürüşdürüb siyahını fırladanda (pointercancel) o barmaq heç nə göndərmir. */
+const basmalar = new Map();
+function basmaBitir(id, tekGonder) {
+  const b = basmalar.get(id);
   if (!b) return;
-  basma = null;
+  basmalar.delete(id);
   clearTimeout(b.t);
   clearInterval(b.iv);
-  window.removeEventListener("pointerup", b.up);
-  window.removeEventListener("pointercancel", b.cancel);
   if (tekGonder && !b.davam) gonder(b.g, 1, b.alanlar);
+}
+function basmaHamisiniBitir() {
+  for (const id of [...basmalar.keys()]) basmaBitir(id, false);
 }
 function basmaBasla(e, g) {
   if (e.pointerType === "mouse" && e.button !== 0) return;
-  basmaBitir(false);
+  const id = e.pointerId;
+  basmaBitir(id, false);
   const alanlar = alicilar();
-  const b = { g, alanlar, davam: false, t: 0, iv: 0, up: null, cancel: null };
-  b.up = () => basmaBitir(true);
-  b.cancel = () => basmaBitir(false);
+  const b = { g, alanlar, davam: false, t: 0, iv: 0 };
   b.t = setTimeout(() => {
     b.davam = true;
-    if (!gonder(g, 1, alanlar)) { basmaBitir(false); return; }
-    b.iv = setInterval(() => { if (!gonder(g, 1, alanlar)) basmaBitir(false); }, BASMA_ARALIQ);
+    if (!gonder(g, 1, alanlar)) { basmaBitir(id, false); return; }
+    b.iv = setInterval(() => { if (!gonder(g, 1, alanlar)) basmaBitir(id, false); }, BASMA_ARALIQ);
   }, BASMA_GECIKME);
-  window.addEventListener("pointerup", b.up);
-  window.addEventListener("pointercancel", b.cancel);
-  basma = b;
+  basmalar.set(id, b);
 }
+/* barmağı qaldıranda yalnız həmin barmağın basması bitir, qalan barmaqlar işləməyə davam edir */
+window.addEventListener("pointerup", e => basmaBitir(e.pointerId, true));
+window.addEventListener("pointercancel", e => basmaBitir(e.pointerId, false));
+window.addEventListener("blur", basmaHamisiniBitir);
+document.addEventListener("visibilitychange", () => { if (document.hidden) basmaHamisiniBitir(); });
 
 function ciz() {
-  basmaBitir(false);
+  basmaHamisiniBitir();
   root.classList.toggle("hd-prem", tab === "premium" && !musiqiModu);
   premiumInfoYenile();
   grid.innerHTML = "";
@@ -589,7 +606,7 @@ function ciz() {
     return;
   }
 
-  /* "Sadə" bölməsi: basıb saxlayanda davamlı, bir-bir basanda hər basışa 1 hədiyyə */
+  /* "Sadə" bölməsi: basıb saxlayanda davamlı, bir-bir basanda hər basışa 1 hədiyyə; çox barmaqla eyni anda */
   SADE_HEDIYYELER.forEach(g => {
     const c = document.createElement("div");
     c.className = "hd-cell";
@@ -641,7 +658,7 @@ function ac(uid, musiqi) {
   root.classList.add("open");
 }
 function bagla() {
-  basmaBitir(false);
+  basmaHamisiniBitir();
   root.classList.remove("open");
   root.classList.remove("hd-musiqi");
   musiqiModu = false;
@@ -789,7 +806,7 @@ function premiumInfoYenile() {
   $("#hdBarI").style.width = sv.faiz + "%";
 }
 
-/* variantlı hədiyyələr (topaz, gül): hər göndərişdə həmin hədiyyənin əvvəlki variantından fərqli variant seçilir */
+/* variantlı hədiyyələr (topaz, gül, soska): hər göndərişdə həmin hədiyyənin əvvəlki variantından fərqli variant seçilir */
 const sonVariant = {};
 function variantSec(g) {
   const n = g.variantlar.length;
@@ -797,6 +814,16 @@ function variantSec(g) {
   do { v = Math.floor(Math.random() * n); } while (n > 1 && v === sonVariant[g.id]);
   sonVariant[g.id] = v;
   return v;
+}
+
+/* ÇOXBARMAQ: bir neçə hədiyyə eyni anda göndəriləndə bazaya yazmalar sıra ilə, YAZ_ARALIQ ms fasilə ilə gedir.
+   Səbəb: hər göndərənin bazada tək "hediyye/{uid}" qovluğu var, eyni anda iki yazma olsa digər oyunçular birini itirə bilər. */
+let yazZence = Promise.resolve();
+function ardicilYaz(fn) {
+  yazZence = yazZence
+    .then(() => fn())
+    .catch(() => {})
+    .then(() => new Promise(res => setTimeout(res, YAZ_ARALIQ)));
 }
 
 /* alici: göndəriləcək oyunçular (verilməsə alicilar()). Göndərilibsə true, göndərilməyibsə false qaytarır
@@ -843,7 +870,7 @@ function gonder(g, c, alici) {
 
   const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye/" + MEN);
   onDisconnect(r).remove();
-  set(r, payload).then(() => dbg("hədiyyə bazaya yazıldı")).catch(e => dbg("HƏDİYYƏ YAZILMADI: " + (e.code || e.message)));
+  ardicilYaz(() => set(r, payload).then(() => dbg("hədiyyə bazaya yazıldı")).catch(e => dbg("HƏDİYYƏ YAZILMADI: " + (e.code || e.message))));
 
   if (yigVar) {
     try { update(ref(rtdb, YIG_YOL), yigUpd).catch(e => dbg("ÖPÜŞ YIĞIMI YAZILMADI: " + (e.code || e.message))); }
@@ -898,8 +925,8 @@ function gonderPremium(g) {
   const n = Date.now() + "-" + Math.random().toString(36).slice(2, 7);
   const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye/" + MEN);
   onDisconnect(r).remove();
-  set(r, { to: alanlar, i: g.id, c: 1, n, t: Date.now() + offset })
-    .catch(e => dbg("PREMİUM YAZILMADI: " + (e.code || e.message)));
+  ardicilYaz(() => set(r, { to: alanlar, i: g.id, c: 1, n, t: Date.now() + offset })
+    .catch(e => dbg("PREMİUM YAZILMADI: " + (e.code || e.message))));
 
   odenis.then(() => {
     const sv = seviyye(meXerc || 0);
@@ -1222,8 +1249,9 @@ function ucurPapaq(g, x, to, pa, b, p) {
 /* SOSKA uçuşu: videodakı kimi. pa = başlanğıc nöqtə (göndərənin şəklindən SOSKA_BASLA qədər kənarda, oynaBir-də hesablanır).
    Soskanın GÖRÜNƏN gövdəsinin mərkəzi x və y üçün AYRI əyrilərlə başlanğıcdan (pa) sona (SOSKA_MX/MY nöqtəsi) gedir,
    ölçü SOSKA_OLCU_EYRISI üzrədir, fırlanma yoxdur. Ulduz izi yoxdur (videoda yoxdur).
-   Şəklin (img) öz mərkəzi görünən gövdənin mərkəzindən SOSKA_DX/SOSKA_DY (şrift ölçüsünün payı, ölçü əmsalı ilə böyüyür) qədər fərqlidir. */
-function ucurSoska(g, x, to, pa, b) {
+   Şəklin (img) öz mərkəzi görünən gövdənin mərkəzindən SOSKA_DX/SOSKA_DY (şrift ölçüsünün payı, ölçü əmsalı ilə böyüyür) qədər fərqlidir.
+   p = bu alıcıya düşən yer məlumatı (p.v = soska variantının nömrəsi: hansı rəngli soska uçur). */
+function ucurSoska(g, x, to, pa, b, p) {
   const r0 = fotoRect(b);
   if (!r0) return;
   const d = document.createElement("div");
@@ -1231,7 +1259,7 @@ function ucurSoska(g, x, to, pa, b) {
   d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
   d.style.fontSize = (r0.width * SOSKA_OLCU) + "px";
   d.style.opacity = "0";
-  d.innerHTML = gorsel(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  d.innerHTML = gorselV(g, p && p.v) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
   fxLayer().appendChild(d);
   canli(to, g.ucusMs || 5020,
     r => [r.left + r.width * SOSKA_MX, r.top + r.height * SOSKA_MY, 0, r.width * SOSKA_OLCU],
@@ -1390,7 +1418,7 @@ function oynaBir(kimden, x, to) {
   if (g.soska && x.p && x.p[to]) {
     /* soska göndərənin şəklinin mərkəzindən yox, SOSKA_BASLA qədər yuxarı-sağdan çıxır (videodakı kimi) */
     const ra = a && fotoRect(a);
-    ucurSoska(g, x, to, ra ? [ra.left + ra.width * (0.5 + SOSKA_BASLA[0]), ra.top + ra.height * (0.5 + SOSKA_BASLA[1])] : pa, b);
+    ucurSoska(g, x, to, ra ? [ra.left + ra.width * (0.5 + SOSKA_BASLA[0]), ra.top + ra.height * (0.5 + SOSKA_BASLA[1])] : pa, b, x.p[to]);
     return;
   }
   const py = g.yigim && x.p && x.p[to];
@@ -1524,7 +1552,8 @@ function yigimCiz() {
 
     /* NÖVLƏRARASI SOLMA (yalnız EYNİ zonada): bir növ hədiyyə düşəndə həmin yerdə olan BAŞQA növ hədiyyələr (hələ solmayanlar)
        həmin hədiyyənin düşmə vaxtından başlayaraq ən köhnədən bir-bir solur. Hər hədiyyənin solma vaxtı
-       onu əvəz edən ilk fərqli növ hədiyyəyə görə bir dəfə təyin olunur, ona görə sonradan dəyişmir. */
+       onu əvəz edən ilk fərqli növ hədiyyəyə görə bir dəfə təyin olunur, ona görə sonradan dəyişmir.
+       Soska və kokteyl eyni zonada ("yan") olduğu üçün soska atıldıqdan sonra kokteyl düşəndə soska solub silinir. */
     const caprazSol = {};
     {
       const zonalar = {};
