@@ -15,12 +15,24 @@ import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js"
      Bir-bir basanda neçə dəfə basılıbsa o qədər hədiyyə göndərilir.
    - TOPAZ (g22): uçuş və düşmə ölçüsü videodan ölçülərək bir-bir quraşdırılıb.
    - ÇİYƏLƏK (g2): uçuş, fırlanma, ölçü və yavaşlama videodan ölçülüb; yığım/solma qaydası topaz kimidir.
-   - KOKTEL (g21): qiyməti 2, göndərəndən 2 bonus çıxır, alan oyunçuya hər kokteylə +1 bonus düşür.
+   - KOKTEL (g21): qiyməti 2, göndərəndən 2 bonus çıxır, alan cəmi hər kokteylə +1 bonus almalıdır (KOKTEL_ALAN_BONUS).
+   - YER (ZONA) qaydası: tac ("bas"), kokteyl ("koktel") və şəklin üstünə düşənlər ("yuz") bir-birini silmir;
+     yalnız eyni zonadakı başqa növ hədiyyə köhnəni solub silir.
    - Topaz, çiyələk, öpüş və pomidor çoxlu atılanda hamısı şəkildə qalır, ən köhnədən başlayaraq sıra ilə tədricən solur,
      SON atılan qalır. Başqa növ hədiyyə düşəndə köhnə növ bir-bir solur, yeni növ qalır. */
 
 /* ---------- AYARLAR ---------- */
 const SEKIL_PAPKA = "images/hediyye/";
+/* KOKTEL: alan oyunçunun BU FAYLDAN aldığı bonus (kokteyl şəklinə düşəndə). Faylda alana yalnız bu verilir.
+   Əgər başqa yerdən (məs. server/başqa fayl qiymətin yarısını alana verirsə) əlavə bonus gəlirsə, burada 0 qalır ki cəmi 1 olsun.
+   Alan yalnız bu fayldan 1 almalıdırsa 1 yaz. */
+const KOKTEL_ALAN_BONUS = 0;
+/* YER (ZONA) QAYDASI: hədiyyələr yalnız EYNİ yerə düşən başqa növ hədiyyə ilə bir-birini solub silir.
+   "yuz"   = şəklin üstünə düşənlər (öpüş, pomidor, çiyələk, topaz) – bir-birini əvəz edir.
+   "bas"   = başa qoyulan (tac) – yalnız başa qoyulan başqa hədiyyə tacı silir.
+   "koktel"= kokteylin yeri (şəklin yanı) – yalnız başqa kokteyl əvəz edir.
+   Yeni hədiyyə üçün zona yazılmasa, ona ayrıca yer verilir (heç kimi silmir, heç kim onu silmir). */
+const zonaDe = g => g.zona || g.qrup || g.id;
 const SES_PAPKA = "sesler/";
 
 /* Topaz (videodan ölçülüb): uçuş boyu ölçü sabit (1), son 30%-də yavaş-yavaş 0.8-ə qədər kiçilir və
@@ -57,37 +69,29 @@ const QAL_OMUR = 15000, QAL_SOLMA = 2500, QAL_ADDIM = 400;
 const CAPRAZ_ADDIM = 600, CAPRAZ_PENCERE = 20000;
 
 const SADE_HEDIYYELER = [
-  { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true, qrup: "yuz", qal: true },
-  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5030, yapis: true, ucusAdi: true, pomidor: true, qrup: "yuz", qal: true },
+  { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true, qrup: "yuz", zona: "yuz", qal: true },
+  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5030, yapis: true, ucusAdi: true, pomidor: true, qrup: "yuz", zona: "yuz", qal: true },
   { id: "g7",  e: "🐸", img: SEKIL_PAPKA + "qurbaga.png", q: 2 },
   /* g2 çiyələk: videodakı kimi uçur/düşür (olcu, olcuEgri, ucusEase, spin) və topaz kimi şəkildə qalıb sıra ilə solur (qal).
      Səs faylları: sesler/strawberry.mp3 (göndərmə) və sesler/strawberry_dusme.mp3 (düşmə). */
   { id: "g2",  e: "🍓", img: SEKIL_PAPKA + "cilek.png",   q: 1, k: "yeni",
     s: SES_PAPKA + "strawberry.mp3", sl: SES_PAPKA + "strawberry_dusme.mp3",
-    ucusMs: 5200, yigim: true, qrup: "cilek", qal: true,
+    ucusMs: 5200, yigim: true, qrup: "cilek", zona: "yuz", qal: true,
     olcu: 0.45, olcuEgri: CILEK_OLCU_EYRISI, ucusEase: CILEK_EASE, spin: CILEK_SPIN },
-  { id: "g4",  e: "🪨", img: SEKIL_PAPKA + "dash.png",    q: 1 },
-  { id: "g5",  e: "🌹", img: SEKIL_PAPKA + "gul.png",     q: 1, k: "ozel" },
-  { id: "g6",  e: "🍬", img: SEKIL_PAPKA + "konfet.png",  q: 1 },
-  { id: "g8",  e: "🐧", img: SEKIL_PAPKA + "pinqvin.png", q: 1 },
-  { id: "g9",  e: "🐥", img: SEKIL_PAPKA + "cuce.png",    q: 1, k: "yeni" },
-  { id: "g10", e: "🌷", img: SEKIL_PAPKA + "lale.png",    q: 1 },
-  { id: "g11", e: "💐", img: SEKIL_PAPKA + "buket.png",   q: 2, k: "ozel" },
-  { id: "g12", e: "🍫", img: SEKIL_PAPKA + "sokolad.png", q: 2 },
-  { id: "g13", e: "🍷", img: SEKIL_PAPKA + "sarab.png",   q: 2 },
-  { id: "g14", e: "💍", img: SEKIL_PAPKA + "uzuk.png",    q: 3, k: "ozel" },
-  { id: "g15", e: "👑", img: SEKIL_PAPKA + "tac.png",     q: 3, k: "ozel",            s: SES_PAPKA + "crown.mp3",  sl: SES_PAPKA + "crown_dusme.mp3", ucusMs: 5000, tacUcus: true, yapis: true },
-  { id: "g16", e: "🎩", img: SEKIL_PAPKA + "sapka.png",   q: 2 },
-  { id: "g17", e: "🧸", img: SEKIL_PAPKA + "ayicik.png",  q: 3, k: "yeni" },
-  { id: "g18", e: "🚗", img: SEKIL_PAPKA + "masin.png",   q: 5, k: "yeni" },
-  { id: "g19", e: "💎", img: SEKIL_PAPKA + "almaz.png",   q: 5, k: "ozel" },
-  { id: "g20", e: "🏰", img: SEKIL_PAPKA + "qala.png",    q: 9, k: "ozel" },
+  /* g5 gül: paneldə qırmızı gül görünür, hər toxunuşda fərqli gül göndərilir (variantlar). Topaz kimi uçur/düşür,
+     şəkildə qalır və sıra ilə solur. Yeni gül əlavə etmək üçün şəkli images/hediyye/ papkasına at və adını variantlar siyahısına yaz.
+     Səs faylları: sesler/flower.mp3 (göndərmə) və sesler/flower_dusme.mp3 (düşmə). */
+  { id: "g5",  e: "🌹", img: SEKIL_PAPKA + "gul_qirmizi.png", q: 1, k: "ozel",
+    s: SES_PAPKA + "flower.mp3", sl: SES_PAPKA + "flower_dusme.mp3",
+    ucusMs: 4900, yigim: true, qrup: "gul", zona: "yuz", qal: true,
+    olcu: 0.4, olcuEgri: TOPAZ_OLCU_EYRISI, ucusEase: TOPAZ_EASE,
+    variantlar: ["gul_qirmizi.png", "gul_romashka.png"] },
   /* g21 koktel: qiymət 2 (göndərəndən 2 bonus çıxır), alan oyunçuya hər kokteylə +1 bonus (bonus:1) düşəndə verilir */
-  { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 2, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: 1, solMs: 1950 },
+  { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 2, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: KOKTEL_ALAN_BONUS, solMs: 1950, zona: "koktel" },
   /* g22 topaz: paneldə 1 topaz görünür, hər toxunuşda fərqli forma + rəng göndərilir (variantlar).
      Videodakı kimi uçur/düşür (olcu, olcuEgri, ucusEase) və çoxlu göndəriləndə şəkildə qalıb sonra bir-bir yox olur (qal).
      Səs faylları: sesler/topaz.mp3 (göndərmə) və sesler/topaz_dusme.mp3 (düşmə) — adları sənin fayllarına görə dəyiş. */
-  { id: "g22", e: "💎", img: SEKIL_PAPKA + "topaz_romb_firuze.png", q: 1, k: "yeni", ucusMs: 4900, yigim: true, qrup: "topaz",
+  { id: "g22", e: "💎", img: SEKIL_PAPKA + "topaz_romb_firuze.png", q: 1, k: "yeni", ucusMs: 4900, yigim: true, qrup: "topaz", zona: "yuz",
     s: SES_PAPKA + "topaz.mp3", sl: SES_PAPKA + "topaz_dusme.mp3",
     olcu: 0.36, olcuEgri: TOPAZ_OLCU_EYRISI, ucusEase: TOPAZ_EASE, qal: true,
     variantlar: ["romb", "urek", "dair"].flatMap(f =>
@@ -728,12 +732,13 @@ function premiumInfoYenile() {
   $("#hdBarI").style.width = sv.faiz + "%";
 }
 
-/* topaz: hər göndərişdə əvvəlkindən fərqli variant (forma + rəng) seçilir */
-let sonTopaz = -1;
-function topazSec(n) {
+/* variantlı hədiyyələr (topaz, gül): hər göndərişdə həmin hədiyyənin əvvəlki variantından fərqli variant seçilir */
+const sonVariant = {};
+function variantSec(g) {
+  const n = g.variantlar.length;
   let v;
-  do { v = Math.floor(Math.random() * n); } while (n > 1 && v === sonTopaz);
-  sonTopaz = v;
+  do { v = Math.floor(Math.random() * n); } while (n > 1 && v === sonVariant[g.id]);
+  sonVariant[g.id] = v;
   return v;
 }
 
@@ -769,7 +774,7 @@ function gonder(g, c, alici) {
         : g.yapis
         ? { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) }
         : { x: 15 + Math.round(Math.random() * 70), y: 15 + Math.round(Math.random() * 70), r: Math.round(Math.random() * 200 - 100) };
-      if (g.variantlar) q.v = topazSec(g.variantlar.length);
+      if (g.variantlar) q.v = variantSec(g);
       p[k] = q;
       const yz = { i: g.id, x: q.x, y: q.y, r: q.r, n, from: MEN, t, l: dusmeVaxti };
       if (q.v != null) yz.v = q.v;   // Firebase undefined qəbul etmir
@@ -1207,7 +1212,7 @@ function urekEffekti(to) {
     () => d.remove());
 }
 
-/* koktel bonusu: kokteil alıcının şəklinə düşəndə alıcı hər kokteylə g.bonus (1) bonus ürək alır.
+/* koktel bonusu: kokteyl alıcının şəklinə düşəndə alıcı hər kokteylə g.bonus (KOKTEL_ALAN_BONUS) ürək alır.
    Göndərəndən isə kokteylin qiyməti (g.q = 2) gonder() funksiyasında çıxılır. */
 const bonusVerilen = new Set();
 function bonusVer(g, x, to) {
@@ -1359,23 +1364,29 @@ function yigimCiz() {
       (qruplar[qk] = qruplar[qk] || []).push([key, e, land, gh]);
     }
 
-    /* NÖVLƏRARASI SOLMA: bir növ hədiyyə düşəndə şəkildə olan BAŞQA növ hədiyyələr (hələ solmayanlar)
+    /* NÖVLƏRARASI SOLMA (yalnız EYNİ zonada): bir növ hədiyyə düşəndə həmin yerdə olan BAŞQA növ hədiyyələr (hələ solmayanlar)
        həmin hədiyyənin düşmə vaxtından başlayaraq ən köhnədən bir-bir solur. Hər hədiyyənin solma vaxtı
        onu əvəz edən ilk fərqli növ hədiyyəyə görə bir dəfə təyin olunur, ona görə sonradan dəyişmir. */
     const caprazSol = {};
     {
-      const hamisi = [];
-      for (const gk in qruplar) for (const it of qruplar[gk]) hamisi.push([gk, it]);
-      hamisi.sort((a, b) => a[1][2] - b[1][2]);
-      let gozle = [];
-      for (const [gk, it] of hamisi) {
-        const getdi = gozle.filter(w => w[0] !== gk);
-        if (getdi.length) {
-          const addim = Math.min(CAPRAZ_ADDIM, CAPRAZ_PENCERE / getdi.length);
-          getdi.forEach((w, i) => { caprazSol[w[1][0]] = it[2] + i * addim; });
-          gozle = gozle.filter(w => w[0] === gk);
+      const zonalar = {};
+      for (const gk in qruplar) for (const it of qruplar[gk]) {
+        const zk = zonaDe(it[3]);
+        (zonalar[zk] = zonalar[zk] || []).push([gk, it]);
+      }
+      for (const zk in zonalar) {
+        const hamisi = zonalar[zk];
+        hamisi.sort((a, b) => a[1][2] - b[1][2]);
+        let gozle = [];
+        for (const [gk, it] of hamisi) {
+          const getdi = gozle.filter(w => w[0] !== gk);
+          if (getdi.length) {
+            const addim = Math.min(CAPRAZ_ADDIM, CAPRAZ_PENCERE / getdi.length);
+            getdi.forEach((w, i) => { caprazSol[w[1][0]] = it[2] + i * addim; });
+            gozle = gozle.filter(w => w[0] === gk);
+          }
+          gozle.push([gk, it]);
         }
-        gozle.push([gk, it]);
       }
     }
 
