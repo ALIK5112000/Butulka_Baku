@@ -14,7 +14,9 @@ import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js"
    - Sadə hədiyyənin üzərinə basıb saxlayanda hədiyyə davamlı göndərilir, əli çəkəndə dayanır.
      Bir-bir basanda neçə dəfə basılıbsa o qədər hədiyyə göndərilir.
    - TOPAZ (g22): uçuş və düşmə ölçüsü videodan ölçülərək bir-bir quraşdırılıb.
-   - Topaz, öpüş və pomidor çoxlu atılanda hamısı şəkildə qalır, ən köhnədən başlayaraq sıra ilə tədricən solur,
+   - ÇİYƏLƏK (g2): uçuş, fırlanma, ölçü və yavaşlama videodan ölçülüb; yığım/solma qaydası topaz kimidir.
+   - KOKTEL (g21): qiyməti 2, göndərəndən 2 bonus çıxır, alan oyunçuya hər kokteylə +1 bonus düşür.
+   - Topaz, çiyələk, öpüş və pomidor çoxlu atılanda hamısı şəkildə qalır, ən köhnədən başlayaraq sıra ilə tədricən solur,
      SON atılan qalır. Başqa növ hədiyyə düşəndə köhnə növ bir-bir solur, yeni növ qalır. */
 
 /* ---------- AYARLAR ---------- */
@@ -28,6 +30,17 @@ const TOPAZ_OLCU_EYRISI = [[0, .85], [.03, .97], [.05, 1], [.70, 1], [.735, .95]
 /* Topazın yerdəyişmə əyrisi (cubic-bezier): əvvəl sürətli, sonra yavaşlayır (videodakı kimi) */
 const TOPAZ_EASE = [0.3, 0.5, 0.6, 1];
 
+/* ÇİYƏLƏK (g2): videodan ölçülüb. Uçuş ~5.2 san. Yerdəyişmə: əvvəl sürətli, sonra çox yavaş-yavaş oturur (cubic-bezier).
+   Uçuş boyu saat əqrəbi istiqamətində ~210° fırlanır (fırlanma hərəkətlə eyni əyri üzrə gedir, CILEK_SPIN dərəcə).
+   Ölçü: uçuşun əvvəlində kiçikdən böyüyür (~uçuşun 12%-də ən böyük), sonra yavaş-yavaş kiçilir və şəkildə
+   son ölçüdə (0.67 əmsal) qalır. Baza ölçü = şəkil enində 0.45 pay. */
+const CILEK_OLCU_EYRISI = [[0, .78], [.04, .95], [.12, 1], [.28, 1], [.46, .85], [.66, .78], [.85, .70], [1, .67]];
+const CILEK_EASE = [0.2, 0.4, 0.4, 1];
+const CILEK_SPIN = 210;
+/* YIĞIM QAYDASI (topaz, çiyələk, öpüş, pomidor): atılan hədiyyələrin hamısı şəkildə qalır. Hər hədiyyə düşəndən
+   QAL_OMUR ms sonra, ən köhnədən başlayaraq SIRAYLA (solmaların başlanğıcı arası ən azı QAL_ADDIM ms)
+   QAL_SOLMA ms ərzində tədricən solur. SON atılan hədiyyə heç vaxt solmur (başqa növ hədiyyə düşənə qədər). */
+
 /* POMIDOR (g3): videodan ölçülüb. Uçuş ~5 san, düz xətt üzrə: əvvəl sürətli, sonra yavaşlayır (cubic-bezier).
    Uçuş boyu fırlana-fırlana gedir (POMIDOR_FIRLA: başlanğıc və son bucaq, dərəcə, hərəkətlə eyni əyri ilə).
    Ölçü: əvvəl ~0.82-dən 1-ə böyüyür, uçuşun 2/3-dən sonra yavaş-yavaş 0.81-ə qədər kiçilir, sonra əzik şəkilə keçir.
@@ -38,9 +51,6 @@ const POMIDOR_UCUS_OLCU = 0.49;
 const POMIDOR_OTUR_OLCU = 0.45;
 const POMIDOR_OLCU_EYRISI = [[0, .82], [.05, 1], [.67, 1], [.69, .977], [.71, .96], [.73, .934], [.75, .91], [.77, .9],
                              [.79, .88], [.81, .857], [.85, .843], [.87, .828], [.91, .814], [1, .806]];
-/* YIĞIM QAYDASI (topaz, öpüş, pomidor): atılan hədiyyələrin hamısı şəkildə qalır. Hər hədiyyə düşəndən
-   QAL_OMUR ms sonra, ən köhnədən başlayaraq SIRAYLA (solmaların başlanğıcı arası ən azı QAL_ADDIM ms)
-   QAL_SOLMA ms ərzində tədricən solur. SON atılan hədiyyə heç vaxt solmur (başqa növ hədiyyə düşənə qədər). */
 const QAL_OMUR = 15000, QAL_SOLMA = 2500, QAL_ADDIM = 400;
 /* Başqa növ hədiyyə düşəndə şəkildəki köhnə növün hədiyyələri (məs. topaz atılanda pomidor) ən köhnədən başlayaraq
    bir-bir solur, YENİ atılan növ qalır. Solmaların başlanğıcı arasında CAPRAZ_ADDIM ms (çox olsa CAPRAZ_PENCERE-yə sıxılır). */
@@ -50,7 +60,12 @@ const SADE_HEDIYYELER = [
   { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true, qrup: "yuz", qal: true },
   { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5030, yapis: true, ucusAdi: true, pomidor: true, qrup: "yuz", qal: true },
   { id: "g7",  e: "🐸", img: SEKIL_PAPKA + "qurbaga.png", q: 2 },
-  { id: "g2",  e: "🍓", img: SEKIL_PAPKA + "cilek.png",   q: 1, k: "yeni" },
+  /* g2 çiyələk: videodakı kimi uçur/düşür (olcu, olcuEgri, ucusEase, spin) və topaz kimi şəkildə qalıb sıra ilə solur (qal).
+     Səs faylları: sesler/strawberry.mp3 (göndərmə) və sesler/strawberry_dusme.mp3 (düşmə). */
+  { id: "g2",  e: "🍓", img: SEKIL_PAPKA + "cilek.png",   q: 1, k: "yeni",
+    s: SES_PAPKA + "strawberry.mp3", sl: SES_PAPKA + "strawberry_dusme.mp3",
+    ucusMs: 5200, yigim: true, qrup: "cilek", qal: true,
+    olcu: 0.45, olcuEgri: CILEK_OLCU_EYRISI, ucusEase: CILEK_EASE, spin: CILEK_SPIN },
   { id: "g4",  e: "🪨", img: SEKIL_PAPKA + "dash.png",    q: 1 },
   { id: "g5",  e: "🌹", img: SEKIL_PAPKA + "gul.png",     q: 1, k: "ozel" },
   { id: "g6",  e: "🍬", img: SEKIL_PAPKA + "konfet.png",  q: 1 },
@@ -67,7 +82,8 @@ const SADE_HEDIYYELER = [
   { id: "g18", e: "🚗", img: SEKIL_PAPKA + "masin.png",   q: 5, k: "yeni" },
   { id: "g19", e: "💎", img: SEKIL_PAPKA + "almaz.png",   q: 5, k: "ozel" },
   { id: "g20", e: "🏰", img: SEKIL_PAPKA + "qala.png",    q: 9, k: "ozel" },
-  { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 1, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: 1, solMs: 1950 },
+  /* g21 koktel: qiymət 2 (göndərəndən 2 bonus çıxır), alan oyunçuya hər kokteylə +1 bonus (bonus:1) düşəndə verilir */
+  { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 2, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: 1, solMs: 1950 },
   /* g22 topaz: paneldə 1 topaz görünür, hər toxunuşda fərqli forma + rəng göndərilir (variantlar).
      Videodakı kimi uçur/düşür (olcu, olcuEgri, ucusEase) və çoxlu göndəriləndə şəkildə qalıb sonra bir-bir yox olur (qal).
      Səs faylları: sesler/topaz.mp3 (göndərmə) və sesler/topaz_dusme.mp3 (düşmə) — adları sənin fayllarına görə dəyiş. */
@@ -1191,6 +1207,8 @@ function urekEffekti(to) {
     () => d.remove());
 }
 
+/* koktel bonusu: kokteil alıcının şəklinə düşəndə alıcı hər kokteylə g.bonus (1) bonus ürək alır.
+   Göndərəndən isə kokteylin qiyməti (g.q = 2) gonder() funksiyasında çıxılır. */
 const bonusVerilen = new Set();
 function bonusVer(g, x, to) {
   if (!MEN || to !== MEN || !g.bonus) return;
@@ -1285,8 +1303,10 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/yigim"), s => {
 function ucurYigim(g, x, to, pa, b, p) {
   const r0 = fotoRect(b);
   if (!r0) return;
-  /* ölçü: hədiyyənin öz əyrisi varsa (topaz) o, yoxsa köhnə öpüş əyrisi; yerdəyişmə əyrisi də eləcə */
+  /* ölçü: hədiyyənin öz əyrisi varsa (topaz, çiyələk) o, yoxsa köhnə öpüş əyrisi; yerdəyişmə əyrisi də eləcə.
+     Fırlanma: g.spin dərəcə (çiyələk 210°), yoxdursa köhnə 90°; hərəkətlə eyni əyri üzrə gedir. */
   const ms = g.ucusMs || 4900, L = r0.width * yigBaza(g), dir = p.d < 0 ? -1 : 1;
+  const spinD = g.spin != null ? g.spin : 90;
   const olcuE = g.olcuEgri || OLCU_EYRISI;
   const ease = g.ucusEase ? bez(g.ucusEase[0], g.ucusEase[1], g.ucusEase[2], g.ucusEase[3]) : bez(0.5, 1, 0.89, 1);
   const a = document.createElement("div");
@@ -1301,7 +1321,7 @@ function ucurYigim(g, x, to, pa, b, p) {
     (u, h) => {
       const e = ease(u);
       a.style.transform = "translate(" + ((h[0] - pa[0]) * e) + "px," + ((h[1] - pa[1]) * e) + "px)";
-      rot.style.transform = "rotate(" + (h[2] - 90 * dir * (1 - e)) + "deg)";
+      rot.style.transform = "rotate(" + (h[2] - spinD * dir * (1 - e)) + "deg)";
       olc.style.transform = "scale(" + egri(olcuE, u) + ")";
       olc.style.opacity = u > 0 ? 1 : 0;
     },
@@ -1362,7 +1382,7 @@ function yigimCiz() {
     for (const gid in qruplar) {
       const L = qruplar[gid].sort((a, b) => a[2] - b[2]);
 
-      /* "qal" hədiyyələr (topaz, öpüş, pomidor): hamısı qalır; i-ci hədiyyə ən tez düşməsindən QAL_OMUR sonra,
+      /* "qal" hədiyyələr (topaz, çiyələk, öpüş, pomidor): hamısı qalır; i-ci hədiyyə ən tez düşməsindən QAL_OMUR sonra,
          özündən sonrakı hədiyyə düşəndən əvvəl yox, əvvəlki hədiyyənin solmasından ən azı QAL_ADDIM sonra solur.
          Beləcə köhnədən başlayaraq sıra ilə solur, SON hədiyyənin solma vaxtı yoxdur və qalır.
          Hər vaxt yalnız özündən əvvəlkilərdən və növbətidən asılıdır, ona görə yeni hədiyyə gələndə
@@ -1418,7 +1438,7 @@ function yigimCiz() {
             el.style.transform = "translate(-50%,-50%) rotate(" + rot + "deg)";
           };
         } else {
-          /* düşəndən sonrakı ölçü = uçuş ölçüsü × son əmsal (topaz: 0.8, öpüş: 1) */
+          /* düşəndən sonrakı ölçü = uçuş ölçüsü × son əmsal (topaz: 0.8, çiyələk: 0.67, öpüş: 1) */
           const L2 = r.width * yigBaza(g) * yigSon(g);
           const lx = r.left + r.width * e.x / 100 - L2 / 2, ly = r.top + r.height * e.y / 100 - L2 / 2;
           k = [lx, ly, L2, e.r].join("|");
