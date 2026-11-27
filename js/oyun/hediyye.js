@@ -147,13 +147,6 @@ const SADE_HEDIYYELER = [
   /* g21 koktel: qiymət 2 (göndərəndən 2 bonus çıxır), alan oyunçuya hər kokteylə +1 bonus (bonus:1) düşəndə verilir.
      Zona "yan": soska ilə eyni yerə düşür, ona görə biri o birini solub silir. */
   { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 2, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: KOKTEL_ALAN_BONUS, solMs: 1950, zona: "yan" },
-  /* soska: qiymət 1 ürək. Şəklin sağ-aşağı küncünə oturur (zona "yan"), uçuşu/ölçüsü videodan ölçülüb (SOSKA_*, ucurSoska).
-     Hər göndərişdə 4 variantdan biri seçilir (variantlar). Yeni soska və ya o yerə düşən başqa hədiyyə (kokteyl) gələndə
-     köhnə soska solmağa başlayır (solMs ms ərzində). Şəkillər: images/hediyye/soska_qirmizi.png, soska_pembe.png, soska_yasil.png,
-     soska_goyqurshagi.png (panel üçün əsas şəkil soska.png qalır).
-     Səs faylları: sesler/soska.mp3 (göndərmə) və sesler/soska_dusme.mp3 (düşmə). */
-  { id: SOSKA_ID, e: "🍼", img: SEKIL_PAPKA + "soska.png", q: 1, k: "yeni", s: SES_PAPKA + "soska.mp3", sl: SES_PAPKA + "soska_dusme.mp3", ucusMs: 5020, soska: true, solMs: 2000, zona: "yan",
-    variantlar: ["soska_qirmizi.png", "soska_pembe.png", "soska_yasil.png", "soska_goyqurshagi.png"] },
   /* g22 topaz: paneldə 1 topaz görünür, hər toxunuşda fərqli forma + rəng göndərilir (variantlar).
      Videodakı kimi uçur/düşür (olcu, olcuEgri, ucusEase) və çoxlu göndəriləndə şəkildə qalıb sonra bir-bir yox olur (qal).
      Səs faylları: sesler/topaz.mp3 (göndərmə) və sesler/topaz_dusme.mp3 (düşmə) — adları sənin fayllarına görə dəyiş. */
@@ -162,6 +155,13 @@ const SADE_HEDIYYELER = [
     olcu: 0.36, olcuEgri: TOPAZ_OLCU_EYRISI, ucusEase: TOPAZ_EASE, qal: true,
     variantlar: ["romb", "urek", "dair"].flatMap(f =>
       ["firuze", "pembe", "benovse", "yasil", "qirmizi", "mavi"].map(r => "topaz_" + f + "_" + r + ".png")) }
+   /* soska: qiymət 1 ürək. Şəklin sağ-aşağı küncünə oturur (zona "yan"), uçuşu/ölçüsü videodan ölçülüb (SOSKA_*, ucurSoska).
+     Hər göndərişdə 4 variantdan biri seçilir (variantlar). Yeni soska və ya o yerə düşən başqa hədiyyə (kokteyl) gələndə
+     köhnə soska solmağa başlayır (solMs ms ərzində). Şəkillər: images/hediyye/soska_qirmizi.png, soska_pembe.png, soska_yasil.png,
+     soska_goyqurshagi.png (panel üçün əsas şəkil soska.png qalır).
+     Səs faylları: sesler/soska.mp3 (göndərmə) və sesler/soska_dusme.mp3 (düşmə). */
+  { id: SOSKA_ID, e: "🍼", img: SEKIL_PAPKA + "soska.png", q: 1, k: "yeni", s: SES_PAPKA + "soska.mp3", sl: SES_PAPKA + "soska_dusme.mp3", ucusMs: 5020, soska: true, solMs: 2000, zona: "yan",
+    variantlar: ["soska_qirmizi.png", "soska_pembe.png", "soska_yasil.png", "soska_goyqurshagi.png"] },
 ];
 
 /* animasiya və göndərmə kodu hədiyyəni id ilə axtarır: sadə + premium hamısı bir siyahıda */
