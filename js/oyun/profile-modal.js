@@ -366,6 +366,15 @@ let sonD = null, unsub = null, acik = false, ownerUid = null;
 const rkN = {};
 const rkTxt = (uid, k) => (rkN[uid] && rkN[uid][k] ? fmt(rkN[uid][k]) + " sıra" : "");
 
+/* Açıq kartdakı bütün sıra yazılarını rkN-dən yenidən yazır (itmiş yenilənmə qalmasın) */
+function siraSync() {
+  if (!ownerUid) return;
+  ov.querySelectorAll("[data-r]").forEach(el => {
+    const t = rkTxt(ownerUid, el.getAttribute("data-r"));
+    if (el.textContent !== t) el.textContent = t;
+  });
+}
+
 /* ================= TOP LENTİ (1-10 ci yer) ================= */
 function topLentYenile() {
   if (!ownerUid) return;
@@ -397,11 +406,19 @@ function siraYaz(uid, k) {
 }
 
 const taym = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("vaxt bitdi")), ms))]);
-const isde = {}, gozle = {};
-async function siraYenile(uid, d) {
+const isde = {}, gozle = {}, sonSira = {};
+/* asagi=true: arxa planda (masadakı oyunçuların öncədən yüklənməsi) – açıq kartın sorğularını yavaşlatmasın deyə
+   təzə nəticəsi varsa təkrar hesablamır */
+async function siraYenile(uid, d, asagi) {
   if (!uid || !d) return;
+  if (asagi) {
+    const r0 = rkN[uid];
+    if (sonSira[uid] && Date.now() - sonSira[uid] < 60000 && r0 && SIRA_SAHELERI.every(k => r0[k] !== undefined)) return;
+    if (uid !== ownerUid && Object.keys(isde).some(u => isde[u] && u === ownerUid)) return;
+  }
   if (isde[uid]) { gozle[uid] = d; return; }
   isde[uid] = true;
+  let xeta = false;
   try {
     const rk = rkN[uid] || (rkN[uid] = {});
     await Promise.all(SIRA_SAHELERI.map(async k => {
@@ -412,12 +429,17 @@ async function siraYenile(uid, d) {
         const snap = await taym(getCountFromServer(query(collection(fsdb, "users"), where(k, ">", v))), 8000);
         rk[k] = snap.data().count + 1;
         siraYaz(uid, k);
-      } catch (e) { console.error("Sıra xətası:", e); }
+      } catch (e) { xeta = true; console.error("Sıra xətası:", e); }
     }));
+    if (!xeta) sonSira[uid] = Date.now();
   } finally {
     isde[uid] = false;
     const d2 = gozle[uid];
     if (d2) { delete gozle[uid]; siraYenile(uid, d2); }
+    else if (xeta && uid === ownerUid) {
+      /* xəta olubsa açıq kartda 2.5 saniyəyə təkrar yoxlayır, 15 saniyə gözləmir */
+      setTimeout(() => { if (uid === ownerUid && sonD && ov.classList.contains("open")) siraYenile(uid, sonD); }, 2500);
+    }
   }
 }
 setInterval(() => { if (ov.classList.contains("open") && sonD && ownerUid) siraYenile(ownerUid, sonD); }, 15000);
@@ -471,6 +493,7 @@ function kartiGoster() {
   ov.classList.remove("pf-bekle");
   const c = ov.querySelector(".pf-card");
   if (c) { c.style.animation = "none"; void c.offsetWidth; c.style.animation = ""; }
+  siraSync();
 }
 function hazirsaGoster() {
   if (ov.classList.contains("pf-bekle") && hazirMi()) kartiGoster();
@@ -512,7 +535,7 @@ function duymeHal() {
   }
 }
 /* düymə kart açıldıqdan sonra əlavə oluna bilər: açıq kartda vəziyyət tez-tez yoxlanır */
-setInterval(() => { if (ov.classList.contains("open")) duymeHal(); }, 300);
+setInterval(() => { if (ov.classList.contains("open")) { duymeHal(); siraSync(); } }, 300);
 
 /* Musiqi düyməsi: kart bağlanır, "Musiqi qoy" paneli (klip + mahnı) həmin oyunçu adına açılır */
 function musiqiAc() {
@@ -682,6 +705,7 @@ function ciz(d) {
   }
   const hv = ov.querySelector(".pf-hv");
   if (hv) hv.textContent = fmt(qiymet);
+  siraSync();
   hazirsaGoster();
 }
 
@@ -693,7 +717,8 @@ window.ProfilKart = {
       gurulu = false; sig = {}; sonD = null; ov.innerHTML = "";
       if (mUnsub) { mUnsub(); mUnsub = null; } mUid = null; mD = null;
       ov.classList.add("pf-bekle");
-      clearTimeout(bekleT); bekleT = setTimeout(kartiGoster, 700);
+      /* sıra rəqəmləri hazır olana qədər 1.5 saniyəyə qədər gözləyir ki, kart sıra ilə birlikdə görünsün */
+      clearTimeout(bekleT); bekleT = setTimeout(kartiGoster, 1500);
     }
     ownerUid = docId;
     ov.classList.add("open");
@@ -739,7 +764,7 @@ async function onYukle(uid, derinlik = 0) {
     mKesh[uid] = mYarat(uid, d);
     azalt(udata, 60); azalt(mKesh, 60); azalt(rkN, 60);
     sekilIsit(d.avatar);
-    siraYenile(uid, d);
+    siraYenile(uid, d, true);
     if (d.meftunUid && derinlik < 1) onYukle(d.meftunUid, derinlik + 1);
   } catch (e) { delete hazir[uid]; }
 }
