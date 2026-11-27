@@ -18,7 +18,10 @@ import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js"
    - KOKTEL (g21): qiyməti 2, göndərəndən 2 bonus çıxır, alan cəmi hər kokteylə +1 bonus almalıdır (KOKTEL_ALAN_BONUS).
    - PAPAQ ("papaq", kovboy papağı): qiyməti 2 ürək. Tacla EYNİ yerə və EYNİ zonaya ("bas") oturur. Uçuş sürəti, fırlanması,
      uçuş və düşmə ölçüsü videodan kadr-kadr ölçülüb (PAPAQ_* ayarları), səslər videodan kəsilib (sesler/hat.mp3, hat_dusme.mp3).
-   - YER (ZONA) qaydası: tac ("bas"), kokteyl ("koktel") və şəklin üstünə düşənlər ("yuz") bir-birini silmir;
+   - SOSKA ("soska"): qiyməti 1 ürək. Şəklin sağ-aşağı küncünə (yarısı şəklin kənarından çıxaraq) oturur, öz zonası var ("soska").
+     Uçuş yolu (x və y ayrı-ayrı əyrilərlə), uçuş ölçüsü və düşmədən sonrakı ölçü videodan kadr-kadr (şablon uyğunlaşdırması ilə)
+     ölçülüb (SOSKA_* ayarları), səslər videodan kəsilib (sesler/soska.mp3, soska_dusme.mp3).
+   - YER (ZONA) qaydası: tac ("bas"), kokteyl ("koktel"), soska ("soska") və şəklin üstünə düşənlər ("yuz") bir-birini silmir;
      yalnız eyni zonadakı başqa növ hədiyyə köhnəni solub silir.
    - Topaz, çiyələk, öpüş və pomidor çoxlu atılanda hamısı şəkildə qalır, ən köhnədən başlayaraq sıra ilə tədricən solur,
      SON atılan qalır. Başqa növ hədiyyə düşəndə köhnə növ bir-bir solur, yeni növ qalır. */
@@ -32,6 +35,7 @@ const KOKTEL_ALAN_BONUS = 1;
    "yuz"   = şəklin üstünə düşənlər (öpüş, pomidor, çiyələk, topaz) – bir-birini əvəz edir.
    "bas"   = başa qoyulan (tac) – yalnız başa qoyulan başqa hədiyyə tacı silir.
    "koktel"= kokteylin yeri (şəklin yanı) – yalnız başqa kokteyl əvəz edir.
+   "soska" = soskanın yeri (şəklin sağ-aşağı küncü) – yalnız başqa soska əvəz edir.
    Yeni hədiyyə üçün zona yazılmasa, ona ayrıca yer verilir (heç kimi silmir, heç kim onu silmir). */
 const zonaDe = g => g.zona || g.qrup || g.id;
 const SES_PAPKA = "sesler/";
@@ -82,6 +86,33 @@ const PAPAQ_OLCU_EYRISI = [[0, 1.04], [.01, 1.055], [.02, 1.12], [.03, 1.165], [
                            [.65, 1.246], [.68, 1.237], [.70, 1.214], [.72, 1.187], [.74, 1.159], [.76, 1.132], [.78, 1.108],
                            [.80, 1.086], [.82, 1.066], [.84, 1.055], [.86, 1.043], [.88, 1.029], [.90, 1.017], [.92, 1.008],
                            [.94, 1.001], [1, 1]];
+
+/* SOSKA (id "soska"): videodan (1080x2340, ~120 Hz kadrlar) kadr-kadr ölçülüb. Hər kadrda soska şəkli (soska.png) kadrın
+   üstünə şablon kimi qoyulub (cv2.matchTemplate, maska ilə), beləcə hər kadr üçün soskanın görünən gövdəsinin MƏRKƏZİ və
+   ÖLÇÜSÜ tapılıb. Ölçülərin hamısı videodakı şəklin (foto) eninə (184.5 px) görədir.
+   - Uçuş 5.02 san. Başlanğıc nöqtə göndərənin şəklinin mərkəzi DEYİL: şəklin eninin 0.147 payı sağda, 0.280 payı yuxarıdadır
+     (SOSKA_BASLA). Son nöqtə alan şəklinin eninin 1.150 payı sağda, hündürlüyünün 0.715 payı aşağıdadır (SOSKA_MX, SOSKA_MY):
+     yəni soska şəklin sağ-aşağı küncündə, təxminən yarısı şəklin kənarından çıxaraq durur. Fırlanma YOXDUR (həmişə dik).
+   - Yol düz xətt DEYİL: y oxu tez gedib (uçuşun ~66%-də 0.98-ə çatır) sonra demək olar dayanır, x oxu isə sona qədər yavaş-yavaş
+     gedir. Ona görə x və y üçün AYRI əyrilər var: SOSKA_X_EYRISI, SOSKA_Y_EYRISI. Ox: [uçuşun payı 0..1, başlanğıcdan sona yolun payı 0..1].
+   - Ölçü (SOSKA_OLCU_EYRISI), düşəndən sonrakı (son) ölçüyə nisbətdə: ~1×-dən başlayıb uçuşun ilk 6%-də 1.24×-ə qalxır,
+     uçuşun 67%-nə qədər 1.24× qalır, sonra yavaş-yavaş kiçilib uçuşun ~93%-də 1×-ə çatır və şəkildə o ölçüdə qalır.
+   - Düşəndən sonrakı ölçü: soska.png-nin hündürlüyü = şəkil enində SOSKA_OLCU pay (101.6px / 184.5px). Soska.png-də görünən gövdənin
+     mərkəzi şəklin mərkəzindən azca solda/yuxarıdadır (kölgə sağdadır), ona görə SOSKA_DX / SOSKA_DY (şrift ölçüsünün payı) ilə düzəliş olunur.
+   - Videodakı səs qeydi görüntüdən ~0.37 san gecikir, ona görə səslər öz başlanğıcından kəsilib: göndərmə səsi uçuş başlayanda,
+     düşmə səsi soska oturanda çalınır. */
+const SOSKA_ID = "soska";
+const SOSKA_OLCU = 0.5507;
+const SOSKA_MX = 1.1498, SOSKA_MY = 0.7152;
+const SOSKA_DX = -0.0423, SOSKA_DY = -0.0025;
+const SOSKA_BASLA = [0.147, -0.280];
+const SOSKA_X_EYRISI = [[0, 0], [.155, .2789], [.211, .37], [.273, .4646], [.378, .6071], [.448, .6887], [.496, .7388],
+                        [.58, .8157], [.622, .8491], [.713, .9119], [.773, .9457], [.823, .9676], [.878, .9855], [.94, .9969], [1, 1]];
+const SOSKA_Y_EYRISI = [[0, 0], [.04, .151], [.056, .1994], [.074, .2354], [.173, .4096], [.265, .5521], [.323, .6341],
+                        [.404, .7371], [.488, .8291], [.592, .9242], [.661, .9755], [.681, .9863], [.853, .9956], [1, 1]];
+const SOSKA_OLCU_EYRISI = [[0, .99], [.044, 1.206], [.056, 1.238], [.068, 1.245], [.23, 1.24], [.67, 1.241], [.691, 1.226],
+                           [.719, 1.178], [.751, 1.144], [.779, 1.104], [.849, 1.038], [.93, .995], [1, 1]];
+
 const QAL_OMUR = 15000, QAL_SOLMA = 2500, QAL_ADDIM = 400;
 /* Başqa növ hədiyyə düşəndə şəkildəki köhnə növün hədiyyələri (məs. topaz atılanda pomidor) ən köhnədən başlayaraq
    bir-bir solur, YENİ atılan növ qalır. Solmaların başlanğıcı arasında CAPRAZ_ADDIM ms (çox olsa CAPRAZ_PENCERE-yə sıxılır). */
@@ -110,6 +141,10 @@ const SADE_HEDIYYELER = [
   { id: PAPAQ_ID, e: "🤠", img: SEKIL_PAPKA + "papaq.png", q: 2, k: "yeni", s: SES_PAPKA + "hat.mp3", sl: SES_PAPKA + "hat_dusme.mp3", ucusMs: 5000, papaqUcus: true, yapis: true, zona: "bas" },
   /* g21 koktel: qiymət 2 (göndərəndən 2 bonus çıxır), alan oyunçuya hər kokteylə +1 bonus (bonus:1) düşəndə verilir */
   { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 2, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: KOKTEL_ALAN_BONUS, solMs: 1950, zona: "koktel" },
+  /* soska: qiymət 1 ürək. Şəklin sağ-aşağı küncünə oturur (öz zonası "soska"), uçuşu/ölçüsü videodan ölçülüb (SOSKA_*, ucurSoska).
+     Yeni soska düşəndə köhnəsi solmağa başlayır (solMs ms ərzində). Şəkil: images/hediyye/soska.png.
+     Səs faylları: sesler/soska.mp3 (göndərmə) və sesler/soska_dusme.mp3 (düşmə). */
+  { id: SOSKA_ID, e: "🍼", img: SEKIL_PAPKA + "soska.png", q: 1, k: "yeni", s: SES_PAPKA + "soska.mp3", sl: SES_PAPKA + "soska_dusme.mp3", ucusMs: 5020, soska: true, solMs: 2000, zona: "soska" },
   /* g22 topaz: paneldə 1 topaz görünür, hər toxunuşda fərqli forma + rəng göndərilir (variantlar).
      Videodakı kimi uçur/düşür (olcu, olcuEgri, ucusEase) və çoxlu göndəriləndə şəkildə qalıb sonra bir-bir yox olur (qal).
      Səs faylları: sesler/topaz.mp3 (göndərmə) və sesler/topaz_dusme.mp3 (düşmə) — adları sənin fayllarına görə dəyiş. */
@@ -247,7 +282,7 @@ function gorselStk(g) {
   return '<img src="' + src + '" alt="" onerror="this.onerror=function(){this.replaceWith(document.createTextNode(\'' + g.e + '\'))};this.src=\'' + g.img + '\'">';
 }
 
-/* variantlı hədiyyə (topaz): v = variantlar siyahısındakı sıra nömrəsi; yoxdursa adi şəkil */
+/* variantlı hədiyyə (topaz): v = variantlar siyahısındakı sıra nömrəsi; yoxsa adi şəkil */
 const gorselV = (g, v) => (g.variantlar && v != null && g.variantlar[v])
   ? gorsel({ img: SEKIL_PAPKA + g.variantlar[v], e: g.e })
   : gorsel(g);
@@ -786,12 +821,12 @@ function gonder(g, c, alici) {
   const yigUpd = {};
   let yigVar = false;
 
-  const sekileOturur = !!(g.yapis || g.yigim || g.koktel);
+  const sekileOturur = !!(g.yapis || g.yigim || g.koktel || g.soska);
 
   if (sekileOturur) {
     const p = {};
     alanlar.forEach(k => {
-      const q = g.koktel
+      const q = (g.koktel || g.soska)
         ? { x: 50, y: 50, r: 0 }
         : g.yapis
         ? { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) }
@@ -1020,13 +1055,19 @@ function koktelOlcusu(rw) {
   return { fs, dx: ((v.l + v.r) / 2 - 0.5) * fs * v.en, dy: ((v.t + v.b) / 2 - 0.5) * fs };
 }
 
-const olcu = (d, r) => d.i === "g21" ? koktelOlcusu(r.width).fs : r.width * (d.i === "g15" ? 0.38 : d.i === PAPAQ_ID ? PAPAQ_OLCU : d.i === "g3" ? POMIDOR_OTUR_OLCU : 0.4);
+const olcu = (d, r) => d.i === "g21" ? koktelOlcusu(r.width).fs : r.width * (d.i === "g15" ? 0.38 : d.i === PAPAQ_ID ? PAPAQ_OLCU : d.i === SOSKA_ID ? SOSKA_OLCU : d.i === "g3" ? POMIDOR_OTUR_OLCU : 0.4);
 function noqte(d, r) {
   /* tac və papaq şəklin EYNİ nöqtəsinə, eyni bucaqla oturur */
   if (d.i === "g15" || d.i === PAPAQ_ID) return [r.left + r.width * 0.022, r.top + r.height * 0.022, -44];
   if (d.i === "g21") {
     const k = koktelOlcusu(r.width);
     return [r.left + r.width * KOKTEL_REF.MX - k.dx, r.top + r.height * KOKTEL_REF.MY - k.dy, 0];
+  }
+  if (d.i === SOSKA_ID) {
+    /* soska: şəklin sağ-aşağı küncü. (SOSKA_MX, SOSKA_MY) soskanın GÖRÜNƏN gövdəsinin mərkəzidir; şəklin (img) öz mərkəzi
+       kölgə səbəbindən bir az fərqlidir, ona görə SOSKA_DX/SOSKA_DY ilə düzəldilir. */
+    const fs = r.width * SOSKA_OLCU;
+    return [r.left + r.width * SOSKA_MX - SOSKA_DX * fs, r.top + r.height * SOSKA_MY - SOSKA_DY * fs, 0];
   }
   return [r.left + r.width * d.x / 100, r.top + r.height * d.y / 100, d.r || 0];
 }
@@ -1178,6 +1219,38 @@ function ucurPapaq(g, x, to, pa, b, p) {
     });
 }
 
+/* SOSKA uçuşu: videodakı kimi. pa = başlanğıc nöqtə (göndərənin şəklindən SOSKA_BASLA qədər kənarda, oynaBir-də hesablanır).
+   Soskanın GÖRÜNƏN gövdəsinin mərkəzi x və y üçün AYRI əyrilərlə başlanğıcdan (pa) sona (SOSKA_MX/MY nöqtəsi) gedir,
+   ölçü SOSKA_OLCU_EYRISI üzrədir, fırlanma yoxdur. Ulduz izi yoxdur (videoda yoxdur).
+   Şəklin (img) öz mərkəzi görünən gövdənin mərkəzindən SOSKA_DX/SOSKA_DY (şrift ölçüsünün payı, ölçü əmsalı ilə böyüyür) qədər fərqlidir. */
+function ucurSoska(g, x, to, pa, b) {
+  const r0 = fotoRect(b);
+  if (!r0) return;
+  const d = document.createElement("div");
+  d.className = "hd-fly";
+  d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
+  d.style.fontSize = (r0.width * SOSKA_OLCU) + "px";
+  d.style.opacity = "0";
+  d.innerHTML = gorsel(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  fxLayer().appendChild(d);
+  canli(to, g.ucusMs || 5020,
+    r => [r.left + r.width * SOSKA_MX, r.top + r.height * SOSKA_MY, 0, r.width * SOSKA_OLCU],
+    (u, h) => {
+      const k = egri(SOSKA_OLCU_EYRISI, u);
+      const gx = pa[0] + (h[0] - pa[0]) * egri(SOSKA_X_EYRISI, u);   // görünən gövdənin mərkəzi
+      const gy = pa[1] + (h[1] - pa[1]) * egri(SOSKA_Y_EYRISI, u);
+      d.style.fontSize = h[3] + "px";
+      d.style.opacity = 1;
+      d.style.transform = tr(gx - pa[0] - SOSKA_DX * h[3] * k, gy - pa[1] - SOSKA_DY * h[3] * k, k.toFixed(3), 0);
+    },
+    () => {
+      sesCal(g.sl);
+      ogelen.add(x.n + "|" + to);
+      yigimCiz();
+      d.remove();
+    });
+}
+
 function ucurPomidor(g, x, to, pa, b, p) {
   const r0 = fotoRect(b);
   if (!r0) return;
@@ -1267,23 +1340,40 @@ function urekEffekti(to) {
 /* koktel bonusu: kokteyl alıcının şəklinə düşəndə alıcı hər kokteylə g.bonus (KOKTEL_ALAN_BONUS) ürək alır.
    Göndərəndən isə kokteylin qiyməti (g.q = 2) gonder() funksiyasında çıxılır.
    Eyni kokteylə görə bonus YALNIZ BİR DƏFƏ verilir: tranzaksiya alanın sənədində son kokteyl nömrələrini (koktelBonusIds)
-   saxlayır, ona görə iki tab/cihaz və ya təkrar çağırış olsa belə +1-dən çox düşmür. */
+   saxlayır, ona görə iki tab/cihaz və ya təkrar çağırış olsa belə +1-dən çox düşmür.
+   DÜZƏLİŞ (FAILED_PRECONDITION): kokteyllər tez-tez atılanda bir neçə tranzaksiya EYNİ ANDA alanın sənədinə yazmağa
+   çalışır və Firestore toqquşmanı FAILED_PRECONDITION ilə rədd edir. Buna görə bonuslar bonusZence ilə SIRAYLA yazılır
+   (biri bitmədən növbətisi başlamır), xəta olarsa bir dəfə də təkrar yoxlanılır. */
 const bonusVerilen = new Set();
-function bonusVer(g, x, to) {
-  if (!MEN || to !== MEN || !g.bonus) return;
-  const key = x.n + "|" + to;
-  if (bonusVerilen.has(key)) return;
-  bonusVerilen.add(key);
-  const m = g.bonus * Math.max(1, num(x.c));
+let bonusZence = Promise.resolve();
+
+function bonusYaz(x, m) {
   const uRef = doc(fsdb, "users", MEN);
-  fsRunTransaction(fsdb, async (tx) => {
+  return fsRunTransaction(fsdb, async (tx) => {
     const sn = await tx.get(uRef);
     if (!sn.exists()) return;
     const d = sn.data() || {};
     const list = Array.isArray(d.koktelBonusIds) ? d.koktelBonusIds : [];
     if (list.includes(x.n)) return;
     tx.update(uRef, { hearts: num(d.hearts) + m, koktelBonusIds: [...list.slice(-19), x.n] });
-  }).catch(e => { bonusVerilen.delete(key); console.error("Kokteyl bonusu xətası:", e); toast("Bonus verilmədi: " + (e.code || e.message)); });
+  });
+}
+
+function bonusVer(g, x, to) {
+  if (!MEN || to !== MEN || !g.bonus) return;
+  const key = x.n + "|" + to;
+  if (bonusVerilen.has(key)) return;
+  bonusVerilen.add(key);
+  const m = g.bonus * Math.max(1, num(x.c));
+
+  bonusZence = bonusZence
+    .then(() => bonusYaz(x, m))
+    .catch(() => new Promise(r => setTimeout(r, 400)).then(() => bonusYaz(x, m)))   // 1 dəfə təkrar
+    .catch(e => {
+      bonusVerilen.delete(key);
+      console.error("Kokteyl bonusu xətası:", e);
+      toast("Bonus verilmədi: " + (e.code || e.message));
+    });
 }
 
 function oynaBir(kimden, x, to) {
@@ -1295,6 +1385,12 @@ function oynaBir(kimden, x, to) {
   if (g.koktel && x.p && x.p[to]) {
     const ra = a && fotoRect(a);
     ucurKoktel(g, x, to, ra ? [ra.left + ra.width * 0.5, ra.top + ra.height * 0.2] : pa, b);
+    return;
+  }
+  if (g.soska && x.p && x.p[to]) {
+    /* soska göndərənin şəklinin mərkəzindən yox, SOSKA_BASLA qədər yuxarı-sağdan çıxır (videodakı kimi) */
+    const ra = a && fotoRect(a);
+    ucurSoska(g, x, to, ra ? [ra.left + ra.width * (0.5 + SOSKA_BASLA[0]), ra.top + ra.height * (0.5 + SOSKA_BASLA[1])] : pa, b);
     return;
   }
   const py = g.yigim && x.p && x.p[to];
@@ -1492,7 +1588,7 @@ function yigimCiz() {
         if (!gor) { if (rec) rec.el.style.display = "none"; continue; }
         if (!rec) {
           const el = document.createElement("div");
-          el.className = (g.yapis || g.koktel) ? ("hd-stk" + (g.koktel ? " hd-nosh" : "")) : "hd-yig";
+          el.className = (g.yapis || g.koktel || g.soska) ? ("hd-stk" + ((g.koktel || g.soska) ? " hd-nosh" : "")) : "hd-yig";
           el.style.zIndex = (g.tacUcus || g.papaqUcus) ? "2" : "1";
           el.innerHTML = g.yapis ? gorselStk(g) : gorselV(g, e.v);
           yigQat.appendChild(el);
@@ -1500,7 +1596,7 @@ function yigimCiz() {
         }
         const el = rec.el;
         let k, stil;
-        if (g.yapis || g.koktel) {
+        if (g.yapis || g.koktel || g.soska) {
           const [px, py, rot] = noqte(e, r);
           const fs = olcu(e, r);
           k = [px, py, rot, fs].join("|");
