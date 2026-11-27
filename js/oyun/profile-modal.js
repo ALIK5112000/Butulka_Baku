@@ -364,6 +364,19 @@ const SIRA_SAHELERI = ["kisses", "music", "smiles", "meftunQiymet", "cutUrek"];
 let sonD = null, unsub = null, acik = false, ownerUid = null;
 
 const rkN = {};
+/* son məlum sıralar cihazda saxlanır: Firestore limiti dolanda belə kartda son rəqəm görünsün */
+try { Object.assign(rkN, JSON.parse(localStorage.getItem("pfRk") || "{}")); } catch (e) {}
+let rkSaxT = null;
+function rkSaxla() {
+  clearTimeout(rkSaxT);
+  rkSaxT = setTimeout(() => {
+    try {
+      const ks = Object.keys(rkN).slice(-40), o = {};
+      ks.forEach(k => { o[k] = rkN[k]; });
+      localStorage.setItem("pfRk", JSON.stringify(o));
+    } catch (e) {}
+  }, 1000);
+}
 const rkTxt = (uid, k) => (rkN[uid] && rkN[uid][k] ? fmt(rkN[uid][k]) + " sıra" : "");
 
 /* Açıq kartdakı bütün sıra yazılarını rkN-dən yenidən yazır (itmiş yenilənmə qalmasın) */
@@ -398,6 +411,7 @@ function topLentYenile() {
 }
 
 function siraYaz(uid, k) {
+  rkSaxla();
   if (uid !== ownerUid) return;
   const t = rkTxt(uid, k);
   ov.querySelectorAll('[data-r="' + k + '"]').forEach(el => { if (el.textContent !== t) el.textContent = t; });
@@ -431,7 +445,10 @@ async function siraYenile(uid, d, asagi) {
         siraYaz(uid, k);
       } catch (e) {
         xeta = true; console.error("Sıra xətası:", e);
-        if (uid === ownerUid) toast("Sıra xətası (" + k + "): " + (e && (e.code || e.message) || e));
+        if (uid === ownerUid && Date.now() - (window.__siraToastT || 0) > 30000) {
+          window.__siraToastT = Date.now();
+          toast("Sıra xətası: " + (e && (e.code || e.message) || e));
+        }
       }
     }));
     if (!xeta) sonSira[uid] = Date.now();
@@ -445,7 +462,7 @@ async function siraYenile(uid, d, asagi) {
     }
   }
 }
-setInterval(() => { if (ov.classList.contains("open") && sonD && ownerUid) siraYenile(ownerUid, sonD); }, 15000);
+setInterval(() => { if (ov.classList.contains("open") && sonD && ownerUid) siraYenile(ownerUid, sonD); }, 120000);
 
 /* ================= KEŞ ================= */
 const udata = {};
@@ -767,7 +784,6 @@ async function onYukle(uid, derinlik = 0) {
     mKesh[uid] = mYarat(uid, d);
     azalt(udata, 60); azalt(mKesh, 60); azalt(rkN, 60);
     sekilIsit(d.avatar);
-    siraYenile(uid, d, true);
     if (d.meftunUid && derinlik < 1) onYukle(d.meftunUid, derinlik + 1);
   } catch (e) { delete hazir[uid]; }
 }
