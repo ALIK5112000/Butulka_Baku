@@ -429,7 +429,10 @@ async function siraYenile(uid, d, asagi) {
         const snap = await taym(getCountFromServer(query(collection(fsdb, "users"), where(k, ">", v))), 8000);
         rk[k] = snap.data().count + 1;
         siraYaz(uid, k);
-      } catch (e) { xeta = true; console.error("Sıra xətası:", e); }
+      } catch (e) {
+        xeta = true; console.error("Sıra xətası:", e);
+        if (uid === ownerUid) toast("Sıra xətası (" + k + "): " + (e && (e.code || e.message) || e));
+      }
     }));
     if (!xeta) sonSira[uid] = Date.now();
   } finally {
