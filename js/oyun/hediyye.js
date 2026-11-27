@@ -27,6 +27,17 @@ const TOPAZ_OLCU_EYRISI = [[0, .85], [.03, .97], [.05, 1], [.70, 1], [.735, .95]
                            [.83, .85], [.86, .84], [.89, .82], [.92, .815], [.95, .8], [1, .8]];
 /* Topazın yerdəyişmə əyrisi (cubic-bezier): əvvəl sürətli, sonra yavaşlayır (videodakı kimi) */
 const TOPAZ_EASE = [0.3, 0.5, 0.6, 1];
+
+/* POMIDOR (g3): videodan ölçülüb. Uçuş ~5 san, düz xətt üzrə: əvvəl sürətli, sonra yavaşlayır (cubic-bezier).
+   Uçuş boyu fırlana-fırlana gedir (POMIDOR_FIRLA: başlanğıc və son bucaq, dərəcə, hərəkətlə eyni əyri ilə).
+   Ölçü: əvvəl ~0.82-dən 1-ə böyüyür, uçuşun 2/3-dən sonra yavaş-yavaş 0.81-ə qədər kiçilir, sonra əzik şəkilə keçir.
+   Uçuş zamanı parıltı YOXDUR. Ölçülər şəkil enində pay: uçan pomidor və yerə düşən əzik pomidor. */
+const POMIDOR_EASE = [0.45, 0.85, 0.7, 1];
+const POMIDOR_FIRLA = [-21, 68];
+const POMIDOR_UCUS_OLCU = 0.49;
+const POMIDOR_OTUR_OLCU = 0.45;
+const POMIDOR_OLCU_EYRISI = [[0, .82], [.05, 1], [.67, 1], [.69, .977], [.71, .96], [.73, .934], [.75, .91], [.77, .9],
+                             [.79, .88], [.81, .857], [.85, .843], [.87, .828], [.91, .814], [1, .806]];
 /* YIĞIM QAYDASI (topaz, öpüş, pomidor): atılan hədiyyələrin hamısı şəkildə qalır. Hər hədiyyə düşəndən
    QAL_OMUR ms sonra, ən köhnədən başlayaraq SIRAYLA (solmaların başlanğıcı arası ən azı QAL_ADDIM ms)
    QAL_SOLMA ms ərzində tədricən solur. SON atılan hədiyyə heç vaxt solmur (başqa növ hədiyyə düşənə qədər). */
@@ -37,7 +48,7 @@ const CAPRAZ_ADDIM = 600, CAPRAZ_PENCERE = 20000;
 
 const SADE_HEDIYYELER = [
   { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true, qrup: "yuz", qal: true },
-  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5000, yapis: true, ucusAdi: true, qrup: "yuz", qal: true },
+  { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5030, yapis: true, ucusAdi: true, pomidor: true, qrup: "yuz", qal: true },
   { id: "g7",  e: "🐸", img: SEKIL_PAPKA + "qurbaga.png", q: 2 },
   { id: "g2",  e: "🍓", img: SEKIL_PAPKA + "cilek.png",   q: 1, k: "yeni" },
   { id: "g4",  e: "🪨", img: SEKIL_PAPKA + "dash.png",    q: 1 },
@@ -966,7 +977,7 @@ function koktelOlcusu(rw) {
   return { fs, dx: ((v.l + v.r) / 2 - 0.5) * fs * v.en, dy: ((v.t + v.b) / 2 - 0.5) * fs };
 }
 
-const olcu = (d, r) => d.i === "g21" ? koktelOlcusu(r.width).fs : r.width * (d.i === "g15" ? 0.38 : d.i === "g3" ? 0.42 : 0.4);
+const olcu = (d, r) => d.i === "g21" ? koktelOlcusu(r.width).fs : r.width * (d.i === "g15" ? 0.38 : d.i === "g3" ? POMIDOR_OTUR_OLCU : 0.4);
 function noqte(d, r) {
   if (d.i === "g15") return [r.left + r.width * 0.022, r.top + r.height * 0.022, -44];
   if (d.i === "g21") {
@@ -1094,6 +1105,35 @@ function ucurTac(g, x, to, pa, b, p) {
     });
 }
 
+function ucurPomidor(g, x, to, pa, b, p) {
+  const r0 = fotoRect(b);
+  if (!r0) return;
+  const hed = { i: g.id, x: p.x, y: p.y, r: p.r };
+  const d = document.createElement("div");
+  d.className = "hd-fly";
+  d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
+  d.style.fontSize = (r0.width * POMIDOR_UCUS_OLCU) + "px";
+  d.style.opacity = "0";
+  d.innerHTML = gorsel(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  fxLayer().appendChild(d);
+  const ease = bez(POMIDOR_EASE[0], POMIDOR_EASE[1], POMIDOR_EASE[2], POMIDOR_EASE[3]);
+  canli(to, g.ucusMs || 5030,
+    r => { const n = noqte(hed, r); return [n[0], n[1], 0, r.width * POMIDOR_UCUS_OLCU]; },
+    (u, h) => {
+      const e = ease(u);
+      d.style.fontSize = h[3] + "px";
+      d.style.opacity = Math.min(1, u / 0.02);
+      d.style.transform = tr((h[0] - pa[0]) * e, (h[1] - pa[1]) * e, egri(POMIDOR_OLCU_EYRISI, u).toFixed(3),
+        (POMIDOR_FIRLA[0] + (POMIDOR_FIRLA[1] - POMIDOR_FIRLA[0]) * e).toFixed(2));
+    },
+    () => {
+      sesCal(g.sl);
+      ogelen.add(x.n + "|" + to);
+      yigimCiz();
+      d.remove();
+    });
+}
+
 const KOKTEL_OLCU = [[0, 1], [.55, 1], [.675, .95], [.775, .855], [.875, .795], [.975, .765], [1, .765]];
 const KOKTEL_UCUS_ORAN = 1 / 0.765;
 
@@ -1176,6 +1216,7 @@ function oynaBir(kimden, x, to) {
   const py = g.yigim && x.p && x.p[to];
   if (py) { ucurYigim(g, x, to, pa, b, py); return; }
   const p = g.yapis && x.p && x.p[to];
+  if (p && g.pomidor) { ucurPomidor(g, x, to, pa, b, p); return; }
   if (p && g.tacUcus) { ucurTac(g, x, to, pa, b, p); return; }
   if (p) { ucurYapis(g, x, to, pa, b, p); return; }
   const d = document.createElement("div");
