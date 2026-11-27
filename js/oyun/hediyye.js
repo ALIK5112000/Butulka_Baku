@@ -12,11 +12,25 @@ import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js"
      şəklin üstündəki hədiyyələr pəncərənin üstündən görünmür.
    - Panelin iki bölməsi var: "Premium" (premium-hediyye.js faylından) və "Sadə" (musiqi + sadə hədiyyələr).
    - Sadə hədiyyənin üzərinə basıb saxlayanda hədiyyə davamlı göndərilir, əli çəkəndə dayanır.
-     Bir-bir basanda neçə dəfə basılıbsa o qədər hədiyyə göndərilir. */
+     Bir-bir basanda neçə dəfə basılıbsa o qədər hədiyyə göndərilir.
+   - TOPAZ (g22): uçuş və düşmə ölçüsü videodan ölçülərək bir-bir quraşdırılıb. Çoxlu topaz göndəriləndə
+     hamısı oyunçunun şəklində qalır, son topaz düşəndən QAL_BEKLE müddət sonra isə ən köhnədən başlayaraq
+     bir-bir tədricən yox olur. */
 
 /* ---------- AYARLAR ---------- */
 const SEKIL_PAPKA = "images/hediyye/";
 const SES_PAPKA = "sesler/";
+
+/* Topaz (videodan ölçülüb): uçuş boyu ölçü sabit (1), son 30%-də yavaş-yavaş 0.8-ə qədər kiçilir və
+   şəkildə o ölçüdə qalır. Ox: [uçuşun payı 0..1, ölçü əmsalı]. */
+const TOPAZ_OLCU_EYRISI = [[0, .85], [.03, .97], [.05, 1], [.70, 1], [.735, .95], [.765, .93], [.80, .89],
+                           [.83, .85], [.86, .84], [.89, .82], [.92, .815], [.95, .8], [1, .8]];
+/* Topazın yerdəyişmə əyrisi (cubic-bezier): əvvəl sürətli, sonra yavaşlayır (videodakı kimi) */
+const TOPAZ_EASE = [0.3, 0.5, 0.6, 1];
+/* Topaz yığımı: son topaz düşəndən sonra QAL_BEKLE ms hamısı qalır, sonra ən köhnədən başlayaraq
+   hər biri QAL_SOLMA ms ərzində solur; solmanın başlanğıcları arasında QAL_ADDIM ms (çox olsa QAL_PENCERE-yə sıxılır) */
+const QAL_BEKLE = 10000, QAL_SOLMA = 1500, QAL_ADDIM = 250, QAL_PENCERE = 9000;
+
 const SADE_HEDIYYELER = [
   { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true, qrup: "yuz" },
   { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5000, yapis: true, ucusAdi: true, qrup: "yuz" },
@@ -39,8 +53,12 @@ const SADE_HEDIYYELER = [
   { id: "g19", e: "💎", img: SEKIL_PAPKA + "almaz.png",   q: 5, k: "ozel" },
   { id: "g20", e: "🏰", img: SEKIL_PAPKA + "qala.png",    q: 9, k: "ozel" },
   { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 1, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: 1, solMs: 1950 },
-  /* g22 topaz: paneldə 1 topaz görünür, hər toxunuşda fərqli forma + rəng göndərilir (variantlar). Opus kimi yığılır və tədricən silinir. */
+  /* g22 topaz: paneldə 1 topaz görünür, hər toxunuşda fərqli forma + rəng göndərilir (variantlar).
+     Videodakı kimi uçur/düşür (olcu, olcuEgri, ucusEase) və çoxlu göndəriləndə şəkildə qalıb sonra bir-bir yox olur (qal).
+     Səs faylları: sesler/topaz.mp3 (göndərmə) və sesler/topaz_dusme.mp3 (düşmə) — adları sənin fayllarına görə dəyiş. */
   { id: "g22", e: "💎", img: SEKIL_PAPKA + "topaz_romb_firuze.png", q: 1, k: "yeni", ucusMs: 4900, yigim: true, qrup: "topaz",
+    s: SES_PAPKA + "topaz.mp3", sl: SES_PAPKA + "topaz_dusme.mp3",
+    olcu: 0.36, olcuEgri: TOPAZ_OLCU_EYRISI, ucusEase: TOPAZ_EASE, qal: true,
     variantlar: ["romb", "urek", "dair"].flatMap(f =>
       ["firuze", "pembe", "benovse", "yasil", "qirmizi", "mavi"].map(r => "topaz_" + f + "_" + r + ".png")) }
 ];
@@ -58,6 +76,9 @@ const OTURAN_SEKIL = {
 };
 
 const OPUS = { OLCU: 0.34, MAX: 1, SOLMA_MS: 3000 };
+/* yığılan hədiyyənin uçuşdakı baza ölçüsü (şəkil enində pay) və düşəndən sonrakı son ölçü əmsalı */
+const yigBaza = g => g.olcu || OPUS.OLCU;
+const yigSon = g => g.olcuEgri ? g.olcuEgri[g.olcuEgri.length - 1][1] : 1;
 
 const TAC_OLCU_EYRISI = [[0, 0.81], [0.014, 0.85], [0.024, 0.92], [0.044, 1], [1, 1]];
 const TAC_ADDIM = 60;
@@ -1219,7 +1240,10 @@ onValue(ref(rtdb, "masalar/" + MASA_NOMRESI + "/yigim"), s => {
 function ucurYigim(g, x, to, pa, b, p) {
   const r0 = fotoRect(b);
   if (!r0) return;
-  const ms = g.ucusMs || 4900, L = r0.width * OPUS.OLCU, dir = p.d < 0 ? -1 : 1;
+  /* ölçü: hədiyyənin öz əyrisi varsa (topaz) o, yoxsa köhnə öpüş əyrisi; yerdəyişmə əyrisi də eləcə */
+  const ms = g.ucusMs || 4900, L = r0.width * yigBaza(g), dir = p.d < 0 ? -1 : 1;
+  const olcuE = g.olcuEgri || OLCU_EYRISI;
+  const ease = g.ucusEase ? bez(g.ucusEase[0], g.ucusEase[1], g.ucusEase[2], g.ucusEase[3]) : bez(0.5, 1, 0.89, 1);
   const a = document.createElement("div");
   a.className = "hd-yf";
   a.style.cssText = "left:" + (pa[0] - L / 2) + "px;top:" + (pa[1] - L / 2) + "px;width:" + L + "px;height:" + L + "px;font-size:" + (L * 0.8) + "px";
@@ -1227,14 +1251,13 @@ function ucurYigim(g, x, to, pa, b, p) {
   fxLayer().appendChild(a);
   const rot = a.firstChild, olc = rot.firstChild;
   olc.style.opacity = "0";
-  const ease = bez(0.5, 1, 0.89, 1);
   canli(to, ms,
     r => [r.left + r.width * p.x / 100, r.top + r.height * p.y / 100, p.r],
     (u, h) => {
       const e = ease(u);
       a.style.transform = "translate(" + ((h[0] - pa[0]) * e) + "px," + ((h[1] - pa[1]) * e) + "px)";
       rot.style.transform = "rotate(" + (h[2] - 90 * dir * (1 - e)) + "deg)";
-      olc.style.transform = "scale(" + egri(OLCU_EYRISI, u) + ")";
+      olc.style.transform = "scale(" + egri(olcuE, u) + ")";
       olc.style.opacity = u > 0 ? 1 : 0;
     },
     () => {
@@ -1273,11 +1296,31 @@ function yigimCiz() {
 
     for (const gid in qruplar) {
       const L = qruplar[gid].sort((a, b) => a[2] - b[2]);
+
+      /* "qal" hədiyyələr (topaz): hamısı şəkildə qalır. Ardıcıl düşmələr (aralarındakı fasilə ≤ QAL_BEKLE)
+         bir dəstə sayılır; dəstənin SON hədiyyəsi düşəndən QAL_BEKLE sonra ən köhnədən başlayaraq
+         hər biri bir-bir (QAL_ADDIM aralıqla) solur. Yeni hədiyyə gələrsə dəstə uzanır və solma geri çəkilir. */
+      const qalSol = {};
+      if (L.length && L[0][3].qal) {
+        let i0 = 0;
+        while (i0 < L.length) {
+          let i1 = i0;
+          while (i1 + 1 < L.length && L[i1 + 1][2] - L[i1][2] <= QAL_BEKLE) i1++;
+          const say = i1 - i0 + 1;
+          const addim = Math.min(QAL_ADDIM, QAL_PENCERE / say);
+          const baza = L[i1][2] + QAL_BEKLE;
+          for (let q = i0; q <= i1; q++) qalSol[q] = baza + (q - i0) * addim;
+          i0 = i1 + 1;
+        }
+      }
+
       for (let idx = 0; idx < L.length; idx++) {
         const [key, e, , g] = L[idx];
         const kk = key + "|" + uid;
-        const solMs = g.solMs || OPUS.SOLMA_MS;
-        const sol = idx < L.length - 1 ? (g.koktel ? num(L[idx + 1][1].t) : L[idx + 1][2]) : 0;
+        const solMs = g.qal ? QAL_SOLMA : (g.solMs || OPUS.SOLMA_MS);
+        const sol = g.qal
+          ? (qalSol[idx] || 0)
+          : (idx < L.length - 1 ? (g.koktel ? num(L[idx + 1][1].t) : L[idx + 1][2]) : 0);
 
         if (sol && srv - sol >= solMs) {
           if (yigEl[kk]) { yigEl[kk].el.remove(); delete yigEl[kk]; }
@@ -1310,7 +1353,8 @@ function yigimCiz() {
             el.style.transform = "translate(-50%,-50%) rotate(" + rot + "deg)";
           };
         } else {
-          const L2 = r.width * OPUS.OLCU;
+          /* düşəndən sonrakı ölçü = uçuş ölçüsü × son əmsal (topaz: 0.8, öpüş: 1) */
+          const L2 = r.width * yigBaza(g) * yigSon(g);
           const lx = r.left + r.width * e.x / 100 - L2 / 2, ly = r.top + r.height * e.y / 100 - L2 / 2;
           k = [lx, ly, L2, e.r].join("|");
           stil = () => {
