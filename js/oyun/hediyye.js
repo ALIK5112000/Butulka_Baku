@@ -3,7 +3,7 @@ import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, getDoc, onSnapshot, updateDoc, increment, runTransaction as fsRunTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
-import { PREMIUM_HEDIYYELER } from "./premium-hediyye.js";
+import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js";
 
 /* ADDIM 3: Hədiyyə paneli. Başqa oyunçunun şəklinə toxunanda açılır.
    - Yalnız şəklə düşən hədiyyələrdən (g1 öpüş, g3 pomidor, g15 tac) biri profil şəklinə DÜŞƏNDƏ
@@ -89,6 +89,26 @@ const CSS = `
 .hd-seg button.on{background:#6c4fd6;color:#fff}
 .hd-tabs{width:100%}
 .hd-tabs button{flex:1}
+.hd-pm-info{display:none;margin-top:1.8vw}
+.hd-root.hd-prem .hd-pm-info{display:block}
+.hd-root.hd-prem .hd-ctl{background:#fdf3dc;border-bottom-color:#f0dfb3}
+.hd-pm-r1{display:flex;align-items:center;justify-content:flex-end;gap:1.4vw;font:600 3.8vw/1.2 Roboto,Arial,sans-serif;color:#6c4fd6}
+.hd-pm-r1 svg{width:6vw;height:5.4vw;flex:none}
+.hd-pm-r1 b{font-weight:700}
+.hd-pm-r2{display:flex;align-items:center;gap:3vw;margin-top:1.6vw}
+.hd-lv{flex:none;display:flex;align-items:center;gap:1.2vw;height:8vw;padding:0 3.4vw 0 2vw;border-radius:4vw;background:#7a5a3a;color:#fff;font:700 4vw/1 Roboto,Arial,sans-serif}
+.hd-lv svg{width:4.4vw;height:4.4vw}
+.hd-pm-nx{flex:1;min-width:0}
+.hd-pm-nx div{display:flex;align-items:center;gap:1.2vw;font:700 4vw/1.2 Roboto,Arial,sans-serif;color:#5a3d1a}
+.hd-pm-nx svg{width:5vw;height:4.6vw}
+.hd-bar{height:2.4vw;border-radius:1.2vw;background:#e7dcc3;margin-top:1.2vw;overflow:hidden}
+.hd-bar i{display:block;height:100%;width:0;border-radius:1.2vw;background:linear-gradient(90deg,#ff9a3d,#ff4f8b,#8b5cf6);transition:width .4s}
+.hd-pv{position:fixed;left:0;right:0;bottom:0;z-index:9995;pointer-events:none;background:#000;overflow:hidden;opacity:0;transition:opacity .25s}
+.hd-pv.on{opacity:1}
+.hd-pv video{width:100%;height:100%;object-fit:cover;object-position:45% 50%;display:block}
+.hd-pv-b{position:absolute;left:4vw;right:4vw;top:3vw;padding:2.2vw 3vw;border-radius:4vw;background:linear-gradient(#ffe29a,#f5b94c);color:#4a2b00;text-align:center;font:700 3.7vw/1.3 Roboto,Arial,sans-serif;box-shadow:0 .6vw 2vw rgba(0,0,0,.35)}
+.hd-pv-b small{display:block;font:600 3.1vw/1.25 Roboto,Arial,sans-serif}
+.hd-pv-b svg{width:3.8vw;height:3.5vw;vertical-align:-.5vw}
 .hd-list{flex:1;overflow-y:auto;padding:1vw 0 22vw}
 .hd-grid{display:grid;grid-template-columns:repeat(5,1fr)}
 .hd-bos{grid-column:1/-1;text-align:center;padding:10vw 4vw;color:#9a9a9a;font:500 4vw/1.3 Roboto,Arial,sans-serif}
@@ -130,6 +150,10 @@ st.textContent = CSS;
 document.head.appendChild(st);
 
 const UREK = '<svg viewBox="0 0 24 22"><path d="M12 21C5 16 1 12 1 7.2A5.2 5.2 0 0 1 12 4.5 5.2 5.2 0 0 1 23 7.2C23 12 19 16 12 21z" fill="#dc5a22"/></svg>';
+
+const GEM = '<svg viewBox="0 0 24 22"><path d="M6 1h12l5 6-11 14L1 7z" fill="#3aa0ff"/><path d="M1 7h22M6 1l3 6 3 14M18 1l-3 6-3 14M9 7h6" fill="none" stroke="#bfe3ff" stroke-width="1"/></svg>';
+const STAR = '<svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 .9-5.2 4.8 1.4 7L12 17.8 5.8 21.2l1.4-7L2 9.4l7-.9z" fill="#ffd54a"/></svg>';
+const esc = t => String(t == null ? "" : t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const gorsel = g => g.img
   ? '<img src="' + g.img + '" alt="" onerror="this.replaceWith(document.createTextNode(\'' + g.e + '\'))">'
@@ -337,6 +361,11 @@ root.innerHTML =
     '<button class="hd-plus" aria-label="Bonus ürək al"><svg viewBox="0 0 24 24"><path d="M12 4v16M4 12h16" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg></button></div>' +
   '<div class="hd-main"><div class="hd-ctl">' +
     '<div class="hd-r1"><div class="hd-seg hd-tabs"><button data-k="premium">Premium</button><button data-k="sade" class="on">Sadə</button></div></div>' +
+    '<div class="hd-pm-info">' +
+      '<div class="hd-pm-r1">' + GEM + '<b id="hdJeton">…</b><span>· alıcı qiymətin yarısını jeton kimi alır</span></div>' +
+      '<div class="hd-pm-r2"><div class="hd-lv">' + STAR + '<span id="hdLv">1</span></div>' +
+        '<div class="hd-pm-nx"><div><span id="hdNx"></span><span id="hdNxG">' + GEM + '</span></div><div class="hd-bar"><i id="hdBarI"></i></div></div></div>' +
+    '</div>' +
   '</div><div class="hd-list"><div class="hd-grid"></div></div></div>' +
   '<div class="hd-tray"><button class="hd-tb" aria-label="Oğlanlar">👦</button><button class="hd-tg" aria-label="Qızlar">👧</button><button class="hd-tx" aria-label="Seçimi dayandır">✕</button></div>' +
   '<button class="hd-x" aria-label="Bağla"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></button>';
@@ -387,6 +416,8 @@ function basmaBasla(e, g) {
 
 function ciz() {
   basmaBitir(false);
+  root.classList.toggle("hd-prem", tab === "premium" && !musiqiModu);
+  premiumInfoYenile();
   grid.innerHTML = "";
   if (tab === "sade" || musiqiModu) {
     const musiqiKafel = (img, emoji, qiymet, ac) => {
@@ -429,8 +460,8 @@ function ciz() {
     PREMIUM_HEDIYYELER.forEach(g => {
       const c = document.createElement("div");
       c.className = "hd-cell";
-      c.innerHTML = '<div class="hd-e">' + gorsel(g) + '</div><div class="hd-pr">' + UREK + g.q + "</div>";
-      c.onclick = () => { gonder(g, 1); };
+      c.innerHTML = '<div class="hd-e">' + gorsel(g) + '</div><div class="hd-pr">' + GEM + g.q + "</div>";
+      c.onclick = () => { gonderPremium(g); };
       grid.appendChild(c);
     });
     return;
@@ -615,8 +646,26 @@ function djUid() {
   return d.djUid;
 }
 
-let meHearts = null;
-if (MEN) onSnapshot(doc(fsdb, "users", MEN), s => { meHearts = num((s.data() || {}).hearts); }, () => {});
+let meHearts = null, meJeton = null, meXerc = null;
+if (MEN) onSnapshot(doc(fsdb, "users", MEN), s => {
+  const d = s.data() || {};
+  meHearts = num(d.hearts);
+  meJeton = num(d[PREMIUM_AYAR.jetonSahesi]);
+  meXerc = num(d[PREMIUM_AYAR.xercSahesi]);
+  premiumInfoYenile();
+}, () => {});
+
+/* Premium paneli: jeton balansı + səviyyə (yalnız Premium bölməsində görünür) */
+function premiumInfoYenile() {
+  const j = $("#hdJeton");
+  if (!j) return;
+  const sv = seviyye(meXerc || 0);
+  j.textContent = meJeton === null ? "…" : meJeton;
+  $("#hdLv").textContent = sv.no;
+  $("#hdNx").textContent = sv.max ? "Maksimum səviyyə" : "Növbəti səviyyəyə " + sv.qalan;
+  $("#hdNxG").style.display = sv.max ? "none" : "inline-flex";
+  $("#hdBarI").style.width = sv.faiz + "%";
+}
 
 /* alici: göndəriləcək oyunçular (verilməsə alicilar()). Göndərilibsə true, göndərilməyibsə false qaytarır
    (davamlı göndərmə false gələndə dayanır). */
@@ -689,6 +738,121 @@ function gonder(g, c, alici) {
     toast("Xəta: " + (e.code || e.message));
   });
   return true;
+}
+
+/* ======================= PREMIUM HƏDİYYƏLƏR (jeton + video) =======================
+   Göndərən qiyməti jetonla ödəyir, alıcı qiymətin yarısını jeton kimi alır.
+   Video YALNIZ alıcının ekranında oynayır (masadakı digər oyunçular görmür). */
+function gonderPremium(g) {
+  if (!MEN) { dbg("MEN yoxdur"); return false; }
+  const alanlar = alicilar().filter(u => u !== MEN);
+  if (!alanlar.length) { toast("Oyunçu seçilməyib"); return false; }
+  const cost = g.q * alanlar.length;
+
+  if (meJeton !== null && meJeton < cost) {
+    toast("Jetonunuz çatmır");
+    if (window.JetonShop && window.JetonShop.open) window.JetonShop.open();
+    return false;
+  }
+  const evvelki = seviyye(meXerc || 0).no;
+  const odenis = updateDoc(doc(fsdb, "users", MEN), {
+    [PREMIUM_AYAR.jetonSahesi]: increment(-cost),
+    [PREMIUM_AYAR.xercSahesi]: increment(cost)
+  });
+
+  const n = Date.now() + "-" + Math.random().toString(36).slice(2, 7);
+  const r = ref(rtdb, "masalar/" + MASA_NOMRESI + "/hediyye/" + MEN);
+  onDisconnect(r).remove();
+  set(r, { to: alanlar, i: g.id, c: 1, n, t: Date.now() + offset })
+    .catch(e => dbg("PREMİUM YAZILMADI: " + (e.code || e.message)));
+
+  odenis.then(() => {
+    const sv = seviyye(meXerc || 0);
+    toast(sv.no > evvelki
+      ? "🎉 Yeni hədiyyə səviyyəsi: " + sv.ad + " · Lv " + sv.no
+      : (g.ad || "Hədiyyə") + " göndərildi");
+  }).catch(e => {
+    remove(r).catch(() => {});
+    console.error(e);
+    toast("Xəta: " + (e.code || e.message));
+  });
+  return true;
+}
+
+async function oyuncuAdi(uid) {
+  try {
+    const s = await getDoc(doc(fsdb, "users", uid));
+    return (s.exists() && (s.data() || {}).username) || "Oyunçu";
+  } catch (e) { return "Oyunçu"; }
+}
+
+const pNovbe = [];
+let pOynayir = false;
+const pBonus = new Set();
+
+function premiumGelen(kimden, x, g) {
+  const l = Array.isArray(x.to) ? x.to : [x.to];
+  if (!MEN || !l.includes(MEN)) return;
+  if (x.t && Date.now() + offset - x.t > 20000) return;
+
+  /* alıcı qiymətin yarısını jeton kimi alır (hər hədiyyə yalnız bir dəfə) */
+  const m = Math.floor(g.q * PREMIUM_AYAR.alanPay);
+  if (m > 0 && !pBonus.has(x.n)) {
+    pBonus.add(x.n);
+    updateDoc(doc(fsdb, "users", MEN), { [PREMIUM_AYAR.jetonSahesi]: increment(m) })
+      .catch(e => { pBonus.delete(x.n); console.error(e); });
+  }
+  pNovbe.push({ kimden, x, g, m });
+  if (!pOynayir) premiumNovbeti();
+}
+
+function premiumNovbeti() {
+  const it = pNovbe.shift();
+  if (!it) { pOynayir = false; return; }
+  pOynayir = true;
+  const { kimden, g, m } = it;
+
+  const c = document.getElementById("chatYeri");
+  const cr = c ? c.getBoundingClientRect() : null;
+  const wrap = document.createElement("div");
+  wrap.className = "hd-pv";
+  wrap.style.top = ((cr && cr.height > 0) ? cr.top : innerHeight * 0.55) + "px";
+  const v = document.createElement("video");
+  v.src = g.video;
+  v.preload = "auto";
+  v.playsInline = true;
+  v.setAttribute("playsinline", "");
+  wrap.appendChild(v);
+  const b = document.createElement("div");
+  b.className = "hd-pv-b";
+  b.style.display = "none";
+  wrap.appendChild(b);
+  document.body.appendChild(wrap);
+
+  Promise.all([oyuncuAdi(kimden), oyuncuAdi(MEN)]).then(([a1, a2]) => {
+    b.innerHTML = esc(a1) + " → " + esc(a2) +
+      "<small>" + esc(g.e) + " " + esc(g.ad || "Hədiyyə") + " · " + GEM + " " + g.q +
+      " · alana +" + GEM + " " + m + " · Masa " + esc(MASA_NOMRESI) + "</small>";
+    b.style.display = "block";
+  });
+
+  let bitdi = false, sg = null;
+  const bit = () => {
+    if (bitdi) return;
+    bitdi = true;
+    clearTimeout(sg);
+    wrap.classList.remove("on");
+    setTimeout(() => { wrap.remove(); premiumNovbeti(); }, 300);
+  };
+  v.onended = bit;
+  v.onerror = bit;
+  sg = setTimeout(bit, 30000);
+  const gor = () => wrap.classList.add("on");
+  v.play().then(gor).catch(() => {
+    /* səsli avtomatik oynatma bloklanıbsa səssiz oynat */
+    v.muted = true;
+    v.play().then(gor).catch(bit);
+  });
 }
 
 function fotoTap(uid) {
@@ -989,6 +1153,7 @@ function oynaBir(kimden, x, to) {
 
 function oyna(kimden, x) {
   const g = HEDIYYELER.find(h => h.id === x.i);
+  if (g && g.video) { premiumGelen(kimden, x, g); return; }   // premium: video yalnız alıcıda
   if (g) sesCal(g.s);
   const l = Array.isArray(x.to) ? x.to : [x.to];
   l.forEach((to, i) => setTimeout(() => oynaBir(kimden, x, to), i * 120));
