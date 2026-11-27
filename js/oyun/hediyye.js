@@ -38,7 +38,11 @@ const SADE_HEDIYYELER = [
   { id: "g18", e: "🚗", img: SEKIL_PAPKA + "masin.png",   q: 5, k: "yeni" },
   { id: "g19", e: "💎", img: SEKIL_PAPKA + "almaz.png",   q: 5, k: "ozel" },
   { id: "g20", e: "🏰", img: SEKIL_PAPKA + "qala.png",    q: 9, k: "ozel" },
-  { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 1, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: 1, solMs: 1950 }
+  { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 1, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: 1, solMs: 1950 },
+  /* g22 topaz: paneldə 1 topaz görünür, hər toxunuşda fərqli forma + rəng göndərilir (variantlar). Opus kimi yığılır və tədricən silinir. */
+  { id: "g22", e: "💎", img: SEKIL_PAPKA + "topaz_romb_firuze.png", q: 1, k: "yeni", ucusMs: 4900, yigim: true, qrup: "topaz",
+    variantlar: ["romb", "urek", "dair"].flatMap(f =>
+      ["firuze", "pembe", "benovse", "yasil", "qirmizi", "mavi"].map(r => "topaz_" + f + "_" + r + ".png")) }
 ];
 
 /* animasiya və göndərmə kodu hədiyyəni id ilə axtarır: sadə + premium hamısı bir siyahıda */
@@ -164,6 +168,11 @@ function gorselStk(g) {
   if (!src) return gorsel(g);
   return '<img src="' + src + '" alt="" onerror="this.onerror=function(){this.replaceWith(document.createTextNode(\'' + g.e + '\'))};this.src=\'' + g.img + '\'">';
 }
+
+/* variantlı hədiyyə (topaz): v = variantlar siyahısındakı sıra nömrəsi; yoxdursa adi şəkil */
+const gorselV = (g, v) => (g.variantlar && v != null && g.variantlar[v])
+  ? gorsel({ img: SEKIL_PAPKA + g.variantlar[v], e: g.e })
+  : gorsel(g);
 
 const num = v => Number(v) || 0;
 const MEN = (cariOyuncu() || {}).docId || null;
@@ -667,6 +676,15 @@ function premiumInfoYenile() {
   $("#hdBarI").style.width = sv.faiz + "%";
 }
 
+/* topaz: hər göndərişdə əvvəlkindən fərqli variant (forma + rəng) seçilir */
+let sonTopaz = -1;
+function topazSec(n) {
+  let v;
+  do { v = Math.floor(Math.random() * n); } while (n > 1 && v === sonTopaz);
+  sonTopaz = v;
+  return v;
+}
+
 /* alici: göndəriləcək oyunçular (verilməsə alicilar()). Göndərilibsə true, göndərilməyibsə false qaytarır
    (davamlı göndərmə false gələndə dayanır). */
 function gonder(g, c, alici) {
@@ -699,8 +717,11 @@ function gonder(g, c, alici) {
         : g.yapis
         ? { x: 20 + Math.round(Math.random() * 60), y: 20 + Math.round(Math.random() * 60), r: Math.round(Math.random() * 70 - 35) }
         : { x: 15 + Math.round(Math.random() * 70), y: 15 + Math.round(Math.random() * 70), r: Math.round(Math.random() * 200 - 100) };
+      if (g.variantlar) q.v = topazSec(g.variantlar.length);
       p[k] = q;
-      yigUpd[k + "/" + n] = { i: g.id, x: q.x, y: q.y, r: q.r, n, from: MEN, t, l: dusmeVaxti };
+      const yz = { i: g.id, x: q.x, y: q.y, r: q.r, n, from: MEN, t, l: dusmeVaxti };
+      if (q.v != null) yz.v = q.v;   // Firebase undefined qəbul etmir
+      yigUpd[k + "/" + n] = yz;
       yigVar = true;
     });
     payload.p = p;
@@ -1202,7 +1223,7 @@ function ucurYigim(g, x, to, pa, b, p) {
   const a = document.createElement("div");
   a.className = "hd-yf";
   a.style.cssText = "left:" + (pa[0] - L / 2) + "px;top:" + (pa[1] - L / 2) + "px;width:" + L + "px;height:" + L + "px;font-size:" + (L * 0.8) + "px";
-  a.innerHTML = '<div class="hd-yf-r"><div class="hd-yf-s">' + gorsel(g) + "</div></div>" + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  a.innerHTML = '<div class="hd-yf-r"><div class="hd-yf-s">' + gorselV(g, p.v) + "</div></div>" + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
   fxLayer().appendChild(a);
   const rot = a.firstChild, olc = rot.firstChild;
   olc.style.opacity = "0";
@@ -1272,7 +1293,7 @@ function yigimCiz() {
           const el = document.createElement("div");
           el.className = (g.yapis || g.koktel) ? ("hd-stk" + (g.koktel ? " hd-nosh" : "")) : "hd-yig";
           el.style.zIndex = g.tacUcus ? "2" : "1";
-          el.innerHTML = g.yapis ? gorselStk(g) : gorsel(g);
+          el.innerHTML = g.yapis ? gorselStk(g) : gorselV(g, e.v);
           yigQat.appendChild(el);
           rec = yigEl[kk] = { el, sol: false, k: "" };
         }
