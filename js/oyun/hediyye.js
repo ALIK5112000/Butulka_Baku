@@ -24,9 +24,8 @@ import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js"
 /* ---------- AYARLAR ---------- */
 const SEKIL_PAPKA = "images/hediyye/";
 /* KOKTEL: alan oyunçunun BU FAYLDAN aldığı bonus (kokteyl şəklinə düşəndə). Faylda alana yalnız bu verilir.
-   Əgər başqa yerdən (məs. server/başqa fayl qiymətin yarısını alana verirsə) əlavə bonus gəlirsə, burada 0 qalır ki cəmi 1 olsun.
-   Alan yalnız bu fayldan 1 almalıdırsa 1 yaz. */
-const KOKTEL_ALAN_BONUS = 0;
+   Alan hər kokteylə cəmi 1 bonus alır. */
+const KOKTEL_ALAN_BONUS = 1;
 /* YER (ZONA) QAYDASI: hədiyyələr yalnız EYNİ yerə düşən başqa növ hədiyyə ilə bir-birini solub silir.
    "yuz"   = şəklin üstünə düşənlər (öpüş, pomidor, çiyələk, topaz) – bir-birini əvəz edir.
    "bas"   = başa qoyulan (tac) – yalnız başa qoyulan başqa hədiyyə tacı silir.
@@ -71,7 +70,6 @@ const CAPRAZ_ADDIM = 600, CAPRAZ_PENCERE = 20000;
 const SADE_HEDIYYELER = [
   { id: "g1",  e: "💋", img: SEKIL_PAPKA + "opus.png",    q: 1, opus: true, k: "ozel", s: SES_PAPKA + "kiss.mp3",   sl: SES_PAPKA + "kiss_dusme.mp3", ucusMs: 4900, yigim: true, qrup: "yuz", zona: "yuz", qal: true },
   { id: "g3",  e: "🍅", img: SEKIL_PAPKA + "pomidor.png", q: 1, k: "yeni",            s: SES_PAPKA + "tomato.mp3", sl: SES_PAPKA + "tomato_dusme.mp3", ucusMs: 5030, yapis: true, ucusAdi: true, pomidor: true, qrup: "yuz", zona: "yuz", qal: true },
-  { id: "g7",  e: "🐸", img: SEKIL_PAPKA + "qurbaga.png", q: 2 },
   /* g2 çiyələk: videodakı kimi uçur/düşür (olcu, olcuEgri, ucusEase, spin) və topaz kimi şəkildə qalıb sıra ilə solur (qal).
      Səs faylları: sesler/strawberry.mp3 (göndərmə) və sesler/strawberry_dusme.mp3 (düşmə). */
   { id: "g2",  e: "🍓", img: SEKIL_PAPKA + "cilek.png",   q: 1, k: "yeni",
@@ -86,6 +84,7 @@ const SADE_HEDIYYELER = [
     ucusMs: 4900, yigim: true, qrup: "gul", zona: "yuz", qal: true,
     olcu: 0.4, olcuEgri: TOPAZ_OLCU_EYRISI, ucusEase: TOPAZ_EASE,
     variantlar: ["gul_qirmizi.png", "gul_romashka.png"] },
+  { id: "g15", e: "👑", img: SEKIL_PAPKA + "tac.png",     q: 3, k: "ozel",            s: SES_PAPKA + "crown.mp3",  sl: SES_PAPKA + "crown_dusme.mp3", ucusMs: 5000, tacUcus: true, yapis: true, zona: "bas" },
   /* g21 koktel: qiymət 2 (göndərəndən 2 bonus çıxır), alan oyunçuya hər kokteylə +1 bonus (bonus:1) düşəndə verilir */
   { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 2, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: KOKTEL_ALAN_BONUS, solMs: 1950, zona: "koktel" },
   /* g22 topaz: paneldə 1 topaz görünür, hər toxunuşda fərqli forma + rəng göndərilir (variantlar).
@@ -1213,7 +1212,9 @@ function urekEffekti(to) {
 }
 
 /* koktel bonusu: kokteyl alıcının şəklinə düşəndə alıcı hər kokteylə g.bonus (KOKTEL_ALAN_BONUS) ürək alır.
-   Göndərəndən isə kokteylin qiyməti (g.q = 2) gonder() funksiyasında çıxılır. */
+   Göndərəndən isə kokteylin qiyməti (g.q = 2) gonder() funksiyasında çıxılır.
+   Eyni kokteylə görə bonus YALNIZ BİR DƏFƏ verilir: tranzaksiya alanın sənədində son kokteyl nömrələrini (koktelBonusIds)
+   saxlayır, ona görə iki tab/cihaz və ya təkrar çağırış olsa belə +1-dən çox düşmür. */
 const bonusVerilen = new Set();
 function bonusVer(g, x, to) {
   if (!MEN || to !== MEN || !g.bonus) return;
@@ -1221,8 +1222,15 @@ function bonusVer(g, x, to) {
   if (bonusVerilen.has(key)) return;
   bonusVerilen.add(key);
   const m = g.bonus * Math.max(1, num(x.c));
-  if (meHearts !== null) meHearts += m;
-  updateDoc(doc(fsdb, "users", MEN), { hearts: increment(m) }).catch(e => { bonusVerilen.delete(key); console.error(e); });
+  const uRef = doc(fsdb, "users", MEN);
+  fsRunTransaction(fsdb, async (tx) => {
+    const sn = await tx.get(uRef);
+    if (!sn.exists()) return;
+    const d = sn.data() || {};
+    const list = Array.isArray(d.koktelBonusIds) ? d.koktelBonusIds : [];
+    if (list.includes(x.n)) return;
+    tx.update(uRef, { hearts: num(d.hearts) + m, koktelBonusIds: [...list.slice(-19), x.n] });
+  }).catch(e => { bonusVerilen.delete(key); console.error("Kokteyl bonusu xətası:", e); toast("Bonus verilmədi: " + (e.code || e.message)); });
 }
 
 function oynaBir(kimden, x, to) {
