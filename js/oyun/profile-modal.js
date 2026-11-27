@@ -420,7 +420,7 @@ async function siraYenile(uid, d) {
     if (d2) { delete gozle[uid]; siraYenile(uid, d2); }
   }
 }
-setInterval(() => { if (ov.classList.contains("open") && sonD && ownerUid) siraYenile(ownerUid, sonD); }, 1000);
+setInterval(() => { if (ov.classList.contains("open") && sonD && ownerUid) siraYenile(ownerUid, sonD); }, 15000);
 
 /* ================= KEŞ ================= */
 const udata = {};
