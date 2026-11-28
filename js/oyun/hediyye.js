@@ -22,8 +22,9 @@ import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js"
      uçuş və düşmə ölçüsü videodan kadr-kadr ölçülüb (PAPAQ_* ayarları), səslər videodan kəsilib (sesler/hat.mp3, hat_dusme.mp3).
    - SOSKA ("soska"): qiyməti 1 ürək. Şəklin sağ-aşağı küncünə (yarısı şəklin kənarından çıxaraq) oturur.
      Hər göndərişdə 4 variantdan biri (qırmızı, çəhrayı, yaşıl, göy qurşağı) göndərilir, əvvəlkindən fərqli seçilir (variantlar).
-     Soska ilə kokteyl EYNİ yerə düşdüyü üçün ortaq zonadadır ("yan"): soska atandan sonra o yerə başqa hədiyyə (kokteyl)
-     düşəndə soska solub silinir (kokteyl atılandan sonra soska atılanda da kokteyl solub silinir).
+     Soska ilə kokteyl EYNİ yerə düşdüyü üçün ortaq zonadadır ("yan"): o yerdə olan köhnə hədiyyə, yeni hədiyyə GÖNDƏRİLƏN anda
+     (düşməsini gözləmədən) tədricən solmağa başlayır, yeni hədiyyə düşənə qədər yer boşalır. Bu qayda dörd halda eynidir:
+     kokteyl→kokteyl (əvvəlki kimi), soska→kokteyl, kokteyl→soska, soska→soska (ZONA_GONDER_SOLMA ayarı).
      Uçuş yolu (x və y ayrı-ayrı əyrilərlə), uçuş ölçüsü və düşmədən sonrakı ölçü videodan kadr-kadr (şablon uyğunlaşdırması ilə)
      ölçülüb (SOSKA_* ayarları), səslər videodan kəsilib (sesler/soska.mp3, soska_dusme.mp3).
    - YER (ZONA) qaydası: tac ("bas"), kokteyl+soska ("yan") və şəklin üstünə düşənlər ("yuz") bir-birini silmir;
@@ -43,6 +44,10 @@ const KOKTEL_ALAN_BONUS = 1;
              eyni növ (kokteyl→kokteyl, soska→soska) də köhnəni əvəz edir.
    Yeni hədiyyə üçün zona yazılmasa, ona ayrıca yer verilir (heç kimi silmir, heç kim onu silmir). */
 const zonaDe = g => g.zona || g.qrup || g.id;
+/* GÖNDƏRMƏ ANINDA SOLMA: burada adı yazılan zonalarda köhnə hədiyyə, yeni hədiyyə DÜŞƏNDƏ yox, GÖNDƏRİLƏN anda solmağa başlayır
+   (kokteyl belə solurdu, soska da eləcə solur). Başqa zonalar ("yuz", "bas") əvvəlki kimi yeni hədiyyənin düşmə anında solur;
+   onları da bu şəkildə solmaq istəsən zonanın adını bura yaz, məsələn { yan: true, yuz: true }. */
+const ZONA_GONDER_SOLMA = { yan: true };
 const SES_PAPKA = "sesler/";
 
 /* Topaz (videodan ölçülüb): uçuş boyu ölçü sabit (1), son 30%-də yavaş-yavaş 0.8-ə qədər kiçilir və
@@ -154,10 +159,11 @@ const SADE_HEDIYYELER = [
     s: SES_PAPKA + "topaz.mp3", sl: SES_PAPKA + "topaz_dusme.mp3",
     olcu: 0.36, olcuEgri: TOPAZ_OLCU_EYRISI, ucusEase: TOPAZ_EASE, qal: true,
     variantlar: ["romb", "urek", "dair"].flatMap(f =>
-      ["firuze", "pembe", "benovse", "yasil", "qirmizi", "mavi"].map(r => "topaz_" + f + "_" + r + ".png")) }
+      ["firuze", "pembe", "benovse", "yasil", "qirmizi", "mavi"].map(r => "topaz_" + f + "_" + r + ".png")) },
    /* soska: qiymət 1 ürək. Şəklin sağ-aşağı küncünə oturur (zona "yan"), uçuşu/ölçüsü videodan ölçülüb (SOSKA_*, ucurSoska).
-     Hər göndərişdə 4 variantdan biri seçilir (variantlar). Yeni soska və ya o yerə düşən başqa hədiyyə (kokteyl) gələndə
-     köhnə soska solmağa başlayır (solMs ms ərzində). Şəkillər: images/hediyye/soska_qirmizi.png, soska_pembe.png, soska_yasil.png,
+     Hər göndərişdə 4 variantdan biri seçilir (variantlar). Yeni soska və ya o yerə düşən başqa hədiyyə (kokteyl) GÖNDƏRİLƏN anda
+     (düşməsini gözləmədən) köhnə soska solmağa başlayır (solMs ms ərzində), yeni hədiyyə düşənə qədər yer boşalır.
+     Şəkillər: images/hediyye/soska_qirmizi.png, soska_pembe.png, soska_yasil.png,
      soska_goyqurshagi.png (panel üçün əsas şəkil soska.png qalır).
      Səs faylları: sesler/soska.mp3 (göndərmə) və sesler/soska_dusme.mp3 (düşmə). */
   { id: SOSKA_ID, e: "🍼", img: SEKIL_PAPKA + "soska.png", q: 1, k: "yeni", s: SES_PAPKA + "soska.mp3", sl: SES_PAPKA + "soska_dusme.mp3", ucusMs: 5020, soska: true, solMs: 2000, zona: "yan",
@@ -1553,7 +1559,9 @@ function yigimCiz() {
     /* NÖVLƏRARASI SOLMA (yalnız EYNİ zonada): bir növ hədiyyə düşəndə həmin yerdə olan BAŞQA növ hədiyyələr (hələ solmayanlar)
        həmin hədiyyənin düşmə vaxtından başlayaraq ən köhnədən bir-bir solur. Hər hədiyyənin solma vaxtı
        onu əvəz edən ilk fərqli növ hədiyyəyə görə bir dəfə təyin olunur, ona görə sonradan dəyişmir.
-       Soska və kokteyl eyni zonada ("yan") olduğu üçün soska atıldıqdan sonra kokteyl düşəndə soska solub silinir. */
+       Soska və kokteyl eyni zonada ("yan") olduğu üçün soska atıldıqdan sonra kokteyl düşəndə soska solub silinir.
+       ZONA_GONDER_SOLMA-da yazılan zonalarda ("yan": soska, kokteyl) solma yeni hədiyyənin düşmə anında yox, GÖNDƏRİLMƏ anında
+       başlayır və köhnələr növbəsiz, eyni anda solur: kokteyl atılanda soska, soska atılanda kokteyl solmağa başlayır. */
     const caprazSol = {};
     {
       const zonalar = {};
@@ -1563,13 +1571,16 @@ function yigimCiz() {
       }
       for (const zk in zonalar) {
         const hamisi = zonalar[zk];
-        hamisi.sort((a, b) => a[1][2] - b[1][2]);
+        const gond = !!ZONA_GONDER_SOLMA[zk];
+        /* solmanı başladan an: göndərilmə vaxtı (e.t, "gond" zonalarda) və ya düşmə vaxtı (it[2]) */
+        const tetik = x => (gond && num(x[1].t)) || x[2];
+        hamisi.sort((a, b) => tetik(a[1]) - tetik(b[1]));
         let gozle = [];
         for (const [gk, it] of hamisi) {
           const getdi = gozle.filter(w => w[0] !== gk);
           if (getdi.length) {
-            const addim = Math.min(CAPRAZ_ADDIM, CAPRAZ_PENCERE / getdi.length);
-            getdi.forEach((w, i) => { caprazSol[w[1][0]] = it[2] + i * addim; });
+            const addim = gond ? 0 : Math.min(CAPRAZ_ADDIM, CAPRAZ_PENCERE / getdi.length);
+            getdi.forEach((w, i) => { caprazSol[w[1][0]] = tetik(it) + i * addim; });
             gozle = gozle.filter(w => w[0] === gk);
           }
           gozle.push([gk, it]);
@@ -1601,7 +1612,7 @@ function yigimCiz() {
         const solMs = g.qal ? QAL_SOLMA : (g.solMs || OPUS.SOLMA_MS);
         let sol = g.qal
           ? (qalSol[idx] || 0)
-          : (idx < L.length - 1 ? (g.koktel ? num(L[idx + 1][1].t) : L[idx + 1][2]) : 0);
+          : (idx < L.length - 1 ? (ZONA_GONDER_SOLMA[zonaDe(g)] ? (num(L[idx + 1][1].t) || L[idx + 1][2]) : L[idx + 1][2]) : 0);   // "yan" zonada (kokteyl, soska): növbəti hədiyyənin GÖNDƏRİLMƏ anında
         const cs = caprazSol[key];
         if (cs && (!sol || cs < sol)) sol = cs;
 
