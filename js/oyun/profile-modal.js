@@ -2,7 +2,7 @@ import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, onSnapshot, updateDoc, runTransaction, collection, query, where, getCountFromServer, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { ref, onValue, push, serverTimestamp, set } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, onValue, push, serverTimestamp, set, remove } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { topMu, topDeyis, TOP_RENG } from "./top-oyuncular.js";
 
 /* ================= DONMA VAXTI YOXLAMA VƏ BƏRPA ================= */
@@ -219,6 +219,19 @@ function toast(msg) {
 /* ================= XALLAR ================= */
 const men = cariOyuncu();
 const MEN = men && men.docId ? men.docId : null;
+
+/* ================= BLOK: bloklanmış oyunçunun şəkli "ignore" şəkli ilə əvəz olunur ================= */
+const IGNORE_IMG = "images/profil/ignore.png";
+try { new Image().src = IGNORE_IMG; } catch (e) {}
+let blokSet = {};
+const blokluMu = uid => !!uid && uid !== MEN && !!blokSet[uid];
+window.blokluMu = blokluMu;
+window.IGNORE_IMG = IGNORE_IMG;
+if (MEN) onValue(ref(rtdb, "blok/" + MEN), s => {
+  blokSet = s.val() || {};
+  document.dispatchEvent(new Event("blok-deyisdi"));
+  if (sonD && ownerUid && ov.classList.contains("open")) ciz(sonD);
+});
 
 const xalVer = (uid, sahe, n = 1) => {
   if (!uid || !n || n <= 0) return;
@@ -609,15 +622,18 @@ function sikayetAc() {
   sikayetBagla();
   const ph = ov.querySelector(".pf-photo");
   if (!ph) return;
+  const bl = blokluMu(uid);
   const P = ph.getBoundingClientRect();
   const w = document.createElement("div");
   w.className = "pf-repw";
   w.innerHTML =
     '<div class="pf-repc"><button class="pf-repx" aria-label="Bağla">' + REP_X + "</button>" +
-    REP_SATIRLAR.map(s =>
-      '<button class="pf-repr" data-a="' + s[0] + '"><i class="a"><img src="images/profil/' + s[1] + '" alt=""></i>' +
-      '<i class="b"><img src="images/profil/' + s[2] + '" alt=""></i><span>' + s[3] + "</span></button>"
-    ).join("") +
+    REP_SATIRLAR.map(s => {
+      const bs = s[0] === "blok" && bl;
+      return '<button class="pf-repr" data-a="' + s[0] + '"><i class="a"><img src="images/profil/' + s[1] + '" alt=""></i>' +
+        (bs ? "" : '<i class="b"><img src="images/profil/' + s[2] + '" alt=""></i>') +
+        "<span>" + (bs ? "Blokdan çıxar" : s[3]) + "</span></button>";
+    }).join("") +
     "</div>";
   ov.appendChild(w);
   const c = w.querySelector(".pf-repc");
@@ -630,15 +646,20 @@ function sikayetAc() {
   w.querySelectorAll(".pf-repr").forEach(b => { b.onclick = () => sikayetGonder(b.dataset.a); });
 }
 
-/* blok: blok/{mənim uid}/{oyunçu uid} = true; şikayət: sikayetler siyahısına yeni qeyd */
+/* blok: blok/{mənim uid}/{oyunçu uid} = true (bloklu olanda silinir); şikayət: sikayetler siyahısına yeni qeyd */
 async function sikayetGonder(tip) {
   const uid = ownerUid;
   sikayetBagla();
   if (!MEN || !uid || uid === MEN) return;
   try {
     if (tip === "blok") {
-      await set(ref(rtdb, "blok/" + MEN + "/" + uid), true);
-      toast("Oyunçu bloklandı");
+      if (blokluMu(uid)) {
+        await remove(ref(rtdb, "blok/" + MEN + "/" + uid));
+        toast("Blokdan çıxarıldı");
+      } else {
+        await set(ref(rtdb, "blok/" + MEN + "/" + uid), true);
+        toast("Oyunçu bloklandı");
+      }
     } else {
       await push(ref(rtdb, "sikayetler"), { kimden: MEN, kime: uid, tip, masa: MASA_NOMRESI, vaxt: serverTimestamp() });
       toast("Şikayət göndərildi");
@@ -713,7 +734,7 @@ function ciz(d) {
   const ad = pick(d, ["username"]) || "Oyunçu";
   const yas = pick(d, ["age"]);
   const yer = [pick(d, ["country"]), pick(d, ["city"])].filter(Boolean).join(", ");
-  const sekil = pick(d, ["avatar"]) || NOPHOTO;
+  const sekil = blokluMu(ownerUid) ? IGNORE_IMG : (pick(d, ["avatar"]) || NOPHOTO);
   const qiymet = Math.max(1, num(d.meftunQiymet));
   const mVar = !!d.meftunUid;
   const menimdir = ownerUid === MEN;
@@ -769,13 +790,13 @@ function ciz(d) {
   }
 
   const mOK = mVar && mD && mD.uid === d.meftunUid;
-  const sUser = [d.meftunUid || "", mOK ? mD.ad + "|" + mD.avatar + "|" + mD.qiz + "|" + mD.vip + "|" + topMu(mD.uid) : "", menimdir, d.meftunUid === MEN].join("#");
+  const sUser = [d.meftunUid || "", mOK ? mD.ad + "|" + mD.avatar + "|" + mD.qiz + "|" + mD.vip + "|" + topMu(mD.uid) + "|" + blokluMu(mD.uid) : "", menimdir, d.meftunUid === MEN].join("#");
   if (sig.user !== sUser) {
     sig.user = sUser;
     let mAva, mAd;
     if (!mVar) { mAva = IC.bosAva; mAd = "Məftun yoxdur"; }
     else if (mOK) {
-      mAva = '<img style="width:100%;height:100%;object-fit:cover;display:block" src="' + esc(mD.avatar || NOPHOTO) + '" alt="" onerror="' + onerr + '">';
+      mAva = '<img style="width:100%;height:100%;object-fit:cover;display:block" src="' + esc(blokluMu(mD.uid) ? IGNORE_IMG : (mD.avatar || NOPHOTO)) + '" alt="" onerror="' + onerr + '">';
       mAd = 'Məftun <u style="color:' + (topMu(mD.uid) ? TOP_RENG : adRengi(mD)) + '">' + esc(mD.ad) + "</u>";
     } else { mAva = IC.bosAva; mAd = "Məftun ..."; }
 
