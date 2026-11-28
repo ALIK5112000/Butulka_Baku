@@ -167,7 +167,7 @@ const SADE_HEDIYYELER = [
      soska_goyqurshagi.png (panel üçün əsas şəkil soska.png qalır).
      Səs faylları: sesler/soska.mp3 (göndərmə) və sesler/soska_dusme.mp3 (düşmə). */
   { id: SOSKA_ID, e: "🍼", img: SEKIL_PAPKA + "soska.png", q: 1, k: "yeni", s: SES_PAPKA + "soska.mp3", sl: SES_PAPKA + "soska_dusme.mp3", ucusMs: 5020, soska: true, solMs: 2000, zona: "yan",
-    variantlar: ["qirmizi.png", "pembe.png", "yasil.png", "goyqurshagi.png"]
+    variantlar: ["qirmizi.png", "pembe.png", "yasil.png", "goyqurshagi.png"] },
 ];
 
 /* animasiya və göndərmə kodu hədiyyəni id ilə axtarır: sadə + premium hamısı bir siyahıda */
