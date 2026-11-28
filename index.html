@@ -5,207 +5,172 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a1030">
+    <meta name="theme-color" content="#14101e">
     <link rel="icon" type="image/jpeg" href="icons/icon-192.jpg">
     <link rel="apple-touch-icon" href="icons/icon-192.jpg">
     <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/dist/email.min.js"></script>
     <title>Butulka Baku - Giriş</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root { --gold1:#f3d98f; --gold2:#d4a752; --gold3:#9a6f2c; --ink:#0f0f18; }
         body {
-            background: linear-gradient(135deg, #0d061f, #1a0b36, #2d1254, #120324);
-            background-size: 400% 400%;
-            animation: gradientBG 12s ease infinite;
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow-x: hidden;
-        }
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            background:
+                radial-gradient(ellipse at 20% 10%, rgba(255,255,255,.05), transparent 40%),
+                radial-gradient(ellipse at 80% 60%, rgba(255,255,255,.04), transparent 45%),
+                linear-gradient(115deg, #0a0a10 0%, #17171f 35%, #0c0c12 60%, #1b1a22 100%);
+            color: #fff; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 14px 18px 130px; overflow-x: hidden;
         }
         .lang-bar {
-            display: flex;
-            gap: 8px;
-            background: rgba(26, 11, 54, 0.9);
-            padding: 8px 12px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 25px;
-            overflow-x: auto;
-            max-width: 100%;
+            display: flex; gap: 10px; padding: 10px 4px; margin-bottom: 70px;
+            overflow-x: auto; max-width: 100%; width: 100%; justify-content: center;
         }
         .lang-btn {
-            background: transparent;
-            border: none;
-            color: #aaa;
-            padding: 6px 12px;
-            border-radius: 14px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: 0.3s;
-            white-space: nowrap;
+            background: rgba(15,15,24,.9); border: 1.5px solid rgba(212,167,82,.25);
+            color: #e9d9b0; padding: 10px 18px; border-radius: 22px; cursor: pointer;
+            font-size: 14px; font-weight: 700; transition: .3s; white-space: nowrap;
         }
         .lang-btn.active {
-            background: linear-gradient(135deg, #ff758c, #ff7eb3);
-            color: #fff;
-            box-shadow: 0 0 10px rgba(255, 117, 140, 0.5);
+            border-color: var(--gold1); background: rgba(212,167,82,.18);
+            box-shadow: 0 0 14px rgba(243,217,143,.45);
         }
         .container {
-            width: 100%;
-            max-width: 420px;
-            background: rgba(22, 10, 46, 0.85);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 117, 140, 0.4);
-            border-radius: 28px;
-            padding: 30px;
-            box-shadow: 0 0 30px rgba(255, 117, 140, 0.25), 0 15px 35px rgba(0, 0, 0, 0.6);
+            position: relative; width: 100%; max-width: 420px; margin-top: 40px;
+            background: rgba(15,15,24,.94);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            border-radius: 30px; padding: 74px 26px 28px;
+            box-shadow: 0 0 0 2px var(--gold3), 0 0 26px rgba(212,167,82,.25), 0 18px 40px rgba(0,0,0,.7);
         }
-        .logo-box { text-align: center; margin-bottom: 25px; }
-        .logo-icon {
-            width: 65px; height: 65px;
-            background: linear-gradient(135deg, #ff758c, #b375ff);
-            border-radius: 20px;
-            display: inline-flex; align-items: center; justify-content: center;
-            font-size: 32px;
-            box-shadow: 0 0 20px rgba(255, 117, 140, 0.6);
-            margin-bottom: 12px;
-            animation: pulseIcon 2s infinite ease-in-out;
-        }
-        @keyframes pulseIcon { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+        .logo-box { text-align: center; margin-bottom: 18px; }
+        .logo-icon { position: absolute; top: -62px; left: 50%; transform: translateX(-50%); width: 92px; filter: drop-shadow(0 0 14px rgba(243,217,143,.5)); }
         .logo-title {
-            font-size: 34px; font-weight: 800; font-style: italic; letter-spacing: 1px;
-            animation: rgbNeonText 4s infinite linear;
+            font-size: 38px; font-weight: 800; font-style: italic; letter-spacing: 1px;
+            background: linear-gradient(180deg, #f6dd98, #c8963f 60%, #8d6425);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
         }
-        @keyframes rgbNeonText {
-            0% { color: #ff3366; text-shadow: 0 0 15px #ff3366; }
-            33% { color: #00ffcc; text-shadow: 0 0 15px #00ffcc; }
-            66% { color: #3366ff; text-shadow: 0 0 15px #3366ff; }
-            100% { color: #ff3366; text-shadow: 0 0 15px #ff3366; }
-        }
-        .subtitle { font-size: 13px; color: #aaa; margin-top: 5px; }
-        .tabs {
-            display: flex; background: rgba(0, 0, 0, 0.4); border-radius: 16px;
-            padding: 6px; margin-bottom: 25px; border: 1px solid rgba(255, 255, 255, 0.05);
-        }
+        .subtitle { font-size: 15px; color: #ddd; margin-top: 8px; }
+        .tabs { display: flex; gap: 12px; margin: 20px 0 20px; }
         .tab {
-            flex: 1; text-align: center; padding: 12px; cursor: pointer;
-            border-radius: 12px; font-weight: 600; color: #aaa; transition: 0.3s;
+            flex: 1; text-align: center; padding: 13px; cursor: pointer; border-radius: 16px;
+            font-weight: 700; font-size: 17px; color: var(--gold2);
+            border: 2px solid var(--gold3); background: var(--ink); transition: .3s;
         }
-        .tab.active {
-            background: linear-gradient(135deg, #ff758c, #ff7eb3);
-            color: #fff; box-shadow: 0 0 15px rgba(255, 117, 140, 0.6);
-        }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #ff9eb3; font-weight: 500; }
+        .tab.active { color: #fff; background: linear-gradient(180deg, #e7c677, #b98c3d); border-color: var(--gold1); box-shadow: 0 0 16px rgba(243,217,143,.4); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 7px; font-size: 15px; color: #e9d9b0; }
         .form-group input {
-            width: 100%; padding: 14px 18px; background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 117, 140, 0.2); border-radius: 14px;
-            color: #fff; font-size: 16px; outline: none; transition: 0.3s;
+            width: 100%; padding: 14px 18px; background: #0d0d16;
+            border: 1.5px solid rgba(212,167,82,.4); border-radius: 16px;
+            color: #fff; font-size: 16px; outline: none; transition: .3s;
         }
-        .form-group input:focus { border-color: #ff758c; box-shadow: 0 0 15px rgba(255, 117, 140, 0.4); }
-
-        /* Cins Seçimi Düymələri */
-        .gender-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
+        .form-group input:focus { border-color: var(--gold1); box-shadow: 0 0 14px rgba(243,217,143,.35); }
+        .gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .gender-btn {
-            padding: 13px 12px;
-            border-radius: 14px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1.5px solid rgba(255, 117, 140, 0.22);
-            color: #cbd5e1;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.25s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            padding: 13px 12px; border-radius: 14px; background: #0d0d16;
+            border: 1.5px solid rgba(212,167,82,.3); color: #cbd5e1; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: .25s; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .gender-btn.active-boy {
-            border-color: #38bdf8;
-            background: rgba(56, 189, 248, 0.18);
-            color: #7dd3fc;
-            box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
-        }
-        .gender-btn.active-girl {
-            border-color: #f472b6;
-            background: rgba(244, 114, 182, 0.18);
-            color: #f9a8d4;
-            box-shadow: 0 0 14px rgba(244, 114, 182, 0.35);
-        }
-
+        .gender-btn.active-boy { border-color: #38bdf8; background: rgba(56,189,248,.18); color: #7dd3fc; box-shadow: 0 0 14px rgba(56,189,248,.35); }
+        .gender-btn.active-girl { border-color: #f472b6; background: rgba(244,114,182,.18); color: #f9a8d4; box-shadow: 0 0 14px rgba(244,114,182,.35); }
         .btn {
-            width: 100%; padding: 15px; background: linear-gradient(135deg, #ff758c, #ff7eb3);
-            border: none; border-radius: 14px; color: #fff; font-size: 18px; font-weight: bold;
-            cursor: pointer; box-shadow: 0 0 20px rgba(255, 117, 140, 0.5); transition: 0.3s; margin-top: 10px;
+            width: 100%; padding: 15px; background: linear-gradient(180deg, #ecd089, #b98c3d);
+            border: 2px solid var(--gold1); border-radius: 18px; color: #fff; font-size: 19px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 0 18px rgba(212,167,82,.4); transition: .3s; margin-top: 6px;
+            text-shadow: 0 1px 2px rgba(0,0,0,.4);
         }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn:disabled { opacity: .6; cursor: not-allowed; }
+        .btn-google {
+            background: #fff; color: #333; text-shadow: none; border-color: #fff; font-size: 16px;
+            display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: none; margin-top: 12px;
+        }
+        .or { text-align: center; color: #888; font-size: 13px; margin: 14px 0 0; }
+        .link { display: block; text-align: center; margin-top: 14px; color: var(--gold1); font-size: 14px; cursor: pointer; text-decoration: underline; }
+        .hint { font-size: 12.5px; color: #9b9b9b; margin: -6px 0 14px; }
         .form-section { display: none; }
         .form-section.active { display: block; }
+        .hidden { display: none; }
         .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,.85); backdrop-filter: blur(8px);
             justify-content: center; align-items: center; z-index: 1000;
         }
-        .modal-content {
-            background: #1a0b36; padding: 35px 30px; border-radius: 24px; text-align: center;
-            max-width: 340px; width: 90%; border: 2px solid rgba(255, 117, 140, 0.5);
+        .modal-content { background: #14141d; padding: 35px 30px; border-radius: 24px; text-align: center; max-width: 340px; width: 90%; border: 2px solid var(--gold3); }
+        /* Aşağı naviqasiya */
+        .bottom-nav {
+            position: fixed; left: 0; right: 0; bottom: 0; height: 92px; z-index: 50;
+            background: #0f0f18; border-top: 2px solid var(--gold3);
+            display: flex; justify-content: space-around; align-items: center;
+        }
+        .nav-item { flex: 1; text-align: center; color: var(--gold1); text-decoration: none; font-weight: 700; font-size: 15px; padding-top: 14px; }
+        .nav-item span { display: block; font-size: 30px; }
+        .nav-center {
+            position: absolute; left: 50%; top: -42px; transform: translateX(-50%);
+            width: 108px; height: 108px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle, #1b1b24 55%, #0f0f18 56%);
+            border: 6px dotted var(--gold1); box-shadow: 0 0 20px rgba(243,217,143,.5); font-size: 46px; text-decoration: none;
         }
     </style>
 </head>
 <body>
 
     <div class="lang-bar">
-        <button class="lang-btn active" onclick="setLanguage('az', this)">🇦🇿 Azərbaycanca</button>
+        <button class="lang-btn active" onclick="setLanguage('az', this)">🇦🇿 Azerbaycanca</button>
         <button class="lang-btn" onclick="setLanguage('ru', this)">🇷🇺 Русский</button>
         <button class="lang-btn" onclick="setLanguage('en', this)">🇬🇧 English</button>
         <button class="lang-btn" onclick="setLanguage('ka', this)">🇬🇪 ქართული</button>
     </div>
 
     <div class="container">
+        <svg class="logo-icon" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 34 L28 8 L40 24 L50 4 L60 24 L72 8 L78 34 Z" fill="#e2b954" stroke="#f6dd98" stroke-width="2"/>
+            <rect x="22" y="34" width="56" height="6" rx="3" fill="#f6dd98"/>
+            <path d="M50 104 C8 72 6 46 26 44 C38 43 46 50 50 58 C54 50 62 43 74 44 C94 46 92 72 50 104Z" fill="#7a1022" stroke="#e2b954" stroke-width="5"/>
+            <path d="M50 92 C20 70 18 52 31 51 C40 50 47 56 50 63 C53 56 60 50 69 51 C82 52 80 70 50 92Z" fill="#e0233f"/>
+        </svg>
         <div class="logo-box">
-            <div class="logo-icon">❤️</div>
             <div class="logo-title">Butulka Baku</div>
             <div id="subtitleText" class="subtitle">Hesabına daxil ol və oyuna davam et</div>
         </div>
-        
-        <div class="tabs">
+
+        <div id="mainTabs" class="tabs">
             <div id="tabLogin" class="tab active" onclick="switchTab('login')">Giriş</div>
             <div id="tabRegister" class="tab" onclick="switchTab('register')">Qeydiyyat</div>
         </div>
 
+        <!-- GİRİŞ -->
         <div id="loginForm" class="form-section active">
             <div class="form-group">
-                <label id="lblUserInput">İstifadəçi adı və ya ID</label>
-                <input type="text" id="loginUser" placeholder="İstifadəçi adı və ya ID">
+                <label id="lblUserInput">İstifadəçi adı, e-poçt və ya ID</label>
+                <input type="text" id="loginUser" autocomplete="username">
             </div>
             <div class="form-group">
                 <label id="lblPassword">Şifrə</label>
-                <input type="password" id="loginPass" placeholder="••••••••">
+                <input type="password" id="loginPass" autocomplete="current-password">
             </div>
             <button id="btnLogin" class="btn" onclick="loginUser()">Daxil ol</button>
+            <div class="or">—</div>
+            <button class="btn btn-google" onclick="googleAuth()">
+                <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.1.8-4.6l-7.9-6.2A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.2z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.9l-7.9 6.2C6.5 42.6 14.6 48 24 48z"/></svg>
+                <span id="txtGoogle1">Google ilə davam et</span>
+            </button>
+            <span id="lnkForgot" class="link" onclick="showForgot()">Şifrəmi unutmuşam</span>
         </div>
 
+        <!-- QEYDİYYAT -->
         <div id="registerForm" class="form-section">
             <div class="form-group">
                 <label id="lblRegUser">İstifadəçi adı</label>
-                <input type="text" id="regUser" placeholder="İstifadəçi adı seç">
+                <input type="text" id="regUser" autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label id="lblRegEmail">E-poçt (Gmail)</label>
+                <input type="email" id="regEmail" placeholder="nümunə@gmail.com" autocomplete="email">
             </div>
             <div class="form-group">
                 <label id="lblRegPass">Şifrə (ən azı 6 simvol)</label>
-                <input type="password" id="regPass" placeholder="••••••••">
+                <input type="password" id="regPass" autocomplete="new-password">
             </div>
             <div class="form-group">
                 <label id="lblRegGender">Cinsini seç</label>
@@ -218,22 +183,63 @@
                     </button>
                 </div>
             </div>
-            <button id="btnRegister" class="btn" onclick="registerUser()">Hesab yarat</button>
+            <button id="btnSendRegCode" class="btn" onclick="sendRegCode()">Kod göndər</button>
+            <div id="regCodeBox" class="hidden" style="margin-top:16px">
+                <div class="form-group">
+                    <label id="lblRegCode">E-poçtuna gələn 6 rəqəmli kod</label>
+                    <input type="text" id="regCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+                </div>
+                <button id="btnRegister" class="btn" onclick="registerUser()">Təsdiqlə və hesab yarat</button>
+            </div>
+            <div class="or">—</div>
+            <button class="btn btn-google" onclick="googleAuth()">
+                <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.1.8-4.6l-7.9-6.2A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.2z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.9l-7.9 6.2C6.5 42.6 14.6 48 24 48z"/></svg>
+                <span id="txtGoogle2">Google ilə qeydiyyat</span>
+            </button>
+        </div>
+
+        <!-- ŞİFRƏNİ BƏRPA -->
+        <div id="forgotForm" class="form-section">
+            <div class="form-group">
+                <label id="lblFgEmail">Qeydiyyatdakı e-poçt</label>
+                <input type="email" id="fgEmail" autocomplete="email">
+            </div>
+            <button id="btnSendFgCode" class="btn" onclick="sendFgCode()">Kod göndər</button>
+            <div id="fgCodeBox" class="hidden" style="margin-top:16px">
+                <div class="form-group">
+                    <label id="lblFgCode">E-poçtuna gələn 6 rəqəmli kod</label>
+                    <input type="text" id="fgCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+                </div>
+                <div class="form-group">
+                    <label id="lblFgNew">Yeni şifrə (ən azı 6 simvol)</label>
+                    <input type="password" id="fgNewPass" autocomplete="new-password">
+                </div>
+                <button id="btnReset" class="btn" onclick="resetPassword()">Şifrəni yenilə</button>
+            </div>
+            <span id="lnkBack" class="link" onclick="hideForgot()">← Girişə qayıt</span>
         </div>
     </div>
 
     <div id="successModal" class="modal">
         <div class="modal-content">
-            <h3 id="modalTitle" style="color:#ff758c; margin-bottom:15px; font-size: 22px;">Uğurlu Qeydiyyat!</h3>
+            <h3 id="modalTitle" style="color:#f3d98f; margin-bottom:15px; font-size: 22px;">Uğurlu Qeydiyyat!</h3>
             <p id="modalDesc" style="color:#ddd; margin-bottom:10px;">Sizin unikal ID nömrəniz:</p>
-            <h2 id="newIdText" style="color:#fff; margin-bottom:25px; font-size: 36px; text-shadow: 0 0 10px #ff758c;">00000</h2>
+            <h2 id="newIdText" style="color:#fff; margin-bottom:25px; font-size: 36px; text-shadow: 0 0 10px #d4a752;">00000</h2>
             <button id="modalBtn" class="btn" onclick="goToProfile()">Davam et</button>
         </div>
     </div>
 
+    <!-- Aşağı naviqasiya: fayl adlarını öz səhifələrinə görə dəyiş -->
+    <nav class="bottom-nav">
+        <a class="nav-item" href="index.html"><span>🏠</span><div id="navHome">Ana sahifə</div></a>
+        <a class="nav-center" href="index.html">🍾</a>
+        <a class="nav-item" href="mesajlar.html"><span>💬</span><div id="navMsg">Mesajlar</div></a>
+    </nav>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyAANVVrJKhZyaCErn8YFNVTUPF70A9xlmQ",
@@ -244,131 +250,235 @@
           appId: "1:52438073026:web:1c4a0a8d1fc1ce5f78455b"
         };
 
+        // ====== EmailJS ayarları (emailjs.com-dan götür) ======
+        const EMAILJS_PUBLIC_KEY  = "BURAYA_PUBLIC_KEY";
+        const EMAILJS_SERVICE_ID  = "BURAYA_SERVICE_ID";
+        const EMAILJS_TEMPLATE_ID = "BURAYA_TEMPLATE_ID";
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         if (localStorage.getItem("currentUser")) {
             window.location.href = "profil.html";
         }
 
         let selectedRegGender = "Kişi";
+        let pending = { reg: null, fg: null }; // {email, code, exp}
+        let lastSend = 0;
 
         window.selectRegGender = function(gender) {
             selectedRegGender = gender;
-            const boyBtn = document.getElementById("btnGenderBoy");
-            const girlBtn = document.getElementById("btnGenderGirl");
-            boyBtn.classList.toggle("active-boy", gender === "Kişi");
-            girlBtn.classList.toggle("active-girl", gender === "Qadın");
+            document.getElementById("btnGenderBoy").classList.toggle("active-boy", gender === "Kişi");
+            document.getElementById("btnGenderGirl").classList.toggle("active-girl", gender === "Qadın");
         };
 
         const translations = {
-            az: { subtitle: "Hesabına daxil ol və oyuna davam et", loginTab: "Giriş", regTab: "Qeydiyyat", lblUser: "İstifadəçi adı və ya ID", lblPass: "Şifrə", btnLogin: "Daxil ol", lblRegUser: "İstifadəçi adı", lblRegPass: "Şifrə (ən azı 6 simvol)", lblRegGender: "Cinsini seç", boy: "Oğlan", girl: "Qız", btnReg: "Hesab yarat", modalTitle: "Uğurlu Qeydiyyat!", modalDesc: "Sizin unikal ID nömrəniz:", modalBtn: "Davam et" },
-            ru: { subtitle: "Войдите в аккаунт и продолжайте игру", loginTab: "Вход", regTab: "Регистрация", lblUser: "Имя пользователя или ID", lblPass: "Пароль", btnLogin: "Войти", lblRegUser: "Имя пользователя", lblRegPass: "Пароль (мин. 6 символов)", lblRegGender: "Выберите пол", boy: "Парень", girl: "Девушка", btnReg: "Создать аккаунт", modalTitle: "Успешная регистрация!", modalDesc: "Ваш уникальный ID номер:", modalBtn: "Продолжить" },
-            en: { subtitle: "Login to your account and continue playing", loginTab: "Login", regTab: "Register", lblUser: "Username or ID", lblPass: "Password", btnLogin: "Sign In", lblRegUser: "Username", lblRegPass: "Password (min 6 chars)", lblRegGender: "Select gender", boy: "Boy", girl: "Girl", btnReg: "Create Account", modalTitle: "Successful Registration!", modalDesc: "Your unique ID number:", modalBtn: "Continue" },
-            ka: { subtitle: "შედით ანგარიშზე და გააგრძელეთ თამაში", loginTab: "შესვლა", regTab: "რეგისტრაცია", lblUser: "მომხმარებელი ან ID", lblPass: "პაროლი", btnLogin: "შესვლა", lblRegUser: "მომხმარებლის სახელი", lblRegPass: "პაროლი (მინ. 6 სიმბოლო)", lblRegGender: "აირჩიეთ სქესი", boy: "ბიჭი", girl: "გოგო", btnReg: "ანგარიშის შექმნა", modalTitle: "წარმატებული რეგისტრაცია!", modalDesc: "თქვენი უნიკალური ID ნომერი:", modalBtn: "გაგრძელება" }
+            az: { subtitle: "Hesabına daxil ol və oyuna davam et", loginTab: "Giriş", regTab: "Qeydiyyat", lblUser: "İstifadəçi adı, e-poçt və ya ID", lblPass: "Şifrə", btnLogin: "Daxil ol", lblRegUser: "İstifadəçi adı", lblRegEmail: "E-poçt (Gmail)", lblRegPass: "Şifrə (ən azı 6 simvol)", lblRegGender: "Cinsini seç", boy: "Oğlan", girl: "Qız", sendCode: "Kod göndər", lblCode: "E-poçtuna gələn 6 rəqəmli kod", btnReg: "Təsdiqlə və hesab yarat", google1: "Google ilə davam et", google2: "Google ilə qeydiyyat", forgot: "Şifrəmi unutmuşam", lblFgEmail: "Qeydiyyatdakı e-poçt", lblFgNew: "Yeni şifrə (ən azı 6 simvol)", btnReset: "Şifrəni yenilə", back: "← Girişə qayıt", modalTitle: "Uğurlu Qeydiyyat!", modalDesc: "Sizin unikal ID nömrəniz:", modalBtn: "Davam et", home: "Ana sahifə", msg: "Mesajlar" },
+            ru: { subtitle: "Войдите в аккаунт и продолжайте игру", loginTab: "Вход", regTab: "Регистрация", lblUser: "Имя, e-mail или ID", lblPass: "Пароль", btnLogin: "Войти", lblRegUser: "Имя пользователя", lblRegEmail: "E-mail (Gmail)", lblRegPass: "Пароль (мин. 6 символов)", lblRegGender: "Выберите пол", boy: "Парень", girl: "Девушка", sendCode: "Отправить код", lblCode: "6-значный код из письма", btnReg: "Подтвердить и создать", google1: "Продолжить через Google", google2: "Регистрация через Google", forgot: "Забыли пароль?", lblFgEmail: "E-mail при регистрации", lblFgNew: "Новый пароль (мин. 6 символов)", btnReset: "Обновить пароль", back: "← Назад ко входу", modalTitle: "Успешная регистрация!", modalDesc: "Ваш уникальный ID номер:", modalBtn: "Продолжить", home: "Главная", msg: "Сообщения" },
+            en: { subtitle: "Login to your account and continue playing", loginTab: "Login", regTab: "Register", lblUser: "Username, email or ID", lblPass: "Password", btnLogin: "Sign In", lblRegUser: "Username", lblRegEmail: "Email (Gmail)", lblRegPass: "Password (min 6 chars)", lblRegGender: "Select gender", boy: "Boy", girl: "Girl", sendCode: "Send code", lblCode: "6-digit code from your email", btnReg: "Verify and create account", google1: "Continue with Google", google2: "Sign up with Google", forgot: "Forgot password?", lblFgEmail: "Registered email", lblFgNew: "New password (min 6 chars)", btnReset: "Reset password", back: "← Back to login", modalTitle: "Successful Registration!", modalDesc: "Your unique ID number:", modalBtn: "Continue", home: "Home", msg: "Messages" },
+            ka: { subtitle: "შედით ანგარიშზე და გააგრძელეთ თამაში", loginTab: "შესვლა", regTab: "რეგისტრაცია", lblUser: "სახელი, ელფოსტა ან ID", lblPass: "პაროლი", btnLogin: "შესვლა", lblRegUser: "მომხმარებლის სახელი", lblRegEmail: "ელფოსტა (Gmail)", lblRegPass: "პაროლი (მინ. 6 სიმბოლო)", lblRegGender: "აირჩიეთ სქესი", boy: "ბიჭი", girl: "გოგო", sendCode: "კოდის გაგზავნა", lblCode: "6-ციფრიანი კოდი ელფოსტიდან", btnReg: "დადასტურება და შექმნა", google1: "გაგრძელება Google-ით", google2: "რეგისტრაცია Google-ით", forgot: "პაროლი დაგავიწყდათ?", lblFgEmail: "რეგისტრაციის ელფოსტა", lblFgNew: "ახალი პაროლი (მინ. 6 სიმბოლო)", btnReset: "პაროლის განახლება", back: "← უკან შესვლაზე", modalTitle: "წარმატებული რეგისტრაცია!", modalDesc: "თქვენი უნიკალური ID ნომერი:", modalBtn: "გაგრძელება", home: "მთავარი", msg: "შეტყობინებები" }
         };
+
+        const map = { subtitleText:"subtitle", tabLogin:"loginTab", tabRegister:"regTab", lblUserInput:"lblUser", lblPassword:"lblPass", btnLogin:"btnLogin", lblRegUser:"lblRegUser", lblRegEmail:"lblRegEmail", lblRegPass:"lblRegPass", lblRegGender:"lblRegGender", txtBoy:"boy", txtGirl:"girl", btnSendRegCode:"sendCode", btnSendFgCode:"sendCode", lblRegCode:"lblCode", lblFgCode:"lblCode", btnRegister:"btnReg", txtGoogle1:"google1", txtGoogle2:"google2", lnkForgot:"forgot", lblFgEmail:"lblFgEmail", lblFgNew:"lblFgNew", btnReset:"btnReset", lnkBack:"back", modalTitle:"modalTitle", modalDesc:"modalDesc", modalBtn:"modalBtn", navHome:"home", navMsg:"msg" };
 
         window.setLanguage = function(lang, btn) {
             document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const t = translations[lang];
-            document.getElementById('subtitleText').innerText = t.subtitle;
-            document.getElementById('tabLogin').innerText = t.loginTab;
-            document.getElementById('tabRegister').innerText = t.regTab;
-            document.getElementById('lblUserInput').innerText = t.lblUser;
-            document.getElementById('lblPassword').innerText = t.lblPass;
-            document.getElementById('btnLogin').innerText = t.btnLogin;
-            document.getElementById('lblRegUser').innerText = t.lblRegUser;
-            document.getElementById('lblRegPass').innerText = t.lblRegPass;
-            document.getElementById('lblRegGender').innerText = t.lblRegGender;
-            document.getElementById('txtBoy').innerText = t.boy;
-            document.getElementById('txtGirl').innerText = t.girl;
-            document.getElementById('btnRegister').innerText = t.btnReg;
-            document.getElementById('modalTitle').innerText = t.modalTitle;
-            document.getElementById('modalDesc').innerText = t.modalDesc;
-            document.getElementById('modalBtn').innerText = t.modalBtn;
+            for (const id in map) document.getElementById(id).innerText = t[map[id]];
         };
+
+        function show(id) {
+            document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
 
         window.switchTab = function(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
-            if(tab === 'login') {
+            document.getElementById('mainTabs').classList.remove('hidden');
+            if (tab === 'login') {
                 document.getElementById('tabLogin').classList.add('active');
-                document.getElementById('loginForm').classList.add('active');
+                show('loginForm');
             } else {
                 document.getElementById('tabRegister').classList.add('active');
-                document.getElementById('registerForm').classList.add('active');
+                show('registerForm');
             }
         };
 
-        window.registerUser = async function() {
-            const username = document.getElementById('regUser').value.trim();
-            const password = document.getElementById('regPass').value;
-            const btn = document.getElementById('btnRegister');
+        window.showForgot = function() {
+            document.getElementById('mainTabs').classList.add('hidden');
+            show('forgotForm');
+        };
+        window.hideForgot = function() { switchTab('login'); };
 
-            if(!username || password.length < 6) {
-                alert("Zəhmət olmasa adı daxil edin və şifrə ən az 6 simvol olsun!");
-                return;
+        // ====== Kod göndərmə (EmailJS) ======
+        const isEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+        async function sendCodeTo(email, kind) {
+            if (Date.now() - lastSend < 60000) {
+                alert("Zəhmət olmasa 1 dəqiqə gözləyin və yenidən cəhd edin.");
+                return false;
             }
+            const code = String(Math.floor(100000 + Math.random() * 900000));
+            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID,
+                { to_email: email, email: email, code: code, app_name: "Butulka Baku" },
+                { publicKey: EMAILJS_PUBLIC_KEY });
+            pending[kind] = { email, code, exp: Date.now() + 10 * 60 * 1000 };
+            lastSend = Date.now();
+            return true;
+        }
+
+        function checkCode(kind, email, entered) {
+            const p = pending[kind];
+            if (!p || p.email !== email) { alert("Əvvəlcə kod göndərin."); return false; }
+            if (Date.now() > p.exp) { alert("Kodun vaxtı bitib. Yenidən göndərin."); return false; }
+            if (p.code !== String(entered).trim()) { alert("Kod yanlışdır!"); return false; }
+            return true;
+        }
+
+        async function findByEmail(email) {
+            const s = await getDocs(query(collection(db, "users"), where("email", "==", email)));
+            return s.empty ? null : s.docs[0];
+        }
+
+        window.sendRegCode = async function() {
+            const username = document.getElementById('regUser').value.trim();
+            const email = document.getElementById('regEmail').value.trim().toLowerCase();
+            const password = document.getElementById('regPass').value;
+            const btn = document.getElementById('btnSendRegCode');
+
+            if (!username || password.length < 6) { alert("Zəhmət olmasa adı daxil edin və şifrə ən az 6 simvol olsun!"); return; }
+            if (!isEmail(email)) { alert("Düzgün e-poçt daxil edin!"); return; }
 
             btn.disabled = true;
             try {
                 const nameCheck = await getDocs(query(collection(db, "users"), where("username", "==", username)));
-                if (!nameCheck.empty) {
-                    alert("Bu istifadəçi adı artıq mövcuddur!");
-                    btn.disabled = false;
-                    return;
+                if (!nameCheck.empty) { alert("Bu istifadəçi adı artıq mövcuddur!"); return; }
+                if (await findByEmail(email)) { alert("Bu e-poçt artıq qeydiyyatdan keçib!"); return; }
+                if (await sendCodeTo(email, "reg")) {
+                    document.getElementById('regCodeBox').classList.remove('hidden');
+                    alert("Kod e-poçtunuza göndərildi. Spam qovluğuna da baxın.");
                 }
+            } catch (e) {
+                alert("Kod göndərilmədi: " + (e.text || e.message || e));
+            } finally { btn.disabled = false; }
+        };
 
-                const uniqueId = Math.floor(10000 + Math.random() * 90000);
-                const newUserObj = {
-                    username: username,
-                    password: password,
-                    id: uniqueId,
-                    jetons: 0,
-                    hearts: 0,
-                    views: 0,
-                    viewers: [],
-                    friends: [],
-                    friendRequests: [],
-                    status: "",
-                    avatar: "",
-                    country: "",
-                    city: "",
-                    age: 18,
-                    gender: selectedRegGender,
-                    vip: false,
-                    vipUntil: 0,
-                    sessionVersion: 1,
-                    createdAt: Date.now()
-                };
+        window.registerUser = async function() {
+            const username = document.getElementById('regUser').value.trim();
+            const email = document.getElementById('regEmail').value.trim().toLowerCase();
+            const password = document.getElementById('regPass').value;
+            const btn = document.getElementById('btnRegister');
 
-                const docRef = await addDoc(collection(db, "users"), newUserObj);
-                localStorage.setItem("currentUser", JSON.stringify({
-                    docId: docRef.id,
-                    id: uniqueId,
-                    username: username,
-                    gender: selectedRegGender,
-                    sessionVersion: 1
-                }));
+            if (!username || password.length < 6) { alert("Zəhmət olmasa adı daxil edin və şifrə ən az 6 simvol olsun!"); return; }
+            if (!checkCode("reg", email, document.getElementById('regCode').value)) return;
 
-                document.getElementById('newIdText').innerText = uniqueId;
-                document.getElementById('successModal').style.display = 'flex';
-            } catch(e) {
+            btn.disabled = true;
+            try {
+                const nameCheck = await getDocs(query(collection(db, "users"), where("username", "==", username)));
+                if (!nameCheck.empty) { alert("Bu istifadəçi adı artıq mövcuddur!"); btn.disabled = false; return; }
+                await createAccount(username, email, password, selectedRegGender, true);
+            } catch (e) {
                 alert("Xəta baş verdi: " + e.message);
                 btn.disabled = false;
             }
         };
 
+        async function createAccount(username, email, password, gender, showModal) {
+            const uniqueId = Math.floor(10000 + Math.random() * 90000);
+            const newUserObj = {
+                username, email, emailVerified: true, password, id: uniqueId,
+                jetons: 0, hearts: 0, views: 0, viewers: [], friends: [], friendRequests: [],
+                status: "", avatar: "", country: "", city: "", age: 18, gender,
+                vip: false, vipUntil: 0, sessionVersion: 1, createdAt: Date.now()
+            };
+            const docRef = await addDoc(collection(db, "users"), newUserObj);
+            localStorage.setItem("currentUser", JSON.stringify({
+                docId: docRef.id, id: uniqueId, username, gender, sessionVersion: 1
+            }));
+            if (showModal) {
+                document.getElementById('newIdText').innerText = uniqueId;
+                document.getElementById('successModal').style.display = 'flex';
+            } else {
+                window.location.href = "profil.html";
+            }
+        }
+
+        // ====== Google ilə giriş / qeydiyyat ======
+        window.googleAuth = async function() {
+            try {
+                const res = await signInWithPopup(auth, new GoogleAuthProvider());
+                const email = (res.user.email || "").toLowerCase();
+                if (!email) { alert("Google hesabından e-poçt alınmadı."); return; }
+
+                const existing = await findByEmail(email);
+                if (existing) {
+                    const data = existing.data();
+                    if (data.banned) { alert("Hesabınız bloklanıb!"); return; }
+                    localStorage.setItem("currentUser", JSON.stringify({
+                        docId: existing.id, id: data.id, username: data.username,
+                        sessionVersion: data.sessionVersion || 1
+                    }));
+                    window.location.href = "profil.html";
+                    return;
+                }
+
+                let username = (res.user.displayName || email.split("@")[0]).trim();
+                const taken = await getDocs(query(collection(db, "users"), where("username", "==", username)));
+                if (!taken.empty) username += Math.floor(100 + Math.random() * 900);
+                await createAccount(username, email, "", selectedRegGender, false);
+            } catch (e) {
+                if (e.code !== "auth/popup-closed-by-user") alert("Google xətası: " + e.message);
+            }
+        };
+
+        // ====== Şifrəni bərpa et ======
+        window.sendFgCode = async function() {
+            const email = document.getElementById('fgEmail').value.trim().toLowerCase();
+            const btn = document.getElementById('btnSendFgCode');
+            if (!isEmail(email)) { alert("Düzgün e-poçt daxil edin!"); return; }
+            btn.disabled = true;
+            try {
+                if (!(await findByEmail(email))) { alert("Bu e-poçtla hesab tapılmadı!"); return; }
+                if (await sendCodeTo(email, "fg")) {
+                    document.getElementById('fgCodeBox').classList.remove('hidden');
+                    alert("Kod e-poçtunuza göndərildi. Spam qovluğuna da baxın.");
+                }
+            } catch (e) {
+                alert("Kod göndərilmədi: " + (e.text || e.message || e));
+            } finally { btn.disabled = false; }
+        };
+
+        window.resetPassword = async function() {
+            const email = document.getElementById('fgEmail').value.trim().toLowerCase();
+            const newPass = document.getElementById('fgNewPass').value;
+            const btn = document.getElementById('btnReset');
+            if (newPass.length < 6) { alert("Yeni şifrə ən az 6 simvol olmalıdır!"); return; }
+            if (!checkCode("fg", email, document.getElementById('fgCode').value)) return;
+            btn.disabled = true;
+            try {
+                const d = await findByEmail(email);
+                if (!d) { alert("Hesab tapılmadı!"); btn.disabled = false; return; }
+                await updateDoc(doc(db, "users", d.id), { password: newPass });
+                pending.fg = null;
+                alert("Şifrə yeniləndi! İndi daxil ola bilərsiniz.");
+                document.getElementById('fgCodeBox').classList.add('hidden');
+                document.getElementById('loginUser').value = email;
+                switchTab('login');
+            } catch (e) {
+                alert("Xəta: " + e.message);
+            }
+            btn.disabled = false;
+        };
+
+        // ====== Giriş ======
         window.loginUser = async function() {
             const userInput = document.getElementById('loginUser').value.trim();
             const passwordInput = document.getElementById('loginPass').value;
             const btn = document.getElementById('btnLogin');
 
-            if(!userInput || !passwordInput) {
-                alert("Xanaları doldurun!");
-                return;
-            }
+            if(!userInput || !passwordInput) { alert("Xanaları doldurun!"); return; }
 
             btn.disabled = true;
             try {
@@ -382,33 +492,29 @@
                     const uname = String(data.username || "").trim().toLowerCase();
                     const uid = String(data.id ?? "").trim().toLowerCase();
                     const ucustom = String(data.customId ?? "").trim().toLowerCase();
+                    const uemail = String(data.email || "").trim().toLowerCase();
 
                     const matchesIdentifier =
                         uname === qLower ||
                         uid === qLower ||
+                        (uemail && uemail === qLower) ||
                         (ucustom && ucustom === qLower);
 
-                    if (matchesIdentifier && data.password === passwordInput) {
+                    if (matchesIdentifier && data.password && data.password === passwordInput) {
                         matchedDoc = { docId: docSnap.id, data };
                     }
                 });
 
                 if (matchedDoc) {
                     const { docId, data } = matchedDoc;
-                    if (data.banned) {
-                        alert("Hesabınız bloklanıb!");
-                        btn.disabled = false;
-                        return;
-                    }
+                    if (data.banned) { alert("Hesabınız bloklanıb!"); btn.disabled = false; return; }
                     localStorage.setItem("currentUser", JSON.stringify({
-                        docId: docId,
-                        id: data.id,
-                        username: data.username,
+                        docId: docId, id: data.id, username: data.username,
                         sessionVersion: data.sessionVersion || 1
                     }));
                     window.location.href = "profil.html";
                 } else {
-                    alert("İstifadəçi adı/ID və ya şifrə yanlışdır!");
+                    alert("İstifadəçi adı/ID/e-poçt və ya şifrə yanlışdır!");
                     btn.disabled = false;
                 }
             } catch(e) {
@@ -417,9 +523,7 @@
             }
         };
 
-        window.goToProfile = function() {
-            window.location.href = "profil.html";
-        };
+        window.goToProfile = function() { window.location.href = "profil.html"; };
     </script>
 </body>
 </html>
