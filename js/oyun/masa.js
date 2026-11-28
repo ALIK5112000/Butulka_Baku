@@ -117,6 +117,9 @@ function qarish(a) {
   return a;
 }
 
+// Bloklanmış oyunçunun şəkli "ignore" şəkli ilə əvəz olunur (profil-kart.js window.blokluMu və window.IGNORE_IMG verir)
+const gorunenSekil = (o) => (o && window.blokluMu && window.blokluMu(o.uid) && window.IGNORE_IMG) ? window.IGNORE_IMG : (o && o.sekil) || "";
+
 function cizdir(data) {
   sonData = data || {};
   const gorulen = new Set();   // eyni oyunçu iki yerdə görünməsin
@@ -124,7 +127,8 @@ function cizdir(data) {
     let o = sonData[i];
     if (o && gorulen.has(o.uid)) o = null;
     if (o) gorulen.add(o.uid);
-    const sig = o ? o.uid + "|" + o.ad + "|" + o.sekil : "";
+    const sekil = o ? gorunenSekil(o) : "";
+    const sig = o ? o.uid + "|" + o.ad + "|" + sekil : "";
     if (d._sig === sig) return;      // dəyişməyən yer yenidən çəkilmir
     d._sig = sig;
     d.classList.toggle("dolu", !!o);
@@ -132,7 +136,7 @@ function cizdir(data) {
     if (o) d.dataset.uid = o.uid; else delete d.dataset.uid;
     if (o) {
       d.querySelector(".ad").textContent = o.ad;
-      const s = o.sekil ? String(o.sekil).replace(/"/g, "%22") : "";
+      const s = sekil ? String(sekil).replace(/"/g, "%22") : "";
       d.querySelector(".foto").style.backgroundImage = s ? `url("${s}")` : "";
     } else {
       d.querySelector(".ad").textContent = "";
@@ -140,6 +144,9 @@ function cizdir(data) {
     }
   });
 }
+
+// Blok siyahısı dəyişəndə masadakı şəkillər dərhal yenilənir
+document.addEventListener("blok-deyisdi", () => { cizdir(sonData); });
 
 // Oyunçu bazanın cavabını gözləmədən dərhal görünsün
 function yerliGoster(i, oyuncu) {
