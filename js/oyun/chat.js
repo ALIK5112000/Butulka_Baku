@@ -29,6 +29,22 @@ let men = null;
 const adUid = new Map();
 if (cari && cari.docId && cari.username) adUid.set(cari.username, cari.docId);
 
+// ---- BLOK: bloklanmış oyunçunun çatdakı yazıları gizlədilir (profil-kart.js window.blokluMu verir) ----
+const blokdaMi = (uid) => !!(uid && window.blokluMu && window.blokluMu(uid));
+// Sətrə yazanın uid-i yazılır və bloklusa gizlədilir
+function blokGizle(el, uid) {
+  if (!el) return;
+  el.dataset.muid = uid || "";
+  el.style.display = blokdaMi(uid) ? "none" : "";
+}
+// Blok siyahısı dəyişəndə çatdakı bütün sətirlər yenidən yoxlanır (blokdan çıxarılanda köhnə yazılar qayıdır)
+document.addEventListener("blok-deyisdi", () => {
+  qutu.querySelectorAll("[data-muid]").forEach((el) => {
+    el.style.display = blokdaMi(el.dataset.muid) ? "none" : "";
+  });
+  qutu.scrollTop = qutu.scrollHeight;
+});
+
 // Çatda ad rəngi: TOP-10 da olan oyunçunun adı TOP lentinin sarı tonunda, qalanlar əvvəlki kimi
 const adRengiTop = (uid, cins, vip) => (topMu(uid) ? TOP_RENG : adRengi(cins, vip));
 // TOP siyahısı dəyişəndə çatda artıq yazılmış mesajların ad rəngləri də avtomatik yenilənir
@@ -274,6 +290,7 @@ onChildChanged(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   const m = s.val(), köhnə = musiqiSatirlari[s.key];
   if (!m || !m.isMusicNotice || !köhnə || !köhnə.isConnected) return;
   const yeni = musiqiSatiri(m);
+  blokGizle(yeni, m.uid);
   köhnə.replaceWith(yeni);
   musiqiSatirlari[s.key] = yeni;
 });
@@ -287,6 +304,7 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   // Təpik bildirişi (bütün masada görünür): vurdu / masadan atıldı / qorudu
   if (m.isTepikNotice) {
     const sat = tepikSatiri(m);
+    blokGizle(sat, m.uid);
     qutu.appendChild(sat);
     sat._olcu();
     while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
@@ -306,6 +324,7 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
       }
     }
     const sat = musiqiSatiri(m);
+    blokGizle(sat, m.uid);
     musiqiSatirlari[s.key] = sat;
     qutu.appendChild(sat);
     while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
@@ -323,6 +342,7 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
     g.style.cssText = "background:#fff0f6;border-color:#f06aa8;";
     g.textContent = m.metn;
     d.append(f, g);
+    blokGizle(d, m.uid);
     qutu.appendChild(d);
     while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
     qutu.scrollTop = qutu.scrollHeight;
@@ -359,8 +379,8 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   // mesaj qalın qara yazı ilə görünür. Başqalarının öz aralarındakı yazışması sadə qalır.
   const hed = mesajHedefi(m);
   const menimle = !!(cari && cari.docId && hed && (m.uid === cari.docId || hed === cari.docId));
-  // Mənə yazılan təzə mesaj (başqasından, köhnə tarixçə deyil) → səs dərhal çalınır
-  if (catYuklendi && cari && cari.docId && hed === cari.docId && m.uid !== cari.docId && Date.now() + serverOffset - pushVaxti(s.key) <= 30000) mesajSesiCal();
+  // Mənə yazılan təzə mesaj (başqasından, köhnə tarixçə deyil) → səs dərhal çalınır (bloklu oyunçudan səs çalınmır)
+  if (catYuklendi && cari && cari.docId && hed === cari.docId && m.uid !== cari.docId && !blokdaMi(m.uid) && Date.now() + serverOffset - pushVaxti(s.key) <= 30000) mesajSesiCal();
   g.className = "mgovde mkart" + (m.cins === "q" ? " qiz" : "") + (menimle ? " mene" : "");
   const a = document.createElement("span");
   a.className = "mad";
@@ -383,6 +403,7 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   tr.textContent = "Tərcüməni göstər";
   g.append(a, t, tr);
   d.append(f, g);
+  blokGizle(d, m.uid);
   qutu.appendChild(d);
   while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
   qutu.scrollTop = qutu.scrollHeight;
