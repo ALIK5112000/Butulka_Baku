@@ -37,7 +37,7 @@ function blokGizle(el, uid) {
   el.dataset.muid = uid || "";
   el.style.display = blokdaMi(uid) ? "none" : "";
 }
-// Blok siyahısı dəyişəndə çatdakı bütün sətirlər yenidən yoxlanır (blokdan çıxarılanda köhnə yazılar qayıdır)
+// Blok siyahısı dəyişəndə çatdakı bütün sətirlər yenidən yoxlanılır (blokdan çıxarılanda köhnə yazılar qayıdır)
 document.addEventListener("blok-deyisdi", () => {
   qutu.querySelectorAll("[data-muid]").forEach((el) => {
     el.style.display = blokdaMi(el.dataset.muid) ? "none" : "";
@@ -285,10 +285,96 @@ function tepikSatiri(m) {
   return d;
 }
 
-// Mesaja sonradan "hedef" əlavə olunanda (kiminsə adına qoşulduqda) həmin sətir yenilənir
+// ---- Hədiyyə sətirləri (hediyye.js chat yoluna isHediyyeNotice kimi yazır) ----
+//  [göndərən] [hədiyyənin şəkli] xN » [alan]
+//  Hədiyyənin şəkli mesajın içində (img) gəlir, ona görə hediyye.js-ə yeni hədiyyə əlavə edəndə burada heç nə dəyişmir.
+//  Eyni hədiyyə ardıcıl göndəriləndə yeni sətir açılmır, mövcud sətirdəki say (xN) artır (onChildChanged).
+const hediyyeSatirlari = {};
+function hediyyeSatiri(m) {
+  const d = document.createElement("div");
+  d.className = "mesaj";
+  const f = document.createElement("div");
+  f.className = "mfoto";
+  fotoVer(f, m.uid);
+
+  const g = document.createElement("div");
+  g.className = "hediyye-sat";
+  g.style.cssText = "display:flex;flex-wrap:nowrap;align-items:center;gap:2.4vw;min-width:0;max-width:80vw;min-height:7.8vw;";
+
+  // Hədiyyənin şəkli (yüklənməsə əvvəl əsas şəklə, o da olmasa emojiyə keçir)
+  const ik = document.createElement("div");
+  ik.style.cssText = "flex:none;display:flex;align-items:center;justify-content:center;";
+  const im = document.createElement("img");
+  im.alt = "";
+  im.style.cssText = "width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;";
+  let ikinciDene = false;
+  const emoji = () => {
+    ik.textContent = m.e || "🎁";
+    ik.style.fontSize = "5.6vw";
+    ik.style.lineHeight = "1";
+  };
+  im.onerror = () => {
+    if (!ikinciDene && m.img0 && im.getAttribute("src") !== m.img0) { ikinciDene = true; im.src = m.img0; }
+    else emoji();
+  };
+  if (m.img) im.src = m.img; else if (m.img0) im.src = m.img0; else emoji();
+  if (!ik.firstChild) ik.appendChild(im);
+
+  // Say: x5, x3 ... (1-dirsə görünmür). Yaşıl rəngdə.
+  const say = document.createElement("span");
+  say.style.cssText = "flex:none;color:#7cc92f;font-weight:800;font-size:5.2vw;line-height:1;";
+
+  const ox = document.createElement("span");
+  ox.style.cssText = "flex:none;display:flex;align-items:center;";
+  ox.innerHTML = OX_SVG;
+
+  const f2 = document.createElement("div");
+  f2.className = "mfoto";
+  f2.style.cssText = "flex:none!important;";
+  fotoVer(f2, m.hedef);
+
+  g.append(ik, say, ox, f2);
+  d.append(f, g);
+
+  const sayYaz = (c) => {
+    c = Number(c) || 1;
+    say.textContent = c > 1 ? "x" + c : "";
+    say.style.display = c > 1 ? "" : "none";
+  };
+  sayYaz(m.c);
+
+  // Sonradan say və ya şəkil dəyişəndə (hediyye.js yeniləyir) sətir yenilənir
+  d._yenile = (yeni) => {
+    sayYaz(yeni.c);
+    if (yeni.img && im.isConnected && im.getAttribute("src") !== yeni.img) im.src = yeni.img;
+  };
+
+  // Ölçülər: şəkil (.mfoto) nə qədərdirsə ona görə (sətir yerləşdirildikdən sonra)
+  d._olcu = () => {
+    const w = f.offsetWidth || 40;
+    const ikW = Math.round(w * 0.85);
+    ik.style.width = ik.style.height = ikW + "px";
+    const oxs = ox.querySelector("svg");
+    if (oxs) { oxs.style.width = Math.round(w * 0.42) + "px"; oxs.style.height = Math.round(w * 0.42) + "px"; }
+    say.style.fontSize = Math.round(w * 0.5) + "px";
+  };
+  return d;
+}
+
+// Mesaja sonradan "hedef" əlavə olunanda (kiminsə adına qoşulduqda) həmin sətir yenilənir.
+// Hədiyyə sətrində isə say (xN) artanda yenilənir.
 onChildChanged(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
-  const m = s.val(), köhnə = musiqiSatirlari[s.key];
-  if (!m || !m.isMusicNotice || !köhnə || !köhnə.isConnected) return;
+  const m = s.val();
+  if (!m) return;
+
+  if (m.isHediyyeNotice) {
+    const sat = hediyyeSatirlari[s.key];
+    if (sat && sat.isConnected && sat._yenile) sat._yenile(m);
+    return;
+  }
+
+  const köhnə = musiqiSatirlari[s.key];
+  if (!m.isMusicNotice || !köhnə || !köhnə.isConnected) return;
   const yeni = musiqiSatiri(m);
   blokGizle(yeni, m.uid);
   köhnə.replaceWith(yeni);
@@ -300,6 +386,19 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
   if (!m) return;
   const d = document.createElement("div");
   d.className = "mesaj";
+
+  // Hədiyyə bildirişi (bütün masada görünür): [göndərən] [hədiyyə] xN » [alan]
+  if (m.isHediyyeNotice) {
+    const sat = hediyyeSatiri(m);
+    blokGizle(sat, m.uid);
+    hediyyeSatirlari[s.key] = sat;
+    qutu.appendChild(sat);
+    sat._olcu();
+    while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
+    qutu.scrollTop = qutu.scrollHeight;
+    requestAnimationFrame(() => { sat._olcu(); qutu.scrollTop = qutu.scrollHeight; });
+    return;
+  }
 
   // Təpik bildirişi (bütün masada görünür): vurdu / masadan atıldı / qorudu
   if (m.isTepikNotice) {
