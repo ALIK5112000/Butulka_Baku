@@ -2,7 +2,7 @@ import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, onSnapshot, updateDoc, runTransaction, collection, query, where, getCountFromServer, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { ref, onValue, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, onValue, push, serverTimestamp, set } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { topMu, topDeyis, TOP_RENG } from "./top-oyuncular.js";
 
 /* ================= DONMA VAXTI YOXLAMA VƏ BƏRPA ================= */
@@ -100,6 +100,18 @@ const CSS = `
 .pf-cap small{display:block;font:500 3.4vw/4.4vw Roboto,Arial,sans-serif}
 .pf-zoom{position:absolute;right:2.4vw;bottom:2.1vw;width:5.85vw;height:5.85vw;border:0;background:none;padding:0}
 .pf-zoom svg{width:100%;height:100%;display:block}
+/* başqa oyunçunun kartında şəklin sağ-aşağısında "!" düyməsi (şikayət / blok pəncərəsi); zoom düyməsi onun soluna keçir */
+.pf-zoom.pf-sol{right:10.2vw}
+.pf-rep{position:absolute;right:2.4vw;bottom:2.1vw;width:5.85vw;height:5.85vw;border-radius:50%;border:0;background:#fff;color:#111;padding:0;display:flex;align-items:center;justify-content:center;font:700 4vw/1 Roboto,Arial,sans-serif}
+.pf-repw{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:5}
+.pf-repc{position:absolute;box-sizing:border-box;background:#fff;border-radius:4.4vw;box-shadow:0 1vw 4vw rgba(0,0,0,.35);padding:2.45vw 0 2.65vw;animation:pfin .2s ease}
+.pf-repx{position:absolute;top:-2.6vw;right:-2.6vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#fff;border:0;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3)}
+.pf-repx svg{width:4.2vw;height:4.2vw}
+.pf-repr{display:flex;align-items:center;width:100%;height:8.9vw;padding:0 0 0 3.9vw;border:0;background:none;text-align:left;font:400 3.9vw/1 Roboto,Arial,sans-serif;color:#111;white-space:nowrap}
+.pf-repr i{display:flex;align-items:center;justify-content:center;flex:none;font-style:normal}
+.pf-repr .a{width:6.7vw;margin-right:1.6vw}
+.pf-repr .b{width:5.2vw;margin-right:.7vw}
+.pf-repr img{max-width:100%;height:auto;display:block}
 .pf-close{position:absolute;top:-2.6vw;right:-2.6vw;width:8.3vw;height:8.3vw;border-radius:50%;background:#fff;border:0;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 .6vw 1.8vw rgba(0,0,0,.3);z-index:3}
 .pf-close svg{width:4.2vw;height:4.2vw}
 .pf-stats{display:flex;justify-content:space-between;align-items:center;padding:1.2vw 4.5vw 0 2.9vw}
@@ -133,9 +145,8 @@ const CSS = `
 .pf-btn svg{width:7vw;height:7vw;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .pf-btn.t{font:700 2.9vw/1 Roboto,Arial,sans-serif}
 .pf-act .pf-btn:nth-child(1) svg{width:10.2vw;height:10.2vw}
-.pf-act .pf-btn:nth-child(3) svg{width:7.6vw;height:7.6vw}
-.pf-act .pf-btn:nth-child(4) svg{width:8.9vw;height:8.9vw}
-.pf-act .pf-btn:nth-child(5) svg{width:8.6vw;height:8.6vw}
+.pf-act .pf-btn:nth-child(3) svg{width:8.9vw;height:8.9vw}
+.pf-act .pf-btn:nth-child(4) svg{width:8.6vw;height:8.6vw}
 .pf-st{height:9.33vw;box-sizing:border-box;padding:0 4vw;display:flex;align-items:center;justify-content:center;text-align:center;font:italic 400 3.7vw/1.2 Roboto,Arial,sans-serif;color:#111}
 .pf-st span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
 .pf-stl{height:.3vw;background:#e6e6e6;margin:0 3.9vw}
@@ -479,7 +490,6 @@ const sekilIsit = u => { if (u) { try { const im = new Image(); im.src = u; } ca
   "images/profil/smaylik.png",
   "images/profil/tek_urek.png",
   "images/profil/cut_urek.png",
-  "images/profil/hediyye_icon.png",
   "images/profil/vip.png",
   TOP_LENT,
   NOPHOTO
@@ -580,6 +590,65 @@ function hediyyeAc() {
   if (window.HediyyePanel) window.HediyyePanel.ac(uid);
 }
 
+/* ================= "!" DÜYMƏSİ: BLOK ET / ŞİKAYƏT PƏNCƏRƏSİ ================= */
+const REP_X = '<svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#7cc92f" stroke-width="3.2" stroke-linecap="round"/></svg>';
+const REP_SATIRLAR = [
+  ["blok", "sik_blok.png", "em_blok.png", "Blok et"],
+  ["pis-sekil", "sik_18.png", "em_xeb.png", "Şikayət: pis şəkil"],
+  ["soyus", "sik_xeb.png", "em_xeb.png", "Şikayət: söyüş / təhqir"]
+];
+
+function sikayetBagla() {
+  const w = ov.querySelector(".pf-repw");
+  if (w) w.remove();
+}
+
+function sikayetAc() {
+  const uid = ownerUid;
+  if (!uid || uid === MEN) return;
+  sikayetBagla();
+  const ph = ov.querySelector(".pf-photo");
+  if (!ph) return;
+  const P = ph.getBoundingClientRect();
+  const w = document.createElement("div");
+  w.className = "pf-repw";
+  w.innerHTML =
+    '<div class="pf-repc"><button class="pf-repx" aria-label="Bağla">' + REP_X + "</button>" +
+    REP_SATIRLAR.map(s =>
+      '<button class="pf-repr" data-a="' + s[0] + '"><i class="a"><img src="images/profil/' + s[1] + '" alt=""></i>' +
+      '<i class="b"><img src="images/profil/' + s[2] + '" alt=""></i><span>' + s[3] + "</span></button>"
+    ).join("") +
+    "</div>";
+  ov.appendChild(w);
+  const c = w.querySelector(".pf-repc");
+  /* pəncərə şəklin aşağı hissəsində, şəklin eninə görə yerləşir */
+  c.style.width = (P.width * 620 / 862) + "px";
+  c.style.left = (P.left + P.width * 122 / 862) + "px";
+  c.style.top = (P.bottom - P.width * 177 / 862) + "px";
+  w.onclick = e => { if (e.target === w) sikayetBagla(); };
+  w.querySelector(".pf-repx").onclick = sikayetBagla;
+  w.querySelectorAll(".pf-repr").forEach(b => { b.onclick = () => sikayetGonder(b.dataset.a); });
+}
+
+/* blok: blok/{mənim uid}/{oyunçu uid} = true; şikayət: sikayetler siyahısına yeni qeyd */
+async function sikayetGonder(tip) {
+  const uid = ownerUid;
+  sikayetBagla();
+  if (!MEN || !uid || uid === MEN) return;
+  try {
+    if (tip === "blok") {
+      await set(ref(rtdb, "blok/" + MEN + "/" + uid), true);
+      toast("Oyunçu bloklandı");
+    } else {
+      await push(ref(rtdb, "sikayetler"), { kimden: MEN, kime: uid, tip, masa: MASA_NOMRESI, vaxt: serverTimestamp() });
+      toast("Şikayət göndərildi");
+    }
+  } catch (e) {
+    console.error(e);
+    toast("Xəta baş verdi, yenidən cəhd edin");
+  }
+}
+
 function mesajYaz() {
   const uid = ownerUid, ad = sonD ? pick(sonD, ["username"]) : null;
   if (!uid || uid === MEN || !ad) return;
@@ -614,7 +683,6 @@ function qur() {
       '<div class="pf-act">' +
         '<button class="pf-btn pf-kick" style="background:#ec5440">' + IC.qalxan + "</button>" +
         '<button class="pf-btn t" style="background:#ef8c0b">Buto</button>' +
-        '<button class="pf-btn pf-mus pf-hed" style="background:#e67c3e" aria-label="Hədiyyə">' + IC.hediyye + "</button>" +
         '<button class="pf-btn" style="background:#f9a23a">' + IC.tesdiq + "</button>" +
         '<button class="pf-btn pf-mail" style="background:#4fa9de">' + IC.mail + "</button>" +
       "</div></div></div>" +
@@ -622,7 +690,6 @@ function qur() {
   gurulu = true; sig = {};
   ov.querySelector(".pf-close").onclick = bagla;
   ov.querySelector(".pf-mail").onclick = mesajYaz;
-  ov.querySelector(".pf-mus").onclick = hediyyeAc;
   ov.querySelector(".pf-dv span").onclick = () => { acik = !acik; if (sonD) ciz(sonD); };
 }
 
@@ -657,14 +724,17 @@ function ciz(d) {
   if (hedBtn) hedBtn.style.visibility = menimdir ? "hidden" : "visible";
   duymeHal();
 
-  const sTop = [sekil, ad, yas, yer, vipMi(d)].join("|");
+  const sTop = [sekil, ad, yas, yer, vipMi(d), menimdir].join("|");
   if (sig.top !== sTop) {
     sig.top = sTop;
     ov.querySelector(".pf-topw").innerHTML =
       (vipMi(d) ? '<img class="pf-vipimg" src="images/profil/vip.png" alt="">' : "") +
       '<div class="pf-photo"><img src="' + esc(sekil) + '" alt="" onerror="' + onerr + '">' +
       '<div class="pf-cap">' + esc(ad) + (yas ? ", " + esc(yas) : "") + (yer ? "<small>" + esc(yer) + "</small>" : "") + "</div>" +
-      '<button class="pf-zoom" aria-label="Böyüt">' + IC.zoom + "</button></div>";
+      '<button class="pf-zoom' + (menimdir ? "" : " pf-sol") + '" aria-label="Böyüt">' + IC.zoom + "</button>" +
+      (menimdir ? "" : '<button class="pf-rep" aria-label="Şikayət">!</button>') + "</div>";
+    const repBtn = ov.querySelector(".pf-rep");
+    if (repBtn) repBtn.onclick = sikayetAc;
     ov.querySelector(".pf-zoom").onclick = () => {
       const f = document.createElement("div");
       f.className = "pf-full";
