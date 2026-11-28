@@ -2,7 +2,7 @@ import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, onValue, remove, push, update } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import "./ramka-shop.js";
 import "./reytinq.js";
 import "./butulka.js";
@@ -144,6 +144,7 @@ if (cari && cari.docId) {
   onSnapshot(doc(fsdb, "users", cari.docId), (s) => {
     const p = s.data();
     if (!p) return;
+    window.__menProfil = p;                  // adminə mesaj üçün ad / şəkil / id
     const n = String(p.hearts || 0);
     window.__urekSon = n;                    // ən son real balans
     if (!window.__urekHold) urekYaz(n);      // animasiya gedərkən rəqəmi dərhal dəyişmirik
@@ -244,6 +245,17 @@ if (cari && cari.docId) {
     '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/>' +
     '<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
 
+  // Admin cavab yazanda ayarlar ikonunda qırmızı nöqtə
+  const adminNuqte = document.createElement("span");
+  adminNuqte.className = "nuqte";
+  adminNuqte.style.display = "none";
+  ayarBtn.appendChild(adminNuqte);
+  if (cari && cari.docId) {
+    onValue(ref(rtdb, "adminMesaj/" + cari.docId + "/oyuncuOxunmamis"), (s) => {
+      adminNuqte.style.display = s.val() ? "" : "none";
+    });
+  }
+
   // Səs səviyyələri (yadda qalır; hər oyunçunun öz cihazında)
   function oxu(acar, ilk) {
     try { const v = localStorage.getItem(acar); return v === null ? ilk : Number(v); } catch (e) { return ilk; }
@@ -296,9 +308,6 @@ if (cari && cari.docId) {
   const IK_SES =
     '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M3 9v6h4l5 4V5L7 9H3z" fill="#8cc63f"/>' +
     '<path d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="#c7c7c7" stroke-width="1.8" stroke-linecap="round"/></svg>';
-  const IK_MUSIQI =
-    '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M9 18V6l11-2v12" fill="none" stroke="#c0489d" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>' +
-    '<circle cx="6.5" cy="18" r="3" fill="#c0489d"/><circle cx="17.5" cy="16" r="3" fill="#c0489d"/></svg>';
   const IK_BLOK =
     '<svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#e5383b" stroke-width="2.6" stroke-linecap="round">' +
     '<circle cx="12" cy="12" r="9"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/></svg>';
@@ -347,12 +356,11 @@ if (cari && cari.docId) {
 
   // 1) Səslər: chat və hədiyyə səsləri
   kart.appendChild(sliderSatiri(IK_SES, "Səslər", "__sesSeviyyesi", window.__sesSeviyyesi, "ses"));
-  // 2) Musiqi: musiqi və klip səsləri
-  kart.appendChild(sliderSatiri(IK_MUSIQI, "Musiqi", "__musiqiSeviyyesi", window.__musiqiSeviyyesi, "musiqi"));
-  // 3) Bloklanmış oyunçular
+  // (Musiqi sətri silindi)
+  // 2) Bloklanmış oyunçular
   kart.appendChild(dokunSatiri(IK_BLOK, "Bloklanmış oyunçular", "bloklanmis", blokAc));
-  // 4) Adminə mesaj yaz
-  kart.appendChild(dokunSatiri(IK_ADMIN, "Adminə mesaj yaz", "admin-mesaj"));
+  // 3) Adminə mesaj yaz
+  kart.appendChild(dokunSatiri(IK_ADMIN, "Adminə mesaj yaz", "admin-mesaj", adminYaz));
 
   overlay.appendChild(kart);
   document.body.appendChild(overlay);
@@ -485,6 +493,114 @@ if (cari && cari.docId) {
       satirlar.clear();
       ov.remove();
     }
+    x.onclick = bagla;
+    ov.addEventListener("click", (e) => { if (e.target === ov) bagla(); });
+  }
+
+  // ===== Admin ilə yazışma pəncərəsi (real vaxt) =====
+  function adminYaz() {
+    if (!cari || !cari.docId) return;
+    const MEN = cari.docId;
+    const yol = ref(rtdb, "adminMesaj/" + MEN);
+    const p2 = (n) => String(n).padStart(2, "0");
+    const fmt = (t) => {
+      if (!t) return "";
+      const d = new Date(t);
+      return p2(d.getDate()) + "." + p2(d.getMonth() + 1) + " " + p2(d.getHours()) + ":" + p2(d.getMinutes());
+    };
+
+    const ov = document.createElement("div");
+    ov.style.cssText =
+      "position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.45);display:flex;align-items:center;" +
+      "justify-content:center;font-family:Roboto,Arial,sans-serif;";
+    const kt = document.createElement("div");
+    kt.style.cssText =
+      "width:93.6vw;max-height:85vh;box-sizing:border-box;background:#fff;border-radius:6vw;padding:4vw;" +
+      "box-shadow:0 1vw 5vw rgba(0,0,0,.3);display:flex;flex-direction:column;";
+
+    const bas = document.createElement("div");
+    bas.style.cssText = "display:flex;align-items:center;gap:2.6vw;";
+    bas.innerHTML =
+      '<span style="width:11vw;height:11vw;border-radius:50%;background:#ece8fa;display:flex;padding:2vw;box-sizing:border-box;flex:none;">' + IK_ADMIN + "</span>" +
+      '<span style="flex:1;font-size:6.2vw;font-weight:700;color:#2b1a5a;">Admin ilə yazışma</span>';
+    const x = document.createElement("button");
+    x.type = "button";
+    x.style.cssText = "width:10vw;height:10vw;border-radius:50%;border:0;background:#ece8fa;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;";
+    x.innerHTML = '<svg viewBox="0 0 24 24" width="50%" height="50%" fill="none" stroke="#444" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>';
+    bas.appendChild(x);
+
+    const izah = document.createElement("div");
+    izah.textContent = "Sualını, şikayətini və ya təklifini yaz - admin cavab verəndə ayarlar ikonunda bildiriş görəcəksən.";
+    izah.style.cssText = "margin-top:2vw;font-size:4vw;line-height:1.4;color:#555;";
+
+    const qutu = document.createElement("div");
+    qutu.style.cssText = "margin-top:3vw;background:#f6f4fb;border-radius:5vw;padding:3vw;overflow-y:auto;min-height:28vh;max-height:42vh;display:flex;flex-direction:column;gap:2.4vw;";
+
+    const alt = document.createElement("div");
+    alt.style.cssText = "margin-top:3vw;display:flex;gap:2.6vw;align-items:flex-end;";
+    const inp = document.createElement("textarea");
+    inp.placeholder = "Mesajını yaz...";
+    inp.maxLength = 300;
+    inp.style.cssText = "flex:1;height:22vw;box-sizing:border-box;border:.7vw solid #9acd32;border-radius:5vw;padding:3vw 4vw;font:4.6vw Roboto,Arial,sans-serif;outline:none;resize:none;";
+    const gd = document.createElement("button");
+    gd.type = "button";
+    gd.textContent = "Göndər";
+    gd.style.cssText = "flex:none;border:0;background:linear-gradient(#a6d84a,#84bd2f);color:#fff;font:700 4.8vw Roboto,Arial,sans-serif;padding:4.4vw 5.4vw;border-radius:4.4vw;cursor:pointer;";
+    alt.append(inp, gd);
+
+    kt.append(bas, izah, qutu, alt);
+    ov.appendChild(kt);
+    document.body.appendChild(ov);
+
+    function balon(m) {
+      const a = m.kimden === "admin";
+      const d = document.createElement("div");
+      d.style.cssText = "max-width:80%;padding:2.6vw 3.4vw;border-radius:4vw;font-size:4.4vw;line-height:1.35;word-break:break-word;" +
+        (a ? "align-self:flex-start;background:#fff;color:#222;border:.3vw solid #e6e1f5;"
+           : "align-self:flex-end;background:linear-gradient(#a6d84a,#8cc63f);color:#fff;");
+      if (a) {
+        const l = document.createElement("div");
+        l.textContent = "🛡️ Admin";
+        l.style.cssText = "font-size:3.8vw;font-weight:700;color:#6a4fd8;margin-bottom:.6vw;";
+        d.appendChild(l);
+      }
+      const t = document.createElement("div");
+      t.textContent = m.metn || "";
+      const z = document.createElement("div");
+      z.textContent = fmt(m.vaxt);
+      z.style.cssText = "font-size:3.2vw;text-align:right;opacity:.65;margin-top:1vw;";
+      d.append(t, z);
+      return d;
+    }
+
+    const un = onValue(yol, (s) => {
+      const v = s.val() || {};
+      const ms = v.mesajlar || {};
+      qutu.innerHTML = "";
+      Object.keys(ms).sort().forEach((k) => qutu.appendChild(balon(ms[k])));
+      qutu.scrollTop = qutu.scrollHeight;
+      if (v.oyuncuOxunmamis) update(yol, { oyuncuOxunmamis: false }).catch(() => {});
+    });
+
+    function gonder() {
+      const m = inp.value.trim();
+      if (!m) return;
+      inp.value = "";
+      const p = window.__menProfil || {};
+      const k = push(ref(rtdb, "adminMesaj/" + MEN + "/mesajlar")).key;
+      update(yol, {
+        ad: p.username || "Oyunçu",
+        avatar: p.avatar || "",
+        id: String(p.customId || p.id || ""),
+        son: m.slice(0, 80),
+        vaxt: Date.now(),
+        adminOxunmamis: true,
+        ["mesajlar/" + k]: { kimden: "oyuncu", metn: m, vaxt: Date.now() }
+      }).catch(() => {});
+    }
+    gd.onclick = gonder;
+
+    function bagla() { try { un(); } catch (e) {} ov.remove(); }
     x.onclick = bagla;
     ov.addEventListener("click", (e) => { if (e.target === ov) bagla(); });
   }
