@@ -123,6 +123,15 @@
             font-size: 10px; color: #38bdf8; background: rgba(56, 189, 248, 0.12);
             padding: 4px; border-radius: 6px; margin-bottom: 6px; line-height: 1.3;
         }
+
+        /* Oyunçu mesajları */
+        .msg-row { display:flex; align-items:center; gap:10px; background:#0e1020; padding:9px 11px; border-radius:10px; margin-bottom:6px; cursor:pointer; }
+        .msg-row img { width:44px; height:44px; border-radius:50%; object-fit:cover; background:#1e223d; flex:none; }
+        .msg-dot { background:#ef4444; color:#fff; font-size:10px; font-weight:800; border-radius:10px; padding:2px 7px; }
+        .bub { max-width:82%; padding:8px 11px; border-radius:12px; font-size:13px; line-height:1.35; word-break:break-word; }
+        .bub small { display:block; font-size:9px; opacity:.6; text-align:right; margin-top:3px; }
+        .bub.pl { align-self:flex-start; background:#1e223d; }
+        .bub.ad { align-self:flex-end; background:#2563eb; }
     </style>
 </head>
 <body>
@@ -337,6 +346,24 @@
                 </div>
             </div>
 
+            <!-- 11. OYUNÇU MESAJLARI -->
+            <div class="acc-item" data-roles="admin,adminka">
+                <button class="acc-btn" onclick="toggleAcc(this)">
+                    <span>💬 11. Oyunçu Mesajları <span id="msgBadge" class="msg-dot" style="display:none;"></span></span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="acc-body">
+                    <div id="msgList"></div>
+                    <div id="msgChat" style="display:none;">
+                        <button class="btn c-gray" onclick="closeMsgChat()" style="margin-bottom:8px;">← Siyahı</button>
+                        <div id="msgHead" class="found-badge"></div>
+                        <div id="msgBox" style="display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;background:#0e1020;border-radius:10px;padding:10px;margin-bottom:8px;"></div>
+                        <textarea id="msgReplyInp" class="inp" rows="2" placeholder="Cavabını yaz..."></textarea>
+                        <button class="btn c-green w-100" onclick="sendAdminReply()">📨 Cavab Göndər</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -479,6 +506,8 @@
             });
 
             loadTableSeats();
+
+            if (myRole === "admin" || myRole === "adminka") listenAdminMessages();
         }
 
         // 10. BAŞ ADMİN LOGİN VƏ PAROLUNU DƏYİŞ
@@ -866,6 +895,80 @@
             }
             document.getElementById("adminGlobalMsgInp").value = "";
             alert("📢 Profilsiz Admin mesajı bütün masalara göndərildi!");
+        };
+
+        // 11. OYUNÇU MESAJLARI (real vaxt)
+        const NOFOTO = "images/avatar/nophoto.svg";
+        const esc = (t) => String(t == null ? "" : t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+        const fmtT = (t) => {
+            if (!t) return "";
+            const d = new Date(t);
+            const p = n => String(n).padStart(2, "0");
+            return p(d.getDate()) + "." + p(d.getMonth() + 1) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+        };
+        let msgChatUid = null, msgChatUnsub = null;
+
+        function listenAdminMessages() {
+            onValue(ref(rtdb, "adminMesaj"), (snap) => {
+                const all = snap.val() || {};
+                const arr = Object.entries(all).filter(([, v]) => v && v.mesajlar).map(([uid, v]) => ({ uid, ...v }));
+                arr.sort((a, b) => (b.vaxt || 0) - (a.vaxt || 0));
+                const unread = arr.filter(x => x.adminOxunmamis).length;
+                const badge = document.getElementById("msgBadge");
+                badge.style.display = unread ? "inline-block" : "none";
+                badge.textContent = unread;
+                document.getElementById("msgList").innerHTML = arr.length ? arr.map(x => `
+                    <div class="msg-row" onclick="openMsgChat('${x.uid}')">
+                        <img src="${esc(x.avatar || NOFOTO)}" onerror="this.src='${NOFOTO}'">
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:13px;font-weight:800;">${esc(x.ad)} <span style="color:#94a3b8;font-weight:600;font-size:11px;">ID: ${esc(x.id)}</span></div>
+                            <div style="font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(x.son)}</div>
+                        </div>
+                        ${x.adminOxunmamis ? '<span class="msg-dot">yeni</span>' : ""}
+                    </div>`).join("") : `<div class="hint">Hələ mesaj yoxdur.</div>`;
+            });
+        }
+
+        window.openMsgChat = function(uid) {
+            msgChatUid = uid;
+            if (msgChatUnsub) msgChatUnsub();
+            document.getElementById("msgList").style.display = "none";
+            document.getElementById("msgChat").style.display = "block";
+            const r = ref(rtdb, "adminMesaj/" + uid);
+            msgChatUnsub = onValue(r, (s) => {
+                const v = s.val() || {};
+                document.getElementById("msgHead").innerHTML =
+                    `<div style="display:flex;align-items:center;gap:10px;"><img src="${esc(v.avatar || NOFOTO)}" onerror="this.src='${NOFOTO}'" style="width:42px;height:42px;border-radius:50%;object-fit:cover;"><div><b>${esc(v.ad)}</b><br>ID: ${esc(v.id)}</div></div>`;
+                const ms = v.mesajlar || {};
+                const box = document.getElementById("msgBox");
+                box.innerHTML = Object.keys(ms).sort().map(k => {
+                    const m = ms[k];
+                    return `<div class="bub ${m.kimden === "admin" ? "ad" : "pl"}">${esc(m.metn)}<small>${fmtT(m.vaxt)}</small></div>`;
+                }).join("");
+                box.scrollTop = box.scrollHeight;
+                if (v.adminOxunmamis) update(r, { adminOxunmamis: false }).catch(() => {});
+            });
+        };
+
+        window.closeMsgChat = function() {
+            if (msgChatUnsub) { msgChatUnsub(); msgChatUnsub = null; }
+            msgChatUid = null;
+            document.getElementById("msgChat").style.display = "none";
+            document.getElementById("msgList").style.display = "block";
+        };
+
+        window.sendAdminReply = async function() {
+            const inp = document.getElementById("msgReplyInp");
+            const t = inp.value.trim();
+            if (!t || !msgChatUid) return;
+            inp.value = "";
+            const k = push(ref(rtdb, `adminMesaj/${msgChatUid}/mesajlar`)).key;
+            await update(ref(rtdb, "adminMesaj/" + msgChatUid), {
+                son: "Admin: " + t.slice(0, 70),
+                vaxt: Date.now(),
+                oyuncuOxunmamis: true,
+                ["mesajlar/" + k]: { kimden: "admin", metn: t, vaxt: Date.now() }
+            });
         };
 
         init();
