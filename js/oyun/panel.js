@@ -1,7 +1,8 @@
-import { fsdb } from "../core/firebase.js";
+import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import "./ramka-shop.js";
 import "./reytinq.js";
 import "./butulka.js";
@@ -108,7 +109,7 @@ if (cari && cari.docId) {
 (function ayarQur() {
   const panel = document.getElementById("ustPanel") || document.getElementById("cixisBtn").parentNode;
 
-  // Köhnə ayarlar düyməsi varsa onu istifadə edirik (id: ayarBtn), yoxdursa yenisini yaradırıq
+  // Köhnə ayarlar düyməsi varsa onu istifadə edirik (id: ayarBtn), yoxsa yenisini yaradırıq
   let ayarBtn = document.getElementById("ayarBtn");
   if (!ayarBtn) {
     ayarBtn = document.createElement("button");
@@ -208,13 +209,16 @@ if (cari && cari.docId) {
     return row;
   }
 
-  function dokunSatiri(ikon, ad, key) {
+  // isle verilibsə: pəncərə bağlanır və həmin funksiya işləyir (məs. Bloklanmış oyunçular pəncərəsi);
+  // verilməyibsə əvvəlki kimi "ayar-sec" hadisəsi göndərilir
+  function dokunSatiri(ikon, ad, key, isle) {
     const row = document.createElement("div");
     row.style.cssText = SATIR + "cursor:pointer;";
     row.innerHTML = '<span style="' + IKON + '">' + ikon + "</span><span style=\"flex:1;\">" + ad + "</span>";
     row.onclick = () => {
       bagla();
-      document.dispatchEvent(new CustomEvent("ayar-sec", { detail: key }));
+      if (isle) isle();
+      else document.dispatchEvent(new CustomEvent("ayar-sec", { detail: key }));
     };
     return row;
   }
@@ -224,7 +228,7 @@ if (cari && cari.docId) {
   // 2) Musiqi: musiqi və klip səsləri
   kart.appendChild(sliderSatiri(IK_MUSIQI, "Musiqi", "__musiqiSeviyyesi", window.__musiqiSeviyyesi, "musiqi"));
   // 3) Bloklanmış oyunçular
-  kart.appendChild(dokunSatiri(IK_BLOK, "Bloklanmış oyunçular", "bloklanmis"));
+  kart.appendChild(dokunSatiri(IK_BLOK, "Bloklanmış oyunçular", "bloklanmis", blokAc));
   // 4) Adminə mesaj yaz
   kart.appendChild(dokunSatiri(IK_ADMIN, "Adminə mesaj yaz", "admin-mesaj"));
 
@@ -237,6 +241,128 @@ if (cari && cari.docId) {
   ayarBtn.onclick = (e) => { e.stopPropagation(); ac(); };
   baglaBtn.onclick = bagla;
   overlay.addEventListener("click", (e) => { if (e.target === overlay) bagla(); });
+
+  // ===== Bloklanmış oyunçular pəncərəsi: blok siyahısı, şəkil və ad real vaxtla yenilənir =====
+  function blokAc() {
+    if (!cari || !cari.docId) return;
+    const MEN = cari.docId;
+    const NOFOTO = "images/avatar/nophoto.svg";
+    const abunelik = [];          // bütün dinləyicilərin söndürmə funksiyaları
+    const satirlar = new Map();   // uid -> { el, un }
+
+    const ov = document.createElement("div");
+    ov.style.cssText =
+      "position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.45);display:flex;align-items:center;" +
+      "justify-content:center;font-family:Roboto,Arial,sans-serif;";
+
+    const kt = document.createElement("div");
+    kt.style.cssText =
+      "position:relative;width:91.7vw;max-height:80vh;box-sizing:border-box;background:#fff;border-radius:6vw;" +
+      "padding:4.5vw 4.2vw 3.5vw;box-shadow:0 1vw 5vw rgba(0,0,0,.3);display:flex;flex-direction:column;";
+
+    // Başlıq: ikon + ad + sağda X
+    const bas = document.createElement("div");
+    bas.style.cssText = "display:flex;align-items:center;justify-content:space-between;";
+    const sol = document.createElement("div");
+    sol.style.cssText = "display:flex;align-items:center;gap:2vw;";
+    const ik = document.createElement("span");
+    ik.style.cssText = "width:7.6vw;height:7.6vw;flex:none;display:flex;";
+    ik.innerHTML = IK_BLOK;
+    const bd = document.createElement("span");
+    bd.textContent = "Bloklanmış oyunçular";
+    bd.style.cssText = "font-size:6.6vw;font-weight:700;color:#111;";
+    sol.append(ik, bd);
+    const x = document.createElement("button");
+    x.type = "button";
+    x.style.cssText = "width:10vw;height:10vw;border:0;background:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;";
+    x.innerHTML =
+      '<svg viewBox="0 0 24 24" width="80%" height="80%" fill="none" stroke="#777" stroke-width="1.6" stroke-linecap="round">' +
+      '<line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>';
+    bas.append(sol, x);
+
+    const izah = document.createElement("div");
+    izah.textContent =
+      "Blokladığın oyunçu ilə bir-birinizin mesajlarını, masadakı şəklini və \"Masanı dəyiş\" lentində bir-birinizi görmürsünüz. " +
+      "Bloklamaq üçün oyunçunun profilində \"!\" düyməsinə bas.";
+    izah.style.cssText = "margin-top:2.4vw;font-size:4.3vw;line-height:1.45;color:#777;";
+
+    const siyahi = document.createElement("div");
+    siyahi.style.cssText = "margin-top:4.5vw;overflow-y:auto;min-height:0;";
+
+    const bos = document.createElement("div");
+    bos.textContent = "Bloklanmış oyunçu yoxdur";
+    bos.style.cssText = "text-align:center;color:#aaa;font-size:4.4vw;padding:6vw 0;";
+    siyahi.appendChild(bos);
+
+    kt.append(bas, izah, siyahi);
+    ov.appendChild(kt);
+    document.body.appendChild(ov);
+
+    function bosYoxla() { bos.style.display = satirlar.size ? "none" : "block"; }
+
+    function satirYarat(uid) {
+      const el = document.createElement("div");
+      el.style.cssText = "display:flex;align-items:center;gap:4vw;padding:2.4vw 0;border-bottom:.3vw solid #ececec;";
+      const av = document.createElement("div");
+      av.style.cssText =
+        "width:15vw;height:15vw;border-radius:50%;flex:none;background:#dfe9f1 center/cover no-repeat;" +
+        "background-image:url(\"" + NOFOTO + "\");";
+      const ad = document.createElement("div");
+      ad.style.cssText =
+        "flex:1;min-width:0;font:italic 400 5.6vw/1.2 Georgia,'Times New Roman',serif;color:#222;" +
+        "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
+      ad.textContent = "...";
+      const dg = document.createElement("button");
+      dg.type = "button";
+      dg.textContent = "Blokdan çıxar";
+      dg.style.cssText =
+        "flex:none;border:0;background:#9acd32;color:#fff;font:700 5vw/1 Roboto,Arial,sans-serif;" +
+        "padding:3vw 4.4vw;border-radius:4.4vw;cursor:pointer;";
+      dg.onclick = () => {
+        dg.disabled = true;
+        dg.style.opacity = ".6";
+        remove(ref(rtdb, "blok/" + MEN + "/" + uid)).catch(() => {
+          dg.disabled = false;
+          dg.style.opacity = "";
+        });
+      };
+      el.append(av, ad, dg);
+
+      // oyunçunun real ad və şəkli (dəyişəndə dərhal yenilənir)
+      const un = onSnapshot(doc(fsdb, "users", uid), (s) => {
+        const d = s.data() || {};
+        ad.textContent = d.username || "Oyunçu";
+        const a = d.avatar ? String(d.avatar).replace(/"/g, "%22") : NOFOTO;
+        av.style.backgroundImage = 'url("' + a + '")';
+      }, () => {});
+      return { el, un };
+    }
+
+    // blok siyahısı real vaxtla: əlavə olunan çıxır, silinən yox olur
+    abunelik.push(onValue(ref(rtdb, "blok/" + MEN), (s) => {
+      const v = s.val() || {};
+      const idler = Object.keys(v).filter((k) => v[k]);
+      satirlar.forEach((r, uid) => {
+        if (!idler.includes(uid)) { r.un(); r.el.remove(); satirlar.delete(uid); }
+      });
+      idler.forEach((uid) => {
+        if (satirlar.has(uid)) return;
+        const r = satirYarat(uid);
+        satirlar.set(uid, r);
+        siyahi.appendChild(r.el);
+      });
+      bosYoxla();
+    }));
+
+    function bagla() {
+      abunelik.forEach((f) => { try { f(); } catch (e) {} });
+      satirlar.forEach((r) => { try { r.un(); } catch (e) {} });
+      satirlar.clear();
+      ov.remove();
+    }
+    x.onclick = bagla;
+    ov.addEventListener("click", (e) => { if (e.target === ov) bagla(); });
+  }
 })();
 // ===== Ramka düyməsi (# yerinə) =====
 (function ramkaQur() {
