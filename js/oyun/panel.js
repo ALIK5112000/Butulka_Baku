@@ -8,6 +8,127 @@ import "./reytinq.js";
 import "./butulka.js";
 
 const cari = cariOyuncu();
+
+/* ===== SƏS İDARƏSİ (yalnız bu oyunçunun cihazında işləyir, başqalarına təsir etmir) =====
+   "Səslər" slideri: chat, hədiyyə və digər oyun səsləri.
+   "Musiqi" slideri: klip və mahnı səsləri (video elementləri, adında klip/mahni/musiqi olan audio, YouTube pleyeri).
+   Bütün <audio>/<video> elementlərinin səsi (volume) bu iki slayderə görə avtomatik azaldılır/artırılır,
+   başqa fayllarda dəyişiklik lazım deyil. Slayder 100 = kodun qoyduğu orijinal səs, 0 = səssiz. */
+(function sesIdaresi() {
+  if (window.__sesIdare) return;
+  window.__sesIdare = true;
+
+  const oxuS = (acar, ilk) => {
+    try { const v = localStorage.getItem(acar); return v === null ? ilk : Number(v); } catch (e) { return ilk; }
+  };
+  if (typeof window.__sesSeviyyesi !== "number") window.__sesSeviyyesi = oxuS("sesSeviyyesi", 100);
+  if (typeof window.__musiqiSeviyyesi !== "number") window.__musiqiSeviyyesi = oxuS("musiqiSeviyyesi", 100);
+
+  // 0..1 arası vurma əmsalı
+  const faktor = (tip) => {
+    let v = Number(tip === "musiqi" ? window.__musiqiSeviyyesi : window.__sesSeviyyesi);
+    if (!isFinite(v)) v = 100;
+    return Math.max(0, Math.min(1, v / 100));
+  };
+
+  // Element musiqidirmi (klip/mahnı), yoxsa adi səsdir (chat, hədiyyə)
+  const tipTap = (el) => {
+    if (el.dataset && el.dataset.ses) return el.dataset.ses === "musiqi" ? "musiqi" : "ses";
+    if (el.tagName === "VIDEO") return "musiqi";
+    const s = String(el.currentSrc || el.src || "").toLowerCase();
+    if (/klip|mahni|musiq|music|song|youtube|googlevideo/.test(s)) return "musiqi";
+    return "ses";
+  };
+
+  const vd = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, "volume");
+  const izlenen = new Set();
+
+  function budama() {
+    if (izlenen.size < 200) return;
+    izlenen.forEach((el) => { if (!el.isConnected && el.paused) izlenen.delete(el); });
+  }
+
+  function tetbiq(el) {
+    if (!vd || !vd.get || !vd.set) return;
+    if (el.__bv === undefined) el.__bv = vd.get.call(el);          // kodun qoyduğu orijinal səs
+    const son = Math.max(0, Math.min(1, el.__bv * faktor(tipTap(el))));
+    try { vd.set.call(el, son); } catch (e) {}
+  }
+
+  if (vd && vd.get && vd.set) {
+    // Kod audio.volume = X yazanda X yadda qalır, real səs slayderə vurulub qoyulur
+    Object.defineProperty(HTMLMediaElement.prototype, "volume", {
+      configurable: true,
+      enumerable: vd.enumerable,
+      get() { return this.__bv === undefined ? vd.get.call(this) : this.__bv; },
+      set(v) {
+        const n = Number(v);
+        this.__bv = isFinite(n) ? Math.max(0, Math.min(1, n)) : 1;
+        izlenen.add(this);
+        tetbiq(this);
+      }
+    });
+
+    // Hər play() zamanı cari slayder səviyyəsi tətbiq olunur
+    const op = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      budama();
+      izlenen.add(this);
+      tetbiq(this);
+      return op.apply(this, arguments);
+    };
+
+    // play() çağırılmadan (autoplay) başlayanlar üçün
+    document.addEventListener("play", (e) => {
+      if (e.target instanceof HTMLMediaElement) { izlenen.add(e.target); tetbiq(e.target); }
+    }, true);
+  }
+
+  // Web Audio ilə çalınan səslər (adi səs sayılır): ümumi səs düyməsi
+  const wactx = new Set();
+  try {
+    const BC = window.BaseAudioContext || window.AudioContext || window.webkitAudioContext;
+    const dd = BC && Object.getOwnPropertyDescriptor(BC.prototype, "destination");
+    if (dd && dd.get) {
+      Object.defineProperty(BC.prototype, "destination", {
+        configurable: true,
+        enumerable: dd.enumerable,
+        get() {
+          if (!this.__sesG) {
+            const real = dd.get.call(this);
+            const g = this.createGain();
+            g.gain.value = faktor("ses");
+            g.connect(real);
+            this.__sesG = g;
+            wactx.add(this);
+          }
+          return this.__sesG;
+        }
+      });
+    }
+  } catch (e) {}
+
+  // YouTube klipləri (enablejsapi=1 olan iframe-lər üçün)
+  function ytSes() {
+    const v = Math.round(faktor("musiqi") * 100);
+    document.querySelectorAll('iframe[src*="youtube"]').forEach((f) => {
+      try { f.contentWindow.postMessage(JSON.stringify({ event: "command", func: "setVolume", args: [v] }), "*"); } catch (e) {}
+    });
+  }
+
+  function hamisiniYenile() {
+    document.querySelectorAll("audio,video").forEach((el) => { izlenen.add(el); tetbiq(el); });
+    izlenen.forEach((el) => tetbiq(el));
+    wactx.forEach((c) => { try { if (c.__sesG) c.__sesG.gain.value = faktor("ses"); } catch (e) {} });
+    ytSes();
+  }
+
+  // Slayder dəyişəndə (ayarQur "ses-deyisdi" göndərir) hər şey dərhal yenilənir
+  document.addEventListener("ses-deyisdi", hamisiniYenile);
+  // Yeni yaranan elementlər və iframe-lər üçün arabir yoxlama
+  setInterval(hamisiniYenile, 3000);
+})();
+
 document.getElementById("masaNo").textContent = MASA_NOMRESI;
 document.getElementById("cixisBtn").onclick = () => { location.href = "profil.html"; };
 
@@ -123,12 +244,12 @@ if (cari && cari.docId) {
     '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/>' +
     '<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
 
-  // Səs səviyyələri (yadda qalır)
+  // Səs səviyyələri (yadda qalır; hər oyunçunun öz cihazında)
   function oxu(acar, ilk) {
     try { const v = localStorage.getItem(acar); return v === null ? ilk : Number(v); } catch (e) { return ilk; }
   }
-  window.__sesSeviyyesi = oxu("sesSeviyyesi", 100);       // chat + hədiyyə səsləri (0-100)
-  window.__musiqiSeviyyesi = oxu("musiqiSeviyyesi", 0);   // musiqi + klip səsləri (0-100)
+  window.__sesSeviyyesi = oxu("sesSeviyyesi", 100);        // chat + hədiyyə səsləri (0-100)
+  window.__musiqiSeviyyesi = oxu("musiqiSeviyyesi", 100);  // musiqi + klip səsləri (0-100)
 
   // Slider üçün stil
   if (!document.getElementById("ayarStil")) {
@@ -204,6 +325,7 @@ if (cari && cari.docId) {
       const v = Number(inp.value);
       window[acar] = v;
       try { localStorage.setItem(acar === "__sesSeviyyesi" ? "sesSeviyyesi" : "musiqiSeviyyesi", String(v)); } catch (e) {}
+      // sesIdaresi bu hadisəni dinləyir və səsləri dərhal yeniləyir
       document.dispatchEvent(new CustomEvent("ses-deyisdi", { detail: { tip: hadise, deyer: v } }));
     });
     return row;
@@ -241,6 +363,9 @@ if (cari && cari.docId) {
   ayarBtn.onclick = (e) => { e.stopPropagation(); ac(); };
   baglaBtn.onclick = bagla;
   overlay.addEventListener("click", (e) => { if (e.target === overlay) bagla(); });
+
+  // Səhifə açılan kimi yadda qalan səviyyələr tətbiq olunur
+  document.dispatchEvent(new CustomEvent("ses-deyisdi", { detail: { tip: "hamisi", deyer: null } }));
 
   // ===== Bloklanmış oyunçular pəncərəsi: blok siyahısı, şəkil və ad real vaxtla yenilənir =====
   function blokAc() {
