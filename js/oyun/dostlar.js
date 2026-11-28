@@ -177,7 +177,8 @@ export function dostBolmesi(box, gir, IK_O, IK_Q) {
     }
     const pre = preKesh;
     const hamisi = new Set([...dostIds, ...Object.keys(tanisKesh).filter((k) => Date.now() - tanisKesh[k] < HEFTE)]);
-    const siya = [...hamisi].filter((u) => u !== cari.docId && pre[u] && prezansTaze(pre[u]));   // köhnə qalmış yazılar sayılmır
+    // bloklanmış oyunçular siyahıda görünmür (profil-kart.js window.blokluMu verir)
+    const siya = [...hamisi].filter((u) => u !== cari.docId && pre[u] && prezansTaze(pre[u]) && !(window.blokluMu && window.blokluMu(u)));   // köhnə qalmış yazılar sayılmır
     if (!siya.length) {
       [...satir.keys()].forEach(sil);
       box.innerHTML = '<div class="bos">Hazırda oyunda dost və ya tanış yoxdur</div>';
@@ -196,10 +197,14 @@ export function dostBolmesi(box, gir, IK_O, IK_Q) {
     if (hedef.some((e, i) => box.children[i] !== e)) hedef.forEach((e) => box.appendChild(e));   // yalnız sıra dəyişibsə
   }
 
+  // blok siyahısı dəyişəndə siyahı dərhal yenilənir
+  const blokDinle = () => ciz();
+  document.addEventListener("blok-deyisdi", blokDinle);
+
   ciz();                                                            // telefondakı yaddaşla dərhal çək
   dostYukle().then(ciz);
   subs.push(onValue(ref(rtdb, "tanis/" + cari.docId), (s) => { tanisKesh = s.val() || {}; lsYaz(K_TANIS, tanisKesh); ciz(); }));
   subs.push(onValue(ref(rtdb, "prezans"), (s) => { preKesh = s.val() || {}; ciz(); }));
   const saat = setInterval(ciz, 15000);                             // heç nə dəyişməsə də köhnə qalanları təmizləsin
-  return () => { olu = true; clearInterval(saat); subs.forEach((f) => f()); satir.forEach((s) => s.say && s.say()); satir.clear(); };
+  return () => { olu = true; clearInterval(saat); document.removeEventListener("blok-deyisdi", blokDinle); subs.forEach((f) => f()); satir.forEach((s) => s.say && s.say()); satir.clear(); };
 }
