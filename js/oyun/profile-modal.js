@@ -2,7 +2,7 @@ import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, onSnapshot, updateDoc, runTransaction, collection, query, where, getCountFromServer, getDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { ref, onValue, push, serverTimestamp, set, remove } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, onValue, onChildAdded, push, serverTimestamp, set, remove } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { topMu, topDeyis, TOP_RENG } from "./top-oyuncular.js";
 
 /* ================= DONMA VAXTI YOXLAMA VƏ BƏRPA ================= */
@@ -351,6 +351,7 @@ async function meftunOl(hedef) {
     yaz(hedef, "meftunOdenis", q);
     yaz(hedef, "meftunQiymet", q + 1);
     info.metn = "💘 " + (m.username || "Oyunçu") + ", " + (h.username || "Oyunçu") + " adlı oyunçuya məftun oldu (" + q + " ❤️)";
+    info.tip = "ol"; info.hedef = hedef; info.q = q; info.ad = m.username || "Oyunçu"; info.avatar = m.avatar || "";
   });
   return info;
 }
@@ -372,13 +373,21 @@ async function terkEt() {
     yaz(MEN, "meftunUid", null);
     yaz(MEN, "meftunOdenis", 0);
     info.metn = "💔 " + (o.username || "Oyunçu") + ", məftunu " + prevAd + " adlı oyunçunu tərk etdi (" + q + " ❤️)";
+    info.tip = "terk"; info.hedef = prev; info.q = q; info.ad = o.username || "Oyunçu"; info.avatar = o.avatar || "";
   });
   return info;
 }
 
 function chatYaz(info) {
   if (!info || !info.metn || !MEN) return;
-  push(ref(rtdb, "masalar/" + MASA_NOMRESI + "/chat"), { isMeftunNotice: true, uid: MEN, metn: info.metn, vaxt: serverTimestamp() }).catch(() => {});
+  // Yeni format: tip ("ol" / "terk"), hedef (o biri oyunçunun ID-si) və q (ürək sayı) da yazılır; çat bunu şəkil + qıfıl sətri kimi çəkir
+  const mesaj = { isMeftunNotice: true, uid: MEN, metn: info.metn, vaxt: serverTimestamp() };
+  if (info.tip && info.hedef) { mesaj.tip = info.tip; mesaj.hedef = info.hedef; mesaj.q = Number(info.q) || 0; }
+  push(ref(rtdb, "masalar/" + MASA_NOMRESI + "/chat"), mesaj).catch(() => {});
+  // Hədəf oyunçuya "Cəlb etmək" pəncərəsi üçün bildiriş (aşağıdakı MƏFTUN PƏNCƏRƏSİ hissəsi oxuyur)
+  if (info.tip && info.hedef && info.hedef !== MEN) {
+    push(ref(rtdb, "bildirisler/" + info.hedef), { tip: info.tip, kimden: MEN, ad: info.ad || "Oyunçu", avatar: info.avatar || "", q: Number(info.q) || 0, vaxt: serverTimestamp() }).catch(() => {});
+  }
 }
 
 /* ================= SIRA (real vaxt) ================= */
@@ -1104,4 +1113,75 @@ ov.addEventListener("click", e => { if (e.target === ov) geri(); });
 window.TepikPencere = T;
 T.ac = ac;
 T.bagla = bagla;
+})();
+
+
+/* ================= MƏFTUN PƏNCƏRƏSİ (Cəlb etmək) =================
+   Kimsə sənə məftun olanda ("valeh etməyə başladı") və ya səni tərk edəndə bildiriş
+   bildirisler/{mənim ID-m} yoluna yazılır (chatYaz). Bu hissə onu oxuyub "Cəlb etmək" pəncərəsini göstərir.
+   Oxunan bildiriş dərhal silinir, ona görə pəncərə yalnız bir dəfə çıxır.
+   Oyunçu o an oyunda deyilsə, növbəti dəfə oyuna girəndə pəncərə çıxır. "Oldu" yalnız pəncərəni bağlayır. */
+(function () {
+if (!MEN) return;
+
+const CSS = `
+.mf-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:2147482900;font-family:Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+.mf-ov.open{display:flex}
+.mf-card{position:relative;width:80vw;background:#fff;border-radius:4.4vw;box-shadow:0 1vw 4vw rgba(0,0,0,.35);padding-bottom:3.9vw;animation:mfin .25s ease}
+@keyframes mfin{from{transform:translateY(5vw);opacity:0}}
+.mf-head{height:11.4vw;display:flex;align-items:center;justify-content:center}
+.mf-head h3{margin:0;font:700 3.2vw/1 Roboto,Arial,sans-serif;color:#b9b9b9}
+.mf-body{display:flex;align-items:flex-start;padding:0 4.6vw 0 3.9vw}
+.mf-pw{width:17.6vw;flex:none}
+.mf-ph{display:block;width:17.6vw;height:17.6vw;border-radius:2.8vw;object-fit:cover;background:#dfe9f1}
+.mf-pn{margin-top:1.4vw;width:17.6vw;text-align:center;font:400 3vw/3.6vw Roboto,Arial,sans-serif;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mf-tx{flex:1;min-width:0;margin:0 0 0 2.8vw;font:400 3.7vw/5.2vw Roboto,Arial,sans-serif;color:#111;word-break:break-word}
+.mf-tx img{display:inline-block;width:4.6vw;height:auto;vertical-align:middle;margin:0 .8vw 0 .6vw}
+.mf-tx b{font-weight:700;font-size:3.9vw;vertical-align:middle}
+.mf-ok{display:block;width:20.8vw;height:7.8vw;margin:4vw auto 0;border:0;border-radius:2vw;background:#8cc63f;color:#fff;padding:0;font:400 3.7vw/1 Roboto,Arial,sans-serif}
+`;
+const st = document.createElement("style");
+st.textContent = CSS;
+document.head.appendChild(st);
+
+const ov = document.createElement("div");
+ov.className = "mf-ov";
+document.body.appendChild(ov);
+
+const MATN = { ol: "səni valeh etməyə başladı istəyir", terk: "səni tərk etdi istəyir" };
+let novbe = [], acikdir = false;
+
+function goster() {
+  if (acikdir) return;
+  const n = novbe.shift();
+  if (!n) return;
+  acikdir = true;
+  const ad = esc(n.ad || "Oyunçu");
+  ov.innerHTML =
+    '<div class="mf-card">' +
+      '<div class="mf-head"><h3>Cəlb etmək</h3></div>' +
+      '<div class="mf-body">' +
+        '<div class="mf-pw"><img class="mf-ph" src="' + esc(n.avatar || NOPHOTO) + '" alt="" onerror="' + onerr + '"><div class="mf-pn">' + ad + "</div></div>" +
+        '<p class="mf-tx">' + ad + " " + esc(MATN[n.tip]) + ' <img src="images/profil/tek_urek.png" alt=""><b>' + (Number(n.q) || 0) + "</b></p>" +
+      "</div>" +
+      '<button class="mf-ok">Oldu</button>' +
+    "</div>";
+  ov.querySelector(".mf-ok").onclick = () => {
+    ov.classList.remove("open");
+    ov.innerHTML = "";
+    acikdir = false;
+    goster();
+  };
+  ov.classList.add("open");
+}
+
+onChildAdded(ref(rtdb, "bildirisler/" + MEN), s => {
+  const m = s.val();
+  remove(s.ref).catch(() => {});
+  if (!m || !MATN[m.tip]) return;
+  if (m.vaxt && Date.now() - Number(m.vaxt) > 7 * 24 * 3600 * 1000) return;
+  novbe.push(m);
+  if (novbe.length > 5) novbe.shift();
+  goster();
+}, () => {});
 })();
