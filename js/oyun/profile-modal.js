@@ -143,7 +143,7 @@ const CSS = `
 .pf-full img{max-width:100%;max-height:100%}
 .pf-toast{position:fixed;left:50%;bottom:24vw;transform:translateX(-50%);max-width:80vw;text-align:center;z-index:20000;background:rgba(35,35,35,.92);color:#fff;font:500 3.5vw/1.3 Roboto,Arial,sans-serif;padding:2.6vw 4.6vw;border-radius:3vw}
 .pf-ov.pf-bekle .pf-card{visibility:hidden}
-/* oyunçu masada deyilsə: təpik, musiqi və məktub düymələri solğun, basılmır */
+/* oyunçu masada deyilsə: təpik, hədiyyə və məktub düymələri solğun, basılmır */
 .pf-solgun{pointer-events:none;cursor:default}
 .pf-act .pf-btn:first-child.pf-solgun,
 .pf-kick.pf-solgun{filter:grayscale(1) brightness(1.35) !important;opacity:.9}
@@ -180,6 +180,8 @@ const IC = {
   zoom: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M20 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/></svg>',
   qalxan: '<svg viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.400 8.600-8 10-4.600-1.400-8-5-8-10v-6z"/><path d="M12 8l1.300 2.700 3 .4-2.200 2.100.5 3-2.600-1.400-2.600 1.400.5-3-2.200-2.100 3-.4z"/></svg>',
   musiqi: '<svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
+  /* hədiyyə ikonu: ekran görüntüsündən kəsilmiş şəkil (images/profil/hediyye_icon.png), ağ xətlər şəffaf fonda */
+  hediyye: '<img src="images/profil/hediyye_icon.png" alt="" style="width:7.4vw;height:auto;display:block;pointer-events:none">',
   tesdiq: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7.500 12.500l3 3 6-6.500"/></svg>',
   mail: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
   bosAva: '<svg viewBox="0 0 100 100" style="width:100%;height:100%;display:block"><rect width="100" height="100" fill="#dfe9f1"/><g fill="none" stroke="#b9c7d3" stroke-width="3" stroke-dasharray="5 4"><ellipse cx="50" cy="38" rx="14" ry="17"/><path d="M18 96c0-20 14-30 32-30s32 10 32 30"/></g></svg>'
@@ -477,6 +479,7 @@ const sekilIsit = u => { if (u) { try { const im = new Image(); im.src = u; } ca
   "images/profil/smaylik.png",
   "images/profil/tek_urek.png",
   "images/profil/cut_urek.png",
+  "images/profil/hediyye_icon.png",
   "images/profil/vip.png",
   TOP_LENT,
   NOPHOTO
@@ -534,7 +537,7 @@ ov.addEventListener("click", e => { if (e.target === ov) bagla(); });
 /* Oyunçu hazırda bu masada oturubmu? */
 const masadaMi = uid => !!uid && Object.values(oturacaqlar).some(o => o && o.uid === uid);
 
-/* Masada olmayan oyunçunun kartında məktub, musiqi və təpik düymələri solğun olur və basılmır */
+/* Masada olmayan oyunçunun kartında məktub, hədiyyə və təpik düymələri solğun olur və basılmır */
 function duymeHal() {
   if (!ownerUid) return;
   const var_ = masadaMi(ownerUid);
@@ -557,13 +560,24 @@ function duymeHal() {
 /* düymə kart açıldıqdan sonra əlavə oluna bilər: açıq kartda vəziyyət tez-tez yoxlanır */
 setInterval(() => { if (ov.classList.contains("open")) { duymeHal(); siraSync(); } }, 300);
 
-/* Musiqi düyməsi: kart bağlanır, "Musiqi qoy" paneli (klip + mahnı) həmin oyunçu adına açılır */
+/* Musiqi düyməsi: kart bağlanır, "Musiqi qoy" paneli (klip + mahnı) həmin oyunçu adına açılır.
+   (Kartda artıq düyməsi yoxdur, funksiya saxlanılıb) */
 function musiqiAc() {
   const uid = ownerUid;
   if (!uid || !masadaMi(uid)) return;
   bagla();
   if (window.SmaylPanel) window.SmaylPanel.bagla();
   if (window.HediyyePanel && typeof window.HediyyePanel.acMusiqi === "function") window.HediyyePanel.acMusiqi(uid);
+}
+
+/* Hədiyyə düyməsi: kart bağlanır, hədiyyə paneli həmin oyunçu adına açılır.
+   Oyunçu masada deyilsə düymə solğundur və heç nə açılmır */
+function hediyyeAc() {
+  const uid = ownerUid;
+  if (!uid || uid === MEN || !masadaMi(uid)) return;
+  bagla();
+  if (window.SmaylPanel) window.SmaylPanel.bagla();
+  if (window.HediyyePanel) window.HediyyePanel.ac(uid);
 }
 
 function mesajYaz() {
@@ -600,7 +614,7 @@ function qur() {
       '<div class="pf-act">' +
         '<button class="pf-btn pf-kick" style="background:#ec5440">' + IC.qalxan + "</button>" +
         '<button class="pf-btn t" style="background:#ef8c0b">Buto</button>' +
-        '<button class="pf-btn pf-mus" style="background:#ab5a98">' + IC.musiqi + "</button>" +
+        '<button class="pf-btn pf-mus pf-hed" style="background:#e67c3e" aria-label="Hədiyyə">' + IC.hediyye + "</button>" +
         '<button class="pf-btn" style="background:#f9a23a">' + IC.tesdiq + "</button>" +
         '<button class="pf-btn pf-mail" style="background:#4fa9de">' + IC.mail + "</button>" +
       "</div></div></div>" +
@@ -608,7 +622,7 @@ function qur() {
   gurulu = true; sig = {};
   ov.querySelector(".pf-close").onclick = bagla;
   ov.querySelector(".pf-mail").onclick = mesajYaz;
-  ov.querySelector(".pf-mus").onclick = musiqiAc;
+  ov.querySelector(".pf-mus").onclick = hediyyeAc;
   ov.querySelector(".pf-dv span").onclick = () => { acik = !acik; if (sonD) ciz(sonD); };
 }
 
@@ -638,6 +652,9 @@ function ciz(d) {
   const menimdir = ownerUid === MEN;
   const mailBtn = ov.querySelector(".pf-mail");
   if (mailBtn) mailBtn.style.visibility = menimdir ? "hidden" : "visible";
+  /* öz kartımda hədiyyə düyməsi görünmür (özünə hədiyyə göndərilmir) */
+  const hedBtn = ov.querySelector(".pf-hed");
+  if (hedBtn) hedBtn.style.visibility = menimdir ? "hidden" : "visible";
   duymeHal();
 
   const sTop = [sekil, ad, yas, yer, vipMi(d)].join("|");
