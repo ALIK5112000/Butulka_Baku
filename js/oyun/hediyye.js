@@ -31,7 +31,11 @@ import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js"
      kokteyl→kokteyl (əvvəlki kimi), soska→kokteyl, kokteyl→soska, soska→soska (ZONA_GONDER_SOLMA ayarı).
      Uçuş yolu (x və y ayrı-ayrı əyrilərlə), uçuş ölçüsü və düşmədən sonrakı ölçü videodan kadr-kadr (şablon uyğunlaşdırması ilə)
      ölçülüb (SOSKA_* ayarları), səslər videodan kəsilib (sesler/soska.mp3, soska_dusme.mp3).
-   - YER (ZONA) qaydası: tac ("bas"), kokteyl+soska ("yan") və şəklin üstünə düşənlər ("yuz") bir-birini silmir;
+   - RASTA PAPAĞI ("rasta", rastaman papağı): qiyməti 2 ürək. Tac və kovboy papağı ilə EYNİ zonada ("bas") durur, şəklin sol-yuxarı
+     küncünə oturur. Uçuş yolu, fırlanma, uçuş və düşmə ölçüsü, düşdüyü yer, səslər və digər hədiyyə atılanda solması videodan
+     kadr-kadr ölçülüb (RASTA_* ayarları). Digər hədiyyə (eyni zonadan) GÖNDƏRİLƏN anda rasta papağı 1.95 san ərzində xətti solur
+     (gonderSolma). Səslər: sesler/rasta.mp3 (göndərmə), sesler/rasta_dusme.mp3 (düşmə). Şəkil: images/hediyye/rasta.png.
+   - YER (ZONA) qaydası: tac və papaqlar ("bas"), kokteyl+soska ("yan") və şəklin üstünə düşənlər ("yuz") bir-birini silmir;
      yalnız eyni zonadakı başqa növ hədiyyə köhnəni solub silir.
    - Topaz, çiyələk, öpüş və pomidor çoxlu atılanda hamısı şəkildə qalır, ən köhnədən başlayaraq sıra ilə tədricən solur,
      SON atılan qalır. Başqa növ hədiyyə düşəndə köhnə növ bir-bir solur, yeni növ qalır. */
@@ -43,14 +47,16 @@ const SEKIL_PAPKA = "images/hediyye/";
 const KOKTEL_ALAN_BONUS = 1;
 /* YER (ZONA) QAYDASI: hədiyyələr yalnız EYNİ yerə düşən başqa növ hədiyyə ilə bir-birini solub silir.
    "yuz"   = şəklin üstünə düşənlər (öpüş, pomidor, çiyələk, topaz) – bir-birini əvəz edir.
-   "bas"   = başa qoyulan (tac, papaq) – yalnız başa qoyulan başqa hədiyyə tacı silir.
+   "bas"   = başa qoyulan (tac, kovboy papağı, rasta papağı) – yalnız başa qoyulan başqa hədiyyə köhnəni silir.
    "yan"   = şəklin sağ-aşağı yanı (kokteyl və soska) – bu yerə düşən başqa növ hədiyyə (kokteyl ↔ soska) köhnəni silir,
              eyni növ (kokteyl→kokteyl, soska→soska) də köhnəni əvəz edir.
    Yeni hədiyyə üçün zona yazılmasa, ona ayrıca yer verilir (heç kimi silmir, heç kim onu silmir). */
 const zonaDe = g => g.zona || g.qrup || g.id;
 /* GÖNDƏRMƏ ANINDA SOLMA: burada adı yazılan zonalarda köhnə hədiyyə, yeni hədiyyə DÜŞƏNDƏ yox, GÖNDƏRİLƏN anda solmağa başlayır
    (kokteyl belə solurdu, soska da eləcə solur). Başqa zonalar ("yuz", "bas") əvvəlki kimi yeni hədiyyənin düşmə anında solur;
-   onları da bu şəkildə solmaq istəsən zonanın adını bura yaz, məsələn { yan: true, yuz: true }. */
+   onları da bu şəkildə solmaq istəsən zonanın adını bura yaz, məsələn { yan: true, yuz: true }.
+   Bütöv zonanı dəyişmədən TƏK BİR hədiyyəni belə solmaq üçün hədiyyənin özünə gonderSolma: true yaz (rasta papağı belədir):
+   o hədiyyə başqa hədiyyə ilə əvəz olunanda, əvəz edən GÖNDƏRİLƏN anda solmağa başlayır. */
 const ZONA_GONDER_SOLMA = { yan: true };
 const SES_PAPKA = "sesler/";
 
@@ -131,6 +137,34 @@ const SOSKA_Y_EYRISI = [[0, 0], [.04, .151], [.056, .1994], [.074, .2354], [.173
 const SOSKA_OLCU_EYRISI = [[0, .99], [.044, 1.206], [.056, 1.238], [.068, 1.245], [.23, 1.24], [.67, 1.241], [.691, 1.226],
                            [.719, 1.178], [.751, 1.144], [.779, 1.104], [.849, 1.038], [.93, .995], [1, 1]];
 
+/* RASTA PAPAĞI (id "rasta", rastaman papağı): videodan (1080x2340, ~56 kadr/san) kadr-kadr ölçülüb. Hər kadrda papağın rəngli
+   zolaqları (yaşıl, sarı, qırmızı) rəng maskası ilə tapılıb: bundan papağın MƏRKƏZİ, GÖRÜNƏN SAHƏSİ (ölçü) və bucağı
+   (yaşıl zolaqdan qırmızı zolağa gedən xəttin istiqaməti) hesablanıb. Ölçülərin hamısı videodakı şəklin (foto) eninə (184 px) görədir.
+   - Uçuş 5.0 san. Başlanğıc nöqtə göndərənin şəklinin mərkəzi DEYİL: şəklin eninin 0.047 payı solda, hündürlüyünün 0.063 payı
+     aşağıdadır (RASTA_BASLA). Yerdəyişmə tacla EYNİ əyri üzrədir: irəliləmə = 1-(1-u)^2 (əvvəl sürətli, sonra yavaş-yavaş oturur).
+   - Fırlanma da eyni əyri üzrə gedir: papaq dik (yaşıl yuxarıda, qırmızı aşağıda) başlayır və 0°-dən -45.5°-ə qədər (RASTA_ACI) fırlanır.
+   - Ölçü (RASTA_OLCU_EYRISI), düşəndən sonrakı (son) ölçüyə nisbətdə: ~1.02×-dən başlayıb uçuşun ilk 5%-də 1.3×-ə qalxır,
+     uçuşun 67%-nə qədər 1.3× qalır, sonra yavaş-yavaş kiçilib uçuşun ~94%-də 1×-ə çatır və şəkildə o ölçüdə qalır.
+   - Düşdüyü yer: şəklin SOL-YUXARI küncü (tacla təxminən eyni yer). Papağın görünən hissəsinin mərkəzi şəklin eninin 0.027 payı
+     sağda, hündürlüyünün 0.027 payı aşağıdadır (RASTA_MX, RASTA_MY), -45.5° fırlanmış halda. Papağın görünən sahəsi şəklin eninin
+     kvadratının 0.1366 payıdır (RASTA_ALAN_PAYI). rasta.png-nin en/hündürlüyü və şəffaf kənarları nə olursa olsun, papaq videodakı qədər
+     görünsün deyə şəklin dolu piksellərinin sahəsi və mərkəzi kodla avtomatik ölçülür (rastaSerhedOlc), şrift ölçüsü ona görə seçilir.
+   - Kölgə kodla çəkilmir (hd-nosh): videoda kölgə şəklin özündədir.
+   - SOLMA: eyni zonadan ("bas": tac, kovboy papağı, başqa rasta) başqa hədiyyə GÖNDƏRİLƏN anda (düşməsini gözləmədən) rasta papağı
+     solmağa başlayır və RASTA_SOLMA = 1950 ms ərzində XƏTTİ (düz xətt üzrə) solub yox olur (videoda 9.27 → 11.2 san).
+   - Videodakı səs qeydi görüntüdən ~0.33 san gecikir: göndərmə səsi (rasta.mp3) uçuş başlayanda, düşmə səsi (rasta_dusme.mp3)
+     uçuşun RASTA_DUSME_SES = 98%-i keçəndə çalınır (videoda düşmə səsi papaq oturmazdan azca əvvəl gəlir). */
+const RASTA_ID = "rasta";
+const RASTA_ALAN_PAYI = 0.1366;
+const RASTA_MX = 0.027, RASTA_MY = 0.027;
+const RASTA_ACI = -45.5;
+const RASTA_BASLA = [-0.047, 0.063];
+const RASTA_SOLMA = 1950;
+const RASTA_DUSME_SES = 0.98;
+const RASTA_OLCU_EYRISI = [[0, 1.02], [.006, 1.047], [.015, 1.097], [.021, 1.169], [.03, 1.206], [.053, 1.297], [.673, 1.296],
+                           [.693, 1.259], [.713, 1.224], [.737, 1.195], [.76, 1.161], [.783, 1.131], [.807, 1.104], [.83, 1.078],
+                           [.853, 1.057], [.876, 1.039], [.899, 1.024], [.92, 1.014], [.943, 1.006], [1, 1]];
+
 const QAL_OMUR = 15000, QAL_SOLMA = 2500, QAL_ADDIM = 400;
 /* Başqa növ hədiyyə düşəndə şəkildəki köhnə növün hədiyyələri (məs. topaz atılanda pomidor) ən köhnədən başlayaraq
    bir-bir solur, YENİ atılan növ qalır. Solmaların başlanğıcı arasında CAPRAZ_ADDIM ms (çox olsa CAPRAZ_PENCERE-yə sıxılır). */
@@ -157,6 +191,10 @@ const SADE_HEDIYYELER = [
   /* papaq: tacla eyni yerə (zona "bas") oturur, qiyməti 2 ürək. Uçuş/düşmə sürəti, fırlanması və ölçüsü videodan ölçülüb (PAPAQ_*, papaqUcus).
      Şəkil: images/hediyye/papaq.png. Səs faylları: sesler/hat.mp3 (göndərmə) və sesler/hat_dusme.mp3 (düşmə). */
   { id: PAPAQ_ID, e: "🤠", img: SEKIL_PAPKA + "papaq.png", q: 2, k: "yeni", s: SES_PAPKA + "hat.mp3", sl: SES_PAPKA + "hat_dusme.mp3", ucusMs: 5000, papaqUcus: true, yapis: true, zona: "bas" },
+  /* rasta: rastaman papağı. Tac və kovboy papağı ilə eyni zonada ("bas"), şəklin sol-yuxarı küncünə oturur, qiyməti 2 ürək.
+     Uçuş yolu, fırlanma, ölçü, düşdüyü yer videodan ölçülüb (RASTA_*, rastaUcus). gonderSolma: digər hədiyyə GÖNDƏRİLƏN anda solmağa başlayır,
+     solMs ms ərzində xətti solur. Şəkil: images/hediyye/rasta.png. Səs faylları: sesler/rasta.mp3 (göndərmə) və sesler/rasta_dusme.mp3 (düşmə). */
+  { id: RASTA_ID, e: "🧢", img: SEKIL_PAPKA + "rasta.png", q: 2, k: "yeni", s: SES_PAPKA + "rasta.mp3", sl: SES_PAPKA + "rasta_dusme.mp3", ucusMs: 5000, rastaUcus: true, yapis: true, zona: "bas", gonderSolma: true, solMs: RASTA_SOLMA },
   /* g21 koktel: qiymət 2 (göndərəndən 2 bonus çıxır), alan oyunçuya hər kokteylə +1 bonus (bonus:1) düşəndə verilir.
      Zona "yan": soska ilə eyni yerə düşür, ona görə biri o birini solub silir. */
   { id: "g21", e: "🍸", img: SEKIL_PAPKA + "koktel.png",  q: 2, k: "yeni", s: SES_PAPKA + "cocktail.mp3", sl: SES_PAPKA + "cocktail_dusme.mp3", ucusMs: 5000, koktel: true, bonus: KOKTEL_ALAN_BONUS, solMs: 1950, zona: "yan" },
@@ -1167,10 +1205,59 @@ function koktelOlcusu(rw) {
   return { fs, dx: ((v.l + v.r) / 2 - 0.5) * fs * v.en, dy: ((v.t + v.b) / 2 - 0.5) * fs };
 }
 
-const olcu = (d, r) => d.i === "g21" ? koktelOlcusu(r.width).fs : r.width * (d.i === "g15" ? 0.38 : d.i === PAPAQ_ID ? PAPAQ_OLCU : d.i === SOSKA_ID ? SOSKA_OLCU : d.i === "g3" ? POMIDOR_OTUR_OLCU : 0.4);
+/* RASTA PAPAĞININ ÖLÇÜSÜ: rasta.png yüklənəndə dolu (şəffaf olmayan) piksellərin SAHƏSİ və MƏRKƏZİ ölçülür.
+   aem = dolu sahə (şəkil 1em hündürlükdə göstərildiyindən em² ilə), ox/oy = dolu hissənin mərkəzinin şəkil qutusunun mərkəzindən
+   sapması (em ilə). Şəkil yüklənənə qədər ehtiyat dəyərlər işləyir (aem 0.9, sapma 0). Beləcə rasta.png-nin en/hündürlüyü və
+   şəffaf kənarları nə olursa olsun, papaq videodakı qədər (RASTA_ALAN_PAYI) görünür və eyni nöqtəyə (RASTA_MX/MY) oturur. */
+const RASTA_OLCUM = { aem: 0.9, ox: 0, oy: 0 };
+(function rastaSerhedOlc() {
+  const g = HEDIYYELER.find(h => h.id === RASTA_ID);
+  if (!g || !g.img) return;
+  const im = new Image();
+  im.onload = () => {
+    try {
+      const w = im.naturalWidth, h = im.naturalHeight;
+      if (!w || !h) return;
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const cx = c.getContext("2d", { willReadFrequently: true });
+      cx.drawImage(im, 0, 0);
+      const d = cx.getImageData(0, 0, w, h).data;
+      let n = 0, sx = 0, sy = 0;
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          if (d[(y * w + x) * 4 + 3] > 128) { n++; sx += x + 0.5; sy += y + 0.5; }
+        }
+      }
+      if (!n) return;
+      RASTA_OLCUM.aem = n / (h * h);
+      RASTA_OLCUM.ox = (sx / n - w / 2) / h;
+      RASTA_OLCUM.oy = (sy / n - h / 2) / h;
+      dbg("rasta ölçüsü: aem=" + RASTA_OLCUM.aem.toFixed(3) + " ox=" + RASTA_OLCUM.ox.toFixed(3) + " oy=" + RASTA_OLCUM.oy.toFixed(3) + " / " + w + "x" + h);
+    } catch (e) { dbg("RASTA ÖLÇÜ XƏTASI: " + e.message); }
+  };
+  im.src = g.img;
+})();
+/* rw = şəklin (foto) eni. Qaytarır: papağın şrift ölçüsü (px): görünən sahə = RASTA_ALAN_PAYI × rw² */
+function rastaOlcusu(rw) {
+  return { fs: rw * Math.sqrt(RASTA_ALAN_PAYI / RASTA_OLCUM.aem) };
+}
+/* dolu hissənin mərkəzinin qutu mərkəzindən sapması (px): fs = şrift ölçüsü, aci = fırlanma (dərəcə), olc = ölçü əmsalı */
+function rastaSapma(fs, aci, olc) {
+  const a = aci * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+  const ox = RASTA_OLCUM.ox * fs, oy = RASTA_OLCUM.oy * fs;
+  return [(ox * c - oy * s) * olc, (ox * s + oy * c) * olc];
+}
+
+const olcu = (d, r) => d.i === "g21" ? koktelOlcusu(r.width).fs : d.i === RASTA_ID ? rastaOlcusu(r.width).fs : r.width * (d.i === "g15" ? 0.38 : d.i === PAPAQ_ID ? PAPAQ_OLCU : d.i === SOSKA_ID ? SOSKA_OLCU : d.i === "g3" ? POMIDOR_OTUR_OLCU : 0.4);
 function noqte(d, r) {
   /* tac və papaq şəklin EYNİ nöqtəsinə, eyni bucaqla oturur */
   if (d.i === "g15" || d.i === PAPAQ_ID) return [r.left + r.width * 0.022, r.top + r.height * 0.022, -44];
+  if (d.i === RASTA_ID) {
+    /* rasta papağı: görünən hissənin mərkəzi (RASTA_MX, RASTA_MY) nöqtəsinə düşsün deyə qutunun mərkəzi sapma qədər sürüşdürülür */
+    const sp = rastaSapma(rastaOlcusu(r.width).fs, RASTA_ACI, 1);
+    return [r.left + r.width * RASTA_MX - sp[0], r.top + r.height * RASTA_MY - sp[1], RASTA_ACI];
+  }
   if (d.i === "g21") {
     const k = koktelOlcusu(r.width);
     return [r.left + r.width * KOKTEL_REF.MX - k.dx, r.top + r.height * KOKTEL_REF.MY - k.dy, 0];
@@ -1325,6 +1412,42 @@ function ucurPapaq(g, x, to, pa, b, p) {
     },
     () => {
       sesCal(g.sl);
+      ogelen.add(x.n + "|" + to);
+      yigimCiz();
+      d.remove();
+    });
+}
+
+/* RASTA PAPAĞI uçuşu: videodakı kimi. pa = başlanğıc nöqtə (göndərənin şəklinin mərkəzindən RASTA_BASLA qədər kənarda, oynaBir-də hesablanır).
+   Papağın GÖRÜNƏN hissəsinin mərkəzi pa-dan (RASTA_MX/MY nöqtəsinə) tacla eyni əyri üzrə gedir (pr = 1-(1-u)^2),
+   fırlanma da eyni əyri üzrə 0°-dən RASTA_ACI-yə qədər, ölçü RASTA_OLCU_EYRISI üzrədir. Ulduz izi yoxdur (videoda yoxdur).
+   Şəklin qutusunun mərkəzi görünən hissənin mərkəzindən fərqli ola bilər, ona görə hər kadrda sapma (rastaSapma) çıxılır.
+   Düşmə səsi uçuşun RASTA_DUSME_SES payı keçəndə çalınır (videodakı kimi, papaq oturmazdan azca əvvəl). */
+function ucurRasta(g, x, to, pa, b) {
+  const r0 = fotoRect(b);
+  if (!r0) return;
+  const d = document.createElement("div");
+  d.className = "hd-fly";
+  d.style.left = pa[0] + "px"; d.style.top = pa[1] + "px";
+  d.style.fontSize = rastaOlcusu(r0.width).fs + "px";
+  d.style.opacity = "0";
+  d.innerHTML = gorsel(g) + (x.c > 1 ? "<i>x" + x.c + "</i>" : "");
+  fxLayer().appendChild(d);
+  let sesVerildi = false;
+  canli(to, g.ucusMs || 5000,
+    r => [r.left + r.width * RASTA_MX, r.top + r.height * RASTA_MY, RASTA_ACI, rastaOlcusu(r.width).fs],
+    (u, h) => {
+      const pr = 1 - (1 - u) * (1 - u);
+      const k = egri(RASTA_OLCU_EYRISI, u);
+      const rot = h[2] * pr;
+      const sp = rastaSapma(h[3], rot, k);
+      d.style.fontSize = h[3] + "px";
+      d.style.opacity = 1;
+      d.style.transform = tr((h[0] - pa[0]) * pr - sp[0], (h[1] - pa[1]) * pr - sp[1], k.toFixed(3), rot.toFixed(2));
+      if (!sesVerildi && u >= RASTA_DUSME_SES) { sesVerildi = true; sesCal(g.sl); }
+    },
+    () => {
+      if (!sesVerildi) { sesVerildi = true; sesCal(g.sl); }
       ogelen.add(x.n + "|" + to);
       yigimCiz();
       d.remove();
@@ -1509,6 +1632,12 @@ function oynaBir(kimden, x, to) {
   const py = g.yigim && x.p && x.p[to];
   if (py) { ucurYigim(g, x, to, pa, b, py); return; }
   const p = g.yapis && x.p && x.p[to];
+  if (p && g.rastaUcus) {
+    /* rasta papağı göndərənin şəklinin mərkəzindən yox, RASTA_BASLA qədər kənardan çıxır (videodakı kimi) */
+    const ra = a && fotoRect(a);
+    ucurRasta(g, x, to, ra ? [ra.left + ra.width * (0.5 + RASTA_BASLA[0]), ra.top + ra.height * (0.5 + RASTA_BASLA[1])] : pa, b);
+    return;
+  }
   if (p && g.pomidor) { ucurPomidor(g, x, to, pa, b, p); return; }
   if (p && g.tacUcus) { ucurTac(g, x, to, pa, b, p); return; }
   if (p && g.papaqUcus) { ucurPapaq(g, x, to, pa, b, p); return; }
@@ -1640,7 +1769,9 @@ function yigimCiz() {
        onu əvəz edən ilk fərqli növ hədiyyəyə görə bir dəfə təyin olunur, ona görə sonradan dəyişmir.
        Soska və kokteyl eyni zonada ("yan") olduğu üçün soska atıldıqdan sonra kokteyl düşəndə soska solub silinir.
        ZONA_GONDER_SOLMA-da yazılan zonalarda ("yan": soska, kokteyl) solma yeni hədiyyənin düşmə anında yox, GÖNDƏRİLMƏ anında
-       başlayır və köhnələr növbəsiz, eyni anda solur: kokteyl atılanda soska, soska atılanda kokteyl solmağa başlayır. */
+       başlayır və köhnələr növbəsiz, eyni anda solur: kokteyl atılanda soska, soska atılanda kokteyl solmağa başlayır.
+       Eyni qayda zonası ZONA_GONDER_SOLMA-da olmayan, amma özündə gonderSolma: true olan hədiyyəyə (rasta papağı) də tətbiq olunur:
+       rasta papağı tac, kovboy papağı və ya başqa hədiyyə ilə ("bas" zonası) əvəz olunanda GÖNDƏRİLƏN anda solmağa başlayır. */
     const caprazSol = {};
     {
       const zonalar = {};
@@ -1659,7 +1790,11 @@ function yigimCiz() {
           const getdi = gozle.filter(w => w[0] !== gk);
           if (getdi.length) {
             const addim = gond ? 0 : Math.min(CAPRAZ_ADDIM, CAPRAZ_PENCERE / getdi.length);
-            getdi.forEach((w, i) => { caprazSol[w[1][0]] = tetik(it) + i * addim; });
+            getdi.forEach((w, i) => {
+              /* köhnə hədiyyə (w) göndərmə anında solmalıdır? (zona qaydası və ya hədiyyənin öz gonderSolma ayarı) */
+              const gs = gond || !!w[1][3].gonderSolma;
+              caprazSol[w[1][0]] = (gs ? (num(it[1].t) || it[2]) : it[2]) + (gs ? 0 : i * addim);
+            });
             gozle = gozle.filter(w => w[0] === gk);
           }
           gozle.push([gk, it]);
@@ -1691,7 +1826,7 @@ function yigimCiz() {
         const solMs = g.qal ? QAL_SOLMA : (g.solMs || OPUS.SOLMA_MS);
         let sol = g.qal
           ? (qalSol[idx] || 0)
-          : (idx < L.length - 1 ? (ZONA_GONDER_SOLMA[zonaDe(g)] ? (num(L[idx + 1][1].t) || L[idx + 1][2]) : L[idx + 1][2]) : 0);   // "yan" zonada (kokteyl, soska): növbəti hədiyyənin GÖNDƏRİLMƏ anında
+          : (idx < L.length - 1 ? ((ZONA_GONDER_SOLMA[zonaDe(g)] || g.gonderSolma) ? (num(L[idx + 1][1].t) || L[idx + 1][2]) : L[idx + 1][2]) : 0);   // "yan" zonada (kokteyl, soska) və gonderSolma hədiyyədə (rasta): növbəti hədiyyənin GÖNDƏRİLMƏ anında
         const cs = caprazSol[key];
         if (cs && (!sol || cs < sol)) sol = cs;
 
@@ -1707,8 +1842,8 @@ function yigimCiz() {
         if (!gor) { if (rec) rec.el.style.display = "none"; continue; }
         if (!rec) {
           const el = document.createElement("div");
-          el.className = (g.yapis || g.koktel || g.soska) ? ("hd-stk" + ((g.koktel || g.soska) ? " hd-nosh" : "")) : "hd-yig";
-          el.style.zIndex = (g.tacUcus || g.papaqUcus) ? "2" : "1";
+          el.className = (g.yapis || g.koktel || g.soska) ? ("hd-stk" + ((g.koktel || g.soska || g.rastaUcus) ? " hd-nosh" : "")) : "hd-yig";
+          el.style.zIndex = (g.tacUcus || g.papaqUcus || g.rastaUcus) ? "2" : "1";
           el.innerHTML = g.yapis ? gorselStk(g) : gorselV(g, e.v);
           yigQat.appendChild(el);
           rec = yigEl[kk] = { el, sol: false, k: "" };
