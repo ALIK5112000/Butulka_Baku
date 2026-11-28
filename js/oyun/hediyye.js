@@ -2,7 +2,7 @@ import { fsdb, rtdb } from "../core/firebase.js";
 import { MASA_NOMRESI } from "../core/config.js";
 import { cariOyuncu } from "./yardimci.js";
 import { doc, getDoc, onSnapshot, updateDoc, increment, runTransaction as fsRunTransaction } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-import { ref, onValue, set, update, remove, onDisconnect, runTransaction as rtTx } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { ref, push, onValue, set, update, remove, onDisconnect, serverTimestamp, runTransaction as rtTx } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js";
 
 /* ADDIM 3: Hədiyyə paneli. Başqa oyunçunun şəklinə toxunanda açılır.
@@ -15,6 +15,10 @@ import { PREMIUM_HEDIYYELER, PREMIUM_AYAR, seviyye } from "./premium-hediyye.js"
      Bir-bir basanda neçə dəfə basılıbsa o qədər hədiyyə göndərilir.
    - ÇOXBARMAQ: bir barmaq bir hədiyyəni basıb saxlayıb davamlı göndərərkən, o biri barmaqla başqa hədiyyələri də
      eyni anda göndərmək olar. Hər barmağın basması (pointerId) ayrıca izlənir və bir-birini kəsmir.
+   - ÇATDA HƏDİYYƏ SƏTRİ: hər hədiyyə göndəriləndə çata [göndərən] [hədiyyənin şəkli] xN » [alan] sətri yazılır
+     (hediyyeChatYaz). Şəkil hədiyyənin öz şəklindən (g.img / variant) avtomatik götürülür, ona görə siyahıya yeni hədiyyə
+     əlavə edəndə (sadə və ya premium) çat sətri üçün heç nə yazmaq lazım deyil. Eyni hədiyyə eyni oyunçuya ardıcıl
+     (CHAT_PENCERE ms ərzində) göndərilirsə yeni sətir açılmır, mövcud sətrin sayı (xN) artır.
    - TOPAZ (g22): uçuş və düşmə ölçüsü videodan ölçülərək bir-bir quraşdırılıb.
    - ÇİYƏLƏK (g2): uçuş, fırlanma, ölçü və yavaşlama videodan ölçülüb; yığım/solma qaydası topaz kimidir.
    - KOKTEL (g21): qiyməti 2, göndərəndən 2 bonus çıxır, alan cəmi hər kokteylə +1 bonus almalıdır (KOKTEL_ALAN_BONUS).
@@ -49,6 +53,10 @@ const zonaDe = g => g.zona || g.qrup || g.id;
    onları da bu şəkildə solmaq istəsən zonanın adını bura yaz, məsələn { yan: true, yuz: true }. */
 const ZONA_GONDER_SOLMA = { yan: true };
 const SES_PAPKA = "sesler/";
+
+/* ÇATDA HƏDİYYƏ SƏTRİ: eyni göndərən → eyni alan → eyni hədiyyə ardıcıl bu müddət (ms) ərzində göndərilirsə
+   yeni sətir açılmır, mövcud sətrin sayı (xN) artır. Basıb saxlayanda sətir tək qalır və say artır. */
+const CHAT_PENCERE = 3500;
 
 /* Topaz (videodan ölçülüb): uçuş boyu ölçü sabit (1), son 30%-də yavaş-yavaş 0.8-ə qədər kiçilir və
    şəkildə o ölçüdə qalır. Ox: [uçuşun payı 0..1, ölçü əmsalı]. */
@@ -717,6 +725,7 @@ window.HediyyePanel = { ac, bagla, hedef: () => hedef, modu: () => root.classLis
 
 const YAP_YOL = "masalar/" + MASA_NOMRESI + "/hediyyeYapisan/";
 const YIG_YOL = "masalar/" + MASA_NOMRESI + "/yigim/";
+const CHAT_YOL = "masalar/" + MASA_NOMRESI + "/chat";
 
 const GORULME_KEY = "hdSon_" + MASA_NOMRESI + "_" + MEN;
 const GORULME_TOLER = 4000;
@@ -832,6 +841,68 @@ function ardicilYaz(fn) {
     .then(() => new Promise(res => setTimeout(res, YAZ_ARALIQ)));
 }
 
+/* ======================= ÇATDA HƏDİYYƏ SƏTRİ =======================
+   Hədiyyə göndəriləndə çata (masalar/{masa}/chat) isHediyyeNotice mesajı yazılır, chat.js onu
+   [göndərən] [hədiyyənin şəkli] xN » [alan] sətri kimi göstərir.
+   - Şəkil: variantlı hədiyyədə (topaz, gül, soska) göndərilən variantın şəkli, yoxsa hədiyyənin öz şəkli (g.img).
+     Yəni siyahıya yeni hədiyyə (sadə və ya premium) əlavə edəndə çat üçün heç nə yazmaq lazım deyil, şəkil avtomatik gəlir.
+   - Eyni göndərən → eyni alan → eyni hədiyyə CHAT_PENCERE ms ərzində ardıcıl göndərilirsə, yeni sətir açılmır,
+     mövcud mesajın sayı (c) artırılır (chat.js onChildChanged ilə xN-i yeniləyir).
+   - Bir neçə alan seçilibsə hər alan üçün ayrıca sətir yazılır. */
+const chatSatir = {};
+
+function chatSekil(g, v) {
+  return (g.variantlar && v != null && g.variantlar[v]) ? SEKIL_PAPKA + g.variantlar[v] : (g.img || "");
+}
+
+function hediyyeChatYaz(g, alanlar, c, pmap) {
+  if (!MEN || !g) return;
+  const now = Date.now();
+  alanlar.forEach(k => {
+    const v = pmap && pmap[k] && pmap[k].v != null ? pmap[k].v : null;
+    const obj = {
+      isHediyyeNotice: true,
+      uid: MEN,
+      hedef: k,
+      i: g.id,
+      e: g.e || "🎁",
+      img: chatSekil(g, v),
+      img0: g.img || "",
+      metn: "🎁",
+      c: 1
+    };
+    const kk = g.id + "|" + k;
+    const s = chatSatir[kk];
+    if (s && now - s.t < CHAT_PENCERE) {
+      s.c += c; s.t = now;
+      obj.c = s.c;
+      update(ref(rtdb, CHAT_YOL + "/" + s.key), obj).catch(() => {});
+    } else {
+      const mr = push(ref(rtdb, CHAT_YOL));
+      chatSatir[kk] = { key: mr.key, c, t: now };
+      obj.c = c;
+      obj.vaxt = serverTimestamp();
+      set(mr, obj).catch(() => {});
+    }
+  });
+}
+
+/* ödəniş alınmayıbsa (xəta) çata yazılan sətirdən həmin say geri çıxarılır */
+function hediyyeChatGeriAl(g, alanlar, c) {
+  alanlar.forEach(k => {
+    const kk = g.id + "|" + k;
+    const s = chatSatir[kk];
+    if (!s) return;
+    s.c -= c;
+    if (s.c <= 0) {
+      remove(ref(rtdb, CHAT_YOL + "/" + s.key)).catch(() => {});
+      delete chatSatir[kk];
+    } else {
+      update(ref(rtdb, CHAT_YOL + "/" + s.key), { c: s.c }).catch(() => {});
+    }
+  });
+}
+
 /* alici: göndəriləcək oyunçular (verilməsə alicilar()). Göndərilibsə true, göndərilməyibsə false qaytarır
    (davamlı göndərmə false gələndə dayanır). */
 function gonder(g, c, alici) {
@@ -878,6 +949,9 @@ function gonder(g, c, alici) {
   onDisconnect(r).remove();
   ardicilYaz(() => set(r, payload).then(() => dbg("hədiyyə bazaya yazıldı")).catch(e => dbg("HƏDİYYƏ YAZILMADI: " + (e.code || e.message))));
 
+  /* çatda "[mən] [hədiyyə] xN » [alan]" sətri (yeni hədiyyələr üçün də avtomatik işləyir) */
+  hediyyeChatYaz(g, alanlar, c, payload.p);
+
   if (yigVar) {
     try { update(ref(rtdb, YIG_YOL), yigUpd).catch(e => dbg("ÖPÜŞ YIĞIMI YAZILMADI: " + (e.code || e.message))); }
     catch (e) { dbg("ÖPÜŞ YIĞIMI XƏTASI: " + e.message); }
@@ -901,6 +975,7 @@ function gonder(g, c, alici) {
   }).catch(e => {
     meHearts = null;
     remove(r).catch(() => {});
+    hediyyeChatGeriAl(g, alanlar, c);
     if (sekileOturur) alanlar.forEach(k => remove(ref(rtdb, YIG_YOL + k + "/" + n)).catch(() => {}));
     console.error(e);
     toast("Xəta: " + (e.code || e.message));
@@ -934,6 +1009,9 @@ function gonderPremium(g) {
   ardicilYaz(() => set(r, { to: alanlar, i: g.id, c: 1, n, t: Date.now() + offset })
     .catch(e => dbg("PREMİUM YAZILMADI: " + (e.code || e.message))));
 
+  /* çatda premium hədiyyənin şəkli də göstərilir */
+  hediyyeChatYaz(g, alanlar, 1, null);
+
   odenis.then(() => {
     const sv = seviyye(meXerc || 0);
     toast(sv.no > evvelki
@@ -941,6 +1019,7 @@ function gonderPremium(g) {
       : (g.ad || "Hədiyyə") + " göndərildi");
   }).catch(e => {
     remove(r).catch(() => {});
+    hediyyeChatGeriAl(g, alanlar, 1);
     console.error(e);
     toast("Xəta: " + (e.code || e.message));
   });
