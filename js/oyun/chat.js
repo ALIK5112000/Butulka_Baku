@@ -19,6 +19,10 @@ const KAPI_SVG = '<svg viewBox="0 0 44 44"><rect x="5" y="4" width="20" height="
 const QALXAN_SVG = '<svg viewBox="0 0 40 46"><path d="M20 2l16 5v14c0 11-7 19-16 23C11 40 4 32 4 21V7z" fill="#f4a31f"/><path d="M20 6l12 4v11c0 8.5-5 15-12 18-7-3-12-9.5-12-18V10z" fill="#e8483a"/><path d="M20 13l2.6 5.4 5.9.8-4.3 4.1 1 5.9L20 26.4l-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z" fill="#ffc93d"/></svg>';
 const QALXAN_YASIL_SVG = '<svg viewBox="0 0 40 46"><path d="M20 4l14 4.5v12c0 9.5-6 16.5-14 20C12 37 6 30 6 20.5v-12z" fill="none" stroke="#7bc043" stroke-width="3.5" stroke-linejoin="round"/><path d="M20 13l2.4 5 5.4.7-4 3.8 1 5.4-4.8-2.6-4.8 2.6 1-5.4-4-3.8 5.4-.7z" fill="#7bc043"/></svg>';
 
+// Məftun sətirləri üçün qıfıl ikonları (narıncı xətt, ortada ürək): bağlı = valeh olmağa başladı, açıq = tərk etdi
+const QIFIL_BAGLI_SVG = '<svg viewBox="0 0 40 48" fill="none" stroke="#f4a548" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M11 21V14a9 9 0 0 1 18 0v7"/><rect x="4" y="21" width="32" height="23" rx="6"/><path d="M20 39C11 33 11 26 15.5 26C18 26 19.5 27.5 20 29C20.5 27.5 22 26 24.5 26C29 26 29 33 20 39Z" fill="#f0782a" stroke="none"/></svg>';
+const QIFIL_ACIQ_SVG = '<svg viewBox="0 0 40 48" fill="none" stroke="#f4a548" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M11 15v-1a9 9 0 0 1 18 0v7"/><rect x="4" y="21" width="32" height="23" rx="6"/><path d="M20 39C11 33 11 26 15.5 26C18 26 19.5 27.5 20 29C20.5 27.5 22 26 24.5 26C29 26 29 33 20 39Z" fill="#f0782a" stroke="none"/></svg>';
+
 const cari = cariOyuncu();
 const yol = `masalar/${MASA_NOMRESI}/chat`;
 const qutu = document.getElementById("mesajlar");
@@ -361,6 +365,65 @@ function hediyyeSatiri(m) {
   return d;
 }
 
+// ---- Məftun sətirləri (profil-kart.js chat yoluna isMeftunNotice kimi yazır; yeni formatda tip + hedef + q olur) ----
+//  tip "ol"  : [hərəkət edən] bağlı qıfıl  "valeh olmağa başladı" ❤N [o biri oyunçu]
+//  tip "terk": [hərəkət edən] açıq qıfıl   "aşiqini tərk etdi"    ❤N [o biri oyunçu]
+//  Köhnə mesajlarda (tip yoxdur) əvvəlki çəhrayı yazı qalır.
+function meftunSatiri(m) {
+  const d = document.createElement("div");
+  d.className = "mesaj";
+  const f = document.createElement("div");
+  f.className = "mfoto";
+  fotoVer(f, m.uid);
+
+  const g = document.createElement("div");
+  g.className = "meftun-sat";
+  g.style.cssText = "display:flex;flex-wrap:nowrap;align-items:center;gap:2.4vw;min-width:0;max-width:80vw;min-height:7.8vw;";
+
+  // Qıfıl ikonu (ölçü aşağıda şəklin eninə görə qurulur)
+  const qf = document.createElement("div");
+  qf.style.cssText = "flex:none;display:flex;align-items:center;justify-content:center;";
+  qf.innerHTML = m.tip === "terk" ? QIFIL_ACIQ_SVG : QIFIL_BAGLI_SVG;
+
+  // Yazı və altında ürək + say
+  const tb = document.createElement("div");
+  tb.style.cssText = "flex:0 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;";
+  const tx = document.createElement("span");
+  tx.style.cssText = "color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;font-weight:400;";
+  tx.textContent = m.tip === "terk" ? "aşiqini tərk etdi" : "valeh olmağa başladı";
+  const ur = document.createElement("div");
+  ur.style.cssText = "display:flex;align-items:center;gap:1.2vw;line-height:1;";
+  const him = document.createElement("img");
+  him.src = "images/profil/tek_urek.png";
+  him.alt = "";
+  him.style.cssText = "display:block;height:auto;pointer-events:none;";
+  const say = document.createElement("span");
+  say.style.cssText = "color:#777;font-weight:400;line-height:1;";
+  say.textContent = String(Number(m.q) || 0);
+  ur.append(him, say);
+  tb.append(tx, ur);
+
+  const f2 = document.createElement("div");
+  f2.className = "mfoto";
+  f2.style.cssText = "flex:none!important;";
+  fotoVer(f2, m.hedef);
+
+  g.append(qf, tb, f2);
+  d.append(f, g);
+
+  // Ölçülər: şəkil (.mfoto) nə qədərdirsə ona görə (sətir yerləşdirildikdən sonra)
+  d._olcu = () => {
+    const w = f.offsetWidth || 40;
+    qf.style.width = Math.round(w * 0.62) + "px";
+    const qs = qf.querySelector("svg");
+    if (qs) { qs.style.width = "100%"; qs.style.height = "auto"; qs.style.display = "block"; }
+    tx.style.fontSize = Math.round(w * 0.34) + "px";
+    say.style.fontSize = Math.round(w * 0.4) + "px";
+    him.style.width = Math.round(w * 0.4) + "px";
+  };
+  return d;
+}
+
 // Mesaja sonradan "hedef" əlavə olunanda (kiminsə adına qoşulduqda) həmin sətir yenilənir.
 // Hədiyyə sətrində isə say (xN) artanda yenilənir.
 onChildChanged(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
@@ -433,6 +496,18 @@ onChildAdded(query(ref(rtdb, yol), limitToLast(SON_MESAJ_SAYI)), (s) => {
 
   // Məftun bildirişi: kim kimə məftun oldu / kim tərk etdi
   if (m.isMeftunNotice) {
+    // Yeni format (tip + hedef var): [şəkil] qıfıl "yazı" ❤N [şəkil]
+    if (m.tip && m.hedef) {
+      const sat = meftunSatiri(m);
+      blokGizle(sat, m.uid);
+      qutu.appendChild(sat);
+      sat._olcu();
+      while (qutu.children.length > 60) qutu.removeChild(qutu.firstChild);
+      qutu.scrollTop = qutu.scrollHeight;
+      requestAnimationFrame(() => { sat._olcu(); qutu.scrollTop = qutu.scrollHeight; });
+      return;
+    }
+    // Köhnə format: əvvəlki kimi çəhrayı yazı
     const f = document.createElement("div");
     f.className = "mfoto";
     fotoVer(f, m.uid);
